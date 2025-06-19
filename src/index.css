@@ -73,7 +73,8 @@
   }
   
   .travis-card:hover {
-    @apply shadow-3xl transform scale-[1.02] border-border;
+    @apply shadow-2xl transform scale-[1.02] border-border;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.3);
   }
   
   .travis-interactive {
