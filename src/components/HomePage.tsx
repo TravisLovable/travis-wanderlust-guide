@@ -177,7 +177,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
-          <div className="mb-32 animate-fade-in">
+          <div className="mb-16 animate-fade-in">
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter">
               The World Awaits
             </h1>
