@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -84,7 +85,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-7xl md:text-8xl font-light text-foreground tracking-tighter">TRAVIS</div>
+          <div className="text-2xl font-bold text-foreground tracking-tight">The World Awaits</div>
           <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <DropdownMenu>
@@ -177,8 +178,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
           <div className="mb-32 animate-fade-in">
-            <h1 className="text-2xl font-bold text-foreground mb-4 tracking-tight">
-              The World Awaits
+            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter">
+              TRAVIS
             </h1>
             <p className="text-xl text-muted-foreground mb-8 font-light">
               Data-driven insights for the modern explorer
