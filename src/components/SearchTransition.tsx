@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 
 interface SearchTransitionProps {
@@ -21,14 +20,14 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
     return () => clearTimeout(timer);
   }, [revealProgress, onComplete]);
 
-  // Reveal at average reading pace (about 4.5 seconds total)
+  // Reveal in 4 seconds max
   useEffect(() => {
     let animationId: number;
     
     const animate = () => {
       setRevealProgress(prev => {
         if (prev >= 100) return 100;
-        return prev + 0.37; // Adjusted for ~4.5 second reveal (average reading pace)
+        return prev + 0.42; // Adjusted for 4 second reveal (60fps * 4 seconds = 240 frames, 100/240 = 0.42)
       });
       
       if (revealProgress < 100) {
