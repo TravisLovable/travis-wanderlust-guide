@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -44,7 +44,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       { name: 'Spring Equinox Day', date: 'March 20, 2024' },
       { name: 'Showa Day', date: 'April 29, 2024' },
       { name: 'Children\'s Day', date: 'May 5, 2024' }
-    ]
+    ],
+    religion: {
+      primary: 'Shinto & Buddhism',
+      percentage: '84%',
+      practices: ['Temple visits', 'Shrine worship', 'Meditation'],
+      etiquette: ['Remove shoes', 'Bow respectfully', 'Silence in sacred areas']
+    }
   };
 
   const fourteenDayForecast = [
@@ -103,9 +109,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   };
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-gray-50">
       {/* Header */}
-      <header className="bg-card/50 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
+      <header className="bg-white/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -137,7 +143,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </p>
               </div>
             </div>
-            <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
+            <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
           </div>
 
           {/* Pinned Destinations */}
@@ -191,7 +197,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 value={newDestination}
                 onChange={(e) => setNewDestination(e.target.value)}
                 onKeyPress={handleKeyPress}
-                className="pl-11 h-12 bg-secondary/30 border-border/50 focus:border-blue-400 rounded-lg"
+                className="pl-11 h-12 bg-white border-border/50 focus:border-blue-400 rounded-lg"
               />
             </div>
             
@@ -199,7 +205,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-12 bg-secondary/30 border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
+                  className="h-12 bg-white border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   {format(newCheckinDate, 'MMM dd')}
@@ -223,7 +229,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
-                  className="h-12 bg-secondary/30 border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
+                  className="h-12 bg-white border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
                 >
                   <Calendar className="w-4 h-4 mr-2" />
                   {format(newCheckoutDate, 'MMM dd')}
@@ -256,7 +262,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
           {/* Currency Card */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
@@ -293,8 +299,69 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
+          {/* Religion & Culture Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Church className="w-5 h-5 text-white" />
+                </div>
+                Practicing Religion
+                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="font-semibold text-purple-700 mb-2">{mockData.religion.primary}</div>
+                <div className="text-sm text-muted-foreground">{mockData.religion.percentage} of population</div>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-700">Common Practices:</h4>
+                {mockData.religion.practices.map((practice, idx) => (
+                  <div key={idx} className="text-sm text-muted-foreground">• {practice}</div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-700">Etiquette:</h4>
+                {mockData.religion.etiquette.map((rule, idx) => (
+                  <div key={idx} className="text-sm text-muted-foreground">• {rule}</div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Accommodation Heat Map - Updated */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
+                  <MapPin className="w-5 h-5 text-white" />
+                </div>
+                Street View Map
+                <Mountain className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="w-full h-48 bg-gray-200 rounded-xl overflow-hidden">
+                <iframe
+                  src={`https://www.google.com/maps/embed/v1/streetview?key=YOUR_API_KEY&location=${encodeURIComponent(destination)}&heading=210&pitch=10&fov=35`}
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="text-sm text-muted-foreground">
+                Interactive street view of {destination}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Time Zone Card */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -326,8 +393,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Weather Card with 14-day forecast */}
-          <Card className="travis-card travis-interactive group">
+          {/* Weather Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -371,7 +438,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Local Holidays Widget */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -395,7 +462,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* World Adapters Widget */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
@@ -429,7 +496,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <AccommodationHeatMap />
 
           {/* Airport Info Card */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -454,7 +521,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Transportation Card */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
@@ -484,7 +551,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Visa & Entry Card */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -511,7 +578,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Emergency Info Card */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -540,7 +607,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Connectivity Card */}
-          <Card className="travis-card travis-interactive group">
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -567,7 +634,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Intelligence Widget */}
-          <Card className="travis-card lg:col-span-2 xl:col-span-3">
+          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">

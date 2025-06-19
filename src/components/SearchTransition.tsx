@@ -1,5 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
+import { Loader } from 'lucide-react';
 
 interface SearchTransitionProps {
   destination: string;
@@ -90,6 +91,12 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
           </div>
           
           <p className="text-white/70 text-lg font-light">— Oliver Wendell Holmes Sr.</p>
+          
+          {/* Loading Icon */}
+          <div className="flex items-center space-x-3 mt-8">
+            <Loader className="w-6 h-6 text-white/80 animate-spin" />
+            <span className="text-white/80 font-light">Preparing your travel intelligence...</span>
+          </div>
         </div>
       </div>
     </div>
