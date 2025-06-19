@@ -11,10 +11,10 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
   const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
 
   useEffect(() => {
-    // Complete the transition immediately
+    // Complete the transition after 4 seconds
     const timer = setTimeout(() => {
       onComplete();
-    }, 100); // Very short delay just to show the transition briefly
+    }, 4000); // 4 seconds delay
 
     return () => clearTimeout(timer);
   }, [onComplete]);
