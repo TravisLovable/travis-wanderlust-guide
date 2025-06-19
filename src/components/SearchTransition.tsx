@@ -8,7 +8,6 @@ interface SearchTransitionProps {
 }
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
-  const [revealProgress, setRevealProgress] = useState(100); // Start at 100% to show full quote
   const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
 
   useEffect(() => {
@@ -92,10 +91,9 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
           
           <p className="text-white/70 text-lg font-light">— Oliver Wendell Holmes Sr.</p>
           
-          {/* Loading Icon */}
-          <div className="flex items-center space-x-3 mt-8">
-            <Loader className="w-6 h-6 text-white/80 animate-spin" />
-            <span className="text-white/80 font-light">Preparing your travel intelligence...</span>
+          {/* Loading Icon Only */}
+          <div className="flex items-center justify-center mt-8">
+            <Loader className="w-8 h-8 text-white/80 animate-spin" />
           </div>
         </div>
       </div>

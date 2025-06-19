@@ -85,7 +85,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
+          <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
           <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <DropdownMenu>
@@ -120,14 +120,14 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <div className="w-8 h-8 bg-cover bg-center rounded-full" style={{
-                    backgroundImage: 'url(https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=300&q=80)'
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80)'
                   }} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-cover bg-center rounded-full" style={{
-                    backgroundImage: 'url(https://images.unsplash.com/photo-1581092795360-fd1ca04f0952?auto=format&fit=crop&w=300&q=80)'
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80)'
                   }} />
                   <div>
                     <div className="flex items-center space-x-2">
@@ -177,7 +177,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
-          <div className="mb-24 animate-float">
+          <div className="mb-32 animate-fade-in">
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter">
               The World Awaits
             </h1>
@@ -188,7 +188,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           </div>
 
           {/* Google-style Search Form */}
-          <form onSubmit={handleSearch} className="mb-24 max-w-5xl mx-auto">
+          <form onSubmit={handleSearch} className="mb-32 max-w-5xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow">
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
@@ -237,7 +237,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
-                        {checkinDate ? format(checkinDate, 'MMM dd') : 'Check-in'}
+                        {checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -261,7 +261,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
-                        {checkoutDate ? format(checkoutDate, 'MMM dd') : 'Check-out'}
+                        {checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -313,8 +313,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Footer */}
       <footer className="px-6 py-8 border-t border-border/30">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <p className="text-muted-foreground font-light tracking-wide text-sm">
-            Powered by <span className="text-foreground font-medium">TRAVIS</span> • Your intelligent travel companion
+          <p className="text-muted-foreground font-light tracking-wide text-xs">
+            Powered by <span className="text-foreground font-medium">TRAVIS</span>
           </p>
           <div className="flex items-center space-x-6 text-sm text-muted-foreground">
             <button className="hover:text-foreground transition-colors">Privacy</button>

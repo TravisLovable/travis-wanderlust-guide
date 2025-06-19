@@ -12,7 +12,6 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
-import AccommodationHeatMap from './AccommodationHeatMap';
 
 interface ResultsPageProps {
   destination: string;
@@ -31,6 +30,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
+  const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
 
   // Mock data updated for Tokyo
   const mockData = {
@@ -108,8 +108,12 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return tempUnit === 'F' ? Math.round((temp * 9/5) + 32) : temp;
   };
 
+  const handleAdapterClick = () => {
+    setIsAdapterSpinning(!isAdapterSpinning);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -187,80 +191,136 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           )}
 
-          {/* Search Bar */}
-          <div className="grid md:grid-cols-4 gap-4">
-            <div className="md:col-span-2 relative">
-              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
-              <Input
-                type="text"
-                placeholder="Change destination"
-                value={newDestination}
-                onChange={(e) => setNewDestination(e.target.value)}
-                onKeyPress={handleKeyPress}
-                className="pl-11 h-12 bg-white border-border/50 focus:border-blue-400 rounded-lg"
-              />
+          {/* Search Bar - Updated to match homepage style */}
+          <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
+                <Input
+                  type="text"
+                  placeholder="Change destination"
+                  value={newDestination}
+                  onChange={(e) => setNewDestination(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="pl-11 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                />
+              </div>
+              
+              <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {format(newCheckinDate, 'MMM dd')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={newCheckinDate}
+                    onSelect={(date) => {
+                      if (date) setNewCheckinDate(date);
+                      setCheckinOpen(false);
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {format(newCheckoutDate, 'MMM dd')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={newCheckoutDate}
+                    onSelect={(date) => {
+                      if (date) setNewCheckoutDate(date);
+                      setCheckoutOpen(false);
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Button
+                onClick={handleNewSearch}
+                className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+              >
+                Search
+              </Button>
             </div>
-            
-            <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="h-12 bg-white border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {format(newCheckinDate, 'MMM dd')}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={newCheckinDate}
-                  onSelect={(date) => {
-                    if (date) setNewCheckinDate(date);
-                    setCheckinOpen(false);
-                  }}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
-            
-            <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-              <PopoverTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="h-12 bg-white border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {format(newCheckoutDate, 'MMM dd')}
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                <CalendarComponent
-                  mode="single"
-                  selected={newCheckoutDate}
-                  onSelect={(date) => {
-                    if (date) setNewCheckoutDate(date);
-                    setCheckoutOpen(false);
-                  }}
-                  initialFocus
-                  className="pointer-events-auto"
-                />
-              </PopoverContent>
-            </Popover>
           </div>
         </div>
       </header>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Photo Slideshow */}
+        {/* Photo Slideshow - Updated with Tokyo landmarks */}
         <div className="mb-8">
-          <PhotoSlideshow />
+          <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
+            <div className="relative w-full h-full">
+              <div className="absolute inset-0">
+                <img
+                  src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80"
+                  alt="Tokyo Tower at sunset"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
+                    Tokyo Tower illuminated at sunset
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
+          {/* Religion & Culture Card - Prioritized */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Church className="w-5 h-5 text-white" />
+                </div>
+                Practicing Religion
+                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="font-semibold text-purple-700 mb-2">{mockData.religion.primary}</div>
+                <div className="text-sm text-muted-foreground">{mockData.religion.percentage} of population</div>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-700">Common Practices:</h4>
+                {mockData.religion.practices.map((practice, idx) => (
+                  <div key={idx} className="text-sm text-muted-foreground">• {practice}</div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-700">Etiquette:</h4>
+                {mockData.religion.etiquette.map((rule, idx) => (
+                  <div key={idx} className="text-sm text-muted-foreground">• {rule}</div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Currency Card */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
@@ -299,38 +359,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Religion & Culture Card */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Church className="w-5 h-5 text-white" />
-                </div>
-                Practicing Religion
-                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <div className="font-semibold text-purple-700 mb-2">{mockData.religion.primary}</div>
-                <div className="text-sm text-muted-foreground">{mockData.religion.percentage} of population</div>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium text-purple-700">Common Practices:</h4>
-                {mockData.religion.practices.map((practice, idx) => (
-                  <div key={idx} className="text-sm text-muted-foreground">• {practice}</div>
-                ))}
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium text-purple-700">Etiquette:</h4>
-                {mockData.religion.etiquette.map((rule, idx) => (
-                  <div key={idx} className="text-sm text-muted-foreground">• {rule}</div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Accommodation Heat Map - Updated */}
+          {/* Street Map Card - Updated with Tokyo street view */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -341,10 +370,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <Mountain className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent>
               <div className="w-full h-48 bg-gray-200 rounded-xl overflow-hidden">
                 <iframe
-                  src={`https://www.google.com/maps/embed/v1/streetview?key=YOUR_API_KEY&location=${encodeURIComponent(destination)}&heading=210&pitch=10&fov=35`}
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.827853338283!2d139.69171081531663!3d35.67143803019622!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c9fa9d5a43f%3A0x5c5d0b6b5c8e0!2sShinjuku%2C%20Tokyo%2C%20Japan!5e0!3m2!1sen!2sus!4v1639123456789!5m2!1sen!2sus"
                   width="100%"
                   height="100%"
                   style={{ border: 0 }}
@@ -354,8 +383,50 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   className="rounded-xl"
                 />
               </div>
-              <div className="text-sm text-muted-foreground">
-                Interactive street view of {destination}
+              <div className="text-sm text-muted-foreground mt-2">
+                Interactive street view of Shinjuku, Tokyo
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* World Adapters Widget - Updated with 3D spinning effect */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
+                  <Plug className="w-5 h-5 text-white" />
+                </div>
+                Power Adapters
+                <Zap className="w-4 h-4 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer"
+                onClick={handleAdapterClick}
+              >
+                <div 
+                  className={`w-16 h-20 mx-auto mb-3 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg relative transition-transform duration-1000 ${
+                    isAdapterSpinning ? 'animate-spin' : ''
+                  }`}
+                  style={{
+                    background: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  }}
+                >
+                  {/* Type A plug visual */}
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+                    <div className="w-2 h-6 bg-gray-700 rounded-sm mb-1"></div>
+                    <div className="w-2 h-6 bg-gray-700 rounded-sm"></div>
+                  </div>
+                </div>
+                <div className="font-bold text-lg text-yellow-400">Type A & B</div>
+                <div className="text-sm text-muted-foreground">100V • 50/60Hz</div>
+              </div>
+              <div className="text-sm space-y-1 mt-2">
+                <p><span className="font-medium">Voltage:</span> 100V (Lower than US/EU)</p>
+                <p><span className="font-medium">Frequency:</span> 50Hz (East) / 60Hz (West)</p>
+                <p><span className="font-medium">Plug Type:</span> Same as North America</p>
               </div>
             </CardContent>
           </Card>
@@ -460,40 +531,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </CardContent>
           </Card>
-
-          {/* World Adapters Widget */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
-                  <Plug className="w-5 h-5 text-white" />
-                </div>
-                Power Adapters
-                <Zap className="w-4 h-4 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">
-                <div className="w-16 h-20 mx-auto mb-3 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg relative">
-                  {/* Type A plug visual */}
-                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
-                    <div className="w-2 h-6 bg-gray-700 rounded-sm"></div>
-                    <div className="w-2 h-6 bg-gray-700 rounded-sm mt-1"></div>
-                  </div>
-                </div>
-                <div className="font-bold text-lg text-yellow-400">Type A & B</div>
-                <div className="text-sm text-muted-foreground">100V • 50/60Hz</div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Voltage:</span> 100V (Lower than US/EU)</p>
-                <p><span className="font-medium">Frequency:</span> 50Hz (East) / 60Hz (West)</p>
-                <p><span className="font-medium">Plug Type:</span> Same as North America</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Accommodation Heat Map */}
-          <AccommodationHeatMap />
 
           {/* Airport Info Card */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
@@ -633,14 +670,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Intelligence Widget */}
+          {/* Intelligence Dashboard Widget - Updated title */}
           <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
                   <Palette className="w-5 h-5 text-white" />
                 </div>
-                Intelligence
+                Intelligence Dashboard
                 <Users className="w-4 h-4 ml-auto text-purple-400" />
               </CardTitle>
             </CardHeader>
