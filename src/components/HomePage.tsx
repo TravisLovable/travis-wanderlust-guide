@@ -29,8 +29,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [pinnedDestinations, setPinnedDestinations] = useState(['Tokyo', 'Osaka', 'Kyoto']);
 
-  // Mock destination suggestions
+  // Mock destination suggestions - Japan focused
   const suggestions = [
     'Tokyo, Japan',
     'Osaka, Japan', 
@@ -62,12 +63,21 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     }
   };
 
+  const handlePinDestination = (dest: string) => {
+    if (!pinnedDestinations.includes(dest)) {
+      setPinnedDestinations([...pinnedDestinations, dest]);
+    }
+  };
+
+  const removePinnedDestination = (dest: string) => {
+    setPinnedDestinations(pinnedDestinations.filter(d => d !== dest));
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
+        <div className="max-w-7xl mx-auto flex items-center justify-end">
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
@@ -115,65 +125,100 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         </div>
       </header>
 
+      {/* Pinned Destinations */}
+      {pinnedDestinations.length > 0 && (
+        <div className="px-6 py-4 border-b border-border/30">
+          <div className="max-w-7xl mx-auto">
+            <div className="flex items-center space-x-3">
+              <span className="text-sm text-muted-foreground font-medium">PINNED:</span>
+              <div className="flex space-x-2">
+                {pinnedDestinations.map((dest) => (
+                  <button
+                    key={dest}
+                    onClick={() => setDestination(dest)}
+                    className="group flex items-center space-x-2 px-3 py-1 bg-secondary/30 border border-border/30 rounded-full text-sm text-foreground hover:bg-secondary/60 transition-colors"
+                  >
+                    <span>{dest}</span>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        removePinnedDestination(dest);
+                      }}
+                      className="w-4 h-4 rounded-full bg-muted-foreground/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                    >
+                      ×
+                    </button>
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
           <div className="mb-16 animate-float">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-8 tracking-tighter">
-              The World Awaits.
+            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter">
+              The World Awaits
             </h1>
+            <p className="text-xl text-muted-foreground mb-8 font-light">
+              Data-driven insights for the modern explorer
+            </p>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8"></div>
           </div>
 
-          {/* Search Form */}
-          <form onSubmit={handleSearch} className="travis-card p-8 md:p-12 mb-16 travis-glow max-w-5xl mx-auto">
-            <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="md:col-span-2 relative group">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
-                <Input
-                  type="text"
-                  placeholder="Where to next?"
-                  value={destination}
-                  onChange={(e) => {
-                    setDestination(e.target.value);
-                    setShowSuggestions(true);
-                  }}
-                  onKeyPress={handleKeyPress}
-                  onFocus={() => setShowSuggestions(true)}
-                  className="pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 focus:bg-secondary/80 rounded-xl text-lg transition-all duration-300"
-                  required
-                />
-                {showSuggestions && suggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
-                    {suggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        type="button"
-                        onClick={() => {
-                          setDestination(suggestion);
-                          setShowSuggestions(false);
-                        }}
-                        className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors first:rounded-t-xl last:rounded-b-xl"
-                      >
-                        <div className="flex items-center space-x-3">
-                          <MapPin className="w-4 h-4 text-blue-400" />
-                          <span>{suggestion}</span>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </div>
-              
-              <div className="relative group">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
-                <div className="grid grid-cols-2 gap-2">
+          {/* Google-style Search Form */}
+          <form onSubmit={handleSearch} className="mb-16 max-w-4xl mx-auto">
+            <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow">
+              <div className="flex items-center gap-2">
+                {/* Destination Input */}
+                <div className="flex-1 relative group">
+                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
+                  <Input
+                    type="text"
+                    placeholder="Tokyo, Japan"
+                    value={destination}
+                    onChange={(e) => {
+                      setDestination(e.target.value);
+                      setShowSuggestions(true);
+                    }}
+                    onKeyPress={handleKeyPress}
+                    onFocus={() => setShowSuggestions(true)}
+                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                    required
+                  />
+                  {showSuggestions && suggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
+                      {suggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          type="button"
+                          onClick={() => {
+                            setDestination(suggestion);
+                            setShowSuggestions(false);
+                          }}
+                          className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <MapPin className="w-4 h-4 text-blue-400" />
+                            <span>{suggestion}</span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Date Inputs */}
+                <div className="flex gap-1">
                   <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
-                        className="h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-sm justify-start font-normal"
+                        variant="ghost"
+                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
                         {checkinDate ? format(checkinDate, 'MMM dd') : 'Check-in'}
                       </Button>
@@ -196,8 +241,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                     <PopoverTrigger asChild>
                       <Button
-                        variant="outline"
-                        className="h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-sm justify-start font-normal"
+                        variant="ghost"
+                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
                         {checkoutDate ? format(checkoutDate, 'MMM dd') : 'Check-out'}
                       </Button>
@@ -217,6 +262,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     </PopoverContent>
                   </Popover>
                 </div>
+
+                {/* Search Button */}
+                <Button
+                  type="submit"
+                  className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+                >
+                  <Search className="w-5 h-5 mr-2" />
+                  Search
+                </Button>
               </div>
             </div>
           </form>
@@ -229,7 +283,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 <button
                   key={city}
                   onClick={() => setDestination(city)}
+                  onDoubleClick={() => handlePinDestination(city)}
                   className="px-6 py-4 bg-secondary/30 border border-border/30 rounded-xl text-foreground hover:bg-secondary/60 hover:border-blue-400/50 transition-all duration-300 font-medium tracking-wide travis-interactive"
+                  title="Double-click to pin"
                 >
                   {city}
                 </button>
