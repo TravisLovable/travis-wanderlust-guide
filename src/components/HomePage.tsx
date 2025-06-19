@@ -85,7 +85,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground tracking-tight">The World Awaits</div>
+          <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
           <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <DropdownMenu>
@@ -179,7 +179,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           {/* Hero Section */}
           <div className="mb-32 animate-fade-in">
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter">
-              TRAVIS
+              The World Awaits
             </h1>
             <p className="text-xl text-muted-foreground mb-8 font-light">
               Data-driven insights for the modern explorer
