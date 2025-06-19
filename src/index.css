@@ -23,7 +23,7 @@
     --secondary-foreground: 8 8 11;
 
     --muted: 244 244 245;
-    --muted-foreground: 113 113 122;
+    --muted-foreground: 82 82 91;
 
     --accent: 244 244 245;
     --accent-foreground: 8 8 11;
@@ -105,6 +105,70 @@
 
   body {
     background: linear-gradient(135deg, rgb(250, 250, 250) 0%, rgb(244, 244, 245) 100%);
+  }
+
+  /* Light mode calendar fixes */
+  .light .rdp {
+    --rdp-cell-size: 40px;
+    --rdp-accent-color: rgb(8 8 11);
+    --rdp-background-color: rgb(255 255 255);
+  }
+
+  .light .rdp-day {
+    color: rgb(8 8 11) !important;
+  }
+
+  .light .rdp-day_outside {
+    color: rgb(113 113 122) !important;
+    opacity: 0.7;
+  }
+
+  .light .rdp-day_disabled {
+    color: rgb(161 161 170) !important;
+    opacity: 0.5;
+  }
+
+  .light .rdp-day_selected {
+    background-color: rgb(8 8 11) !important;
+    color: rgb(250 250 250) !important;
+  }
+
+  .light .rdp-day_today {
+    background-color: rgb(244 244 245) !important;
+    color: rgb(8 8 11) !important;
+    font-weight: 600;
+  }
+
+  .light .rdp-head_cell {
+    color: rgb(113 113 122) !important;
+  }
+
+  .light .rdp-caption_label {
+    color: rgb(8 8 11) !important;
+    font-weight: 500;
+  }
+
+  /* Ensure all text is visible in light mode */
+  .light * {
+    color: inherit;
+  }
+
+  .light .text-muted-foreground {
+    color: rgb(82 82 91) !important;
+  }
+
+  .light .text-foreground {
+    color: rgb(8 8 11) !important;
+  }
+
+  /* Calendar button fixes for light mode */
+  .light [data-state="open"] {
+    color: rgb(8 8 11) !important;
+  }
+
+  .light .rdp-button:hover {
+    background-color: rgb(244 244 245) !important;
+    color: rgb(8 8 11) !important;
   }
 }
 
