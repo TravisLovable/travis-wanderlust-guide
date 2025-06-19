@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 
 interface SearchTransitionProps {
@@ -6,47 +7,17 @@ interface SearchTransitionProps {
 }
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
-  const [revealProgress, setRevealProgress] = useState(0);
+  const [revealProgress, setRevealProgress] = useState(100); // Start at 100% to show full quote
   const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
 
   useEffect(() => {
-    // Complete the transition after the quote is fully revealed
+    // Complete the transition immediately
     const timer = setTimeout(() => {
-      if (revealProgress >= 100) {
-        onComplete();
-      }
-    }, 2000);
+      onComplete();
+    }, 100); // Very short delay just to show the transition briefly
 
     return () => clearTimeout(timer);
-  }, [revealProgress, onComplete]);
-
-  // Reveal in 4 seconds max
-  useEffect(() => {
-    let animationId: number;
-    
-    const animate = () => {
-      setRevealProgress(prev => {
-        if (prev >= 100) return 100;
-        return prev + 0.42; // Adjusted for 4 second reveal (60fps * 4 seconds = 240 frames, 100/240 = 0.42)
-      });
-      
-      if (revealProgress < 100) {
-        animationId = requestAnimationFrame(animate);
-      }
-    };
-    
-    // Start animation after a brief delay
-    const startTimer = setTimeout(() => {
-      animationId = requestAnimationFrame(animate);
-    }, 800);
-
-    return () => {
-      clearTimeout(startTimer);
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-    };
-  }, [revealProgress]);
+  }, [onComplete]);
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
@@ -105,28 +76,15 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
         </div>
 
         <div className="flex flex-col items-center space-y-8">
-          {/* Sliding reveal quote effect */}
+          {/* Full quote displayed immediately */}
           <div className="relative">
             <blockquote className="text-xl md:text-2xl text-white/90 font-light italic leading-relaxed max-w-3xl mx-auto min-h-[4rem] flex items-center justify-center">
               <span 
-                className="relative font-serif transition-all duration-300 ease-out overflow-hidden" 
+                className="relative font-serif transition-all duration-300 ease-out" 
                 style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
               >
-                {/* Full text (always rendered but clipped) */}
-                <span 
-                  className="inline-block transition-all duration-100 ease-linear"
-                  style={{
-                    clipPath: `inset(0 ${100 - revealProgress}% 0 0)`,
-                    opacity: revealProgress > 0 ? 1 : 0
-                  }}
-                >
-                  {fullText}
-                </span>
-                
-                {/* Sparkle effect when complete */}
-                {revealProgress >= 100 && (
-                  <span className="ml-2 text-white/60 animate-pulse">✨</span>
-                )}
+                {fullText}
+                <span className="ml-2 text-white/60 animate-pulse">✨</span>
               </span>
             </blockquote>
           </div>
