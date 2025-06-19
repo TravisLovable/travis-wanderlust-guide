@@ -7,56 +7,47 @@ interface SearchTransitionProps {
 }
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
-  const [writtenText, setWrittenText] = useState('');
-  const [showCursor, setShowCursor] = useState(true);
+  const [revealProgress, setRevealProgress] = useState(0);
   const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
-
-  // Gentle cursor fade effect
-  useEffect(() => {
-    const cursorInterval = setInterval(() => {
-      setShowCursor(prev => !prev);
-    }, 800);
-
-    return () => clearInterval(cursorInterval);
-  }, []);
 
   useEffect(() => {
     // Complete the transition after the quote is fully revealed
     const timer = setTimeout(() => {
-      if (writtenText === fullText) {
+      if (revealProgress >= 100) {
         onComplete();
       }
     }, 2000);
 
     return () => clearTimeout(timer);
-  }, [writtenText, fullText, onComplete]);
+  }, [revealProgress, onComplete]);
 
-  // Smooth, fluid text reveal effect
+  // Smooth reveal progress animation
   useEffect(() => {
-    let timeoutId: NodeJS.Timeout;
+    let animationId: number;
     
-    if (writtenText.length < fullText.length) {
-      const nextChar = fullText[writtenText.length];
+    const animate = () => {
+      setRevealProgress(prev => {
+        if (prev >= 100) return 100;
+        return prev + 0.8; // Smooth, consistent reveal speed
+      });
       
-      // Consistent, gentle timing for fluid reveal
-      let delay = 60;
-      
-      // Slightly longer pauses for natural breathing
-      if (nextChar === ',' || nextChar === '.') {
-        delay = 120;
-      } else if (nextChar === ' ') {
-        delay = 80;
-      } else if (nextChar === '"') {
-        delay = 100;
+      if (revealProgress < 100) {
+        animationId = requestAnimationFrame(animate);
       }
-      
-      timeoutId = setTimeout(() => {
-        setWrittenText(fullText.slice(0, writtenText.length + 1));
-      }, delay);
-    }
+    };
+    
+    // Start animation after a brief delay
+    const startTimer = setTimeout(() => {
+      animationId = requestAnimationFrame(animate);
+    }, 800);
 
-    return () => clearTimeout(timeoutId);
-  }, [writtenText, fullText]);
+    return () => {
+      clearTimeout(startTimer);
+      if (animationId) {
+        cancelAnimationFrame(animationId);
+      }
+    };
+  }, [revealProgress]);
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
@@ -115,17 +106,26 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
         </div>
 
         <div className="flex flex-col items-center space-y-8">
-          {/* Fluid text reveal effect */}
+          {/* Sliding reveal quote effect */}
           <div className="relative">
             <blockquote className="text-xl md:text-2xl text-white/90 font-light italic leading-relaxed max-w-3xl mx-auto min-h-[4rem] flex items-center justify-center">
-              <span className="relative font-serif transition-all duration-300 ease-out" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-                <span className="inline-block opacity-100 transform transition-all duration-200">
-                  {writtenText}
+              <span 
+                className="relative font-serif transition-all duration-300 ease-out overflow-hidden" 
+                style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}
+              >
+                {/* Full text (always rendered but clipped) */}
+                <span 
+                  className="inline-block transition-all duration-100 ease-linear"
+                  style={{
+                    clipPath: `inset(0 ${100 - revealProgress}% 0 0)`,
+                    opacity: revealProgress > 0 ? 1 : 0
+                  }}
+                >
+                  {fullText}
                 </span>
-                {writtenText.length < fullText.length && showCursor && (
-                  <span className="ml-1 text-white/40 transition-opacity duration-300">|</span>
-                )}
-                {writtenText.length === fullText.length && (
+                
+                {/* Sparkle effect when complete */}
+                {revealProgress >= 100 && (
                   <span className="ml-2 text-white/60 animate-pulse">✨</span>
                 )}
               </span>
