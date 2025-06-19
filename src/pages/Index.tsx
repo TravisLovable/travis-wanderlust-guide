@@ -1,6 +1,7 @@
 
 import React, { useState } from 'react';
 import HomePage from '@/components/HomePage';
+import SearchTransition from '@/components/SearchTransition';
 import ResultsPage from '@/components/ResultsPage';
 
 interface SearchData {
@@ -13,21 +14,38 @@ interface SearchData {
 
 const Index = () => {
   const [searchData, setSearchData] = useState<SearchData | null>(null);
+  const [showTransition, setShowTransition] = useState(false);
 
   const handleSearch = (destination: string, dates: { checkin: string; checkout: string }) => {
     setSearchData({ destination, dates });
+    setShowTransition(true);
+  };
+
+  const handleTransitionComplete = () => {
+    setShowTransition(false);
   };
 
   const handleBack = () => {
     setSearchData(null);
+    setShowTransition(false);
   };
 
-  if (searchData) {
+  if (showTransition && searchData) {
+    return (
+      <SearchTransition
+        destination={searchData.destination}
+        onComplete={handleTransitionComplete}
+      />
+    );
+  }
+
+  if (searchData && !showTransition) {
     return (
       <ResultsPage
         destination={searchData.destination}
         dates={searchData.dates}
         onBack={handleBack}
+        onNewSearch={handleSearch}
       />
     );
   }

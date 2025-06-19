@@ -1,20 +1,35 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Umbrella, Globe, Shield, Mountain, Wifi, TrendingUp, Users, Zap } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Umbrella, Globe, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
+import AccommodationHeatMap from './AccommodationHeatMap';
 
 interface ResultsPageProps {
   destination: string;
   dates: { checkin: string; checkout: string };
   onBack: () => void;
+  onNewSearch: (destination: string, dates: { checkin: string; checkout: string }) => void;
 }
 
-const ResultsPage = ({ destination, dates, onBack }: ResultsPageProps) => {
+const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
   const [currencyAmount, setCurrencyAmount] = useState(100);
   const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
+  const [isPinned, setIsPinned] = useState(false);
+  const [newDestination, setNewDestination] = useState(destination);
+  const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
+  const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
+  const [checkinOpen, setCheckinOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   // Mock data - in a real app, this would come from APIs
   const mockData = {
@@ -35,12 +50,27 @@ const ResultsPage = ({ destination, dates, onBack }: ResultsPageProps) => {
     { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
   ];
 
+  const handleNewSearch = () => {
+    if (newDestination && newCheckinDate && newCheckoutDate) {
+      onNewSearch(newDestination, {
+        checkin: format(newCheckinDate, 'yyyy-MM-dd'),
+        checkout: format(newCheckoutDate, 'yyyy-MM-dd')
+      });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleNewSearch();
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
       <header className="bg-card/50 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between">
+          <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
               <Button
                 variant="ghost"
@@ -50,10 +80,20 @@ const ResultsPage = ({ destination, dates, onBack }: ResultsPageProps) => {
                 <ArrowLeft className="w-5 h-5" />
               </Button>
               <div>
-                <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
-                  <MapPin className="w-7 h-7 mr-3 text-blue-400" />
-                  {destination}
-                </h1>
+                <div className="flex items-center space-x-3">
+                  <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
+                    <MapPin className="w-7 h-7 mr-3 text-blue-400" />
+                    {destination}
+                  </h1>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsPinned(!isPinned)}
+                    className={`${isPinned ? 'text-blue-400' : 'text-muted-foreground'} hover:text-blue-400`}
+                  >
+                    {isPinned ? <Pin className="w-5 h-5" /> : <PinOff className="w-5 h-5" />}
+                  </Button>
+                </div>
                 <p className="text-muted-foreground flex items-center font-light">
                   <Calendar className="w-4 h-4 mr-2" />
                   {dates.checkin} to {dates.checkout}
@@ -61,6 +101,69 @@ const ResultsPage = ({ destination, dates, onBack }: ResultsPageProps) => {
               </div>
             </div>
             <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
+          </div>
+
+          {/* Search Bar */}
+          <div className="grid md:grid-cols-4 gap-4">
+            <div className="md:col-span-2 relative">
+              <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
+              <Input
+                type="text"
+                placeholder="Change destination"
+                value={newDestination}
+                onChange={(e) => setNewDestination(e.target.value)}
+                onKeyPress={handleKeyPress}
+                className="pl-11 h-12 bg-secondary/30 border-border/50 focus:border-blue-400 rounded-lg"
+              />
+            </div>
+            
+            <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-12 bg-secondary/30 border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {format(newCheckinDate, 'MMM dd')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={newCheckinDate}
+                  onSelect={(date) => {
+                    if (date) setNewCheckinDate(date);
+                    setCheckinOpen(false);
+                  }}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="h-12 bg-secondary/30 border-border/50 focus:border-blue-400 hover:bg-secondary/50 rounded-lg justify-start font-normal"
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {format(newCheckoutDate, 'MMM dd')}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                <CalendarComponent
+                  mode="single"
+                  selected={newCheckoutDate}
+                  onSelect={(date) => {
+                    if (date) setNewCheckoutDate(date);
+                    setCheckoutOpen(false);
+                  }}
+                  initialFocus
+                  className="pointer-events-auto"
+                />
+              </PopoverContent>
+            </Popover>
           </div>
         </div>
       </header>
@@ -177,6 +280,10 @@ const ResultsPage = ({ destination, dates, onBack }: ResultsPageProps) => {
             </CardContent>
           </Card>
 
+          {/* Accommodation Heat Map */}
+          <AccommodationHeatMap />
+
+          {/* Keep existing cards with minimal changes */}
           {/* Airport Info Card */}
           <Card className="travis-card travis-interactive group">
             <CardHeader className="pb-4">
@@ -356,14 +463,14 @@ const ResultsPage = ({ destination, dates, onBack }: ResultsPageProps) => {
             </CardContent>
           </Card>
 
-          {/* Widget Preview Card */}
+          {/* Intelligence Widget */}
           <Card className="travis-card lg:col-span-2 xl:col-span-3">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
                   <Globe className="w-5 h-5 text-white" />
                 </div>
-                Intelligence Modules
+                Intelligence
                 <Users className="w-4 h-4 ml-auto text-purple-400" />
               </CardTitle>
             </CardHeader>

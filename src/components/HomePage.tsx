@@ -1,8 +1,21 @@
 
 import React, { useState } from 'react';
-import { Search, Calendar, MapPin, Sparkles } from 'lucide-react';
+import { Search, Calendar, MapPin, Sparkles, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }) => void;
@@ -10,13 +23,41 @@ interface HomePageProps {
 
 const HomePage = ({ onSearch }: HomePageProps) => {
   const [destination, setDestination] = useState('');
-  const [checkinDate, setCheckinDate] = useState('');
-  const [checkoutDate, setCheckoutDate] = useState('');
+  const [checkinDate, setCheckinDate] = useState<Date>();
+  const [checkoutDate, setCheckoutDate] = useState<Date>();
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [checkinOpen, setCheckinOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  // Mock destination suggestions
+  const suggestions = [
+    'Tokyo, Japan',
+    'Dubai, UAE', 
+    'Singapore',
+    'Zurich, Switzerland',
+    'Monaco',
+    'Aspen, Colorado',
+    'Bali, Indonesia',
+    'Santorini, Greece',
+    'Maldives',
+    'Patagonia, Chile'
+  ].filter(city => 
+    city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
+  );
+
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (destination && checkinDate && checkoutDate) {
-      onSearch(destination, { checkin: checkinDate, checkout: checkoutDate });
+      onSearch(destination, { 
+        checkin: format(checkinDate, 'yyyy-MM-dd'), 
+        checkout: format(checkoutDate, 'yyyy-MM-dd') 
+      });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleSearch();
     }
   };
 
@@ -31,11 +72,19 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             </div>
             <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
           </div>
-          <nav className="hidden md:flex space-x-8">
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors font-medium">Explore</a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors font-medium">Intelligence</a>
-            <a href="#" className="text-muted-foreground hover:text-foreground transition-colors font-medium">Access</a>
-          </nav>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="rounded-full">
+                <User className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+              <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+              <DropdownMenuItem>Saved Destinations</DropdownMenuItem>
+              <DropdownMenuItem>Travel Preferences</DropdownMenuItem>
+              <DropdownMenuItem>Sign Out</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </div>
       </header>
 
@@ -57,59 +106,110 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             Explore Confidently
           </p>
           <p className="text-lg text-muted-foreground mb-16 max-w-2xl mx-auto leading-relaxed">
-            Real-time intelligence for the modern explorer. Transform every journey into a seamless, first-class experience.
+            Real-time intelligence for the modern explorer
           </p>
 
           {/* Search Form */}
           <form onSubmit={handleSearch} className="travis-card p-8 md:p-12 mb-16 travis-glow">
             <div className="grid md:grid-cols-3 gap-6 mb-8">
               <div className="relative group">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors" />
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
                 <Input
                   type="text"
-                  placeholder="Destination"
+                  placeholder="Where to next?"
                   value={destination}
-                  onChange={(e) => setDestination(e.target.value)}
+                  onChange={(e) => {
+                    setDestination(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onKeyPress={handleKeyPress}
+                  onFocus={() => setShowSuggestions(true)}
                   className="pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 focus:bg-secondary/80 rounded-xl text-lg transition-all duration-300"
                   required
                 />
+                {showSuggestions && suggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
+                    {suggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        type="button"
+                        onClick={() => {
+                          setDestination(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                      >
+                        <div className="flex items-center space-x-3">
+                          <MapPin className="w-4 h-4 text-blue-400" />
+                          <span>{suggestion}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
               <div className="relative group">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors" />
-                <Input
-                  type="date"
-                  value={checkinDate}
-                  onChange={(e) => setCheckinDate(e.target.value)}
-                  className="pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 focus:bg-secondary/80 rounded-xl text-lg transition-all duration-300"
-                  required
-                />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
+                <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-lg justify-start font-normal"
+                    >
+                      {checkinDate ? format(checkinDate, 'MMM dd, yyyy') : 'Check-in'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={checkinDate}
+                      onSelect={(date) => {
+                        setCheckinDate(date);
+                        setCheckinOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                      disabled={(date) => date < new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
               
               <div className="relative group">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors" />
-                <Input
-                  type="date"
-                  value={checkoutDate}
-                  onChange={(e) => setCheckoutDate(e.target.value)}
-                  className="pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 focus:bg-secondary/80 rounded-xl text-lg transition-all duration-300"
-                  required
-                />
+                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
+                <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-lg justify-start font-normal"
+                    >
+                      {checkoutDate ? format(checkoutDate, 'MMM dd, yyyy') : 'Check-out'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={checkoutDate}
+                      onSelect={(date) => {
+                        setCheckoutDate(date);
+                        setCheckoutOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                      disabled={(date) => date < (checkinDate || new Date())}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             
-            <Button
-              type="submit"
-              className="w-full h-16 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white font-semibold rounded-xl transition-all duration-300 text-lg shadow-xl hover:shadow-2xl transform hover:scale-[1.02]"
-            >
-              <Search className="w-6 h-6 mr-3" />
-              Begin Intelligence Brief
-            </Button>
+            <p className="text-sm text-muted-foreground mb-4">Press Enter to search</p>
           </form>
 
-          {/* Elite Destinations */}
+          {/* Discovery Destinations */}
           <div className="space-y-6">
-            <p className="text-muted-foreground font-medium tracking-wide">ELITE DESTINATIONS</p>
+            <p className="text-muted-foreground font-medium tracking-wide">DISCOVERY AWAITS</p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {['Tokyo', 'Dubai', 'Singapore', 'Zurich', 'Monaco', 'Aspen'].map((city) => (
                 <button
