@@ -24,7 +24,7 @@ interface ResultsPageProps {
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
   const [currencyAmount, setCurrencyAmount] = useState(100);
   const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
-  const [pinnedDestinations, setPinnedDestinations] = useState(['Tokyo, Japan']);
+  const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
   const [newDestination, setNewDestination] = useState(destination);
   const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
   const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
@@ -88,12 +88,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     }
   };
 
-  const togglePinnedDestination = (dest: string) => {
-    setPinnedDestinations(prev => 
-      prev.includes(dest) 
-        ? prev.filter(d => d !== dest)
-        : [...prev, dest]
-    );
+  const handlePinDestination = (dest: string) => {
+    if (!pinnedDestinations.includes(dest)) {
+      setPinnedDestinations([...pinnedDestinations, dest]);
+    }
+  };
+
+  const removePinnedDestination = (dest: string) => {
+    setPinnedDestinations(pinnedDestinations.filter(d => d !== dest));
   };
 
   const convertTemp = (temp: number) => {
@@ -123,10 +125,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <Button
                     variant="ghost"
                     size="icon"
-                    onClick={() => togglePinnedDestination(destination)}
-                    className={`${pinnedDestinations.includes(destination) ? 'text-blue-400' : 'text-muted-foreground'} hover:text-blue-400`}
+                    onClick={() => handlePinDestination(destination)}
+                    className="text-blue-400 hover:text-blue-300"
                   >
-                    {pinnedDestinations.includes(destination) ? <Pin className="w-5 h-5" /> : <PinOff className="w-5 h-5" />}
+                    <Pin className="w-5 h-5" />
                   </Button>
                 </div>
                 <p className="text-muted-foreground flex items-center font-light">
@@ -141,22 +143,40 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           {/* Pinned Destinations */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
-              <p className="text-sm text-muted-foreground mb-2">Pinned Destinations:</p>
-              <div className="flex space-x-2">
-                {pinnedDestinations.map((dest, idx) => (
-                  <div key={idx} className="flex items-center bg-blue-500/20 border border-blue-500/50 rounded-lg px-3 py-1">
-                    <Pin className="w-3 h-3 mr-2 text-blue-400" />
-                    <span className="text-sm text-blue-300">{dest}</span>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => togglePinnedDestination(dest)}
-                      className="w-4 h-4 ml-2 text-blue-400 hover:text-red-400"
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-muted-foreground font-medium">PINNED:</span>
+                <div className="flex space-x-2 flex-wrap">
+                  {pinnedDestinations.map((dest) => (
+                    <button
+                      key={dest}
+                      onClick={() => setNewDestination(dest)}
+                      className="group flex items-center space-x-2 px-3 py-1 bg-secondary/30 border border-border/30 rounded-full text-sm text-foreground hover:bg-secondary/60 transition-colors"
                     >
-                      ×
-                    </Button>
-                  </div>
-                ))}
+                      <span>{dest}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removePinnedDestination(dest);
+                        }}
+                        className="w-4 h-4 rounded-full bg-muted-foreground/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex space-x-2">
+                  {['Kyoto', 'Osaka', 'Hiroshima', 'Nara'].map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => handlePinDestination(city)}
+                      className="px-2 py-1 bg-blue-500/20 border border-blue-500/50 rounded text-xs text-blue-300 hover:bg-blue-500/30 transition-colors"
+                      title="Click to pin"
+                    >
+                      + {city}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}

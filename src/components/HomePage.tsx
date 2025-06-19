@@ -1,6 +1,6 @@
 
 import React, { useState } from 'react';
-import { Search, Calendar, MapPin, User } from 'lucide-react';
+import { Search, Calendar, MapPin, User, Sun, Moon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -29,7 +29,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [pinnedDestinations, setPinnedDestinations] = useState(['Tokyo', 'Osaka', 'Kyoto']);
+  const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Mock destination suggestions - Japan focused
   const suggestions = [
@@ -63,98 +63,73 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     }
   };
 
-  const handlePinDestination = (dest: string) => {
-    if (!pinnedDestinations.includes(dest)) {
-      setPinnedDestinations([...pinnedDestinations, dest]);
-    }
-  };
-
-  const removePinnedDestination = (dest: string) => {
-    setPinnedDestinations(pinnedDestinations.filter(d => d !== dest));
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
   };
 
   return (
     <div className="min-h-screen bg-background flex flex-col">
       {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-end">
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="w-5 h-5" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
-              <div className="flex items-center space-x-4 mb-4">
-                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
-                  <User className="w-8 h-8 text-white" />
+        <div className="max-w-7xl mx-auto flex items-center justify-between">
+          <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
+          <div className="flex items-center space-x-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={toggleTheme}
+              className="rounded-full"
+            >
+              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <User className="w-5 h-5" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                    <User className="w-8 h-8 text-white" />
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-foreground">Alex Chen</h3>
+                    <p className="text-sm text-muted-foreground">alex.chen@email.com</p>
+                  </div>
                 </div>
-                <div>
-                  <h3 className="font-semibold text-foreground">Alex Chen</h3>
-                  <p className="text-sm text-muted-foreground">alex.chen@email.com</p>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Preferred Airline</span>
+                    <span className="text-sm font-medium text-foreground">Delta Airlines</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Travel Type</span>
+                    <span className="text-sm font-medium text-foreground">Luxury Traveler</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Nationality</span>
+                    <span className="text-sm font-medium text-foreground">United States</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Status</span>
+                    <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+                  </div>
                 </div>
-              </div>
-              
-              <div className="space-y-3 mb-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Preferred Airline</span>
-                  <span className="text-sm font-medium text-foreground">Delta Airlines</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Travel Type</span>
-                  <span className="text-sm font-medium text-foreground">Luxury Traveler</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Nationality</span>
-                  <span className="text-sm font-medium text-foreground">United States</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-sm text-muted-foreground">Status</span>
-                  <span className="text-sm font-medium text-emerald-400">Premium Member</span>
-                </div>
-              </div>
-              
-              <DropdownMenuSeparator className="my-4" />
-              
-              <DropdownMenuItem>Profile Settings</DropdownMenuItem>
-              <DropdownMenuItem>Saved Destinations</DropdownMenuItem>
-              <DropdownMenuItem>Travel Preferences</DropdownMenuItem>
-              <DropdownMenuItem>Sign Out</DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </div>
-      </header>
-
-      {/* Pinned Destinations */}
-      {pinnedDestinations.length > 0 && (
-        <div className="px-6 py-4 border-b border-border/30">
-          <div className="max-w-7xl mx-auto">
-            <div className="flex items-center space-x-3">
-              <span className="text-sm text-muted-foreground font-medium">PINNED:</span>
-              <div className="flex space-x-2">
-                {pinnedDestinations.map((dest) => (
-                  <button
-                    key={dest}
-                    onClick={() => setDestination(dest)}
-                    className="group flex items-center space-x-2 px-3 py-1 bg-secondary/30 border border-border/30 rounded-full text-sm text-foreground hover:bg-secondary/60 transition-colors"
-                  >
-                    <span>{dest}</span>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        removePinnedDestination(dest);
-                      }}
-                      className="w-4 h-4 rounded-full bg-muted-foreground/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                    >
-                      ×
-                    </button>
-                  </button>
-                ))}
-              </div>
-            </div>
+                
+                <DropdownMenuSeparator className="my-4" />
+                
+                <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+                <DropdownMenuItem>Saved Destinations</DropdownMenuItem>
+                <DropdownMenuItem>Travel Preferences</DropdownMenuItem>
+                <DropdownMenuItem>Sign Out</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
-      )}
+      </header>
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-16">
@@ -171,7 +146,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           </div>
 
           {/* Google-style Search Form */}
-          <form onSubmit={handleSearch} className="mb-16 max-w-4xl mx-auto">
+          <form onSubmit={handleSearch} className="mb-16 max-w-5xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow">
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
@@ -275,17 +250,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             </div>
           </form>
 
-          {/* Discovery Destinations */}
+          {/* Discovery Destinations - Half Size */}
           <div className="space-y-6">
             <p className="text-muted-foreground font-medium tracking-wide">DISCOVER NEW HORIZONS</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+            <div className="grid grid-cols-3 md:grid-cols-6 lg:grid-cols-6 gap-3 max-w-3xl mx-auto">
               {['Tokyo', 'Osaka', 'Kyoto', 'Hiroshima', 'Sapporo', 'Fukuoka'].map((city) => (
                 <button
                   key={city}
                   onClick={() => setDestination(city)}
-                  onDoubleClick={() => handlePinDestination(city)}
-                  className="px-6 py-4 bg-secondary/30 border border-border/30 rounded-xl text-foreground hover:bg-secondary/60 hover:border-blue-400/50 transition-all duration-300 font-medium tracking-wide travis-interactive"
-                  title="Double-click to pin"
+                  className="px-3 py-2 bg-secondary/30 border border-border/30 rounded-lg text-foreground hover:bg-secondary/60 hover:border-blue-400/50 transition-all duration-300 font-medium tracking-wide travis-interactive text-sm"
                 >
                   {city}
                 </button>
