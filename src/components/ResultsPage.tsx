@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -45,11 +45,21 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       { name: 'Showa Day', date: 'April 29, 2024' },
       { name: 'Children\'s Day', date: 'May 5, 2024' }
     ],
-    religion: {
-      primary: 'Shinto & Buddhism',
-      percentage: '84%',
-      practices: ['Temple visits', 'Shrine worship', 'Meditation'],
-      etiquette: ['Remove shoes', 'Bow respectfully', 'Silence in sacred areas']
+    culture: {
+      language: { primary: 'Japanese', secondary: 'English (limited)' },
+      etiquette: [
+        'Bow when greeting others',
+        'Remove shoes before entering homes',
+        'Avoid pointing with chopsticks',
+        'Keep voices low on public transport',
+        'The majority practice Shinto & Buddhism (84%)'
+      ],
+      customs: [
+        'Gift-giving is common (omiyage)',
+        'Business cards exchanged with both hands',
+        'Punctuality is highly valued',
+        'Slurping noodles is acceptable'
+      ]
     }
   };
 
@@ -113,7 +123,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   };
 
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-200">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -267,60 +277,72 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Photo Slideshow - Updated with Tokyo landmarks */}
+        {/* Photo Slideshow - Breathtaking Tokyo landmarks */}
         <div className="mb-8">
-          <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
-            <div className="relative w-full h-full">
-              <div className="absolute inset-0">
-                <img
-                  src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80"
-                  alt="Tokyo Tower at sunset"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
-                    Tokyo Tower illuminated at sunset
-                  </p>
+          <PhotoSlideshow />
+        </div>
+
+        {/* Cultural Insights Section - At the top */}
+        <Card className="travis-card mb-8 bg-white shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-2xl font-semibold">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
+                <Globe className="w-5 h-5 text-white" />
+              </div>
+              Cultural Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              {/* Language */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                    <Globe className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-blue-700">Language</h3>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.language.primary}</p>
+                  <p className="text-sm"><span className="font-medium">Secondary:</span> {mockData.culture.language.secondary}</p>
+                </div>
+              </div>
+
+              {/* Cultural Etiquette */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-green-700">Cultural Etiquette</h3>
+                </div>
+                <div className="space-y-1">
+                  {mockData.culture.etiquette.map((rule, idx) => (
+                    <p key={idx} className="text-sm text-muted-foreground">• {rule}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Local Customs */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
+                    <Utensils className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-purple-700">Local Customs</h3>
+                </div>
+                <div className="space-y-1">
+                  {mockData.culture.customs.map((custom, idx) => (
+                    <p key={idx} className="text-sm text-muted-foreground">• {custom}</p>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
-          {/* Religion & Culture Card - Prioritized */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Church className="w-5 h-5 text-white" />
-                </div>
-                Practicing Religion
-                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <div className="font-semibold text-purple-700 mb-2">{mockData.religion.primary}</div>
-                <div className="text-sm text-muted-foreground">{mockData.religion.percentage} of population</div>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium text-purple-700">Common Practices:</h4>
-                {mockData.religion.practices.map((practice, idx) => (
-                  <div key={idx} className="text-sm text-muted-foreground">• {practice}</div>
-                ))}
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium text-purple-700">Etiquette:</h4>
-                {mockData.religion.etiquette.map((rule, idx) => (
-                  <div key={idx} className="text-sm text-muted-foreground">• {rule}</div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
           {/* Currency Card */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">

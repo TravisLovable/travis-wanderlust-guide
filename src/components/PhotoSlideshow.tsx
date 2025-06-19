@@ -8,24 +8,28 @@ const PhotoSlideshow = () => {
   
   const photos = [
     {
-      url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Misty mountain peaks at dawn'
+      url: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Tokyo Tower illuminated against the city skyline'
     },
     {
-      url: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Ocean waves meeting golden shores'
+      url: 'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Cherry blossoms frame the iconic Tokyo Skytree'
     },
     {
-      url: 'https://images.unsplash.com/photo-1458668383970-8ddd3927deed?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Alpine landscape under endless skies'
+      url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Ancient Senso-ji Temple in historic Asakusa district'
     },
     {
-      url: 'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Sunbeams through ancient forests'
+      url: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Vibrant neon lights of Shibuya crossing at night'
     },
     {
-      url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Pristine waters surrounded by wilderness'
+      url: 'https://images.unsplash.com/photo-1554797589-7241bb691973?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Golden hour over Tokyo\'s sprawling urban landscape'
+    },
+    {
+      url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Traditional Japanese garden oasis in the heart of Tokyo'
     }
   ];
 
