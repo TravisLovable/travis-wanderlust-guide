@@ -1,14 +1,38 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React, { useState } from 'react';
+import HomePage from '@/components/HomePage';
+import ResultsPage from '@/components/ResultsPage';
+
+interface SearchData {
+  destination: string;
+  dates: {
+    checkin: string;
+    checkout: string;
+  };
+}
 
 const Index = () => {
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-background">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-muted-foreground">Start building your amazing project here!</p>
-      </div>
-    </div>
-  );
+  const [searchData, setSearchData] = useState<SearchData | null>(null);
+
+  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }) => {
+    setSearchData({ destination, dates });
+  };
+
+  const handleBack = () => {
+    setSearchData(null);
+  };
+
+  if (searchData) {
+    return (
+      <ResultsPage
+        destination={searchData.destination}
+        dates={searchData.dates}
+        onBack={handleBack}
+      />
+    );
+  }
+
+  return <HomePage onSearch={handleSearch} />;
 };
 
 export default Index;
