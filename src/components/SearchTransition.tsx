@@ -11,46 +11,43 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
   const [showCursor, setShowCursor] = useState(true);
   const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
 
-  // Cursor blinking effect - slower for handwritten feel
+  // Gentle cursor fade effect
   useEffect(() => {
     const cursorInterval = setInterval(() => {
       setShowCursor(prev => !prev);
-    }, 600);
+    }, 800);
 
     return () => clearInterval(cursorInterval);
   }, []);
 
   useEffect(() => {
-    // Complete the transition after the quote is fully written
+    // Complete the transition after the quote is fully revealed
     const timer = setTimeout(() => {
       if (writtenText === fullText) {
         onComplete();
       }
-    }, 2500);
+    }, 2000);
 
     return () => clearTimeout(timer);
   }, [writtenText, fullText, onComplete]);
 
-  // Handwritten effect with variable timing and natural pauses
+  // Smooth, fluid text reveal effect
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
     if (writtenText.length < fullText.length) {
       const nextChar = fullText[writtenText.length];
       
-      // Variable delays to simulate natural handwriting
-      let delay = 120; // Base delay
+      // Consistent, gentle timing for fluid reveal
+      let delay = 60;
       
-      // Longer pauses for punctuation and spaces
+      // Slightly longer pauses for natural breathing
       if (nextChar === ',' || nextChar === '.') {
-        delay = 300 + Math.random() * 200;
+        delay = 120;
       } else if (nextChar === ' ') {
-        delay = 150 + Math.random() * 100;
+        delay = 80;
       } else if (nextChar === '"') {
-        delay = 200 + Math.random() * 150;
-      } else {
-        // Natural variation in writing speed
-        delay = 80 + Math.random() * 120;
+        delay = 100;
       }
       
       timeoutId = setTimeout(() => {
@@ -118,16 +115,18 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
         </div>
 
         <div className="flex flex-col items-center space-y-8">
-          {/* Handwritten quote effect */}
+          {/* Fluid text reveal effect */}
           <div className="relative">
             <blockquote className="text-xl md:text-2xl text-white/90 font-light italic leading-relaxed max-w-3xl mx-auto min-h-[4rem] flex items-center justify-center">
-              <span className="relative font-serif" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
-                {writtenText}
+              <span className="relative font-serif transition-all duration-300 ease-out" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+                <span className="inline-block opacity-100 transform transition-all duration-200">
+                  {writtenText}
+                </span>
                 {writtenText.length < fullText.length && showCursor && (
-                  <span className="ml-1 text-white/70 animate-pulse">✍️</span>
+                  <span className="ml-1 text-white/40 transition-opacity duration-300">|</span>
                 )}
-                {writtenText.length === fullText.length && showCursor && (
-                  <span className="ml-2 text-white/50">✨</span>
+                {writtenText.length === fullText.length && (
+                  <span className="ml-2 text-white/60 animate-pulse">✨</span>
                 )}
               </span>
             </blockquote>
