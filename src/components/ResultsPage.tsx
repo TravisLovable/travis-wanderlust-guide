@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Umbrella, Globe, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -177,6 +178,74 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
+          {/* Cultural Insights Card - Now First */}
+          <Card className="travis-card travis-interactive group xl:col-span-3 lg:col-span-2">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-2xl font-semibold">
+                <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-4">
+                  <Globe className="w-6 h-6 text-white" />
+                </div>
+                Essential Cultural Knowledge
+                <span className="ml-auto text-sm font-medium text-teal-400 bg-teal-500/10 px-3 py-1 rounded-full">
+                  Know Before You Go
+                </span>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <div className="grid md:grid-cols-3 gap-6">
+                <div className="space-y-4">
+                  <div className="p-4 bg-teal-500/10 border border-teal-500/20 rounded-xl">
+                    <h4 className="font-semibold text-teal-300 mb-3 flex items-center">
+                      <span className="w-2 h-2 bg-teal-400 rounded-full mr-2"></span>
+                      Social Customs
+                    </h4>
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>• Greeting with two cheek kisses (la bise) is common among friends</li>
+                      <li>• Maintain eye contact during conversations as a sign of respect</li>
+                      <li>• "Bonjour" before any interaction, even in shops</li>
+                      <li>• Dining starts late - lunch at 12:30, dinner after 8pm</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl">
+                    <h4 className="font-semibold text-amber-300 mb-3 flex items-center">
+                      <span className="w-2 h-2 bg-amber-400 rounded-full mr-2"></span>
+                      Practical Etiquette
+                    </h4>
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>• Dress elegantly - casual wear is less common in cities</li>
+                      <li>• Tipping 5-10% for good service, round up for cafés</li>
+                      <li>• Speak softly in public transport and restaurants</li>
+                      <li>• Always say "Au revoir" when leaving shops</li>
+                    </ul>
+                  </div>
+                </div>
+                <div className="space-y-4">
+                  <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                    <h4 className="font-semibold text-purple-300 mb-3 flex items-center">
+                      <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
+                      Cultural Timing
+                    </h4>
+                    <ul className="text-sm text-muted-foreground space-y-2">
+                      <li>• Many shops close 12-2pm for lunch break</li>
+                      <li>• Sundays: most stores closed, markets open mornings</li>
+                      <li>• August: many restaurants/shops close for vacation</li>
+                      <li>• Evening aperitif culture: 6-8pm social time</li>
+                    </ul>
+                  </div>
+                </div>
+              </div>
+              
+              <div className="bg-gradient-to-r from-teal-500/10 to-cyan-500/10 border border-teal-500/20 rounded-xl p-4">
+                <h4 className="font-semibold text-teal-300 mb-2">Local Wisdom</h4>
+                <p className="text-muted-foreground text-sm italic">
+                  "The French appreciate effort in speaking their language, even if imperfect. A simple 'Excusez-moi, parlez-vous anglais?' goes a long way in showing respect for local culture."
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* Currency Card */}
           <Card className="travis-card travis-interactive group">
             <CardHeader className="pb-4">
