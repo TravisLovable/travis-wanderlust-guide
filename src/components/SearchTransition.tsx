@@ -1,6 +1,6 @@
 
 import React, { useEffect, useState } from 'react';
-import { Globe, Sparkles } from 'lucide-react';
+import { Sparkles } from 'lucide-react';
 
 interface SearchTransitionProps {
   destination: string;
@@ -9,6 +9,8 @@ interface SearchTransitionProps {
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
   const [progress, setProgress] = useState(0);
+  const [typedText, setTypedText] = useState('');
+  const fullText = 'Gathering intelligence...';
 
   useEffect(() => {
     const interval = setInterval(() => {
@@ -24,6 +26,19 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
 
     return () => clearInterval(interval);
   }, [onComplete]);
+
+  // Typewriter effect
+  useEffect(() => {
+    let timeoutId: NodeJS.Timeout;
+    
+    if (typedText.length < fullText.length) {
+      timeoutId = setTimeout(() => {
+        setTypedText(fullText.slice(0, typedText.length + 1));
+      }, 100 + Math.random() * 50); // Variable typing speed for more natural feel
+    }
+
+    return () => clearTimeout(timeoutId);
+  }, [typedText, fullText]);
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
@@ -71,8 +86,7 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
         {/* Interactive Progress */}
         <div className="flex flex-col items-center space-y-6">
           <div className="relative">
-            <Globe className="w-12 h-12 text-blue-400 animate-spin" style={{ animationDuration: '3s' }} />
-            <Sparkles className="w-6 h-6 text-purple-400 absolute -top-2 -right-2 animate-pulse" />
+            <Sparkles className="w-8 h-8 text-purple-400 animate-pulse" />
           </div>
           
           <div className="w-64 h-2 bg-white/20 rounded-full overflow-hidden">
@@ -82,8 +96,12 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
             />
           </div>
           
-          <p className="text-white/80 text-lg font-light">
-            Gathering intelligence... {progress}%
+          <p className="text-white/80 text-lg font-light min-h-[1.75rem] flex items-center">
+            {typedText}
+            {typedText.length < fullText.length && (
+              <span className="ml-1 animate-pulse">|</span>
+            )}
+            {typedText.length === fullText.length && ` ${progress}%`}
           </p>
         </div>
       </div>
