@@ -7,42 +7,59 @@ interface SearchTransitionProps {
 }
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
-  const [typedText, setTypedText] = useState('');
+  const [writtenText, setWrittenText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
   const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
 
-  // Cursor blinking effect
+  // Cursor blinking effect - slower for handwritten feel
   useEffect(() => {
     const cursorInterval = setInterval(() => {
       setShowCursor(prev => !prev);
-    }, 500);
+    }, 600);
 
     return () => clearInterval(cursorInterval);
   }, []);
 
   useEffect(() => {
-    // Complete the transition after the quote is fully typed
+    // Complete the transition after the quote is fully written
     const timer = setTimeout(() => {
-      if (typedText === fullText) {
+      if (writtenText === fullText) {
         onComplete();
       }
-    }, 2000);
+    }, 2500);
 
     return () => clearTimeout(timer);
-  }, [typedText, fullText, onComplete]);
+  }, [writtenText, fullText, onComplete]);
 
-  // Live typewriter effect for the quote
+  // Handwritten effect with variable timing and natural pauses
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
-    if (typedText.length < fullText.length) {
+    if (writtenText.length < fullText.length) {
+      const nextChar = fullText[writtenText.length];
+      
+      // Variable delays to simulate natural handwriting
+      let delay = 120; // Base delay
+      
+      // Longer pauses for punctuation and spaces
+      if (nextChar === ',' || nextChar === '.') {
+        delay = 300 + Math.random() * 200;
+      } else if (nextChar === ' ') {
+        delay = 150 + Math.random() * 100;
+      } else if (nextChar === '"') {
+        delay = 200 + Math.random() * 150;
+      } else {
+        // Natural variation in writing speed
+        delay = 80 + Math.random() * 120;
+      }
+      
       timeoutId = setTimeout(() => {
-        setTypedText(fullText.slice(0, typedText.length + 1));
-      }, 80 + Math.random() * 40); // More realistic typing speed
+        setWrittenText(fullText.slice(0, writtenText.length + 1));
+      }, delay);
     }
 
     return () => clearTimeout(timeoutId);
-  }, [typedText, fullText]);
+  }, [writtenText, fullText]);
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
@@ -101,16 +118,16 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
         </div>
 
         <div className="flex flex-col items-center space-y-8">
-          {/* Live typing quote */}
+          {/* Handwritten quote effect */}
           <div className="relative">
             <blockquote className="text-xl md:text-2xl text-white/90 font-light italic leading-relaxed max-w-3xl mx-auto min-h-[4rem] flex items-center justify-center">
-              <span className="relative">
-                {typedText}
-                {typedText.length < fullText.length && showCursor && (
-                  <span className="ml-1 text-white/70 animate-none">|</span>
+              <span className="relative font-serif" style={{ fontFamily: 'Georgia, "Times New Roman", serif' }}>
+                {writtenText}
+                {writtenText.length < fullText.length && showCursor && (
+                  <span className="ml-1 text-white/70 animate-pulse">✍️</span>
                 )}
-                {typedText.length === fullText.length && showCursor && (
-                  <span className="ml-1 text-white/50">|</span>
+                {writtenText.length === fullText.length && showCursor && (
+                  <span className="ml-2 text-white/50">✨</span>
                 )}
               </span>
             </blockquote>
