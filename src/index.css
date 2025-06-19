@@ -107,67 +107,64 @@
     background: linear-gradient(135deg, rgb(250, 250, 250) 0%, rgb(244, 244, 245) 100%);
   }
 
-  /* Light mode calendar fixes */
-  .light .rdp {
+  /* Light mode calendar fixes - target when NOT dark mode */
+  html:not(.dark) .rdp {
     --rdp-cell-size: 40px;
     --rdp-accent-color: rgb(8 8 11);
     --rdp-background-color: rgb(255 255 255);
   }
 
-  .light .rdp-day {
+  html:not(.dark) .rdp-day {
     color: rgb(8 8 11) !important;
   }
 
-  .light .rdp-day_outside {
+  html:not(.dark) .rdp-day_outside {
     color: rgb(113 113 122) !important;
-    opacity: 0.7;
+    opacity: 0.8;
   }
 
-  .light .rdp-day_disabled {
+  html:not(.dark) .rdp-day_disabled {
     color: rgb(161 161 170) !important;
-    opacity: 0.5;
+    opacity: 0.6;
   }
 
-  .light .rdp-day_selected {
+  html:not(.dark) .rdp-day_selected {
     background-color: rgb(8 8 11) !important;
     color: rgb(250 250 250) !important;
   }
 
-  .light .rdp-day_today {
+  html:not(.dark) .rdp-day_today {
     background-color: rgb(244 244 245) !important;
     color: rgb(8 8 11) !important;
     font-weight: 600;
   }
 
-  .light .rdp-head_cell {
-    color: rgb(113 113 122) !important;
-  }
-
-  .light .rdp-caption_label {
-    color: rgb(8 8 11) !important;
+  html:not(.dark) .rdp-head_cell {
+    color: rgb(82 82 91) !important;
     font-weight: 500;
   }
 
-  /* Ensure all text is visible in light mode */
-  .light * {
-    color: inherit;
+  html:not(.dark) .rdp-caption_label {
+    color: rgb(8 8 11) !important;
+    font-weight: 600;
   }
 
-  .light .text-muted-foreground {
+  /* Calendar navigation buttons in light mode */
+  html:not(.dark) .rdp-nav_button {
+    color: rgb(8 8 11) !important;
+  }
+
+  html:not(.dark) .rdp-button:hover {
+    background-color: rgb(244 244 245) !important;
+    color: rgb(8 8 11) !important;
+  }
+
+  /* Ensure all text elements are visible in light mode */
+  html:not(.dark) .text-muted-foreground {
     color: rgb(82 82 91) !important;
   }
 
-  .light .text-foreground {
-    color: rgb(8 8 11) !important;
-  }
-
-  /* Calendar button fixes for light mode */
-  .light [data-state="open"] {
-    color: rgb(8 8 11) !important;
-  }
-
-  .light .rdp-button:hover {
-    background-color: rgb(244 244 245) !important;
+  html:not(.dark) .text-foreground {
     color: rgb(8 8 11) !important;
   }
 }
