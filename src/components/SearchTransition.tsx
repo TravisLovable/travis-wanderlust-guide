@@ -1,6 +1,5 @@
 
 import React, { useEffect, useState } from 'react';
-import { Sparkles } from 'lucide-react';
 
 interface SearchTransitionProps {
   destination: string;
@@ -8,33 +7,28 @@ interface SearchTransitionProps {
 }
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
-  const [progress, setProgress] = useState(0);
   const [typedText, setTypedText] = useState('');
-  const fullText = 'Gathering intelligence...';
+  const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setProgress((prev) => {
-        if (prev >= 100) {
-          clearInterval(interval);
-          setTimeout(onComplete, 500);
-          return 100;
-        }
-        return prev + 2;
-      });
-    }, 60);
+    // Complete the transition after the quote is fully typed
+    const timer = setTimeout(() => {
+      if (typedText === fullText) {
+        onComplete();
+      }
+    }, 1000);
 
-    return () => clearInterval(interval);
-  }, [onComplete]);
+    return () => clearTimeout(timer);
+  }, [typedText, fullText, onComplete]);
 
-  // Typewriter effect
+  // Typewriter effect for the quote
   useEffect(() => {
     let timeoutId: NodeJS.Timeout;
     
     if (typedText.length < fullText.length) {
       timeoutId = setTimeout(() => {
         setTypedText(fullText.slice(0, typedText.length + 1));
-      }, 100 + Math.random() * 50); // Variable typing speed for more natural feel
+      }, 50 + Math.random() * 50); // Variable typing speed for more natural feel
     }
 
     return () => clearTimeout(timeoutId);
@@ -77,32 +71,15 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
           <div className="w-24 h-1 bg-gradient-to-r from-blue-400 to-purple-500 mx-auto mb-8"></div>
         </div>
 
-        <blockquote className="text-xl md:text-2xl text-white/90 font-light italic leading-relaxed mb-8 max-w-3xl mx-auto">
-          "A mind stretched by new experiences can never go back to its old dimensions."
-        </blockquote>
-        
-        <p className="text-white/70 text-lg mb-8">— Oliver Wendell Holmes Sr.</p>
-
-        {/* Interactive Progress */}
         <div className="flex flex-col items-center space-y-6">
-          <div className="relative">
-            <Sparkles className="w-8 h-8 text-purple-400 animate-pulse" />
-          </div>
-          
-          <div className="w-64 h-2 bg-white/20 rounded-full overflow-hidden">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-100 ease-out"
-              style={{ width: `${progress}%` }}
-            />
-          </div>
-          
-          <p className="text-white/80 text-lg font-light min-h-[1.75rem] flex items-center">
+          <blockquote className="text-xl md:text-2xl text-white/90 font-light italic leading-relaxed max-w-3xl mx-auto min-h-[3.5rem] flex items-center justify-center">
             {typedText}
             {typedText.length < fullText.length && (
-              <span className="ml-1 animate-pulse">|</span>
+              <span className="ml-1 animate-pulse text-white/70">|</span>
             )}
-            {typedText.length === fullText.length && ` ${progress}%`}
-          </p>
+          </blockquote>
+          
+          <p className="text-white/70 text-lg">— Oliver Wendell Holmes Sr.</p>
         </div>
       </div>
     </div>
