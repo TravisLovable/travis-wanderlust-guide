@@ -21,14 +21,14 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
     return () => clearTimeout(timer);
   }, [revealProgress, onComplete]);
 
-  // Smooth reveal progress animation
+  // Reveal at average reading pace (about 4.5 seconds total)
   useEffect(() => {
     let animationId: number;
     
     const animate = () => {
       setRevealProgress(prev => {
         if (prev >= 100) return 100;
-        return prev + 0.8; // Smooth, consistent reveal speed
+        return prev + 0.37; // Adjusted for ~4.5 second reveal (average reading pace)
       });
       
       if (revealProgress < 100) {
