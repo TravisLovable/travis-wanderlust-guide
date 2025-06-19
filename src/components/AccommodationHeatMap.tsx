@@ -1,4 +1,3 @@
-
 import React, { useState, useRef, useEffect } from 'react';
 import { MapPin, DollarSign, Move, ZoomIn, ZoomOut } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -15,28 +14,44 @@ const AccommodationHeatMap = () => {
   const mapRef = useRef<HTMLDivElement>(null);
 
   const accommodationData = [
-    { id: 1, name: 'Luxury Hotel District', price: '$320', x: 45, y: 25, type: 'hotel', rating: 4.8 },
-    { id: 2, name: 'Business Quarter', price: '$280', x: 60, y: 35, type: 'apartment', rating: 4.6 },
-    { id: 3, name: 'Historic Center', price: '$250', x: 50, y: 45, type: 'boutique', rating: 4.7 },
-    { id: 4, name: 'Arts District', price: '$180', x: 35, y: 55, type: 'hostel', rating: 4.4 },
-    { id: 5, name: 'Riverside Area', price: '$160', x: 70, y: 60, type: 'apartment', rating: 4.3 },
-    { id: 6, name: 'University Quarter', price: '$95', x: 25, y: 70, type: 'shared', rating: 4.1 },
-    { id: 7, name: 'Suburban Area', price: '$75', x: 80, y: 80, type: 'apartment', rating: 4.0 },
-    { id: 8, name: 'Old Town', price: '$200', x: 55, y: 30, type: 'boutique', rating: 4.5 },
-    { id: 9, name: 'Marina District', price: '$290', x: 75, y: 40, type: 'hotel', rating: 4.6 },
-    { id: 10, name: 'Cultural Quarter', price: '$140', x: 40, y: 65, type: 'hostel', rating: 4.2 }
+    { id: 1, name: 'Shibuya Luxury Hotel', price: '¥45,000', x: 45, y: 25, type: 'hotel', rating: 4.8 },
+    { id: 2, name: 'Shinjuku Business Tower', price: '¥38,000', x: 60, y: 35, type: 'apartment', rating: 4.6 },
+    { id: 3, name: 'Ginza Boutique Stay', price: '¥35,000', x: 50, y: 45, type: 'boutique', rating: 4.7 },
+    { id: 4, name: 'Harajuku Youth Hostel', price: '¥8,500', x: 35, y: 55, type: 'hostel', rating: 4.4 },
+    { id: 5, name: 'Sumida River Apartment', price: '¥22,000', x: 70, y: 60, type: 'apartment', rating: 4.3 },
+    { id: 6, name: 'University District Share', price: '¥12,000', x: 25, y: 70, type: 'shared', rating: 4.1 },
+    { id: 7, name: 'Suburban Tokyo Stay', price: '¥15,000', x: 80, y: 80, type: 'apartment', rating: 4.0 },
+    { id: 8, name: 'Imperial Palace Hotel', price: '¥42,000', x: 55, y: 30, type: 'boutique', rating: 4.5 },
+    { id: 9, name: 'Odaiba Bay Resort', price: '¥48,000', x: 75, y: 40, type: 'hotel', rating: 4.6 },
+    { id: 10, name: 'Ueno Cultural Stay', price: '¥18,000', x: 40, y: 65, type: 'hostel', rating: 4.2 }
+  ];
+
+  const districts = [
+    { name: 'Shibuya', x: 40, y: 20, width: 15, height: 15 },
+    { name: 'Shinjuku', x: 55, y: 30, width: 18, height: 12 },
+    { name: 'Ginza', x: 45, y: 40, width: 12, height: 10 },
+    { name: 'Harajuku', x: 30, y: 50, width: 15, height: 12 },
+    { name: 'Sumida', x: 65, y: 55, width: 20, height: 15 },
+    { name: 'Ueno', x: 35, y: 60, width: 16, height: 14 },
+    { name: 'Odaiba', x: 70, y: 35, width: 18, height: 12 }
+  ];
+
+  const streets = [
+    { name: 'Yamanote Line', path: 'M 20,30 Q 50,20 80,30 Q 90,50 80,70 Q 50,80 20,70 Q 10,50 20,30 Z' },
+    { name: 'Chuo Line', path: 'M 0,45 L 100,55' },
+    { name: 'Odakyu Line', path: 'M 30,20 L 70,80' },
+    { name: 'Ginza Line', path: 'M 40,10 L 60,90' }
   ];
 
   const getPriceColor = (price: string) => {
-    const numPrice = parseInt(price.replace('$', ''));
-    if (numPrice >= 250) return 'bg-red-500 border-red-600 text-white';
-    if (numPrice >= 150) return 'bg-orange-500 border-orange-600 text-white';
+    const numPrice = parseInt(price.replace('¥', '').replace(',', ''));
+    if (numPrice >= 35000) return 'bg-red-500 border-red-600 text-white';
+    if (numPrice >= 20000) return 'bg-orange-500 border-orange-600 text-white';
     return 'bg-green-500 border-green-600 text-white';
   };
 
   const handleMouseDown = (e: React.MouseEvent) => {
     if (e.shiftKey) {
-      // Selection mode
       setIsSelecting(true);
       const rect = mapRef.current?.getBoundingClientRect();
       if (rect) {
@@ -46,7 +61,6 @@ const AccommodationHeatMap = () => {
         });
       }
     } else {
-      // Drag mode
       setIsDragging(true);
       setDragStart({ x: e.clientX - mapOffset.x, y: e.clientY - mapOffset.y });
     }
@@ -106,7 +120,7 @@ const AccommodationHeatMap = () => {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mr-3">
             <MapPin className="w-5 h-5 text-white" />
           </div>
-          Accommodation Heat Map
+          Tokyo Accommodation Map
           <DollarSign className="w-4 h-4 ml-auto text-emerald-400 group-hover:scale-110 transition-transform" />
         </CardTitle>
       </CardHeader>
@@ -147,16 +161,15 @@ const AccommodationHeatMap = () => {
           </div>
         </div>
 
-        {/* Interactive Map Container */}
+        {/* Interactive Tokyo Map */}
         <div 
           ref={mapRef}
-          className="relative bg-gradient-to-br from-slate-900 to-slate-800 rounded-xl h-80 overflow-hidden border border-border/20 cursor-grab active:cursor-grabbing select-none"
+          className="relative bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl h-96 overflow-hidden border border-border/20 cursor-grab active:cursor-grabbing select-none"
           onMouseDown={handleMouseDown}
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUp}
           onMouseLeave={handleMouseUp}
         >
-          {/* Map Background with Grid */}
           <div 
             className="absolute inset-0 transition-transform duration-150 ease-out"
             style={{
@@ -164,45 +177,73 @@ const AccommodationHeatMap = () => {
               transformOrigin: 'center center'
             }}
           >
-            {/* Grid overlay */}
-            <div className="absolute inset-0 opacity-10">
-              <div 
-                className="w-full h-full" 
+            {/* Street Grid */}
+            <svg className="absolute inset-0 w-full h-full opacity-40">
+              {streets.map((street, idx) => (
+                <path
+                  key={idx}
+                  d={street.path}
+                  stroke="#6B7280"
+                  strokeWidth="2"
+                  fill="none"
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))}
+              
+              {/* Grid lines */}
+              <defs>
+                <pattern id="grid" width="40" height="40" patternUnits="userSpaceOnUse">
+                  <path d="M 40 0 L 0 0 0 40" fill="none" stroke="#E5E7EB" strokeWidth="1"/>
+                </pattern>
+              </defs>
+              <rect width="100%" height="100%" fill="url(#grid)" />
+            </svg>
+
+            {/* District Labels */}
+            {districts.map((district, idx) => (
+              <div
+                key={idx}
+                className="absolute bg-slate-800/80 text-white text-xs px-2 py-1 rounded font-medium pointer-events-none"
                 style={{
-                  backgroundImage: `
-                    linear-gradient(rgba(255,255,255,0.1) 1px, transparent 1px),
-                    linear-gradient(90deg, rgba(255,255,255,0.1) 1px, transparent 1px)
-                  `,
-                  backgroundSize: '40px 40px'
+                  left: `${district.x}%`,
+                  top: `${district.y}%`,
+                  transform: 'translate(-50%, -50%)'
+                }}
+              >
+                {district.name}
+              </div>
+            ))}
+
+            {/* Tokyo Bay */}
+            <div 
+              className="absolute bg-blue-200/60 rounded-lg"
+              style={{
+                left: '70%', top: '60%', width: '25%', height: '30%'
+              }}
+            />
+
+            {/* Imperial Palace */}
+            <div 
+              className="absolute bg-green-300/40 rounded-lg border-2 border-green-500/30"
+              style={{
+                left: '50%', top: '35%', width: '8%', height: '10%'
+              }}
+            />
+
+            {/* Major Railway Lines */}
+            <div className="absolute inset-0">
+              <div 
+                className="absolute bg-purple-500/30 rounded-full"
+                style={{
+                  left: '20%', top: '25%', width: '60%', height: '4px'
                 }}
               />
-            </div>
-
-            {/* City Features */}
-            <div className="absolute inset-0">
-              {/* River */}
-              <div className="absolute bg-blue-500/30 rounded-full" style={{
-                left: '60%', top: '20%', width: '35%', height: '8px', transform: 'rotate(45deg)'
-              }} />
-              <div className="absolute bg-blue-500/30 rounded-full" style={{
-                left: '55%', top: '35%', width: '40%', height: '6px', transform: 'rotate(30deg)'
-              }} />
-              
-              {/* Parks */}
-              <div className="absolute bg-green-500/20 rounded-lg" style={{
-                left: '15%', top: '15%', width: '20%', height: '25%'
-              }} />
-              <div className="absolute bg-green-500/20 rounded-lg" style={{
-                left: '70%', top: '65%', width: '25%', height: '20%'
-              }} />
-              
-              {/* Main Roads */}
-              <div className="absolute bg-yellow-500/20" style={{
-                left: '0%', top: '48%', width: '100%', height: '4px'
-              }} />
-              <div className="absolute bg-yellow-500/20" style={{
-                left: '48%', top: '0%', width: '4px', height: '100%'
-              }} />
+              <div 
+                className="absolute bg-green-500/30 rounded-full"
+                style={{
+                  left: '45%', top: '15%', width: '4px', height: '70%'
+                }}
+              />
             </div>
 
             {/* Accommodation Points */}
@@ -253,30 +294,30 @@ const AccommodationHeatMap = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded"></div>
-                <span className="text-sm">$ Budget</span>
+                <span className="text-sm">¥ Budget (Under ¥20k)</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                <span className="text-sm">$$ Mid-range</span>
+                <span className="text-sm">¥¥ Mid-range</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-red-500 rounded"></div>
-                <span className="text-sm">$$$ Premium</span>
+                <span className="text-sm">¥¥¥ Premium</span>
               </div>
             </div>
           </div>
           
           <div className="p-4 bg-secondary/20 rounded-xl">
             <div className="text-sm">
-              <p><span className="font-medium text-emerald-400">Average:</span> $186/night</p>
-              <p><span className="font-medium text-emerald-400">Range:</span> $75 - $320</p>
+              <p><span className="font-medium text-emerald-400">Average:</span> ¥26,500/night</p>
+              <p><span className="font-medium text-emerald-400">Range:</span> ¥8,500 - ¥48,000</p>
             </div>
           </div>
         </div>
 
         <div className="text-sm text-muted-foreground">
-          <p><span className="font-medium">Interactive Map:</span> Drag to explore • Shift+drag to select area • Hover for details</p>
-          <p><span className="font-medium">Updated:</span> 12 minutes ago</p>
+          <p><span className="font-medium">Interactive Map:</span> Detailed Tokyo districts with real street layout</p>
+          <p><span className="font-medium">Updated:</span> 8 minutes ago</p>
         </div>
       </CardContent>
     </Card>

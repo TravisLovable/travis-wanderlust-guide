@@ -1,6 +1,6 @@
 
-import React, { useEffect } from 'react';
-import { Loader2 } from 'lucide-react';
+import React, { useEffect, useState } from 'react';
+import { Globe, Sparkles } from 'lucide-react';
 
 interface SearchTransitionProps {
   destination: string;
@@ -8,12 +8,21 @@ interface SearchTransitionProps {
 }
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      onComplete();
-    }, 3000);
+  const [progress, setProgress] = useState(0);
 
-    return () => clearTimeout(timer);
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setProgress((prev) => {
+        if (prev >= 100) {
+          clearInterval(interval);
+          setTimeout(onComplete, 500);
+          return 100;
+        }
+        return prev + 2;
+      });
+    }, 60);
+
+    return () => clearInterval(interval);
   }, [onComplete]);
 
   return (
@@ -22,10 +31,26 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1920&q=80')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1920&q=80')`,
         }}
       >
         <div className="absolute inset-0 bg-black/50" />
+      </div>
+
+      {/* Animated particles */}
+      <div className="absolute inset-0">
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-2 h-2 bg-blue-400/30 rounded-full animate-pulse"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 2}s`,
+              animationDuration: `${2 + Math.random() * 2}s`
+            }}
+          />
+        ))}
       </div>
 
       {/* Content */}
@@ -43,9 +68,23 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
         
         <p className="text-white/70 text-lg mb-8">— Oliver Wendell Holmes Sr.</p>
 
-        <div className="flex items-center justify-center space-x-3 text-white/80">
-          <Loader2 className="w-6 h-6 animate-spin" />
-          <span className="text-lg font-light">Gathering intelligence...</span>
+        {/* Interactive Progress */}
+        <div className="flex flex-col items-center space-y-6">
+          <div className="relative">
+            <Globe className="w-12 h-12 text-blue-400 animate-spin" style={{ animationDuration: '3s' }} />
+            <Sparkles className="w-6 h-6 text-purple-400 absolute -top-2 -right-2 animate-pulse" />
+          </div>
+          
+          <div className="w-64 h-2 bg-white/20 rounded-full overflow-hidden">
+            <div 
+              className="h-full bg-gradient-to-r from-blue-400 to-purple-500 transition-all duration-100 ease-out"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+          
+          <p className="text-white/80 text-lg font-light">
+            Gathering intelligence... {progress}%
+          </p>
         </div>
       </div>
     </div>

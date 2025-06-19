@@ -1,12 +1,13 @@
 
 import React, { useState } from 'react';
-import { Search, Calendar, MapPin, Sparkles, User } from 'lucide-react';
+import { Search, Calendar, MapPin, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -32,15 +33,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   // Mock destination suggestions
   const suggestions = [
     'Tokyo, Japan',
-    'Dubai, UAE', 
-    'Singapore',
-    'Zurich, Switzerland',
-    'Monaco',
-    'Aspen, Colorado',
-    'Bali, Indonesia',
-    'Santorini, Greece',
-    'Maldives',
-    'Patagonia, Chile'
+    'Osaka, Japan', 
+    'Kyoto, Japan',
+    'Nagoya, Japan',
+    'Yokohama, Japan',
+    'Hiroshima, Japan',
+    'Sapporo, Japan',
+    'Fukuoka, Japan',
+    'Sendai, Japan',
+    'Nara, Japan'
   ].filter(city => 
     city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
   );
@@ -66,19 +67,45 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-3">
-            <div className="w-8 h-8 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
-              <Sparkles className="w-5 h-5 text-white" />
-            </div>
-            <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
-          </div>
+          <div className="text-2xl font-bold text-foreground tracking-tight">Travis</div>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
                 <User className="w-5 h-5" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent align="end" className="w-48 bg-card border-border">
+            <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full flex items-center justify-center">
+                  <User className="w-8 h-8 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-foreground">Alex Chen</h3>
+                  <p className="text-sm text-muted-foreground">alex.chen@email.com</p>
+                </div>
+              </div>
+              
+              <div className="space-y-3 mb-4">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Preferred Airline</span>
+                  <span className="text-sm font-medium text-foreground">Delta Airlines</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Travel Type</span>
+                  <span className="text-sm font-medium text-foreground">Luxury Traveler</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Nationality</span>
+                  <span className="text-sm font-medium text-foreground">United States</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-muted-foreground">Status</span>
+                  <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+                </div>
+              </div>
+              
+              <DropdownMenuSeparator className="my-4" />
+              
               <DropdownMenuItem>Profile Settings</DropdownMenuItem>
               <DropdownMenuItem>Saved Destinations</DropdownMenuItem>
               <DropdownMenuItem>Travel Preferences</DropdownMenuItem>
@@ -90,29 +117,19 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="max-w-4xl w-full text-center">
+        <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
           <div className="mb-16 animate-float">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-6 tracking-tighter">
-              The World
-            </h1>
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-8 tracking-tighter">
-              Awaits.
+              The World Awaits.
             </h1>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8"></div>
           </div>
-          
-          <p className="text-2xl text-muted-foreground mb-4 font-light tracking-wide">
-            Explore Confidently
-          </p>
-          <p className="text-lg text-muted-foreground mb-16 max-w-2xl mx-auto leading-relaxed">
-            Real-time intelligence for the modern explorer
-          </p>
 
           {/* Search Form */}
-          <form onSubmit={handleSearch} className="travis-card p-8 md:p-12 mb-16 travis-glow">
+          <form onSubmit={handleSearch} className="travis-card p-8 md:p-12 mb-16 travis-glow max-w-5xl mx-auto">
             <div className="grid md:grid-cols-3 gap-6 mb-8">
-              <div className="relative group">
+              <div className="md:col-span-2 relative group">
                 <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
                 <Input
                   type="text"
@@ -151,67 +168,64 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               
               <div className="relative group">
                 <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
-                <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-lg justify-start font-normal"
-                    >
-                      {checkinDate ? format(checkinDate, 'MMM dd, yyyy') : 'Check-in'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={checkinDate}
-                      onSelect={(date) => {
-                        setCheckinDate(date);
-                        setCheckinOpen(false);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                      disabled={(date) => date < new Date()}
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-              
-              <div className="relative group">
-                <Calendar className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
-                <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      className="w-full pl-12 h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-lg justify-start font-normal"
-                    >
-                      {checkoutDate ? format(checkoutDate, 'MMM dd, yyyy') : 'Check-out'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={checkoutDate}
-                      onSelect={(date) => {
-                        setCheckoutDate(date);
-                        setCheckoutOpen(false);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                      disabled={(date) => date < (checkinDate || new Date())}
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="grid grid-cols-2 gap-2">
+                  <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-sm justify-start font-normal"
+                      >
+                        {checkinDate ? format(checkinDate, 'MMM dd') : 'Check-in'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={checkinDate}
+                        onSelect={(date) => {
+                          if (date) setCheckinDate(date);
+                          setCheckinOpen(false);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto"
+                        disabled={(date) => date < new Date()}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                  
+                  <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className="h-14 bg-secondary/50 border-border/50 focus:border-blue-400 hover:bg-secondary/80 rounded-xl text-sm justify-start font-normal"
+                      >
+                        {checkoutDate ? format(checkoutDate, 'MMM dd') : 'Check-out'}
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={checkoutDate}
+                        onSelect={(date) => {
+                          if (date) setCheckoutDate(date);
+                          setCheckoutOpen(false);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto"
+                        disabled={(date) => date < (checkinDate || new Date())}
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
-            
-            <p className="text-sm text-muted-foreground mb-4">Press Enter to search</p>
           </form>
 
           {/* Discovery Destinations */}
           <div className="space-y-6">
-            <p className="text-muted-foreground font-medium tracking-wide">DISCOVERY AWAITS</p>
+            <p className="text-muted-foreground font-medium tracking-wide">DISCOVER NEW HORIZONS</p>
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-              {['Tokyo', 'Dubai', 'Singapore', 'Zurich', 'Monaco', 'Aspen'].map((city) => (
+              {['Tokyo', 'Osaka', 'Kyoto', 'Hiroshima', 'Sapporo', 'Fukuoka'].map((city) => (
                 <button
                   key={city}
                   onClick={() => setDestination(city)}
