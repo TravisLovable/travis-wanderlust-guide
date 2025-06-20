@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+
+import React, { useState, useEffect, useRef } from 'react';
 import { Search, Calendar, MapPin, User } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -22,6 +23,7 @@ interface ResultsPageProps {
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
   const [searchQuery, setSearchQuery] = useState(destination);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
 
   // Comprehensive global destination suggestions
   const globalDestinations = [
@@ -102,13 +104,33 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     'Reykjavik, Iceland'
   ];
 
-   const suggestions = globalDestinations.filter(city => 
-    city.toLowerCase().includes(searchQuery.toLowerCase()) && searchQuery.length > 0
-  );
+  const suggestions = searchQuery.length > 0 
+    ? globalDestinations.filter(city => 
+        city.toLowerCase().includes(searchQuery.toLowerCase())
+      ).slice(0, 10) // Limit to 10 suggestions for performance
+    : [];
+
+  // Handle click outside to close suggestions
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSuggestions(false);
+      }
+    };
+
+    if (showSuggestions) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [showSuggestions]);
 
   const handleNewSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
-    if (searchQuery) {
+    if (searchQuery.trim()) {
+      setShowSuggestions(false);
       onNewSearch(searchQuery, dates);
     }
   };
@@ -122,7 +144,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             <div className="text-2xl font-bold text-gray-900 tracking-tight">TRAVIS</div>
             
             {/* Search Bar with auto-suggestions */}
-            <div className="relative">
+            <div className="relative" ref={searchRef}>
               <div className="flex items-center bg-white border border-gray-300 rounded-full px-4 py-2 shadow-sm">
                 <MapPin className="w-4 h-4 text-gray-400 mr-2" />
                 <input
