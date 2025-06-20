@@ -41,8 +41,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     return () => clearTimeout(timer);
   }, []);
 
-  // Word swap animation
-  const swapWords = ["the modern explorer", "the curious", "the brave"];
+  // Word swap animation - only the last word
+  const swapWords = ["explorer", "nomad", "analyst", "visionary"];
   
   useEffect(() => {
     const interval = setInterval(() => {
@@ -469,10 +469,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             </h1>
             <div className={`mb-6 transition-all duration-1000 ease-out delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
-                Data-driven Intelligence for
+                <span>Data-driven Intelligence for the modern </span>
                 <span 
                   key={wordIndex}
-                  className="inline-block animate-fadeIn ml-1"
+                  className="inline-block animate-fadeIn min-w-[120px] text-left"
                 >
                   {swapWords[wordIndex]}
                 </span>
