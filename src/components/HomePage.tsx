@@ -31,6 +31,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isLoaded, setIsLoaded] = useState(false);
+  const [wordIndex, setWordIndex] = useState(0);
 
   // Trigger fade-in animation on page load
   useEffect(() => {
@@ -38,6 +39,16 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       setIsLoaded(true);
     }, 100);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Word swap animation
+  const swapWords = ["for the modern explorer", "for the curious", "for the brave"];
+  
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setWordIndex((prev) => (prev + 1) % swapWords.length);
+    }, 3000);
+    return () => clearInterval(interval);
   }, []);
 
   const languages = [
@@ -452,19 +463,27 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section with fade-in animation */}
-          <div className={`mb-12 transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`mb-10 transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
               {t.title}
             </h1>
-            <p className="text-xl text-muted-foreground mb-6 font-light dark:text-glow-subtle leading-relaxed">
-              {t.subtitle}
-            </p>
+            <div className="mb-6">
+              <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
+                Data-driven Intelligence 
+                <span 
+                  key={wordIndex}
+                  className="inline-block animate-fadeIn ml-1"
+                >
+                  {swapWords[wordIndex]}
+                </span>
+              </p>
+            </div>
             {/* Animated gradient underline with hover shimmer */}
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
           {/* Google-style Search Form with fade-in animation */}
-          <form onSubmit={handleSearch} className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <form onSubmit={handleSearch} className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
@@ -558,13 +577,13 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   </Popover>
                 </div>
 
-                {/* Get Intelligence Button */}
+                {/* Launch Brief Button */}
                 <Button
                   type="submit"
                   className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-r-full border-l border-border/30 transition-all duration-300 font-medium flex items-center space-x-2 travis-intelligence-glow"
                 >
                   <Search className="w-4 h-4" />
-                  <span>Get Intelligence</span>
+                  <span>Launch Brief</span>
                 </Button>
               </div>
             </div>
