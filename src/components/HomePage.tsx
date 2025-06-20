@@ -380,8 +380,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     backgroundPosition: 'center center'
                   }} />
                   <div>
-                    <div className="flex items-center space-x-2">
+                    <div className="flex flex-col space-y-1">
                       <h3 className="font-semibold text-foreground">Brittany J.</h3>
+                      <span className="text-sm font-medium text-emerald-400">Premium Member</span>
                     </div>
                   </div>
                 </div>
@@ -405,13 +406,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Country</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-foreground">United States</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Status</span>
-                    <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+                    <span className="text-sm font-medium text-foreground">United States</span>
                   </div>
                 </div>
                 
@@ -443,11 +438,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
           {/* Google-style Search Form */}
           <form onSubmit={handleSearch} className="mb-32 max-w-5xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow hover:dark:shadow-blue-500/20 hover:dark:shadow-2xl transition-shadow duration-300">
+            <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
                 <div className="flex-1 relative group">
-                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
+                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white transition-colors z-10" />
                   <Input
                     type="text"
                     placeholder={t.searchPlaceholder}
@@ -458,7 +453,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     }}
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full focus:outline-none focus:ring-2 focus:ring-white"
                     required
                   />
                   {showSuggestions && suggestions.length > 0 && (
@@ -537,9 +532,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 {/* Search Button */}
                 <Button
                   type="submit"
-                  className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+                  className="h-12 px-4 bg-white/10 hover:bg-white/20 hover:shadow-white/20 hover:shadow-lg text-white rounded-r-full border-l border-border/30 transition-all"
                 >
-                  <Search className="w-5 h-5 search-icon-glow" />
+                  <Search className="w-5 h-5" />
                 </Button>
               </div>
             </div>

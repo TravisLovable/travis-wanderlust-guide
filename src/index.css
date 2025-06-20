@@ -130,6 +130,20 @@
   filter: brightness(1.1);
 }
 
+/* Enhanced Search Bar Hover Glow Effect - White */
+.travis-glow-white {
+  transition: all 0.3s ease;
+}
+
+.dark .travis-glow-white:hover {
+  box-shadow: 
+    0 0 30px rgba(255, 255, 255, 0.6),
+    0 0 60px rgba(255, 255, 255, 0.4),
+    0 0 90px rgba(255, 255, 255, 0.2),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
 /* Enhanced Search Bar Hover Glow Effect */
 .travis-glow {
   transition: all 0.3s ease;

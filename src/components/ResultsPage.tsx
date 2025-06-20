@@ -184,7 +184,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header */}
-      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
+      <header className="bg-black dark:bg-black backdrop-blur-sm border-2 border-white/50 shadow-lg shadow-white/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -310,7 +310,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           </div>
 
-          {/* Pinned Destinations - Brazil focused with better visibility */}
+          {/* Pinned Destinations - Brazil focused with better visibility and opacity */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center space-x-3">
@@ -320,7 +320,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600 border border-blue-500/70 rounded-full text-sm text-white hover:bg-blue-700 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/80 border border-blue-500/70 rounded-full text-sm text-white hover:bg-blue-700/80 transition-colors shadow-sm"
                     >
                       <span>{dest}</span>
                       <button
@@ -340,7 +340,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-600 border border-green-500/70 rounded text-xs text-white hover:bg-green-700 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600/80 border border-green-500/70 rounded text-xs text-white hover:bg-green-700/80 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
@@ -526,9 +526,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
-          {/* Currency Card - Updated for Brazil */}
+          {/* Currency Card - Updated for Brazil with removed white space */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
+            <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
                   <CreditCard className="w-5 h-5 text-white" />
@@ -537,8 +537,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <TrendingUp className="w-4 h-4 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+            <CardContent className="space-y-3">
+              <div className="flex justify-between items-center p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
                 <span className="font-semibold text-lg">1 USD</span>
                 <span className="text-green-400 font-bold text-xl">
                   {mockData.currency.rate} {mockData.currency.symbol}
