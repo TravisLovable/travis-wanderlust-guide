@@ -67,7 +67,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     en: {
       title: "The World Awaits",
       subtitle: "Data-driven Intelligence for the modern explorer",
-      searchPlaceholder: "São Paulo, Brazil",
+      searchPlaceholder: "Where to?",
       depart: "Depart",
       return: "Return",
       search: "Search",
@@ -89,7 +89,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     zh: {
       title: "世界在等待",
       subtitle: "为现代探险家提供数据驱动的智能",
-      searchPlaceholder: "圣保罗，巴西",
+      searchPlaceholder: "去哪里？",
       depart: "出发",
       return: "返回",
       search: "搜索",
@@ -111,7 +111,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     ja: {
       title: "世界があなたを待っています",
       subtitle: "モダンな探検家のためのデータ主導のインテリジェンス",
-      searchPlaceholder: "サンパウロ、ブラジル",
+      searchPlaceholder: "どこへ？",
       depart: "出発",
       return: "帰国",
       search: "検索",
@@ -133,7 +133,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     es: {
       title: "El Mundo Te Espera",
       subtitle: "Inteligencia basada en datos para el explorador moderno",
-      searchPlaceholder: "São Paulo, Brasil",
+      searchPlaceholder: "¿A dónde?",
       depart: "Salida",
       return: "Regreso",
       search: "Buscar",
@@ -155,7 +155,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     fr: {
       title: "Le Monde Vous Attend",
       subtitle: "Intelligence basée sur les données pour l'explorateur moderne",
-      searchPlaceholder: "São Paulo, Brésil",
+      searchPlaceholder: "Où aller ?",
       depart: "Départ",
       return: "Retour",
       search: "Rechercher",
@@ -177,7 +177,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     it: {
       title: "Il Mondo Ti Aspetta",
       subtitle: "Intelligenza basata sui dati per l'esploratore moderno",
-      searchPlaceholder: "São Paulo, Brasile",
+      searchPlaceholder: "Dove andare?",
       depart: "Partenza",
       return: "Ritorno",
       search: "Cerca",
@@ -199,7 +199,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     xh: {
       title: "Ihlabathi Lilindile",
       subtitle: "Ubukrelekrele obusekelwe kwidatha kumahlakani anamhlanje",
-      searchPlaceholder: "São Paulo, Brazil",
+      searchPlaceholder: "Uya phi?",
       depart: "Ukuhamba",
       return: "Ukubuya",
       search: "Khangela",
@@ -221,7 +221,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     af: {
       title: "Die Wêreld Wag",
       subtitle: "Data-gedrewe intelligensie vir die moderne verkenner",
-      searchPlaceholder: "São Paulo, Brasilië",
+      searchPlaceholder: "Waarheen?",
       depart: "Vertrek",
       return: "Terugkeer",
       search: "Soek",
@@ -492,7 +492,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           </div>
 
           {/* Interactive Search Bar */}
-          <div className={`mb-3 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          <div className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div 
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
               onClick={handleBarClick}
@@ -515,7 +515,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     }}
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
+                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
                     required
                   />
                   {showSuggestions && suggestions.length > 0 && (
@@ -602,13 +602,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 </div>
               </div>
             </div>
-          </div>
-
-          {/* Microcopy */}
-          <div className="text-center mb-8">
-            <p className="text-sm text-muted-foreground/60">
-              Press Enter or click anywhere to launch brief
-            </p>
           </div>
 
           {/* Inspirational Link */}
