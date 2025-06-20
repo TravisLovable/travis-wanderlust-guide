@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -30,6 +30,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Trigger fade-in animation on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -356,7 +365,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <Globe className="w-5 h-5" />
+                  <Globe className="w-5 h-5" strokeWidth={1.5} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -379,7 +388,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               onClick={toggleTheme}
               className="rounded-full"
             >
-              {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -390,7 +399,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   }} />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
+              <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6 profile-dropdown-glow">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
                     backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
@@ -407,11 +416,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Preferred Airline</span>
-                    <span className="text-sm font-medium text-foreground">Delta Airlines</span>
+                    <span className="text-sm font-semibold text-foreground">Delta Airlines</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Travel Type</span>
-                    <span className="text-sm font-medium text-foreground">Luxury</span>
+                    <span className="text-sm font-semibold text-foreground">Luxury</span>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
@@ -442,20 +451,20 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section - Reduced spacing */}
-          <div className="mb-12 animate-fade-in">
+          {/* Hero Section with fade-in animation */}
+          <div className={`mb-12 transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
               {t.title}
             </h1>
-            <p className="text-xl text-muted-foreground mb-6 font-light dark:text-glow-subtle">
+            <p className="text-xl text-muted-foreground mb-6 font-light dark:text-glow-subtle leading-relaxed">
               {t.subtitle}
             </p>
-            {/* Animated gradient underline */}
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer"></div>
+            {/* Animated gradient underline with hover shimmer */}
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Google-style Search Form */}
-          <form onSubmit={handleSearch} className="mb-8 max-w-5xl mx-auto">
+          {/* Google-style Search Form with fade-in animation */}
+          <form onSubmit={handleSearch} className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center gap-2">
                 {/* Destination Input */}

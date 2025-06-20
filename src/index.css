@@ -1,3 +1,4 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -127,6 +128,27 @@
     0 5px 15px rgba(0, 0, 0, 0.4);
   transform: translateZ(10px);
   filter: brightness(1.1);
+}
+
+/* Profile Dropdown Glow Effect */
+.profile-dropdown-glow {
+  transition: all 0.3s ease;
+}
+
+.profile-dropdown-glow:hover {
+  box-shadow: 
+    0 0 25px rgba(255, 255, 255, 0.1),
+    0 0 50px rgba(255, 255, 255, 0.05),
+    0 15px 35px rgba(0, 0, 0, 0.3);
+  transform: translateY(-2px);
+}
+
+.dark .profile-dropdown-glow:hover {
+  box-shadow: 
+    0 0 25px rgba(255, 255, 255, 0.15),
+    0 0 50px rgba(255, 255, 255, 0.1),
+    0 15px 35px rgba(0, 0, 0, 0.4);
+  transform: translateY(-2px);
 }
 
 /* Enhanced Search Bar Hover Glow Effect - White */
