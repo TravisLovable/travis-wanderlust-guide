@@ -1,26 +1,32 @@
 
 import React, { useState, useRef, useEffect } from 'react';
-import { MapPin, DollarSign, Star, X } from 'lucide-react';
+import { MapPin, DollarSign, Star, X, Home, Building } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 
 const SaoPauloAccommodationMap = () => {
   const [selectedAccommodation, setSelectedAccommodation] = useState<any>(null);
   const [mapLoaded, setMapLoaded] = useState(false);
+  const [accommodationType, setAccommodationType] = useState<'hotel' | 'airbnb'>('hotel');
   const mapRef = useRef<HTMLDivElement>(null);
 
-  const accommodations = [
+  const hotelAccommodations = [
     { id: 1, name: 'Jardins Luxury Hotel', price: 'R$450', lat: -23.5629, lng: -46.6544, type: 'hotel', rating: 4.8, address: 'Rua Oscar Freire, Jardins' },
     { id: 2, name: 'Vila Madalena Boutique', price: 'R$380', lat: -23.5505, lng: -46.6937, type: 'boutique', rating: 4.6, address: 'Rua Harmonia, Vila Madalena' },
     { id: 3, name: 'Paulista Business Tower', price: 'R$320', lat: -23.5618, lng: -46.6562, type: 'apartment', rating: 4.7, address: 'Av. Paulista, Bela Vista' },
     { id: 4, name: 'Centro Histórico Hostel', price: 'R$85', lat: -23.5476, lng: -46.6358, type: 'hostel', rating: 4.4, address: 'Rua do Carmo, Centro' },
-    { id: 5, name: 'Brooklin Corporate Stay', price: 'R$280', lat: -23.6048, lng: -46.6963, type: 'apartment', rating: 4.3, address: 'Av. Luis Carlos Berrini, Brooklin' },
-    { id: 6, name: 'República Student House', price: 'R$120', lat: -23.5439, lng: -46.6395, type: 'shared', rating: 4.1, address: 'Largo do Arouche, República' },
-    { id: 7, name: 'Moema Residential', price: 'R$200', lat: -23.6033, lng: -46.6645, type: 'apartment', rating: 4.2, address: 'Av. Moema, Moema' },
-    { id: 8, name: 'Ibirapuera Park Hotel', price: 'R$420', lat: -23.5732, lng: -46.6599, type: 'hotel', rating: 4.5, address: 'Av. Ibirapuera, Vila Nova Conceição' },
-    { id: 9, name: 'Vila Olímpia Executive', price: 'R$480', lat: -23.5971, lng: -46.6875, type: 'hotel', rating: 4.6, address: 'Rua Funchal, Vila Olímpia' },
-    { id: 10, name: 'Liberdade Cultural Stay', price: 'R$180', lat: -23.5587, lng: -46.6365, type: 'hostel', rating: 4.2, address: 'Rua da Glória, Liberdade' }
+    { id: 5, name: 'Brooklin Corporate Stay', price: 'R$280', lat: -23.6048, lng: -46.6963, type: 'apartment', rating: 4.3, address: 'Av. Luis Carlos Berrini, Brooklin' }
   ];
+
+  const airbnbAccommodations = [
+    { id: 6, name: 'Cozy Jardins Apartment', price: 'R$220', lat: -23.5650, lng: -46.6520, type: 'apartment', rating: 4.9, address: 'Rua Augusta, Jardins' },
+    { id: 7, name: 'Vila Madalena Loft', price: 'R$180', lat: -23.5485, lng: -46.6915, type: 'loft', rating: 4.7, address: 'Rua Aspicuelta, Vila Madalena' },
+    { id: 8, name: 'Ibirapuera Studio', price: 'R$150', lat: -23.5752, lng: -46.6579, type: 'studio', rating: 4.5, address: 'Av. Ibirapuera, Vila Nova Conceição' },
+    { id: 9, name: 'Liberdade Traditional House', price: 'R$120', lat: -23.5607, lng: -46.6385, type: 'house', rating: 4.3, address: 'Rua da Glória, Liberdade' },
+    { id: 10, name: 'Moema Modern Flat', price: 'R$200', lat: -23.6013, lng: -46.6625, type: 'apartment', rating: 4.6, address: 'Av. Moema, Moema' }
+  ];
+
+  const accommodations = accommodationType === 'hotel' ? hotelAccommodations : airbnbAccommodations;
 
   const getPriceColor = (price: string) => {
     const numPrice = parseInt(price.replace('R$', '').replace(',', ''));
@@ -36,6 +42,9 @@ const SaoPauloAccommodationMap = () => {
       case 'apartment': return '🏢';
       case 'hostel': return '🏠';
       case 'shared': return '👥';
+      case 'loft': return '🏙️';
+      case 'studio': return '🎨';
+      case 'house': return '🏡';
       default: return '📍';
     }
   };
@@ -51,12 +60,33 @@ const SaoPauloAccommodationMap = () => {
   return (
     <Card className="travis-card travis-interactive group xl:col-span-2">
       <CardHeader className="pb-4">
-        <CardTitle className="flex items-center text-xl font-semibold">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mr-3">
-            <MapPin className="w-5 h-5 text-white" />
+        <CardTitle className="flex items-center justify-between text-xl font-semibold">
+          <div className="flex items-center">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mr-3">
+              <MapPin className="w-5 h-5 text-white" />
+            </div>
+            São Paulo Accommodation Map
           </div>
-          São Paulo Accommodation Map
-          <DollarSign className="w-4 h-4 ml-auto text-emerald-400 group-hover:scale-110 transition-transform" />
+          <div className="flex items-center space-x-2">
+            <Button
+              variant={accommodationType === 'hotel' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setAccommodationType('hotel')}
+              className="flex items-center space-x-1"
+            >
+              <Building className="w-4 h-4" />
+              <span>Hotels</span>
+            </Button>
+            <Button
+              variant={accommodationType === 'airbnb' ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setAccommodationType('airbnb')}
+              className="flex items-center space-x-1"
+            >
+              <Home className="w-4 h-4" />
+              <span>Airbnb</span>
+            </Button>
+          </div>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -198,14 +228,14 @@ const SaoPauloAccommodationMap = () => {
           
           <div className="p-4 bg-secondary/20 rounded-xl">
             <div className="text-sm">
-              <p><span className="font-medium text-emerald-400">Average:</span> R$265/night</p>
-              <p><span className="font-medium text-emerald-400">Range:</span> R$85 - R$480</p>
+              <p><span className="font-medium text-emerald-400">Average:</span> R${accommodationType === 'hotel' ? '303' : '174'}/night</p>
+              <p><span className="font-medium text-emerald-400">Range:</span> R${accommodationType === 'hotel' ? '85 - R$450' : '120 - R$220'}</p>
             </div>
           </div>
         </div>
 
         <div className="text-sm text-muted-foreground">
-          <p><span className="font-medium">Interactive Map:</span> Real São Paulo accommodation locations with live pricing</p>
+          <p><span className="font-medium">Interactive Map:</span> Real São Paulo {accommodationType} locations with live pricing</p>
           <p><span className="font-medium">Updated:</span> 3 minutes ago</p>
         </div>
       </CardContent>

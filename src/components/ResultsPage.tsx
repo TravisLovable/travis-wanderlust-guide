@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -181,10 +182,15 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return `Depart: ${departFormatted} • Return: ${returnFormatted}`;
   };
 
+  const handleSignOut = () => {
+    // Navigate to sign out/sign in page
+    window.location.href = '/auth';
+  };
+
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header */}
-      <header className="bg-black dark:bg-black backdrop-blur-sm border-2 border-white/50 shadow-lg shadow-white/20 sticky top-0 z-40">
+      <header className="bg-black/90 dark:bg-black/90 backdrop-blur-sm border-2 border-white/50 shadow-lg shadow-white/20 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -302,7 +308,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <DropdownMenuItem>
                     Settings
                   </DropdownMenuItem>
-                  <DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>
                     Sign out
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -310,7 +316,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           </div>
 
-          {/* Pinned Destinations - Brazil focused with better visibility and opacity */}
+          {/* Pinned Destinations - Brazil focused with better visibility and increased opacity */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center space-x-3">
@@ -320,7 +326,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/80 border border-blue-500/70 rounded-full text-sm text-white hover:bg-blue-700/80 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/90 border border-blue-500/80 rounded-full text-sm text-white hover:bg-blue-700/90 transition-colors shadow-sm"
                     >
                       <span>{dest}</span>
                       <button
@@ -340,7 +346,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-600/80 border border-green-500/70 rounded text-xs text-white hover:bg-green-700/80 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600/90 border border-green-500/80 rounded text-xs text-white hover:bg-green-700/90 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
@@ -352,7 +358,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           )}
 
           {/* Search Bar with Auto-suggestions */}
-          <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative">
+          <div className="bg-white/20 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative travis-glow-white">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
@@ -435,7 +441,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
               <Button
                 onClick={handleNewSearch}
-                className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+                className="h-12 px-4 bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow"
               >
                 <Search className="w-5 h-5" />
               </Button>
@@ -526,12 +532,12 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
-          {/* Currency Card - Updated for Brazil with removed white space */}
+          {/* Currency Card - Compact layout without dead space */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-2">
+            <CardHeader className="pb-3">
               <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
-                  <CreditCard className="w-5 h-5 text-white" />
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
+                  <CreditCard className="w-4 h-4 text-white" />
                 </div>
                 Currency Exchange
                 <TrendingUp className="w-4 h-4 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
@@ -539,26 +545,23 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="flex justify-between items-center p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                <span className="font-semibold text-lg">1 USD</span>
-                <span className="text-green-400 font-bold text-xl">
+                <span className="font-semibold">1 USD</span>
+                <span className="text-green-400 font-bold">
                   {mockData.currency.rate} {mockData.currency.symbol}
                 </span>
               </div>
-              <div className="flex space-x-3">
+              <div className="flex items-center space-x-2">
                 <Input
                   type="number"
                   value={currencyAmount}
                   onChange={(e) => setCurrencyAmount(Number(e.target.value))}
-                  className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl"
+                  className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-10"
                 />
-                <div className="px-4 py-2 bg-secondary/50 rounded-xl border border-border/50 font-mono">
-                  {mockData.currency.symbol}
-                </div>
+                <span className="text-green-400 font-semibold">
+                  = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(2)}
+                </span>
               </div>
-              <p className="text-lg font-semibold text-green-400">
-                = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(2)} {mockData.currency.name}
-              </p>
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs text-muted-foreground">
                 Live rate • Updated 2 min ago
               </div>
             </CardContent>

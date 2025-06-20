@@ -135,7 +135,18 @@
   transition: all 0.3s ease;
 }
 
-.dark .travis-glow-white:hover {
+.travis-glow-white:hover,
+.travis-glow-white:focus-within {
+  box-shadow: 
+    0 0 30px rgba(255, 255, 255, 0.6),
+    0 0 60px rgba(255, 255, 255, 0.4),
+    0 0 90px rgba(255, 255, 255, 0.2),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .travis-glow-white:hover,
+.dark .travis-glow-white:focus-within {
   box-shadow: 
     0 0 30px rgba(255, 255, 255, 0.6),
     0 0 60px rgba(255, 255, 255, 0.4),
@@ -149,7 +160,18 @@
   transition: all 0.3s ease;
 }
 
-.dark .travis-glow:hover {
+.travis-glow:hover,
+.travis-glow:focus-within {
+  box-shadow: 
+    0 0 30px rgba(255, 255, 255, 0.6),
+    0 0 60px rgba(255, 255, 255, 0.4),
+    0 0 90px rgba(255, 255, 255, 0.2),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+.dark .travis-glow:hover,
+.dark .travis-glow:focus-within {
   box-shadow: 
     0 0 30px rgba(255, 255, 255, 0.6),
     0 0 60px rgba(255, 255, 255, 0.4),
@@ -163,9 +185,20 @@
   transition: all 0.3s ease;
 }
 
-.dark .search-icon-glow:hover {
-  color: rgba(255, 255, 255, 0.9);
+.search-icon-glow:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
   filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.4),
+    0 0 40px rgba(255, 255, 255, 0.2);
+}
+
+.dark .search-icon-glow:hover {
+  color: rgba(255, 255, 255, 0.9) !important;
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+  box-shadow: 
+    0 0 20px rgba(255, 255, 255, 0.4),
+    0 0 40px rgba(255, 255, 255, 0.2);
 }
 
 /* Dropdown Suggestion Hover Effect */
