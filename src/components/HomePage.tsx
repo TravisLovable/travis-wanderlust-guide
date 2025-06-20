@@ -359,18 +359,45 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* Ambient Background Animation */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-        <div className="absolute inset-0 bg-grid-pattern animate-drift-slow"></div>
-        {[...Array(20)].map((_, i) => (
+      {/* Enhanced Ambient Background Animation */}
+      <div className="absolute inset-0 opacity-[0.03] pointer-events-none">
+        {/* Digital texture overlay */}
+        <div className="absolute inset-0 bg-digital-texture animate-drift-slow"></div>
+        
+        {/* Floating data points with enhanced motion */}
+        {[...Array(25)].map((_, i) => (
           <div
             key={i}
-            className="absolute w-1 h-1 bg-white rounded-full animate-float"
+            className="absolute w-1 h-1 bg-white rounded-full animate-floating-data"
             style={{
               left: `${Math.random() * 100}%`,
               top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${8 + Math.random() * 4}s`
+              animationDelay: `${Math.random() * 8}s`,
+              animationDuration: `${6 + Math.random() * 4}s`
+            }}
+          />
+        ))}
+        
+        {/* Digital shimmer effects */}
+        {[...Array(3)].map((_, i) => (
+          <div
+            key={`shimmer-${i}`}
+            className="absolute inset-0 animate-digital-shimmer"
+            style={{
+              animationDelay: `${i * 1.5}s`
+            }}
+          />
+        ))}
+        
+        {/* Ripple effects */}
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={`ripple-${i}`}
+            className="absolute w-32 h-32 border border-white/5 rounded-full animate-digital-ripple"
+            style={{
+              left: `${20 + (i * 15)}%`,
+              top: `${30 + (i * 10)}%`,
+              animationDelay: `${i * 0.8}s`
             }}
           />
         ))}
@@ -471,13 +498,13 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section with fade-in animation */}
-          <div className={`mb-10 transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
+          {/* Hero Section with enhanced fade-in animation */}
+          <div className={`mb-10 transition-all duration-1200 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
+            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl animate-fade-in-up">
               {t.title}
             </h1>
-            <div className={`mb-6 transition-all duration-1000 ease-out delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-              <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
+            <div className={`mb-6 transition-all duration-1200 ease-out delay-200 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
+              <p className="text-xl text-muted-foreground font-semibold tracking-wide dark:text-glow-subtle leading-relaxed animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
                 <span>Data-driven Intelligence for the modern </span>
                 <span 
                   key={wordIndex}
@@ -487,14 +514,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 </span>
               </p>
             </div>
-            {/* Animated gradient underline with hover shimmer */}
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
+            {/* Enhanced animated gradient underline with pulse effect */}
+            <div className={`w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 origin-left animate-underline-pulse transition-all duration-500 ${isLoaded ? '' : 'scale-x-0'}`} style={{ animationDelay: '0.8s' }}></div>
           </div>
 
-          {/* Interactive Search Bar */}
-          <div className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          {/* Interactive Search Bar with enhanced animation */}
+          <div className={`mb-8 max-w-5xl mx-auto transition-all duration-1200 ease-out delay-700 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-6'}`}>
             <div 
-              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
+              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group animate-fade-in-up"
+              style={{ animationDelay: '0.6s' }}
               onClick={handleBarClick}
               onKeyDown={handleKeyPress}
               tabIndex={0}
