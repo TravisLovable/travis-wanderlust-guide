@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -407,7 +406,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Country</span>
-                    <span className="text-sm font-medium text-foreground">United States</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-foreground">United States</span>
+                      <span className="text-lg">🇺🇸</span>
+                    </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">Status</span>
@@ -471,7 +473,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                             setDestination(suggestion);
                             setShowSuggestions(false);
                           }}
-                          className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors first:rounded-t-xl last:rounded-b-xl"
+                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
                         >
                           <div className="flex items-center space-x-3">
                             <MapPin className="w-4 h-4 text-blue-400" />
@@ -539,7 +541,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   type="submit"
                   className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
                 >
-                  <Search className="w-5 h-5" />
+                  <Search className="w-5 h-5 search-icon-glow" />
                 </Button>
               </div>
             </div>

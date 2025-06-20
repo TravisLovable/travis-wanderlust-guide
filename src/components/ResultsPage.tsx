@@ -19,6 +19,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { Switch } from '@/components/ui/switch';
 import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
@@ -44,7 +45,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
 
   // Profile data
   const profileData = {
@@ -88,17 +88,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       ]
     }
   };
-
-  const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'zh', name: 'Mandarin', flag: '🇨🇳' },
-    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
-    { code: 'it', name: 'Italian', flag: '🇮🇹' },
-    { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-    { code: 'fr', name: 'French', flag: '🇫🇷' },
-    { code: 'xh', name: 'Xhosa', flag: '🇿🇦' },
-    { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
-  ];
 
   const fourteenDayForecast = [
     { day: 'Today', temp: 24, condition: 'Partly Cloudy' },
@@ -265,37 +254,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-xl font-medium text-foreground">Welcome back, Brittany</span>
-              
-              {/* Language Selector */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" size="icon" className="rounded-full">
-                    <Globe className="w-5 h-5" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="w-48">
-                  {languages.map((lang) => (
-                    <DropdownMenuItem
-                      key={lang.code}
-                      onClick={() => setCurrentLanguage(lang.code)}
-                      className="flex items-center space-x-3"
-                    >
-                      <span className="text-lg">{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={toggleTheme}
-                className="rounded-full"
-              >
-                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </Button>
+              <span className="text-xl font-medium text-foreground">Welcome back, B!</span>
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -310,7 +269,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{profileData.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">{profileData.status}</p>
+                      <p className="text-xs leading-none premium-glow font-medium">{profileData.status}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
@@ -325,10 +284,19 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       <strong>Frequent Flyer #:</strong> {profileData.frequentFlyerNumber}
                     </div>
                     <div className="text-xs">
-                      <strong>Nationality:</strong> {profileData.nationality}
+                      <strong>Passport:</strong> 
+                      <div className="flex items-center space-x-2 inline-block ml-1">
+                        <span>{profileData.country}</span>
+                        <span className="text-lg">🇺🇸</span>
+                      </div>
                     </div>
-                    <div className="text-xs">
-                      <strong>Country:</strong> {profileData.country}
+                    <div className="flex items-center justify-between pt-2">
+                      <span className="text-xs text-muted-foreground">Dark Mode</span>
+                      <Switch
+                        checked={isDarkMode}
+                        onCheckedChange={toggleTheme}
+                        className="scale-75"
+                      />
                     </div>
                   </div>
                   <DropdownMenuSeparator />

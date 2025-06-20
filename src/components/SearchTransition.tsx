@@ -21,11 +21,11 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Background Image - Christ the Redeemer */}
+      {/* Background Image - Brazil at night with city lights */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1920&q=80')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?auto=format&fit=crop&w=1920&q=80')`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
@@ -51,7 +51,7 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
         <div className="mb-12">
-          {/* Brazilian-styled destination */}
+          {/* Destination without Brazilian flag */}
           <div className="relative mb-6">
             <h1 className="text-6xl md:text-7xl font-light text-white mb-2 tracking-wide relative">
               <span className="relative inline-block">
@@ -60,11 +60,6 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
                 <div className="absolute -bottom-2 -left-2 w-6 h-6 bg-yellow-500/30 rounded-full"></div>
               </span>
             </h1>
-            
-            {/* Brazilian flag colors overlay effect */}
-            <div className="absolute top-0 left-1/2 transform -translate-x-1/2 -translate-y-8">
-              <span className="text-green-400/60 text-2xl font-light">🇧🇷</span>
-            </div>
           </div>
           
           {/* Decorative line with Brazilian styling */}

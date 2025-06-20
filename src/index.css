@@ -108,33 +108,69 @@
   animation: fadeIn 0.5s ease-out forwards;
 }
 
-/* 3D Glowing Text Effects for Dark Mode */
+/* Enhanced 3D Glowing Text Effects for Dark Mode */
 .dark .text-glow {
   text-shadow: 
-    0 0 10px rgba(255, 255, 255, 0.3),
-    0 0 20px rgba(255, 255, 255, 0.2),
-    0 0 30px rgba(255, 255, 255, 0.1),
-    0 5px 10px rgba(0, 0, 0, 0.3);
-  transform: translateZ(0);
+    0 0 20px rgba(255, 255, 255, 0.8),
+    0 0 40px rgba(255, 255, 255, 0.6),
+    0 0 60px rgba(255, 255, 255, 0.4),
+    0 0 80px rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(0, 0, 0, 0.5);
+  transform: translateZ(20px);
+  filter: brightness(1.2);
 }
 
 .dark .text-glow-subtle {
   text-shadow: 
-    0 0 5px rgba(255, 255, 255, 0.2),
-    0 0 10px rgba(255, 255, 255, 0.1),
-    0 2px 4px rgba(0, 0, 0, 0.2);
+    0 0 15px rgba(255, 255, 255, 0.6),
+    0 0 30px rgba(255, 255, 255, 0.4),
+    0 0 45px rgba(255, 255, 255, 0.2),
+    0 5px 15px rgba(0, 0, 0, 0.4);
+  transform: translateZ(10px);
+  filter: brightness(1.1);
 }
 
-/* Search Bar Hover Glow Effect */
+/* Enhanced Search Bar Hover Glow Effect */
 .travis-glow {
   transition: all 0.3s ease;
 }
 
 .dark .travis-glow:hover {
   box-shadow: 
-    0 0 20px rgba(59, 130, 246, 0.3),
-    0 0 40px rgba(59, 130, 246, 0.2),
-    0 0 60px rgba(59, 130, 246, 0.1),
-    0 8px 32px rgba(0, 0, 0, 0.3);
-  border-color: rgba(59, 130, 246, 0.4);
+    0 0 30px rgba(255, 255, 255, 0.6),
+    0 0 60px rgba(255, 255, 255, 0.4),
+    0 0 90px rgba(255, 255, 255, 0.2),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+  border-color: rgba(255, 255, 255, 0.6);
+}
+
+/* Search Icon Glow Effect */
+.search-icon-glow {
+  transition: all 0.3s ease;
+}
+
+.dark .search-icon-glow:hover {
+  color: rgba(255, 255, 255, 0.9);
+  filter: drop-shadow(0 0 10px rgba(255, 255, 255, 0.8));
+}
+
+/* Dropdown Suggestion Hover Effect */
+.suggestion-hover:hover {
+  background-color: rgba(255, 255, 255, 0.1) !important;
+  color: white !important;
+}
+
+.dark .suggestion-hover:hover {
+  background-color: rgba(255, 255, 255, 0.15) !important;
+  color: white !important;
+}
+
+/* Premium Member Glow Effect */
+.premium-glow {
+  color: #10b981;
+  text-shadow: 
+    0 0 10px rgba(16, 185, 129, 0.6),
+    0 0 20px rgba(16, 185, 129, 0.4),
+    0 0 30px rgba(16, 185, 129, 0.2);
+  filter: brightness(1.1);
 }
