@@ -174,29 +174,3 @@
     0 0 30px rgba(16, 185, 129, 0.2);
   filter: brightness(1.1);
 }
-
-/* Remove focus outline from search inputs */
-.no-focus-outline:focus {
-  outline: none !important;
-  box-shadow: none !important;
-  border-color: inherit !important;
-}
-
-/* Header glow effect for results page */
-.header-glow {
-  box-shadow: 
-    0 0 20px rgba(255, 255, 255, 0.3),
-    0 0 40px rgba(255, 255, 255, 0.2),
-    0 0 60px rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.2);
-}
-
-/* Search button hover effect */
-.search-btn-hover {
-  transition: all 0.3s ease;
-}
-
-.search-btn-hover:hover {
-  background-color: white !important;
-  color: #1f2937 !important;
-}
