@@ -1,5 +1,6 @@
 
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ExchangeRates {
   [key: string]: number;
@@ -23,25 +24,27 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', targetCurrency
         setIsLoading(true);
         setError(null);
         
-        // Using a free exchange rate API
-        const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${baseCurrency}`);
+        // Using your Supabase edge function
+        const { data, error: functionError } = await supabase.functions.invoke('getExchangeRate', {
+          body: {
+            baseCurrency,
+            targetCurrency
+          }
+        });
         
-        if (!response.ok) {
-          throw new Error('Failed to fetch exchange rates');
+        if (functionError) {
+          throw new Error(functionError.message || 'Failed to fetch exchange rates');
         }
         
-        const data = await response.json();
-        const rate = data.rates[targetCurrency];
-        
-        if (!rate) {
+        if (!data || !data.rate) {
           throw new Error(`Exchange rate for ${targetCurrency} not found`);
         }
 
         setCurrencyData({
-          rate: rate,
-          symbol: targetCurrency === 'BRL' ? 'R$' : targetCurrency,
-          name: targetCurrency === 'BRL' ? 'Brazilian Real' : targetCurrency,
-          lastUpdated: new Date().toLocaleTimeString()
+          rate: data.rate,
+          symbol: data.symbol || (targetCurrency === 'BRL' ? 'R$' : targetCurrency),
+          name: data.name || (targetCurrency === 'BRL' ? 'Brazilian Real' : targetCurrency),
+          lastUpdated: data.lastUpdated || new Date().toLocaleTimeString()
         });
       } catch (err) {
         console.error('Error fetching exchange rates:', err);
