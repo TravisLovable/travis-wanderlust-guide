@@ -9,6 +9,12 @@ interface SearchTransitionProps {
 
 const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) => {
   const fullText = '"A mind stretched by new experiences can never go back to its old dimensions."';
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+  useEffect(() => {
+    // Check if dark mode is active
+    setIsDarkMode(document.documentElement.classList.contains('dark'));
+  }, []);
 
   useEffect(() => {
     // Complete the transition after 4 seconds
@@ -19,13 +25,18 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
     return () => clearTimeout(timer);
   }, [onComplete]);
 
+  // Choose background image based on dark mode
+  const backgroundImage = isDarkMode 
+    ? 'https://images.unsplash.com/photo-1518709268805-4e9042af2176?auto=format&fit=crop&w=1920&q=80' // Rio at night
+    : 'https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?auto=format&fit=crop&w=1920&q=80'; // Brazil day
+
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Background Image - Brazil at night with city lights */}
+      {/* Background Image */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?auto=format&fit=crop&w=1920&q=80')`,
+          backgroundImage: `url('${backgroundImage}')`,
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
@@ -51,7 +62,7 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
       {/* Content */}
       <div className="relative z-10 text-center max-w-4xl mx-auto px-6">
         <div className="mb-12">
-          {/* Destination without Brazilian flag */}
+          {/* Destination */}
           <div className="relative mb-6">
             <h1 className="text-6xl md:text-7xl font-light text-white mb-2 tracking-wide relative">
               <span className="relative inline-block">

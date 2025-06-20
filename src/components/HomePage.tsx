@@ -434,10 +434,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
           <div className="mb-16 animate-fade-in">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
+            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow-3d dark:drop-shadow-2xl">
               {t.title}
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 font-light dark:text-glow-subtle">
+            <p className="text-xl text-muted-foreground mb-8 font-light dark:text-glow-3d">
               {t.subtitle}
             </p>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8"></div>
@@ -539,9 +539,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 {/* Search Button */}
                 <Button
                   type="submit"
-                  className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+                  className="h-12 px-4 search-icon rounded-r-full border-l border-border/30"
                 >
-                  <Search className="w-5 h-5 search-icon-glow" />
+                  <Search className="w-5 h-5" />
                 </Button>
               </div>
             </div>
