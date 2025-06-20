@@ -1,7 +1,7 @@
 
 import React, { useState } from 'react';
 import HomePage from '@/components/HomePage';
-import SearchTransition from '@/components/SearchTransition';
+import LoadingIntelligence from '@/components/LoadingIntelligence';
 import ResultsPage from '@/components/ResultsPage';
 
 interface SearchData {
@@ -14,32 +14,32 @@ interface SearchData {
 
 const Index = () => {
   const [searchData, setSearchData] = useState<SearchData | null>(null);
-  const [showTransition, setShowTransition] = useState(false);
+  const [showLoading, setShowLoading] = useState(false);
 
   const handleSearch = (destination: string, dates: { checkin: string; checkout: string }) => {
     setSearchData({ destination, dates });
-    setShowTransition(true);
+    setShowLoading(true);
   };
 
-  const handleTransitionComplete = () => {
-    setShowTransition(false);
+  const handleLoadingComplete = () => {
+    setShowLoading(false);
   };
 
   const handleBack = () => {
     setSearchData(null);
-    setShowTransition(false);
+    setShowLoading(false);
   };
 
-  if (showTransition && searchData) {
+  if (showLoading && searchData) {
     return (
-      <SearchTransition
+      <LoadingIntelligence
         destination={searchData.destination}
-        onComplete={handleTransitionComplete}
+        onComplete={handleLoadingComplete}
       />
     );
   }
 
-  if (searchData && !showTransition) {
+  if (searchData && !showLoading) {
     return (
       <ResultsPage
         destination={searchData.destination}

@@ -329,9 +329,26 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background flex flex-col">
+    <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
+      {/* Ambient Background Animation */}
+      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
+        <div className="absolute inset-0 bg-grid-pattern animate-drift-slow"></div>
+        {[...Array(20)].map((_, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-white rounded-full animate-float"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 10}s`,
+              animationDuration: `${8 + Math.random() * 4}s`
+            }}
+          />
+        ))}
+      </div>
+
       {/* Header */}
-      <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
+      <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
           <div className="flex items-center space-x-4">
@@ -423,21 +440,22 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       </header>
 
       {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-16">
+      <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section */}
-          <div className="mb-16 animate-fade-in">
+          {/* Hero Section - Reduced spacing */}
+          <div className="mb-12 animate-fade-in">
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
               {t.title}
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 font-light dark:text-glow-subtle">
+            <p className="text-xl text-muted-foreground mb-6 font-light dark:text-glow-subtle">
               {t.subtitle}
             </p>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8"></div>
+            {/* Animated gradient underline */}
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer"></div>
           </div>
 
           {/* Google-style Search Form */}
-          <form onSubmit={handleSearch} className="mb-32 max-w-5xl mx-auto">
+          <form onSubmit={handleSearch} className="mb-8 max-w-5xl mx-auto">
             <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
@@ -478,15 +496,16 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   )}
                 </div>
                 
-                {/* Date Inputs */}
+                {/* Date Inputs with Calendar Icons */}
                 <div className="flex gap-1">
                   <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
                       >
-                        {checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}
+                        <span>{checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}</span>
+                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -508,9 +527,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
                       >
-                        {checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}
+                        <span>{checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}</span>
+                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -529,21 +549,29 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   </Popover>
                 </div>
 
-                {/* Search Button */}
+                {/* Get Intelligence Button */}
                 <Button
                   type="submit"
-                  className="h-12 px-4 bg-white/10 hover:bg-white/20 hover:shadow-white/20 hover:shadow-lg text-white rounded-r-full border-l border-border/30 transition-all"
+                  className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-r-full border-l border-border/30 transition-all duration-300 font-medium flex items-center space-x-2 travis-intelligence-glow"
                 >
-                  <Search className="w-5 h-5" />
+                  <Search className="w-4 h-4" />
+                  <span>Get Intelligence</span>
                 </Button>
               </div>
             </div>
           </form>
+
+          {/* Inspirational Link */}
+          <div className="text-center">
+            <button className="text-sm text-muted-foreground/80 hover:text-white transition-colors duration-300 underline-offset-4 hover:underline">
+              Not sure where to go? Get inspired.
+            </button>
+          </div>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="px-6 py-8 border-t border-border/30">
+      <footer className="px-6 py-8 border-t border-border/30 relative z-10">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div></div>
           <div className="flex items-center space-x-6 text-sm text-muted-foreground">

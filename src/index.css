@@ -1,4 +1,3 @@
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -220,4 +219,146 @@
     0 0 20px rgba(16, 185, 129, 0.4),
     0 0 30px rgba(16, 185, 129, 0.2);
   filter: brightness(1.1);
+}
+
+/* Premium UX Animations */
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+@keyframes drift-slow {
+  0% {
+    transform: translateX(-10px) translateY(-10px);
+  }
+  50% {
+    transform: translateX(10px) translateY(10px);
+  }
+  100% {
+    transform: translateX(-10px) translateY(-10px);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-10px);
+    opacity: 0.7;
+  }
+}
+
+@keyframes data-stream {
+  0% {
+    transform: translateY(-100vh);
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(100vh);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-slow {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes fade-in-out {
+  0%, 100% {
+    opacity: 0.7;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes shimmer-progress {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+/* Animation Classes */
+.animate-shimmer {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 0.8),
+    rgba(147, 51, 234, 0.8),
+    rgba(59, 130, 246, 0.8)
+  );
+  background-size: 200% 100%;
+  animation: shimmer 3s ease-in-out infinite;
+}
+
+.animate-drift-slow {
+  animation: drift-slow 20s ease-in-out infinite;
+}
+
+.animate-float {
+  animation: float 8s ease-in-out infinite;
+}
+
+.animate-data-stream {
+  animation: data-stream 4s linear infinite;
+}
+
+.animate-pulse-slow {
+  animation: pulse-slow 2s ease-in-out infinite;
+}
+
+.animate-fade-in-out {
+  animation: fade-in-out 2s ease-in-out infinite;
+}
+
+.animate-shimmer-progress {
+  background: linear-gradient(
+    90deg,
+    rgba(59, 130, 246, 1),
+    rgba(147, 51, 234, 1),
+    rgba(59, 130, 246, 1)
+  );
+  background-size: 200% 100%;
+  animation: shimmer-progress 2s ease-in-out infinite;
+}
+
+/* Background Grid Pattern */
+.bg-grid-pattern {
+  background-image: 
+    linear-gradient(rgba(255, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+}
+
+/* Get Intelligence Button Glow */
+.travis-intelligence-glow:hover {
+  box-shadow: 
+    0 0 30px rgba(59, 130, 246, 0.5),
+    0 0 60px rgba(147, 51, 234, 0.3),
+    0 12px 40px rgba(0, 0, 0, 0.4);
+}
+
+.dark .travis-intelligence-glow:hover {
+  box-shadow: 
+    0 0 30px rgba(59, 130, 246, 0.6),
+    0 0 60px rgba(147, 51, 234, 0.4),
+    0 12px 40px rgba(0, 0, 0, 0.4);
 }
