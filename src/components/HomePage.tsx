@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -368,7 +369,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)',
+                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
                     backgroundPosition: 'center center'
                   }} />
                 </Button>
@@ -376,37 +377,40 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)',
+                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
                     backgroundPosition: 'center center'
                   }} />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold text-foreground">{t.profileName}</h3>
+                      <h3 className="font-semibold text-foreground">Brittany J.</h3>
                       <span className="text-lg">🇺🇸</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{t.profileEmail}</p>
                   </div>
                 </div>
                 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.preferredAirline}</span>
+                    <span className="text-sm text-muted-foreground">Preferred Airline</span>
                     <span className="text-sm font-medium text-foreground">Delta Airlines</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.travelType}</span>
+                    <span className="text-sm text-muted-foreground">Travel Type</span>
                     <span className="text-sm font-medium text-foreground">Luxury</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.frequentFlyer}</span>
+                    <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
                     <span className="text-sm font-medium text-foreground">DL89472156</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.nationality}</span>
+                    <span className="text-sm text-muted-foreground">Nationality</span>
+                    <span className="text-sm font-medium text-foreground">American</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Country</span>
                     <span className="text-sm font-medium text-foreground">United States</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.status}</span>
+                    <span className="text-sm text-muted-foreground">Status</span>
                     <span className="text-sm font-medium text-emerald-400">Premium Member</span>
                   </div>
                 </div>
@@ -428,10 +432,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
           <div className="mb-16 animate-fade-in">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter">
+            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
               {t.title}
             </h1>
-            <p className="text-xl text-muted-foreground mb-8 font-light">
+            <p className="text-xl text-muted-foreground mb-8 font-light dark:text-glow-subtle">
               {t.subtitle}
             </p>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8"></div>
@@ -439,7 +443,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
           {/* Google-style Search Form */}
           <form onSubmit={handleSearch} className="mb-32 max-w-5xl mx-auto">
-            <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow">
+            <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow hover:dark:shadow-blue-500/20 hover:dark:shadow-2xl transition-shadow duration-300">
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
                 <div className="flex-1 relative group">
@@ -487,7 +491,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
-                        {checkinDate ? format(checkinDate, 'MMM dd') : t.depart}
+                        {checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -511,7 +515,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
-                        {checkoutDate ? format(checkoutDate, 'MMM dd') : t.return}
+                        {checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -533,10 +537,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 {/* Search Button */}
                 <Button
                   type="submit"
-                  className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+                  className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
                 >
-                  <Search className="w-5 h-5 mr-2" />
-                  {t.search}
+                  <Search className="w-5 h-5" />
                 </Button>
               </div>
             </div>

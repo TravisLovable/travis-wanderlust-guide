@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown } from 'lucide-react';
+import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -43,13 +43,15 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
   const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
 
   // Profile data
   const profileData = {
     name: "Brittany J.",
     preferredAirline: "Delta Airlines",
     travelType: "Luxury",
-    frequentFlyerNumber: "DL123456789",
+    frequentFlyerNumber: "DL89472156",
     nationality: "American",
     country: "United States",
     status: "Premium Member"
@@ -86,6 +88,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       ]
     }
   };
+
+  const languages = [
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'zh', name: 'Mandarin', flag: '🇨🇳' },
+    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
+    { code: 'it', name: 'Italian', flag: '🇮🇹' },
+    { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+    { code: 'fr', name: 'French', flag: '🇫🇷' },
+    { code: 'xh', name: 'Xhosa', flag: '🇿🇦' },
+    { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
+  ];
 
   const fourteenDayForecast = [
     { day: 'Today', temp: 24, condition: 'Partly Cloudy' },
@@ -168,6 +181,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     setIsAdapterSpinning(!isAdapterSpinning);
   };
 
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
+  };
+
   const formatDateRange = (checkin: Date, checkout: Date) => {
     const departFormatted = format(checkin, 'EEEE MMMM do');
     const returnFormatted = format(checkout, 'EEEE MMMM do');
@@ -175,7 +193,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   };
 
   return (
-    <div className="min-h-screen bg-gray-300 dark:bg-black">
+    <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header */}
       <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -247,12 +265,43 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+              <span className="text-xl font-medium text-foreground">Welcome back, Brittany</span>
+              
+              {/* Language Selector */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <Globe className="w-5 h-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48">
+                  {languages.map((lang) => (
+                    <DropdownMenuItem
+                      key={lang.code}
+                      onClick={() => setCurrentLanguage(lang.code)}
+                      className="flex items-center space-x-3"
+                    >
+                      <span className="text-lg">{lang.flag}</span>
+                      <span>{lang.name}</span>
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={toggleTheme}
+                className="rounded-full"
+              >
+                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+              </Button>
+
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-10 w-10 rounded-full">
                     <Avatar className="h-10 w-10">
-                      <AvatarImage src="/lovable-uploads/0a529713-a2bd-4cfa-95c5-23c0084bfdd5.png" alt="Profile" />
+                      <AvatarImage src="/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png" alt="Profile" />
                       <AvatarFallback>BJ</AvatarFallback>
                     </Avatar>
                   </Button>
@@ -307,7 +356,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/80 border border-blue-500/70 rounded-full text-sm text-white hover:bg-blue-600 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600 border border-blue-500/70 rounded-full text-sm text-white hover:bg-blue-700 transition-colors shadow-sm"
                     >
                       <span>{dest}</span>
                       <button
@@ -327,7 +376,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-600/80 border border-green-500/70 rounded text-xs text-white hover:bg-green-600 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600 border border-green-500/70 rounded text-xs text-white hover:bg-green-700 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
@@ -342,6 +391,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
                 <Input
                   type="text"
                   placeholder="Change destination"
@@ -350,7 +400,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   onKeyPress={handleKeyPress}
                   onFocus={() => newDestination.length > 1 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="pl-4 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                  className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
                 />
                 {showSuggestions && destinationSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -370,11 +420,60 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 )}
               </div>
               
+              {/* Date Inputs */}
+              <div className="flex gap-1">
+                <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                    >
+                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Depart'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={newCheckinDate}
+                      onSelect={(date) => {
+                        if (date) setNewCheckinDate(date);
+                        setCheckinOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+                
+                <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                    >
+                      {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Return'}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                    <CalendarComponent
+                      mode="single"
+                      selected={newCheckoutDate}
+                      onSelect={(date) => {
+                        if (date) setNewCheckoutDate(date);
+                        setCheckoutOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto"
+                    />
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               <Button
                 onClick={handleNewSearch}
-                className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full"
+                className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
               >
-                Search
+                <Search className="w-5 h-5" />
               </Button>
             </div>
           </div>
@@ -389,7 +488,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         </div>
 
         {/* Cultural Insights Section */}
-        <Card className="travis-card mb-8 bg-white dark:bg-gray-900 shadow-lg">
+        <Card className="travis-card mb-8 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center text-2xl font-semibold">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
@@ -464,7 +563,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
           {/* Currency Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
@@ -505,7 +604,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <SaoPauloAccommodationMap />
 
           {/* World Adapters Widget - 3D floating effect */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
@@ -568,7 +667,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Time Zone Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -601,7 +700,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Weather Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -645,7 +744,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Local Holidays Widget - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -669,7 +768,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Airport Info Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -694,7 +793,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Transportation Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
@@ -724,7 +823,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Visa & Entry Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -751,7 +850,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Emergency Info Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -780,7 +879,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Connectivity Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -807,7 +906,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Intelligence Dashboard Widget */}
-          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white dark:bg-gray-900 shadow-lg">
+          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">

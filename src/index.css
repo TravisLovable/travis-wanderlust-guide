@@ -107,3 +107,34 @@
 .animate-fadeIn {
   animation: fadeIn 0.5s ease-out forwards;
 }
+
+/* 3D Glowing Text Effects for Dark Mode */
+.dark .text-glow {
+  text-shadow: 
+    0 0 10px rgba(255, 255, 255, 0.3),
+    0 0 20px rgba(255, 255, 255, 0.2),
+    0 0 30px rgba(255, 255, 255, 0.1),
+    0 5px 10px rgba(0, 0, 0, 0.3);
+  transform: translateZ(0);
+}
+
+.dark .text-glow-subtle {
+  text-shadow: 
+    0 0 5px rgba(255, 255, 255, 0.2),
+    0 0 10px rgba(255, 255, 255, 0.1),
+    0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Search Bar Hover Glow Effect */
+.travis-glow {
+  transition: all 0.3s ease;
+}
+
+.dark .travis-glow:hover {
+  box-shadow: 
+    0 0 20px rgba(59, 130, 246, 0.3),
+    0 0 40px rgba(59, 130, 246, 0.2),
+    0 0 60px rgba(59, 130, 246, 0.1),
+    0 8px 32px rgba(0, 0, 0, 0.3);
+  border-color: rgba(59, 130, 246, 0.4);
+}
