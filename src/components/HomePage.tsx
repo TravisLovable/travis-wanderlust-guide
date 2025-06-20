@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -596,9 +596,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   </Popover>
                 </div>
 
-                {/* Search Icon */}
-                <div className="h-12 px-6 flex items-center space-x-2 text-white/70 group-hover:text-white transition-colors">
-                  <Search className="w-5 h-5" />
+                {/* Right Arrow Icon */}
+                <div className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300">
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
                 </div>
               </div>
             </div>
