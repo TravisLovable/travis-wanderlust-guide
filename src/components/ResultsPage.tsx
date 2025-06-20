@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,12 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
@@ -34,6 +40,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
   const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [draggedWidget, setDraggedWidget] = useState<string | null>(null);
+  const [widgetOrder, setWidgetOrder] = useState([
+    'currency', 'accommodation', 'adapter', 'time', 'weather', 'holidays',
+    'airport', 'transportation', 'visa', 'emergency', 'connectivity', 'dashboard'
+  ]);
 
   // Brazil-focused mock data
   const mockData = {
@@ -148,14 +159,551 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     setIsAdapterSpinning(!isAdapterSpinning);
   };
 
-  const formatDateRange = (checkin: Date, checkout: Date) => {
-    const checkinFormatted = format(checkin, 'EEEE MMMM do');
-    const checkoutFormatted = format(checkout, 'EEEE MMMM do');
-    return `${checkinFormatted} - ${checkoutFormatted}`;
+  const formatDateRange = (departDate: Date, returnDate: Date) => {
+    const departFormatted = format(departDate, 'EEEE MMMM do');
+    const returnFormatted = format(returnDate, 'EEEE MMMM do');
+    return `${departFormatted} - ${returnFormatted}`;
+  };
+
+  const handleDragStart = (e: React.DragEvent, widgetId: string) => {
+    setDraggedWidget(widgetId);
+    e.dataTransfer.effectAllowed = 'move';
+  };
+
+  const handleDragOver = (e: React.DragEvent) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+  };
+
+  const handleDrop = (e: React.DragEvent, targetWidgetId: string) => {
+    e.preventDefault();
+    if (!draggedWidget || draggedWidget === targetWidgetId) return;
+
+    const draggedIndex = widgetOrder.indexOf(draggedWidget);
+    const targetIndex = widgetOrder.indexOf(targetWidgetId);
+    
+    const newOrder = [...widgetOrder];
+    newOrder.splice(draggedIndex, 1);
+    newOrder.splice(targetIndex, 0, draggedWidget);
+    
+    setWidgetOrder(newOrder);
+    setDraggedWidget(null);
+  };
+
+  const renderWidget = (widgetId: string) => {
+    const isDragging = draggedWidget === widgetId;
+    const widgetClass = `transition-all duration-200 ${isDragging ? 'opacity-50 scale-105' : 'hover:scale-[1.01]'}`;
+
+    switch (widgetId) {
+      case 'currency':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
+                  <CreditCard className="w-5 h-5 text-white" />
+                </div>
+                Currency Exchange
+                <TrendingUp className="w-4 h-4 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                <span className="font-semibold text-lg">1 USD</span>
+                <span className="text-green-400 font-bold text-xl">
+                  {mockData.currency.rate} {mockData.currency.symbol}
+                </span>
+              </div>
+              <div className="flex space-x-3">
+                <Input
+                  type="number"
+                  value={currencyAmount}
+                  onChange={(e) => setCurrencyAmount(Number(e.target.value))}
+                  className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl"
+                />
+                <div className="px-4 py-2 bg-secondary/50 rounded-xl border border-border/50 font-mono">
+                  {mockData.currency.symbol}
+                </div>
+              </div>
+              <p className="text-lg font-semibold text-green-400">
+                = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(2)} {mockData.currency.name}
+              </p>
+              <div className="text-sm text-muted-foreground">
+                Live rate • Updated 2 min ago
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'accommodation':
+        return (
+          <div
+            key={widgetId}
+            className={`cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <SaoPauloAccommodationMap />
+          </div>
+        );
+
+      case 'adapter':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
+                  <Plug className="w-5 h-5 text-white" />
+                </div>
+                Power Adapters
+                <Zap className="w-4 h-4 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer perspective-1000"
+                onClick={handleAdapterClick}
+              >
+                <div 
+                  className={`w-16 h-20 mx-auto mb-3 relative transition-all duration-1000 transform-gpu ${
+                    isAdapterSpinning ? 'animate-spin rotate-y-180' : 'hover:rotate-y-12 hover:-translate-y-2'
+                  }`}
+                  style={{
+                    background: 'linear-gradient(135deg, #f3f4f6 0%, #d1d5db 50%, #9ca3af 100%)',
+                    boxShadow: `
+                      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                      0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.1)
+                    `,
+                    borderRadius: '8px',
+                    transformStyle: 'preserve-3d',
+                  }}
+                >
+                  {/* 3D depth effect */}
+                  <div 
+                    className="absolute inset-0 rounded-lg"
+                    style={{
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)',
+                      transform: 'translateZ(-2px)',
+                    }}
+                  />
+                  
+                  {/* Type C plug visual */}
+                  <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md"></div>
+                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md mt-1"></div>
+                  </div>
+                  
+                  {/* Floating shadow */}
+                  <div 
+                    className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-3 bg-black/20 rounded-full blur-sm"
+                    style={{ filter: 'blur(4px)' }}
+                  />
+                </div>
+                <div className="font-bold text-lg text-yellow-400">Type C & N</div>
+                <div className="text-sm text-muted-foreground">220V • 60Hz</div>
+              </div>
+              <div className="text-sm space-y-1 mt-2">
+                <p><span className="font-medium">Voltage:</span> 220V (Higher than US)</p>
+                <p><span className="font-medium">Frequency:</span> 60Hz</p>
+                <p><span className="font-medium">Plug Type:</span> Type C (Europlug) & Type N</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'time':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                Time Intelligence
+                <Zap className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-2 font-medium">YOUR TIME</div>
+                  <div className="text-2xl font-bold text-blue-400">17:42</div>
+                  <div className="text-xs text-muted-foreground font-mono">EST</div>
+                </div>
+                <div className="text-center p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-2 font-medium">SÃO PAULO</div>
+                  <div className="text-2xl font-bold text-blue-300">{mockData.time.current}</div>
+                  <div className="text-xs text-muted-foreground font-mono">BRT {mockData.time.offset}</div>
+                </div>
+              </div>
+              {!mockData.time.dst && (
+                <div className="flex items-center justify-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <Clock className="w-4 h-4 mr-2 text-blue-400" />
+                  <span className="text-sm text-blue-400 font-medium">Standard Time Active</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+        );
+
+      case 'weather':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
+                  <Thermometer className="w-5 h-5 text-white" />
+                </div>
+                Weather Intel
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
+                  className="ml-auto text-orange-400 hover:text-orange-300"
+                >
+                  °{tempUnit}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center p-6 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                <div className="text-4xl font-bold text-orange-400 mb-2">
+                  {convertTemp(mockData.weather.temp)}°{tempUnit}
+                </div>
+                <div className="text-lg text-muted-foreground mb-2">{mockData.weather.condition}</div>
+                <div className="text-sm text-muted-foreground">Humidity: {mockData.weather.humidity}%</div>
+              </div>
+              
+              {/* 14-day forecast */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">14-Day Forecast</p>
+                <div className="grid grid-cols-7 gap-1 text-xs">
+                  {fourteenDayForecast.map((forecast, idx) => (
+                    <div key={idx} className="text-center p-2 bg-secondary/30 rounded">
+                      <div className="font-medium text-xs truncate">{forecast.day}</div>
+                      <div className="text-orange-400 font-semibold">
+                        {convertTemp(forecast.temp)}°
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'holidays':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <CalendarDays className="w-5 h-5 text-white" />
+                </div>
+                Local Holidays
+                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {mockData.holidays.map((holiday, idx) => (
+                <div key={idx} className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                  <div className="font-medium text-purple-300">{holiday.name}</div>
+                  <div className="text-sm text-muted-foreground">{holiday.date}</div>
+                </div>
+              ))}
+              <div className="text-sm text-muted-foreground">
+                <p><span className="font-medium">Note:</span> Many businesses close during major holidays like Carnival</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'airport':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Plane className="w-5 h-5 text-white" />
+                </div>
+                Airport Information
+                <Plane className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="font-bold text-lg text-purple-700">{mockData.airport.code}</div>
+                <div className="text-sm font-medium">{mockData.airport.name}</div>
+                <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Distance to city:</span> 25 km</p>
+                <p><span className="font-medium">Travel time:</span> 45-90 minutes</p>
+                <p><span className="font-medium">Transportation:</span> Metro, Bus, Taxi, Uber</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'transportation':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Car className="w-5 h-5 text-white" />
+                </div>
+                Transportation
+                <Car className="w-4 h-4 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700">Metro</div>
+                  <div className="text-xs text-muted-foreground">Extensive Network</div>
+                </div>
+                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700">Uber/99</div>
+                  <div className="text-xs text-muted-foreground">Widely Available</div>
+                </div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Metro day pass:</span> R$12.00</p>
+                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
+                <p><span className="font-medium">Bilhete Único:</span> Integrated transport card</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'visa':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                Visa & Entry Requirements
+                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="text-green-700 font-medium">✓ Visa-free entry</div>
+                <div className="text-xs text-muted-foreground">For US passport holders</div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Max stay:</span> 90 days</p>
+                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
+                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
+              </div>
+              <Button variant="outline" size="sm" className="w-full">
+                View Full Requirements
+              </Button>
+            </CardContent>
+          </Card>
+        );
+
+      case 'emergency':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                Emergency Information
+                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700">{mockData.emergency.police}</div>
+                  <div className="text-xs text-muted-foreground">Police</div>
+                </div>
+                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700">{mockData.emergency.medical}</div>
+                  <div className="text-xs text-muted-foreground">Medical/Fire</div>
+                </div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">US Consulate SP:</span> +55 11 5186-7000</p>
+                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'connectivity':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
+                  <Wifi className="w-5 h-5 text-white" />
+                </div>
+                Connectivity & ATMs
+                <Wifi className="w-4 h-4 ml-auto text-teal-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                <h4 className="font-medium text-cyan-700 mb-2">Free Wi-Fi Spots</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• Shopping malls (most locations)</li>
+                  <li>• Starbucks, McDonald's</li>
+                  <li>• Metro stations (WiFi Livre SP)</li>
+                </ul>
+              </div>
+              <div className="text-sm">
+                <p className="font-medium mb-1">ATM Locations:</p>
+                <p className="text-muted-foreground">Banco do Brasil, Bradesco, Itaú branches. International cards widely accepted.</p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      case 'dashboard':
+        return (
+          <Card 
+            key={widgetId}
+            className={`travis-card travis-interactive group bg-white shadow-lg cursor-move ${widgetClass}`}
+            draggable
+            onDragStart={(e) => handleDragStart(e, widgetId)}
+            onDragOver={handleDragOver}
+            onDrop={(e) => handleDrop(e, widgetId)}
+          >
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Palette className="w-5 h-5 text-white" />
+                </div>
+                Intelligence Dashboard
+                <Users className="w-4 h-4 ml-auto text-purple-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-muted-foreground">Configure your travel intelligence dashboard:</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {widgetOptions.map((widget) => {
+                  const Icon = widget.icon;
+                  const isSelected = selectedWidgets.includes(widget.id);
+                  return (
+                    <button
+                      key={widget.id}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
+                        } else {
+                          setSelectedWidgets([...selectedWidgets, widget.id]);
+                        }
+                      }}
+                      className={`p-4 rounded-xl border transition-all duration-300 travis-interactive ${
+                        isSelected
+                          ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+                          : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-2`}>
+                        <Icon className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="text-sm font-medium">{widget.name}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <p className="text-purple-300 font-medium">
+                  {selectedWidgets.length} modules selected for your travel intelligence dashboard
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+        );
+
+      default:
+        return null;
+    }
   };
 
   return (
-    <div className="min-h-screen bg-gray-200">
+    <div className="min-h-screen bg-gray-300">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -171,8 +719,15 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <div>
                 <div className="flex items-center space-x-3">
                   <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
-                    <MapPin className="w-7 h-7 mr-3 text-blue-400" />
                     {destination}
+                    {/* Brazilian Flag */}
+                    <div className="ml-3 w-8 h-6 rounded border shadow-sm overflow-hidden">
+                      <div className="w-full h-2 bg-green-500"></div>
+                      <div className="w-full h-2 bg-yellow-400 flex items-center justify-center">
+                        <div className="w-3 h-2 bg-blue-600 rounded-full"></div>
+                      </div>
+                      <div className="w-full h-2 bg-green-500"></div>
+                    </div>
                   </h1>
                   <Button
                     variant="ghost"
@@ -190,13 +745,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       className="text-muted-foreground flex items-center font-light p-0 h-auto hover:text-foreground transition-colors"
                     >
                       <Calendar className="w-4 h-4 mr-2" />
-                      {formatDateRange(newCheckinDate, newCheckoutDate)}
+                      Depart {format(newCheckinDate, 'EEEE MMMM do')} - Return {format(newCheckoutDate, 'EEEE MMMM do')}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
                     <div className="p-4 space-y-4">
                       <div>
-                        <p className="text-sm font-medium mb-2">Check-in Date</p>
+                        <p className="text-sm font-medium mb-2">Depart Date</p>
                         <CalendarComponent
                           mode="single"
                           selected={newCheckinDate}
@@ -207,7 +762,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-medium mb-2">Check-out Date</p>
+                        <p className="text-sm font-medium mb-2">Return Date</p>
                         <CalendarComponent
                           mode="single"
                           selected={newCheckoutDate}
@@ -222,10 +777,36 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </Popover>
               </div>
             </div>
-            <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+            <div className="flex items-center space-x-4">
+              <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="relative h-10 w-10 rounded-full bg-secondary/20 hover:bg-secondary/40"
+                  >
+                    <User className="h-5 w-5" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56" align="end" forceMount>
+                  <DropdownMenuItem>
+                    Profile Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Travel Preferences
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Saved Destinations
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Sign Out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
-          {/* Pinned Destinations - Brazil focused */}
+          {/* Pinned Destinations - Brazil focused with darker colors */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center space-x-3">
@@ -235,7 +816,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-secondary/30 border border-border/30 rounded-full text-sm text-foreground hover:bg-secondary/60 transition-colors"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/80 border border-blue-500/50 rounded-full text-sm text-white hover:bg-blue-700/90 transition-colors"
                     >
                       <span>{dest}</span>
                       <button
@@ -243,7 +824,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                           e.stopPropagation();
                           removePinnedDestination(dest);
                         }}
-                        className="w-4 h-4 rounded-full bg-muted-foreground/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="w-4 h-4 rounded-full bg-white/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-70 group-hover:opacity-100 transition-opacity"
                       >
                         ×
                       </button>
@@ -255,7 +836,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-500/20 border border-green-500/50 rounded text-xs text-green-300 hover:bg-green-500/30 transition-colors"
+                      className="px-2 py-1 bg-green-600/80 border border-green-500/50 rounded text-xs text-white hover:bg-green-700/90 transition-colors"
                       title="Click to pin"
                     >
                       + {city}
@@ -270,7 +851,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
                 <Input
                   type="text"
                   placeholder="Change destination"
@@ -279,7 +859,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   onKeyPress={handleKeyPress}
                   onFocus={() => newDestination.length > 1 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="pl-11 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                  className="pl-4 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
                 />
                 {showSuggestions && destinationSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -393,400 +973,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </CardContent>
         </Card>
 
+        {/* Draggable Widgets Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-          
-          {/* Currency Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
-                  <CreditCard className="w-5 h-5 text-white" />
-                </div>
-                Currency Exchange
-                <TrendingUp className="w-4 h-4 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                <span className="font-semibold text-lg">1 USD</span>
-                <span className="text-green-400 font-bold text-xl">
-                  {mockData.currency.rate} {mockData.currency.symbol}
-                </span>
-              </div>
-              <div className="flex space-x-3">
-                <Input
-                  type="number"
-                  value={currencyAmount}
-                  onChange={(e) => setCurrencyAmount(Number(e.target.value))}
-                  className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl"
-                />
-                <div className="px-4 py-2 bg-secondary/50 rounded-xl border border-border/50 font-mono">
-                  {mockData.currency.symbol}
-                </div>
-              </div>
-              <p className="text-lg font-semibold text-green-400">
-                = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(2)} {mockData.currency.name}
-              </p>
-              <div className="text-sm text-muted-foreground">
-                Live rate • Updated 2 min ago
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* São Paulo Accommodation Map */}
-          <SaoPauloAccommodationMap />
-
-          {/* World Adapters Widget - 3D floating effect */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
-                  <Plug className="w-5 h-5 text-white" />
-                </div>
-                Power Adapters
-                <Zap className="w-4 h-4 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div 
-                className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer perspective-1000"
-                onClick={handleAdapterClick}
-              >
-                <div 
-                  className={`w-16 h-20 mx-auto mb-3 relative transition-all duration-1000 transform-gpu ${
-                    isAdapterSpinning ? 'animate-spin rotate-y-180' : 'hover:rotate-y-12 hover:-translate-y-2'
-                  }`}
-                  style={{
-                    background: 'linear-gradient(135deg, #f3f4f6 0%, #d1d5db 50%, #9ca3af 100%)',
-                    boxShadow: `
-                      0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                      0 10px 10px -5px rgba(0, 0, 0, 0.04),
-                      inset 0 1px 0 rgba(255, 255, 255, 0.1)
-                    `,
-                    borderRadius: '8px',
-                    transformStyle: 'preserve-3d',
-                  }}
-                >
-                  {/* 3D depth effect */}
-                  <div 
-                    className="absolute inset-0 rounded-lg"
-                    style={{
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)',
-                      transform: 'translateZ(-2px)',
-                    }}
-                  />
-                  
-                  {/* Type C plug visual */}
-                  <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md"></div>
-                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md mt-1"></div>
-                  </div>
-                  
-                  {/* Floating shadow */}
-                  <div 
-                    className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-3 bg-black/20 rounded-full blur-sm"
-                    style={{ filter: 'blur(4px)' }}
-                  />
-                </div>
-                <div className="font-bold text-lg text-yellow-400">Type C & N</div>
-                <div className="text-sm text-muted-foreground">220V • 60Hz</div>
-              </div>
-              <div className="text-sm space-y-1 mt-2">
-                <p><span className="font-medium">Voltage:</span> 220V (Higher than US)</p>
-                <p><span className="font-medium">Frequency:</span> 60Hz</p>
-                <p><span className="font-medium">Plug Type:</span> Type C (Europlug) & Type N</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Time Zone Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-                Time Intelligence
-                <Zap className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-2 font-medium">YOUR TIME</div>
-                  <div className="text-2xl font-bold text-blue-400">17:42</div>
-                  <div className="text-xs text-muted-foreground font-mono">EST</div>
-                </div>
-                <div className="text-center p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-2 font-medium">SÃO PAULO</div>
-                  <div className="text-2xl font-bold text-blue-300">{mockData.time.current}</div>
-                  <div className="text-xs text-muted-foreground font-mono">BRT {mockData.time.offset}</div>
-                </div>
-              </div>
-              {!mockData.time.dst && (
-                <div className="flex items-center justify-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <Clock className="w-4 h-4 mr-2 text-blue-400" />
-                  <span className="text-sm text-blue-400 font-medium">Standard Time Active</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Weather Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
-                  <Thermometer className="w-5 h-5 text-white" />
-                </div>
-                Weather Intel
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
-                  className="ml-auto text-orange-400 hover:text-orange-300"
-                >
-                  °{tempUnit}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center p-6 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                <div className="text-4xl font-bold text-orange-400 mb-2">
-                  {convertTemp(mockData.weather.temp)}°{tempUnit}
-                </div>
-                <div className="text-lg text-muted-foreground mb-2">{mockData.weather.condition}</div>
-                <div className="text-sm text-muted-foreground">Humidity: {mockData.weather.humidity}%</div>
-              </div>
-              
-              {/* 14-day forecast */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">14-Day Forecast</p>
-                <div className="grid grid-cols-7 gap-1 text-xs">
-                  {fourteenDayForecast.map((forecast, idx) => (
-                    <div key={idx} className="text-center p-2 bg-secondary/30 rounded">
-                      <div className="font-medium text-xs truncate">{forecast.day}</div>
-                      <div className="text-orange-400 font-semibold">
-                        {convertTemp(forecast.temp)}°
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Local Holidays Widget - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <CalendarDays className="w-5 h-5 text-white" />
-                </div>
-                Local Holidays
-                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {mockData.holidays.map((holiday, idx) => (
-                <div key={idx} className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                  <div className="font-medium text-purple-300">{holiday.name}</div>
-                  <div className="text-sm text-muted-foreground">{holiday.date}</div>
-                </div>
-              ))}
-              <div className="text-sm text-muted-foreground">
-                <p><span className="font-medium">Note:</span> Many businesses close during major holidays like Carnival</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Airport Info Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Plane className="w-5 h-5 text-white" />
-                </div>
-                Airport Information
-                <Plane className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <div className="font-bold text-lg text-purple-700">{mockData.airport.code}</div>
-                <div className="text-sm font-medium">{mockData.airport.name}</div>
-                <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Distance to city:</span> 25 km</p>
-                <p><span className="font-medium">Travel time:</span> 45-90 minutes</p>
-                <p><span className="font-medium">Transportation:</span> Metro, Bus, Taxi, Uber</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Transportation Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Car className="w-5 h-5 text-white" />
-                </div>
-                Transportation
-                <Car className="w-4 h-4 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">Metro</div>
-                  <div className="text-xs text-muted-foreground">Extensive Network</div>
-                </div>
-                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">Uber/99</div>
-                  <div className="text-xs text-muted-foreground">Widely Available</div>
-                </div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Metro day pass:</span> R$12.00</p>
-                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
-                <p><span className="font-medium">Bilhete Único:</span> Integrated transport card</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Visa & Entry Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
-                Visa & Entry Requirements
-                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="text-green-700 font-medium">✓ Visa-free entry</div>
-                <div className="text-xs text-muted-foreground">For US passport holders</div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Max stay:</span> 90 days</p>
-                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
-                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full">
-                View Full Requirements
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Emergency Info Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
-                Emergency Information
-                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700">{mockData.emergency.police}</div>
-                  <div className="text-xs text-muted-foreground">Police</div>
-                </div>
-                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700">{mockData.emergency.medical}</div>
-                  <div className="text-xs text-muted-foreground">Medical/Fire</div>
-                </div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">US Consulate SP:</span> +55 11 5186-7000</p>
-                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Connectivity Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
-                  <Wifi className="w-5 h-5 text-white" />
-                </div>
-                Connectivity & ATMs
-                <Wifi className="w-4 h-4 ml-auto text-teal-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
-                <h4 className="font-medium text-cyan-700 mb-2">Free Wi-Fi Spots</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Shopping malls (most locations)</li>
-                  <li>• Starbucks, McDonald's</li>
-                  <li>• Metro stations (WiFi Livre SP)</li>
-                </ul>
-              </div>
-              <div className="text-sm">
-                <p className="font-medium mb-1">ATM Locations:</p>
-                <p className="text-muted-foreground">Banco do Brasil, Bradesco, Itaú branches. International cards widely accepted.</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Intelligence Dashboard Widget */}
-          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Palette className="w-5 h-5 text-white" />
-                </div>
-                Intelligence Dashboard
-                <Users className="w-4 h-4 ml-auto text-purple-400" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-muted-foreground">Configure your travel intelligence dashboard:</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {widgetOptions.map((widget) => {
-                  const Icon = widget.icon;
-                  const isSelected = selectedWidgets.includes(widget.id);
-                  return (
-                    <button
-                      key={widget.id}
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
-                        } else {
-                          setSelectedWidgets([...selectedWidgets, widget.id]);
-                        }
-                      }}
-                      className={`p-4 rounded-xl border transition-all duration-300 travis-interactive ${
-                        isSelected
-                          ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
-                          : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
-                      }`}
-                    >
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-2`}>
-                        <Icon className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="text-sm font-medium">{widget.name}</div>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <p className="text-purple-300 font-medium">
-                  {selectedWidgets.length} modules selected for your travel intelligence dashboard
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
+          {widgetOrder.map((widgetId) => (
+            renderWidget(widgetId)
+          ))}
         </div>
       </main>
 
