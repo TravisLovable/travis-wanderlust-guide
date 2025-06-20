@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -51,12 +52,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "Depart",
       return: "Return",
       search: "Search",
-      profileName: "Chris Upchurch",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "Brittany J.",
       preferredAirline: "Preferred Airline",
       travelType: "Travel Type",
       frequentFlyer: "Frequent Flyer #",
       nationality: "Nationality",
+      country: "Country",
       status: "Status",
       profileSettings: "Profile Settings",
       savedDestinations: "Saved Destinations",
@@ -73,12 +74,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "出发",
       return: "返回",
       search: "搜索",
-      profileName: "克里斯·厄普彻奇",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "布里塔尼·J.",
       preferredAirline: "首选航空公司",
       travelType: "旅行类型",
       frequentFlyer: "常旅客号码",
       nationality: "国籍",
+      country: "国家",
       status: "状态",
       profileSettings: "个人资料设置",
       savedDestinations: "保存的目的地",
@@ -95,12 +96,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "出発",
       return: "帰国",
       search: "検索",
-      profileName: "クリス・アップチャーチ",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "ブリタニー・J.",
       preferredAirline: "優先航空会社",
       travelType: "旅行タイプ",
       frequentFlyer: "フリークエントフライヤー番号",
       nationality: "国籍",
+      country: "国",
       status: "ステータス",
       profileSettings: "プロフィール設定",
       savedDestinations: "保存された目的地",
@@ -117,12 +118,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "Salida",
       return: "Regreso",
       search: "Buscar",
-      profileName: "Chris Upchurch",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "Brittany J.",
       preferredAirline: "Aerolínea Preferida",
       travelType: "Tipo de Viaje",
       frequentFlyer: "Viajero Frecuente #",
       nationality: "Nacionalidad",
+      country: "País",
       status: "Estado",
       profileSettings: "Configuración del Perfil",
       savedDestinations: "Destinos Guardados",
@@ -139,12 +140,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "Départ",
       return: "Retour",
       search: "Rechercher",
-      profileName: "Chris Upchurch",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "Brittany J.",
       preferredAirline: "Compagnie Aérienne Préférée",
       travelType: "Type de Voyage",
       frequentFlyer: "Voyageur Fréquent #",
       nationality: "Nationalité",
+      country: "Pays",
       status: "Statut",
       profileSettings: "Paramètres du Profil",
       savedDestinations: "Destinations Sauvegardées",
@@ -161,12 +162,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "Partenza",
       return: "Ritorno",
       search: "Cerca",
-      profileName: "Chris Upchurch",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "Brittany J.",
       preferredAirline: "Compagnia Aerea Preferita",
       travelType: "Tipo di Viaggio",
       frequentFlyer: "Frequent Flyer #",
       nationality: "Nazionalità",
+      country: "Paese",
       status: "Stato",
       profileSettings: "Impostazioni Profilo",
       savedDestinations: "Destinazioni Salvate",
@@ -183,12 +184,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "Ukuhamba",
       return: "Ukubuya",
       search: "Khangela",
-      profileName: "Chris Upchurch",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "Brittany J.",
       preferredAirline: "Inqwelomoya Ekhethwayo",
       travelType: "Uhlobo Lokuhamba",
       frequentFlyer: "Umhambi Rhoqo #",
       nationality: "Ubuzwe",
+      country: "Ilizwe",
       status: "Isimo",
       profileSettings: "Iisetingi Zeprofayili",
       savedDestinations: "Iindawo Ezigciniweyo",
@@ -205,12 +206,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       depart: "Vertrek",
       return: "Terugkeer",
       search: "Soek",
-      profileName: "Chris Upchurch",
-      profileEmail: "chris.upchurch@email.com",
+      profileName: "Brittany J.",
       preferredAirline: "Voorkeur Lugredery",
       travelType: "Reis Tipe",
       frequentFlyer: "Gereelde Vlieër #",
       nationality: "Nasionaliteit",
+      country: "Land",
       status: "Status",
       profileSettings: "Profiel Instellings",
       savedDestinations: "Gestoorde Bestemmings",
@@ -368,7 +369,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
                   <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)',
+                    backgroundImage: 'url(/lovable-uploads/57f6a72e-9b61-46d9-815f-aa82e892afeb.png)',
                     backgroundPosition: 'center center'
                   }} />
                 </Button>
@@ -376,7 +377,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
                 <div className="flex items-center space-x-4 mb-4">
                   <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)',
+                    backgroundImage: 'url(/lovable-uploads/57f6a72e-9b61-46d9-815f-aa82e892afeb.png)',
                     backgroundPosition: 'center center'
                   }} />
                   <div>
@@ -384,7 +385,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                       <h3 className="font-semibold text-foreground">{t.profileName}</h3>
                       <span className="text-lg">🇺🇸</span>
                     </div>
-                    <p className="text-sm text-muted-foreground">{t.profileEmail}</p>
                   </div>
                 </div>
                 
@@ -403,6 +403,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">{t.nationality}</span>
+                    <span className="text-sm font-medium text-foreground">American</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">{t.country}</span>
                     <span className="text-sm font-medium text-foreground">United States</span>
                   </div>
                   <div className="flex justify-between items-center">
