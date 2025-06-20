@@ -382,7 +382,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   <div>
                     <div className="flex items-center space-x-2">
                       <h3 className="font-semibold text-foreground">Brittany J.</h3>
-                      <span className="text-lg">🇺🇸</span>
                     </div>
                   </div>
                 </div>
@@ -408,7 +407,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     <span className="text-sm text-muted-foreground">Country</span>
                     <div className="flex items-center space-x-2">
                       <span className="text-sm font-medium text-foreground">United States</span>
-                      <span className="text-lg">🇺🇸</span>
                     </div>
                   </div>
                   <div className="flex justify-between items-center">

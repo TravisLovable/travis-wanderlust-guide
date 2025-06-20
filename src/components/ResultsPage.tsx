@@ -284,11 +284,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       <strong>Frequent Flyer #:</strong> {profileData.frequentFlyerNumber}
                     </div>
                     <div className="text-xs">
-                      <strong>Passport:</strong> 
-                      <div className="flex items-center space-x-2 inline-block ml-1">
-                        <span>{profileData.country}</span>
-                        <span className="text-lg">🇺🇸</span>
-                      </div>
+                      <strong>Passport:</strong> {profileData.country}
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-xs text-muted-foreground">Dark Mode</span>
