@@ -1,108 +1,213 @@
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+/* Travis Design System - Premium Dark/Light Mode */
+
 @layer base {
   :root {
-    --background: 0 0% 100%;
-    --foreground: 222.2 47.4% 11.2%;
+    --background: 250 250 250;
+    --foreground: 8 8 11;
 
-    --card: 0 0% 100%;
-    --card-foreground: 222.2 47.4% 11.2%;
- 
-    --popover: 0 0% 100%;
-    --popover-foreground: 222.2 47.4% 11.2%;
- 
-    --primary: 222.1 83.2% 53.4%;
-    --primary-foreground: 210 40% 98%;
- 
-    --secondary: 210 40% 96.1%;
-    --secondary-foreground: 222.2 47.4% 11.2%;
- 
-    --muted: 210 40% 96.1%;
-    --muted-foreground: 215.4 16.3% 46.9%;
- 
-    --accent: 210 40% 96.1%;
-    --accent-foreground: 222.2 47.4% 11.2%;
- 
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 210 40% 98%;
+    --card: 255 255 255;
+    --card-foreground: 8 8 11;
 
-    --border: 214.3 31.8% 91.4%;
-    --input: 214.3 31.8% 91.4%;
- 
-    --ring: 222.1 83.2% 53.4%;
- 
+    --popover: 255 255 255;
+    --popover-foreground: 8 8 11;
+
+    --primary: 8 8 11;
+    --primary-foreground: 250 250 250;
+
+    --secondary: 244 244 245;
+    --secondary-foreground: 8 8 11;
+
+    --muted: 244 244 245;
+    --muted-foreground: 82 82 91;
+
+    --accent: 244 244 245;
+    --accent-foreground: 8 8 11;
+
+    --destructive: 239 68 68;
+    --destructive-foreground: 250 250 250;
+
+    --border: 228 228 231;
+    --input: 228 228 231;
+    --ring: 212 212 216;
+
     --radius: 0.5rem;
+
+    --sidebar-background: 255 255 255;
+    --sidebar-foreground: 8 8 11;
+    --sidebar-primary: 8 8 11;
+    --sidebar-primary-foreground: 250 250 250;
+    --sidebar-accent: 244 244 245;
+    --sidebar-accent-foreground: 8 8 11;
+    --sidebar-border: 228 228 231;
+    --sidebar-ring: 212 212 216;
+
+    /* Travis Brand Colors */
+    --travis-gold: 255 215 0;
+    --travis-silver: 192 192 192;
+    --travis-accent: 59 130 246;
   }
- 
+
   .dark {
-    --background: 222.2 84% 4.9%;
-    --foreground: 210 40% 98%;
- 
-    --card: 222.2 84% 4.9%;
-    --card-foreground: 210 40% 98%;
- 
-    --popover: 222.2 84% 4.9%;
-    --popover-foreground: 210 40% 98%;
- 
-    --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
- 
-    --secondary: 217.2 32.6% 17.5%;
-    --secondary-foreground: 210 40% 98%;
- 
-    --muted: 217.2 32.6% 17.5%;
-    --muted-foreground: 215 20.2% 65.9%;
- 
-    --accent: 217.2 32.6% 17.5%;
-    --accent-foreground: 210 40% 98%;
- 
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 210 40% 98%;
- 
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
- 
-    --ring: 217.2 91.2% 59.8%;
+    --background: 8 8 11;
+    --foreground: 250 250 250;
+
+    --card: 24 24 27;
+    --card-foreground: 250 250 250;
+
+    --popover: 24 24 27;
+    --popover-foreground: 250 250 250;
+
+    --primary: 250 250 250;
+    --primary-foreground: 8 8 11;
+
+    --secondary: 39 39 42;
+    --secondary-foreground: 250 250 250;
+
+    --muted: 39 39 42;
+    --muted-foreground: 161 161 170;
+
+    --accent: 39 39 42;
+    --accent-foreground: 250 250 250;
+
+    --destructive: 239 68 68;
+    --destructive-foreground: 250 250 250;
+
+    --border: 39 39 42;
+    --input: 39 39 42;
+    --ring: 212 212 216;
+
+    --sidebar-background: 24 24 27;
+    --sidebar-foreground: 250 250 250;
+    --sidebar-primary: 250 250 250;
+    --sidebar-primary-foreground: 8 8 11;
+    --sidebar-accent: 39 39 42;
+    --sidebar-accent-foreground: 250 250 250;
+    --sidebar-border: 39 39 42;
+    --sidebar-ring: 212 212 216;
   }
-}
- 
-@layer base {
+
   * {
     @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
-    font-feature-settings:
-      "rlig" 1,
-      "calt" 1;
+    @apply bg-background text-foreground font-sans;
+  }
+
+  .dark body {
+    background: linear-gradient(135deg, rgb(8, 8, 11) 0%, rgb(24, 24, 27) 100%);
+  }
+
+  body {
+    background: linear-gradient(135deg, rgb(250, 250, 250) 0%, rgb(244, 244, 245) 100%);
+  }
+
+  /* Light mode calendar fixes - target when NOT dark mode */
+  html:not(.dark) .rdp {
+    --rdp-cell-size: 40px;
+    --rdp-accent-color: rgb(8 8 11);
+    --rdp-background-color: rgb(255 255 255);
+  }
+
+  html:not(.dark) .rdp-day {
+    color: rgb(8 8 11) !important;
+  }
+
+  html:not(.dark) .rdp-day_outside {
+    color: rgb(113 113 122) !important;
+    opacity: 0.8;
+  }
+
+  html:not(.dark) .rdp-day_disabled {
+    color: rgb(161 161 170) !important;
+    opacity: 0.6;
+  }
+
+  html:not(.dark) .rdp-day_selected {
+    background-color: rgb(8 8 11) !important;
+    color: rgb(250 250 250) !important;
+  }
+
+  html:not(.dark) .rdp-day_today {
+    background-color: rgb(244 244 245) !important;
+    color: rgb(8 8 11) !important;
+    font-weight: 600;
+  }
+
+  html:not(.dark) .rdp-head_cell {
+    color: rgb(82 82 91) !important;
+    font-weight: 500;
+  }
+
+  html:not(.dark) .rdp-caption_label {
+    color: rgb(8 8 11) !important;
+    font-weight: 600;
+  }
+
+  /* Calendar navigation buttons in light mode */
+  html:not(.dark) .rdp-nav_button {
+    color: rgb(8 8 11) !important;
+  }
+
+  html:not(.dark) .rdp-button:hover {
+    background-color: rgb(244 244 245) !important;
+    color: rgb(8 8 11) !important;
+  }
+
+  /* Ensure all text elements are visible in light mode */
+  html:not(.dark) .text-muted-foreground {
+    color: rgb(82 82 91) !important;
+  }
+
+  html:not(.dark) .text-foreground {
+    color: rgb(8 8 11) !important;
   }
 }
 
-.travis-card {
-  @apply rounded-lg border border-border bg-card text-card-foreground shadow-sm data-[state=open]:bg-secondary
-}
-
-.travis-interactive {
-  @apply transition-colors hover:bg-secondary/50
-}
-
-.perspective-1000 {
-  perspective: 1000px;
-}
-
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
+@layer components {
+  .travis-gradient {
+    background: linear-gradient(135deg, rgb(24, 24, 27) 0%, rgb(39, 39, 42) 100%);
   }
-  to {
-    opacity: 1;
-    transform: translateY(0);
+  
+  .travis-card {
+    @apply bg-card/80 backdrop-blur-sm border border-border/50 rounded-xl shadow-2xl;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  
+  .travis-card:hover {
+    @apply shadow-2xl transform scale-[1.02] border-border;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5), 0 0 30px rgba(59, 130, 246, 0.3);
+  }
+  
+  .travis-interactive {
+    @apply cursor-pointer transition-all duration-300 hover:shadow-lg hover:scale-[1.01];
+  }
+  
+  .travis-glow {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.3);
   }
 }
 
-.animate-fadeIn {
-  animation: fadeIn 0.5s ease-out forwards;
+/* Premium animations */
+@keyframes float {
+  0%, 100% { transform: translateY(0px); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(59, 130, 246, 0.3); }
+  50% { box-shadow: 0 0 30px rgba(59, 130, 246, 0.5); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-pulse-glow {
+  animation: pulse-glow 2s ease-in-out infinite;
 }

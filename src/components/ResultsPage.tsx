@@ -1,402 +1,729 @@
-import React, { useState, useEffect, useRef } from 'react';
-import { Search, Calendar, MapPin, User, Star, Clock, Plane } from 'lucide-react';
+import React, { useState } from 'react';
+import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover';
+import { Calendar as CalendarComponent } from '@/components/ui/calendar';
+import { format } from 'date-fns';
+import PhotoSlideshow from './PhotoSlideshow';
+import TravisChatbot from './TravisChatbot';
 
 interface ResultsPageProps {
   destination: string;
-  dates: {
-    checkin: string;
-    checkout: string;
-  };
+  dates: { checkin: string; checkout: string };
   onBack: () => void;
   onNewSearch: (destination: string, dates: { checkin: string; checkout: string }) => void;
 }
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
-  const [searchQuery, setSearchQuery] = useState(destination);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const searchRef = useRef<HTMLDivElement>(null);
+  const [currencyAmount, setCurrencyAmount] = useState(100);
+  const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
+  const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
+  const [newDestination, setNewDestination] = useState(destination);
+  const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
+  const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
+  const [checkinOpen, setCheckinOpen] = useState(false);
+  const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
+  const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
 
-  // Mock travel results
-  const mockResults = [
-    {
-      id: 1,
-      type: 'flight',
-      airline: 'Delta Airlines',
-      price: '$750',
-      duration: '11h 30m',
-      departure: '08:30 AM',
-      arrival: '02:00 PM',
-      stops: 'Non-stop',
-      rating: 4.8
-    },
-    {
-      id: 2,
-      type: 'flight',
-      airline: 'American Airlines',
-      price: '$680',
-      duration: '13h 45m',
-      departure: '10:15 AM',
-      arrival: '05:30 PM',
-      stops: '1 stop',
-      rating: 4.6
-    },
-    {
-      id: 3,
-      type: 'hotel',
-      name: 'Grand Hotel São Paulo',
-      price: '$180/night',
-      location: 'Jardins District',
-      rating: 4.7,
-      amenities: ['WiFi', 'Pool', 'Gym', 'Spa']
-    },
-    {
-      id: 4,
-      type: 'hotel',
-      name: 'Business Tower Hotel',
-      price: '$120/night',
-      location: 'Paulista Avenue',
-      rating: 4.4,
-      amenities: ['WiFi', 'Business Center', 'Restaurant']
-    }
-  ];
-
-  // Comprehensive global destination suggestions
-  const globalDestinations = [
-    // Brazil
-    'São Paulo, Brazil',
-    'Rio de Janeiro, Brazil',
-    'Brasília, Brazil',
-    'Salvador, Brazil',
-    'Fortaleza, Brazil',
-    'Belo Horizonte, Brazil',
-    'Manaus, Brazil',
-    'Curitiba, Brazil',
-    'Recife, Brazil',
-    'Porto Alegre, Brazil',
-    // Major Global Cities
-    'New York, USA',
-    'Los Angeles, USA',
-    'Chicago, USA',
-    'Miami, USA',
-    'Las Vegas, USA',
-    'San Francisco, USA',
-    'London, UK',
-    'Paris, France',
-    'Rome, Italy',
-    'Barcelona, Spain',
-    'Madrid, Spain',
-    'Berlin, Germany',
-    'Munich, Germany',
-    'Amsterdam, Netherlands',
-    'Vienna, Austria',
-    'Zurich, Switzerland',
-    'Tokyo, Japan',
-    'Osaka, Japan',
-    'Kyoto, Japan',
-    'Seoul, South Korea',
-    'Beijing, China',
-    'Shanghai, China',
-    'Hong Kong',
-    'Singapore',
-    'Bangkok, Thailand',
-    'Dubai, UAE',
-    'Istanbul, Turkey',
-    'Cairo, Egypt',
-    'Cape Town, South Africa',
-    'Johannesburg, South Africa',
-    'Sydney, Australia',
-    'Melbourne, Australia',
-    'Auckland, New Zealand',
-    'Vancouver, Canada',
-    'Toronto, Canada',
-    'Montreal, Canada',
-    'Mexico City, Mexico',
-    'Buenos Aires, Argentina',
-    'Lima, Peru',
-    'Santiago, Chile',
-    'Bogotá, Colombia',
-    'Caracas, Venezuela',
-    'Mumbai, India',
-    'Delhi, India',
-    'Bangalore, India',
-    'Jakarta, Indonesia',
-    'Manila, Philippines',
-    'Kuala Lumpur, Malaysia',
-    'Ho Chi Minh City, Vietnam',
-    'Hanoi, Vietnam',
-    'Tel Aviv, Israel',
-    'Moscow, Russia',
-    'St. Petersburg, Russia',
-    'Warsaw, Poland',
-    'Prague, Czech Republic',
-    'Budapest, Hungary',
-    'Athens, Greece',
-    'Lisbon, Portugal',
-    'Stockholm, Sweden',
-    'Oslo, Norway',
-    'Copenhagen, Denmark',
-    'Helsinki, Finland',
-    'Reykjavik, Iceland'
-  ];
-
-  const suggestions = searchQuery.length > 0 
-    ? globalDestinations.filter(city => 
-        city.toLowerCase().includes(searchQuery.toLowerCase())
-      ).slice(0, 10) // Limit to 10 suggestions for performance
-    : [];
-
-  // Handle click outside to close suggestions
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
-        setShowSuggestions(false);
-      }
-    };
-
-    if (showSuggestions) {
-      document.addEventListener('mousedown', handleClickOutside);
-    }
-
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-    };
-  }, [showSuggestions]);
-
-  const handleNewSearch = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (searchQuery.trim()) {
-      setShowSuggestions(false);
-      onNewSearch(searchQuery, dates);
+  // Mock data updated for Tokyo
+  const mockData = {
+    currency: { rate: 149.50, symbol: '¥', name: 'Japanese Yen' },
+    time: { current: '09:42', offset: '+9', dst: false },
+    weather: { temp: 18, condition: 'Partly Cloudy', humidity: 72 },
+    airport: { code: 'NRT', name: 'Narita International Airport', address: 'Chiba Prefecture' },
+    altitude: { elevation: '40m above sea level' },
+    emergency: { police: '110', fire: '119', medical: '119' },
+    holidays: [
+      { name: 'Spring Equinox Day', date: 'March 20, 2024' },
+      { name: 'Showa Day', date: 'April 29, 2024' },
+      { name: 'Children\'s Day', date: 'May 5, 2024' }
+    ],
+    religion: {
+      primary: 'Shinto & Buddhism',
+      percentage: '84%',
+      practices: ['Temple visits', 'Shrine worship', 'Meditation'],
+      etiquette: ['Remove shoes', 'Bow respectfully', 'Silence in sacred areas']
     }
   };
 
+  const fourteenDayForecast = [
+    { day: 'Today', temp: 18, condition: 'Partly Cloudy' },
+    { day: 'Tomorrow', temp: 20, condition: 'Sunny' },
+    { day: 'Wed', temp: 17, condition: 'Rainy' },
+    { day: 'Thu', temp: 22, condition: 'Sunny' },
+    { day: 'Fri', temp: 19, condition: 'Cloudy' },
+    { day: 'Sat', temp: 21, condition: 'Sunny' },
+    { day: 'Sun', temp: 16, condition: 'Rainy' },
+    { day: 'Mon', temp: 23, condition: 'Sunny' },
+    { day: 'Tue', temp: 18, condition: 'Partly Cloudy' },
+    { day: 'Wed', temp: 20, condition: 'Sunny' },
+    { day: 'Thu', temp: 19, condition: 'Cloudy' },
+    { day: 'Fri', temp: 24, condition: 'Sunny' },
+    { day: 'Sat', temp: 17, condition: 'Rainy' },
+    { day: 'Sun', temp: 21, condition: 'Partly Cloudy' }
+  ];
+
+  const widgetOptions = [
+    { id: 'currency', name: 'Currency', icon: CreditCard, color: 'from-green-500 to-emerald-600' },
+    { id: 'weather', name: 'Weather', icon: Thermometer, color: 'from-orange-500 to-red-600' },
+    { id: 'time', name: 'Time', icon: Clock, color: 'from-blue-500 to-cyan-600' },
+    { id: 'transport', name: 'Transport', icon: Car, color: 'from-purple-500 to-violet-600' },
+    { id: 'emergency', name: 'Emergency', icon: Shield, color: 'from-red-500 to-pink-600' },
+    { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
+  ];
+
+  const handleNewSearch = () => {
+    if (newDestination && newCheckinDate && newCheckoutDate) {
+      onNewSearch(newDestination, {
+        checkin: format(newCheckinDate, 'yyyy-MM-dd'),
+        checkout: format(newCheckoutDate, 'yyyy-MM-dd')
+      });
+    }
+  };
+
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter') {
+      handleNewSearch();
+    }
+  };
+
+  const handlePinDestination = (dest: string) => {
+    if (!pinnedDestinations.includes(dest)) {
+      setPinnedDestinations([...pinnedDestinations, dest]);
+    }
+  };
+
+  const removePinnedDestination = (dest: string) => {
+    setPinnedDestinations(pinnedDestinations.filter(d => d !== dest));
+  };
+
+  const convertTemp = (temp: number) => {
+    return tempUnit === 'F' ? Math.round((temp * 9/5) + 32) : temp;
+  };
+
+  const handleAdapterClick = () => {
+    setIsAdapterSpinning(!isAdapterSpinning);
+  };
+
   return (
-    <div className="min-h-screen bg-gray-300 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-100">
       {/* Header */}
-      <header className="bg-white/95 backdrop-blur-sm border-b border-gray-200 px-6 py-4 sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center space-x-8">
-            <div className="text-2xl font-bold text-gray-900 tracking-tight">TRAVIS</div>
-            
-            {/* Search Bar with auto-suggestions */}
-            <div className="relative" ref={searchRef}>
-              <div className="flex items-center bg-white border border-gray-300 rounded-full px-4 py-2 shadow-sm">
-                <MapPin className="w-4 h-4 text-gray-400 mr-2" />
-                <input
-                  type="text"
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setShowSuggestions(true);
-                  }}
-                  onFocus={() => setShowSuggestions(true)}
-                  placeholder="Search destinations..."
-                  className="bg-transparent outline-none text-sm w-64"
-                />
-                <button 
-                  onClick={handleNewSearch}
-                  className="ml-2 text-blue-600 hover:text-blue-800"
-                >
-                  <Search className="w-4 h-4" />
-                </button>
+      <header className="bg-white/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center space-x-4">
+              <Button
+                variant="ghost"
+                onClick={onBack}
+                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive"
+              >
+                <ArrowLeft className="w-5 h-5" />
+              </Button>
+              <div>
+                <div className="flex items-center space-x-3">
+                  <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
+                    <MapPin className="w-7 h-7 mr-3 text-blue-400" />
+                    {destination}
+                  </h1>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => handlePinDestination(destination)}
+                    className="text-blue-400 hover:text-blue-300"
+                  >
+                    <Pin className="w-5 h-5" />
+                  </Button>
+                </div>
+                <p className="text-muted-foreground flex items-center font-light">
+                  <Calendar className="w-4 h-4 mr-2" />
+                  {dates.checkin} to {dates.checkout}
+                </p>
               </div>
-              
-              {/* Auto-suggestions dropdown */}
-              {showSuggestions && suggestions.length > 0 && (
-                <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl mt-1 shadow-lg z-50 max-h-48 overflow-y-auto">
-                  {suggestions.map((suggestion, index) => (
+            </div>
+            <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+          </div>
+
+          {/* Pinned Destinations */}
+          {pinnedDestinations.length > 0 && (
+            <div className="mb-4">
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-muted-foreground font-medium">PINNED:</span>
+                <div className="flex space-x-2 flex-wrap">
+                  {pinnedDestinations.map((dest) => (
                     <button
-                      key={index}
-                      onClick={() => {
-                        setSearchQuery(suggestion);
-                        setShowSuggestions(false);
-                        onNewSearch(suggestion, dates);
-                      }}
-                      className="w-full text-left px-4 py-2 hover:bg-gray-50 transition-colors flex items-center space-x-2"
+                      key={dest}
+                      onClick={() => setNewDestination(dest)}
+                      className="group flex items-center space-x-2 px-3 py-1 bg-secondary/30 border border-border/30 rounded-full text-sm text-foreground hover:bg-secondary/60 transition-colors"
                     >
-                      <MapPin className="w-3 h-3 text-blue-400" />
-                      <span className="text-sm">{suggestion}</span>
+                      <span>{dest}</span>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          removePinnedDestination(dest);
+                        }}
+                        className="w-4 h-4 rounded-full bg-muted-foreground/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                      >
+                        ×
+                      </button>
                     </button>
                   ))}
                 </div>
-              )}
+                <div className="flex space-x-2">
+                  {['Kyoto', 'Osaka', 'Hiroshima', 'Nara'].map((city) => (
+                    <button
+                      key={city}
+                      onClick={() => handlePinDestination(city)}
+                      className="px-2 py-1 bg-blue-500/20 border border-blue-500/50 rounded text-xs text-blue-300 hover:bg-blue-500/30 transition-colors"
+                      title="Click to pin"
+                    >
+                      + {city}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
-          </div>
-          
-          <div className="flex items-center space-x-4">
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/57f6a72e-9b61-46d9-815f-aa82e892afeb.png)',
-                    backgroundPosition: 'center center'
-                  }} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-white border-gray-200 p-6">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/57f6a72e-9b61-46d9-815f-aa82e892afeb.png)',
-                    backgroundPosition: 'center center'
-                  }} />
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold text-gray-900">Brittany J.</h3>
-                    </div>
-                  </div>
-                </div>
-                
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Preferred Airline</span>
-                    <span className="text-sm font-medium text-gray-900">Delta Airlines</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Travel Type</span>
-                    <span className="text-sm font-medium text-gray-900">Luxury</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Frequent Flyer #</span>
-                    <span className="text-sm font-medium text-gray-900">DL89472156</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Passport</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-gray-900">United States</span>
-                      <span className="text-lg">🇺🇸</span>
-                    </div>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Status</span>
-                    <span className="text-sm font-medium text-emerald-600">Premium Member</span>
-                  </div>
-                </div>
-                
-                <div className="border-t pt-4">
-                  <div className="space-y-2">
-                    <button className="w-full text-left text-sm text-gray-700 hover:text-gray-900">Profile Settings</button>
-                    <button className="w-full text-left text-sm text-gray-700 hover:text-gray-900">Saved Destinations</button>
-                    <button className="w-full text-left text-sm text-gray-700 hover:text-gray-900">Travel Preferences</button>
-                    <button className="w-full text-left text-sm text-gray-700 hover:text-gray-900">Sign Out</button>
-                  </div>
-                </div>
-              </DropdownMenuContent>
-            </DropdownMenu>
+          )}
+
+          {/* Search Bar - Updated to match homepage style */}
+          <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg">
+            <div className="flex items-center gap-2">
+              <div className="flex-1 relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
+                <Input
+                  type="text"
+                  placeholder="Change destination"
+                  value={newDestination}
+                  onChange={(e) => setNewDestination(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  className="pl-11 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                />
+              </div>
+              
+              <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {format(newCheckinDate, 'MMM dd')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={newCheckinDate}
+                    onSelect={(date) => {
+                      if (date) setNewCheckinDate(date);
+                      setCheckinOpen(false);
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+              
+              <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="ghost"
+                    className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    {format(newCheckoutDate, 'MMM dd')}
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <CalendarComponent
+                    mode="single"
+                    selected={newCheckoutDate}
+                    onSelect={(date) => {
+                      if (date) setNewCheckoutDate(date);
+                      setCheckoutOpen(false);
+                    }}
+                    initialFocus
+                    className="pointer-events-auto"
+                  />
+                </PopoverContent>
+              </Popover>
+
+              <Button
+                onClick={handleNewSearch}
+                className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+              >
+                Search
+              </Button>
+            </div>
           </div>
         </div>
       </header>
 
-      {/* Back Button */}
-      <div className="absolute top-4 left-4 z-50">
-        <Button onClick={onBack} variant="outline" className="bg-white/80 hover:bg-white">
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 20 20"
-            fill="currentColor"
-            className="w-5 h-5 mr-2"
-          >
-            <path
-              fillRule="evenodd"
-              d="M15 10a.75.75 0 01-.22.53l-4 4a.75.75 0 01-1.06-1.06l3.22-3.22H5.75a.75.75 0 010-1.5h7.19L9.72 6.53a.75.75 0 011.06-1.06l4 4a.75.75 0 01.22.53z"
-              clipRule="evenodd"
-            />
-          </svg>
-          Back
-        </Button>
-      </div>
-
-      {/* Results Section */}
-      <div className="max-w-7xl mx-auto py-12 px-6">
-        <h1 className="text-3xl font-semibold text-gray-900 mb-6">
-          Results for {destination}
-        </h1>
-
-        {/* Travel Results */}
-        <div className="space-y-6">
-          {mockResults.map((result) => (
-            <div key={result.id} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
-              <div className="p-6">
-                {result.type === 'flight' ? (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                        <Plane className="w-6 h-6 text-blue-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{result.airline}</h3>
-                        <div className="flex items-center space-x-4 text-sm text-gray-600">
-                          <span className="flex items-center">
-                            <Clock className="w-4 h-4 mr-1" />
-                            {result.duration}
-                          </span>
-                          <span>{result.stops}</span>
-                          <span>{result.departure} - {result.arrival}</span>
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-blue-600">{result.price}</div>
-                      <div className="flex items-center text-sm">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-                        <span>{result.rating}</span>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                        <MapPin className="w-6 h-6 text-green-600" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{result.name}</h3>
-                        <p className="text-sm text-gray-600 mb-1">{result.location}</p>
-                        <div className="flex items-center space-x-2 text-sm text-gray-500">
-                          {result.amenities?.map((amenity, index) => (
-                            <span key={index} className="bg-gray-100 px-2 py-1 rounded">
-                              {amenity}
-                            </span>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-2xl font-bold text-green-600">{result.price}</div>
-                      <div className="flex items-center text-sm">
-                        <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
-                        <span>{result.rating}</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-                <div className="mt-4 flex space-x-3">
-                  <Button className="bg-blue-600 hover:bg-blue-700">
-                    {result.type === 'flight' ? 'Book Flight' : 'Book Hotel'}
-                  </Button>
-                  <Button variant="outline">View Details</Button>
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {/* Photo Slideshow - Updated with Tokyo landmarks */}
+        <div className="mb-8">
+          <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
+            <div className="relative w-full h-full">
+              <div className="absolute inset-0">
+                <img
+                  src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80"
+                  alt="Tokyo Tower at sunset"
+                  className="w-full h-full object-cover"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4">
+                  <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
+                    Tokyo Tower illuminated at sunset
+                  </p>
                 </div>
               </div>
             </div>
-          ))}
+          </div>
         </div>
-      </div>
 
-      {/* Footer */}
-      <footer className="bg-gray-100 border-t border-gray-200 py-8 px-6">
-        <div className="max-w-7xl mx-auto text-center text-gray-500">
-          <p className="text-sm">
-            &copy; 2023 Travis. All rights reserved.
-          </p>
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+          
+          {/* Religion & Culture Card - Prioritized */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Church className="w-5 h-5 text-white" />
+                </div>
+                Practicing Religion
+                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="font-semibold text-purple-700 mb-2">{mockData.religion.primary}</div>
+                <div className="text-sm text-muted-foreground">{mockData.religion.percentage} of population</div>
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-700">Common Practices:</h4>
+                {mockData.religion.practices.map((practice, idx) => (
+                  <div key={idx} className="text-sm text-muted-foreground">• {practice}</div>
+                ))}
+              </div>
+              <div className="space-y-2">
+                <h4 className="font-medium text-purple-700">Etiquette:</h4>
+                {mockData.religion.etiquette.map((rule, idx) => (
+                  <div key={idx} className="text-sm text-muted-foreground">• {rule}</div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Currency Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
+                  <CreditCard className="w-5 h-5 text-white" />
+                </div>
+                Currency Exchange
+                <TrendingUp className="w-4 h-4 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex justify-between items-center p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
+                <span className="font-semibold text-lg">1 USD</span>
+                <span className="text-green-400 font-bold text-xl">
+                  {mockData.currency.rate} {mockData.currency.symbol}
+                </span>
+              </div>
+              <div className="flex space-x-3">
+                <Input
+                  type="number"
+                  value={currencyAmount}
+                  onChange={(e) => setCurrencyAmount(Number(e.target.value))}
+                  className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl"
+                />
+                <div className="px-4 py-2 bg-secondary/50 rounded-xl border border-border/50 font-mono">
+                  {mockData.currency.symbol}
+                </div>
+              </div>
+              <p className="text-lg font-semibold text-green-400">
+                = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(0)} {mockData.currency.name}
+              </p>
+              <div className="text-sm text-muted-foreground">
+                Live rate • Updated 2 min ago
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Street Map Card - Updated with Tokyo street view */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
+                  <MapPin className="w-5 h-5 text-white" />
+                </div>
+                Street View Map
+                <Mountain className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="w-full h-48 bg-gray-200 rounded-xl overflow-hidden">
+                <iframe
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.827853338283!2d139.69171081531663!3d35.67143803019622!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c9fa9d5a43f%3A0x5c5d0b6b5c8e0!2sShinjuku%2C%20Tokyo%2C%20Japan!5e0!3m2!1sen!2sus!4v1639123456789!5m2!1sen!2sus"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0 }}
+                  allowFullScreen
+                  loading="lazy"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  className="rounded-xl"
+                />
+              </div>
+              <div className="text-sm text-muted-foreground mt-2">
+                Interactive street view of Shinjuku, Tokyo
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* World Adapters Widget - Updated with 3D spinning effect */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
+                  <Plug className="w-5 h-5 text-white" />
+                </div>
+                Power Adapters
+                <Zap className="w-4 h-4 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div 
+                className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer"
+                onClick={handleAdapterClick}
+              >
+                <div 
+                  className={`w-16 h-20 mx-auto mb-3 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg relative transition-transform duration-1000 ${
+                    isAdapterSpinning ? 'animate-spin' : ''
+                  }`}
+                  style={{
+                    background: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)',
+                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                  }}
+                >
+                  {/* Type A plug visual */}
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
+                    <div className="w-2 h-6 bg-gray-700 rounded-sm mb-1"></div>
+                    <div className="w-2 h-6 bg-gray-700 rounded-sm"></div>
+                  </div>
+                </div>
+                <div className="font-bold text-lg text-yellow-400">Type A & B</div>
+                <div className="text-sm text-muted-foreground">100V • 50/60Hz</div>
+              </div>
+              <div className="text-sm space-y-1 mt-2">
+                <p><span className="font-medium">Voltage:</span> 100V (Lower than US/EU)</p>
+                <p><span className="font-medium">Frequency:</span> 50Hz (East) / 60Hz (West)</p>
+                <p><span className="font-medium">Plug Type:</span> Same as North America</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Time Zone Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                Time Intelligence
+                <Zap className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-2 font-medium">YOUR TIME</div>
+                  <div className="text-2xl font-bold text-blue-400">21:42</div>
+                  <div className="text-xs text-muted-foreground font-mono">EST</div>
+                </div>
+                <div className="text-center p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-2 font-medium">TOKYO</div>
+                  <div className="text-2xl font-bold text-blue-300">{mockData.time.current}</div>
+                  <div className="text-xs text-muted-foreground font-mono">JST {mockData.time.offset}</div>
+                </div>
+              </div>
+              {!mockData.time.dst && (
+                <div className="flex items-center justify-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <Clock className="w-4 h-4 mr-2 text-blue-400" />
+                  <span className="text-sm text-blue-400 font-medium">Standard Time Active</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Weather Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
+                  <Thermometer className="w-5 h-5 text-white" />
+                </div>
+                Weather Intel
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
+                  className="ml-auto text-orange-400 hover:text-orange-300"
+                >
+                  °{tempUnit}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center p-6 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                <div className="text-4xl font-bold text-orange-400 mb-2">
+                  {convertTemp(mockData.weather.temp)}°{tempUnit}
+                </div>
+                <div className="text-lg text-muted-foreground mb-2">{mockData.weather.condition}</div>
+                <div className="text-sm text-muted-foreground">Humidity: {mockData.weather.humidity}%</div>
+              </div>
+              
+              {/* 14-day forecast */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">14-Day Forecast</p>
+                <div className="grid grid-cols-7 gap-1 text-xs">
+                  {fourteenDayForecast.map((forecast, idx) => (
+                    <div key={idx} className="text-center p-2 bg-secondary/30 rounded">
+                      <div className="font-medium text-xs truncate">{forecast.day}</div>
+                      <div className="text-orange-400 font-semibold">
+                        {convertTemp(forecast.temp)}°
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Local Holidays Widget */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <CalendarDays className="w-5 h-5 text-white" />
+                </div>
+                Local Holidays
+                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {mockData.holidays.map((holiday, idx) => (
+                <div key={idx} className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                  <div className="font-medium text-purple-300">{holiday.name}</div>
+                  <div className="text-sm text-muted-foreground">{holiday.date}</div>
+                </div>
+              ))}
+              <div className="text-sm text-muted-foreground">
+                <p><span className="font-medium">Note:</span> Some businesses may be closed during national holidays</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Airport Info Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Plane className="w-5 h-5 text-white" />
+                </div>
+                Airport Information
+                <Plane className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="font-bold text-lg text-purple-700">{mockData.airport.code}</div>
+                <div className="text-sm font-medium">{mockData.airport.name}</div>
+                <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Distance to city:</span> 60 km</p>
+                <p><span className="font-medium">Travel time:</span> 45-60 minutes</p>
+                <p><span className="font-medium">Transportation:</span> Express Train, Bus, Taxi</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Transportation Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Car className="w-5 h-5 text-white" />
+                </div>
+                Transportation
+                <Car className="w-4 h-4 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700">JR Pass</div>
+                  <div className="text-xs text-muted-foreground">Recommended</div>
+                </div>
+                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700">Subway</div>
+                  <div className="text-xs text-muted-foreground">Extensive</div>
+                </div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">JR Pass 7-day:</span> ¥29,650</p>
+                <p><span className="font-medium">Tokyo Metro day pass:</span> ¥800</p>
+                <p><span className="font-medium">IC Card:</span> Suica/Pasmo available</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Visa & Entry Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                Visa & Entry Requirements
+                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="text-green-700 font-medium">✓ Visa-free entry</div>
+                <div className="text-xs text-muted-foreground">For US passport holders</div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Max stay:</span> 90 days</p>
+                <p><span className="font-medium">Passport validity:</span> Valid for duration</p>
+                <p><span className="font-medium">Required docs:</span> Return ticket recommended</p>
+              </div>
+              <Button variant="outline" size="sm" className="w-full">
+                View Full Requirements
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* Emergency Info Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                Emergency Information
+                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700">{mockData.emergency.police}</div>
+                  <div className="text-xs text-muted-foreground">Police</div>
+                </div>
+                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700">{mockData.emergency.fire}</div>
+                  <div className="text-xs text-muted-foreground">Fire/Medical</div>
+                </div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">US Embassy:</span> +81 3 3224 5000</p>
+                <p><span className="font-medium">Tourist Hotline:</span> +81 50 3816 2787</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Connectivity Card */}
+          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
+                  <Wifi className="w-5 h-5 text-white" />
+                </div>
+                Connectivity & ATMs
+                <Wifi className="w-4 h-4 ml-auto text-teal-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                <h4 className="font-medium text-cyan-700 mb-2">Free Wi-Fi Spots</h4>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>• JR East Free Wi-Fi (stations)</li>
+                  <li>• Convenience stores (konbini)</li>
+                  <li>• McDonald's, Starbucks</li>
+                </ul>
+              </div>
+              <div className="text-sm">
+                <p className="font-medium mb-1">ATM Locations:</p>
+                <p className="text-muted-foreground">7-Eleven, Japan Post, major banks. International cards accepted at most convenience stores.</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Intelligence Dashboard Widget - Updated title */}
+          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white shadow-lg">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Palette className="w-5 h-5 text-white" />
+                </div>
+                Intelligence Dashboard
+                <Users className="w-4 h-4 ml-auto text-purple-400" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              <p className="text-muted-foreground">Configure your travel intelligence dashboard:</p>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {widgetOptions.map((widget) => {
+                  const Icon = widget.icon;
+                  const isSelected = selectedWidgets.includes(widget.id);
+                  return (
+                    <button
+                      key={widget.id}
+                      onClick={() => {
+                        if (isSelected) {
+                          setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
+                        } else {
+                          setSelectedWidgets([...selectedWidgets, widget.id]);
+                        }
+                      }}
+                      className={`p-4 rounded-xl border transition-all duration-300 travis-interactive ${
+                        isSelected
+                          ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+                          : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
+                      }`}
+                    >
+                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-2`}>
+                        <Icon className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="text-sm font-medium">{widget.name}</div>
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <p className="text-purple-300 font-medium">
+                  {selectedWidgets.length} modules selected for your travel intelligence dashboard
+                </p>
+              </div>
+            </CardContent>
+          </Card>
+
         </div>
-      </footer>
+      </main>
+
+      {/* Travis Chatbot */}
+      <TravisChatbot />
     </div>
   );
 };

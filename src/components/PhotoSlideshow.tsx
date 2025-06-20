@@ -8,44 +8,24 @@ const PhotoSlideshow = () => {
   
   const photos = [
     {
-      url: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Christ the Redeemer overlooking Rio de Janeiro at sunset'
+      url: 'https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Misty mountain peaks at dawn'
     },
     {
-      url: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Iguazu Falls cascading through lush Brazilian rainforest'
+      url: 'https://images.unsplash.com/photo-1500375592092-40eb2168fd21?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Ocean waves meeting golden shores'
     },
     {
-      url: 'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Copacabana Beach with its iconic curved shoreline at golden hour'
+      url: 'https://images.unsplash.com/photo-1458668383970-8ddd3927deed?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Alpine landscape under endless skies'
     },
     {
-      url: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Sugarloaf Mountain and Guanabara Bay in Rio de Janeiro'
+      url: 'https://images.unsplash.com/photo-1523712999610-f77fbcfc3843?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Sunbeams through ancient forests'
     },
     {
-      url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80',
-      caption: 'São Paulo skyline illuminated against the twilight sky'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Amazon rainforest river winding through pristine wilderness'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Lençóis Maranhenses National Park with pristine white sand dunes'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1502780402662-acc01917949e?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Pelourinho historic center of Salvador with colorful colonial architecture'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1578972493570-9fe3b7caf159?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Brasília Cathedral with its stunning modernist architecture'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1483197452165-7abc4b1a6d12?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Fernando de Noronha pristine beaches with crystal clear waters'
+      url: 'https://images.unsplash.com/photo-1506744038136-46273834b3fb?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Pristine waters surrounded by wilderness'
     }
   ];
 

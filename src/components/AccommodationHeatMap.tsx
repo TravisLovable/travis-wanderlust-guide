@@ -14,42 +14,39 @@ const AccommodationHeatMap = () => {
   const mapRef = useRef<HTMLDivElement>(null);
 
   const accommodationData = [
-    { id: 1, name: 'Jardins Luxury Hotel', price: 'R$450', x: 45, y: 25, type: 'hotel', rating: 4.8 },
-    { id: 2, name: 'Vila Madalena Boutique', price: 'R$380', x: 35, y: 35, type: 'boutique', rating: 4.6 },
-    { id: 3, name: 'Paulista Business Tower', price: 'R$320', x: 50, y: 45, type: 'apartment', rating: 4.7 },
-    { id: 4, name: 'Centro Histórico Hostel', price: 'R$85', x: 55, y: 55, type: 'hostel', rating: 4.4 },
-    { id: 5, name: 'Brooklin Corporate Stay', price: 'R$280', x: 60, y: 65, type: 'apartment', rating: 4.3 },
-    { id: 6, name: 'República Student House', price: 'R$120', x: 50, y: 60, type: 'shared', rating: 4.1 },
-    { id: 7, name: 'Moema Residential', price: 'R$200', x: 65, y: 50, type: 'apartment', rating: 4.2 },
-    { id: 8, name: 'Ibirapuera Park Hotel', price: 'R$420', x: 55, y: 40, type: 'hotel', rating: 4.5 },
-    { id: 9, name: 'Vila Olímpia Executive', price: 'R$480', x: 70, y: 45, type: 'hotel', rating: 4.6 },
-    { id: 10, name: 'Liberdade Cultural Stay', price: 'R$180', x: 45, y: 50, type: 'hostel', rating: 4.2 },
-    { id: 11, name: 'Itaim Bibi Modern Loft', price: 'R$350', x: 65, y: 40, type: 'apartment', rating: 4.4 },
-    { id: 12, name: 'Bela Vista Economy', price: 'R$95', x: 52, y: 58, type: 'hostel', rating: 3.9 }
+    { id: 1, name: 'Shibuya Luxury Hotel', price: '¥45,000', x: 45, y: 25, type: 'hotel', rating: 4.8 },
+    { id: 2, name: 'Shinjuku Business Tower', price: '¥38,000', x: 60, y: 35, type: 'apartment', rating: 4.6 },
+    { id: 3, name: 'Ginza Boutique Stay', price: '¥35,000', x: 50, y: 45, type: 'boutique', rating: 4.7 },
+    { id: 4, name: 'Harajuku Youth Hostel', price: '¥8,500', x: 35, y: 55, type: 'hostel', rating: 4.4 },
+    { id: 5, name: 'Sumida River Apartment', price: '¥22,000', x: 70, y: 60, type: 'apartment', rating: 4.3 },
+    { id: 6, name: 'University District Share', price: '¥12,000', x: 25, y: 70, type: 'shared', rating: 4.1 },
+    { id: 7, name: 'Suburban Tokyo Stay', price: '¥15,000', x: 80, y: 80, type: 'apartment', rating: 4.0 },
+    { id: 8, name: 'Imperial Palace Hotel', price: '¥42,000', x: 55, y: 30, type: 'boutique', rating: 4.5 },
+    { id: 9, name: 'Odaiba Bay Resort', price: '¥48,000', x: 75, y: 40, type: 'hotel', rating: 4.6 },
+    { id: 10, name: 'Ueno Cultural Stay', price: '¥18,000', x: 40, y: 65, type: 'hostel', rating: 4.2 }
   ];
 
   const districts = [
-    { name: 'Jardins', x: 40, y: 20, width: 15, height: 15 },
-    { name: 'Vila Madalena', x: 30, y: 30, width: 18, height: 12 },
-    { name: 'Paulista', x: 45, y: 40, width: 12, height: 10 },
-    { name: 'Centro', x: 50, y: 50, width: 15, height: 12 },
-    { name: 'Brooklin', x: 55, y: 60, width: 20, height: 15 },
-    { name: 'Vila Olímpia', x: 65, y: 40, width: 16, height: 14 },
-    { name: 'Moema', x: 60, y: 45, width: 18, height: 12 }
+    { name: 'Shibuya', x: 40, y: 20, width: 15, height: 15 },
+    { name: 'Shinjuku', x: 55, y: 30, width: 18, height: 12 },
+    { name: 'Ginza', x: 45, y: 40, width: 12, height: 10 },
+    { name: 'Harajuku', x: 30, y: 50, width: 15, height: 12 },
+    { name: 'Sumida', x: 65, y: 55, width: 20, height: 15 },
+    { name: 'Ueno', x: 35, y: 60, width: 16, height: 14 },
+    { name: 'Odaiba', x: 70, y: 35, width: 18, height: 12 }
   ];
 
   const streets = [
-    { name: 'Marginal Tietê', path: 'M 10,20 L 90,25' },
-    { name: 'Marginal Pinheiros', path: 'M 20,15 L 25,85' },
-    { name: 'Av. Paulista', path: 'M 30,35 L 70,50' },
-    { name: 'Av. Faria Lima', path: 'M 25,40 L 75,45' },
-    { name: 'Av. 23 de Maio', path: 'M 50,20 L 55,80' }
+    { name: 'Yamanote Line', path: 'M 20,30 Q 50,20 80,30 Q 90,50 80,70 Q 50,80 20,70 Q 10,50 20,30 Z' },
+    { name: 'Chuo Line', path: 'M 0,45 L 100,55' },
+    { name: 'Odakyu Line', path: 'M 30,20 L 70,80' },
+    { name: 'Ginza Line', path: 'M 40,10 L 60,90' }
   ];
 
   const getPriceColor = (price: string) => {
-    const numPrice = parseInt(price.replace('R$', '').replace(',', ''));
-    if (numPrice >= 350) return 'bg-red-500 border-red-600 text-white';
-    if (numPrice >= 200) return 'bg-orange-500 border-orange-600 text-white';
+    const numPrice = parseInt(price.replace('¥', '').replace(',', ''));
+    if (numPrice >= 35000) return 'bg-red-500 border-red-600 text-white';
+    if (numPrice >= 20000) return 'bg-orange-500 border-orange-600 text-white';
     return 'bg-green-500 border-green-600 text-white';
   };
 
@@ -123,7 +120,7 @@ const AccommodationHeatMap = () => {
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mr-3">
             <MapPin className="w-5 h-5 text-white" />
           </div>
-          São Paulo Accommodation Map
+          Tokyo Accommodation Map
           <DollarSign className="w-4 h-4 ml-auto text-emerald-400 group-hover:scale-110 transition-transform" />
         </CardTitle>
       </CardHeader>
@@ -164,7 +161,7 @@ const AccommodationHeatMap = () => {
           </div>
         </div>
 
-        {/* Interactive São Paulo Map */}
+        {/* Interactive Tokyo Map */}
         <div 
           ref={mapRef}
           className="relative bg-gradient-to-br from-slate-100 to-slate-200 rounded-xl h-96 overflow-hidden border border-border/20 cursor-grab active:cursor-grabbing select-none"
@@ -217,42 +214,34 @@ const AccommodationHeatMap = () => {
               </div>
             ))}
 
-            {/* Tietê River */}
+            {/* Tokyo Bay */}
             <div 
               className="absolute bg-blue-200/60 rounded-lg"
               style={{
-                left: '10%', top: '15%', width: '80%', height: '8%'
+                left: '70%', top: '60%', width: '25%', height: '30%'
               }}
             />
 
-            {/* Pinheiros River */}
-            <div 
-              className="absolute bg-blue-200/60 rounded-lg transform rotate-90 origin-center"
-              style={{
-                left: '20%', top: '30%', width: '50%', height: '4%'
-              }}
-            />
-
-            {/* Ibirapuera Park */}
+            {/* Imperial Palace */}
             <div 
               className="absolute bg-green-300/40 rounded-lg border-2 border-green-500/30"
               style={{
-                left: '50%', top: '35%', width: '12%', height: '15%'
+                left: '50%', top: '35%', width: '8%', height: '10%'
               }}
             />
 
-            {/* Major Avenues */}
+            {/* Major Railway Lines */}
             <div className="absolute inset-0">
-              <div 
-                className="absolute bg-yellow-500/30 rounded-full"
-                style={{
-                  left: '30%', top: '42%', width: '40%', height: '3px'
-                }}
-              />
               <div 
                 className="absolute bg-purple-500/30 rounded-full"
                 style={{
-                  left: '48%', top: '20%', width: '4px', height: '60%'
+                  left: '20%', top: '25%', width: '60%', height: '4px'
+                }}
+              />
+              <div 
+                className="absolute bg-green-500/30 rounded-full"
+                style={{
+                  left: '45%', top: '15%', width: '4px', height: '70%'
                 }}
               />
             </div>
@@ -305,29 +294,29 @@ const AccommodationHeatMap = () => {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-green-500 rounded"></div>
-                <span className="text-sm">Budget (Under R$200)</span>
+                <span className="text-sm">¥ Budget (Under ¥20k)</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-orange-500 rounded"></div>
-                <span className="text-sm">Mid-range</span>
+                <span className="text-sm">¥¥ Mid-range</span>
               </div>
               <div className="flex items-center space-x-2">
                 <div className="w-3 h-3 bg-red-500 rounded"></div>
-                <span className="text-sm">Premium</span>
+                <span className="text-sm">¥¥¥ Premium</span>
               </div>
             </div>
           </div>
           
           <div className="p-4 bg-secondary/20 rounded-xl">
             <div className="text-sm">
-              <p><span className="font-medium text-emerald-400">Average:</span> R$265/night</p>
-              <p><span className="font-medium text-emerald-400">Range:</span> R$85 - R$480</p>
+              <p><span className="font-medium text-emerald-400">Average:</span> ¥26,500/night</p>
+              <p><span className="font-medium text-emerald-400">Range:</span> ¥8,500 - ¥48,000</p>
             </div>
           </div>
         </div>
 
         <div className="text-sm text-muted-foreground">
-          <p><span className="font-medium">Interactive Map:</span> Detailed São Paulo districts with real street layout</p>
+          <p><span className="font-medium">Interactive Map:</span> Detailed Tokyo districts with real street layout</p>
           <p><span className="font-medium">Updated:</span> 8 minutes ago</p>
         </div>
       </CardContent>

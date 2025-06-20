@@ -29,7 +29,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [currentLanguage, setCurrentLanguage] = useState('English');
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -42,260 +42,19 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
   ];
 
-  // Language translations
-  const translations = {
-    en: {
-      title: "The World Awaits",
-      subtitle: "Data-driven Intelligence for the modern explorer",
-      searchPlaceholder: "São Paulo, Brazil",
-      depart: "Depart",
-      return: "Return",
-      search: "Search",
-      profileName: "Brittany J.",
-      preferredAirline: "Preferred Airline",
-      travelType: "Travel Type",
-      frequentFlyer: "Frequent Flyer #",
-      passport: "Passport",
-      status: "Status",
-      profileSettings: "Profile Settings",
-      savedDestinations: "Saved Destinations",
-      travelPreferences: "Travel Preferences",
-      signOut: "Sign Out",
-      privacy: "Privacy",
-      terms: "Terms",
-      settings: "Settings"
-    },
-    zh: {
-      title: "世界在等待",
-      subtitle: "为现代探险家提供数据驱动的智能",
-      searchPlaceholder: "圣保罗，巴西",
-      depart: "出发",
-      return: "返回",
-      search: "搜索",
-      profileName: "布里塔尼·J.",
-      preferredAirline: "首选航空公司",
-      travelType: "旅行类型",
-      frequentFlyer: "常旅客号码",
-      passport: "护照",
-      status: "状态",
-      profileSettings: "个人资料设置",
-      savedDestinations: "保存的目的地",
-      travelPreferences: "旅行偏好",
-      signOut: "登出",
-      privacy: "隐私",
-      terms: "条款",
-      settings: "设置"
-    },
-    ja: {
-      title: "世界があなたを待っています",
-      subtitle: "モダンな探検家のためのデータ主導のインテリジェンス",
-      searchPlaceholder: "サンパウロ、ブラジル",
-      depart: "出発",
-      return: "帰国",
-      search: "検索",
-      profileName: "ブリタニー・J.",
-      preferredAirline: "優先航空会社",
-      travelType: "旅行タイプ",
-      frequentFlyer: "フリークエントフライヤー番号",
-      passport: "パスポート",
-      status: "ステータス",
-      profileSettings: "プロフィール設定",
-      savedDestinations: "保存された目的地",
-      travelPreferences: "旅行の好み",
-      signOut: "サインアウト",
-      privacy: "プライバシー",
-      terms: "利用規約",
-      settings: "設定"
-    },
-    es: {
-      title: "El Mundo Te Espera",
-      subtitle: "Inteligencia basada en datos para el explorador moderno",
-      searchPlaceholder: "São Paulo, Brasil",
-      depart: "Salida",
-      return: "Regreso",
-      search: "Buscar",
-      profileName: "Brittany J.",
-      preferredAirline: "Aerolínea Preferida",
-      travelType: "Tipo de Viaje",
-      frequentFlyer: "Viajero Frecuente #",
-      passport: "Pasaporte",
-      status: "Estado",
-      profileSettings: "Configuración del Perfil",
-      savedDestinations: "Destinos Guardados",
-      travelPreferences: "Preferencias de Viaje",
-      signOut: "Cerrar Sesión",
-      privacy: "Privacidad",
-      terms: "Términos",
-      settings: "Configuración"
-    },
-    fr: {
-      title: "Le Monde Vous Attend",
-      subtitle: "Intelligence basée sur les données pour l'explorateur moderne",
-      searchPlaceholder: "São Paulo, Brésil",
-      depart: "Départ",
-      return: "Retour",
-      search: "Rechercher",
-      profileName: "Brittany J.",
-      preferredAirline: "Compagnie Aérienne Préférée",
-      travelType: "Type de Voyage",
-      frequentFlyer: "Voyageur Fréquent #",
-      passport: "Passeport",
-      status: "Statut",
-      profileSettings: "Paramètres du Profil",
-      savedDestinations: "Destinations Sauvegardées",
-      travelPreferences: "Préférences de Voyage",
-      signOut: "Se Déconnecter",
-      privacy: "Confidentialité",
-      terms: "Conditions",
-      settings: "Paramètres"
-    },
-    it: {
-      title: "Il Mondo Ti Aspetta",
-      subtitle: "Intelligenza basata sui dati per l'esploratore moderno",
-      searchPlaceholder: "São Paulo, Brasile",
-      depart: "Partenza",
-      return: "Ritorno",
-      search: "Cerca",
-      profileName: "Brittany J.",
-      preferredAirline: "Compagnia Aerea Preferita",
-      travelType: "Tipo di Viaggio",
-      frequentFlyer: "Frequent Flyer #",
-      passport: "Passaporto",
-      status: "Stato",
-      profileSettings: "Impostazioni Profilo",
-      savedDestinations: "Destinazioni Salvate",
-      travelPreferences: "Preferenze di Viaggio",
-      signOut: "Disconnetti",
-      privacy: "Privacy",
-      terms: "Termini",
-      settings: "Impostazioni"
-    },
-    xh: {
-      title: "Ihlabathi Lilindile",
-      subtitle: "Ubukrelekrele obusekelwe kwidatha kumahlakani anamhlanje",
-      searchPlaceholder: "São Paulo, Brazil",
-      depart: "Ukuhamba",
-      return: "Ukubuya",
-      search: "Khangela",
-      profileName: "Brittany J.",
-      preferredAirline: "Inqwelomoya Ekhethwayo",
-      travelType: "Uhlobo Lokuhamba",
-      frequentFlyer: "Umhambi Rhoqo #",
-      passport: "Ipasipoti",
-      status: "Isimo",
-      profileSettings: "Iisetingi Zeprofayili",
-      savedDestinations: "Iindawo Ezigciniweyo",
-      travelPreferences: "Izinto Zokukhetha Ukuhamba",
-      signOut: "Phuma",
-      privacy: "Ubumfihlo",
-      terms: "Imiqathango",
-      settings: "Iisetingi"
-    },
-    af: {
-      title: "Die Wêreld Wag",
-      subtitle: "Data-gedrewe intelligensie vir die moderne verkenner",
-      searchPlaceholder: "São Paulo, Brasilië",
-      depart: "Vertrek",
-      return: "Terugkeer",
-      search: "Soek",
-      profileName: "Brittany J.",
-      preferredAirline: "Voorkeur Lugredery",
-      travelType: "Reis Tipe",
-      frequentFlyer: "Gereelde Vlieër #",
-      passport: "Paspoort",
-      status: "Status",
-      profileSettings: "Profiel Instellings",
-      savedDestinations: "Gestoorde Bestemmings",
-      travelPreferences: "Reis Voorkeure",
-      signOut: "Teken Uit",
-      privacy: "Privaatheid",
-      terms: "Voorwaardes",
-      settings: "Instellings"
-    }
-  };
-
-  const t = translations[currentLanguage as keyof typeof translations] || translations.en;
-
-  // Comprehensive global destination suggestions
-  const globalDestinations = [
-    // Brazil
-    'São Paulo, Brazil',
-    'Rio de Janeiro, Brazil',
-    'Brasília, Brazil',
-    'Salvador, Brazil',
-    'Fortaleza, Brazil',
-    'Belo Horizonte, Brazil',
-    'Manaus, Brazil',
-    'Curitiba, Brazil',
-    'Recife, Brazil',
-    'Porto Alegre, Brazil',
-    // Major Global Cities
-    'New York, USA',
-    'Los Angeles, USA',
-    'Chicago, USA',
-    'Miami, USA',
-    'Las Vegas, USA',
-    'San Francisco, USA',
-    'London, UK',
-    'Paris, France',
-    'Rome, Italy',
-    'Barcelona, Spain',
-    'Madrid, Spain',
-    'Berlin, Germany',
-    'Munich, Germany',
-    'Amsterdam, Netherlands',
-    'Vienna, Austria',
-    'Zurich, Switzerland',
+  // Mock destination suggestions - Japan focused
+  const suggestions = [
     'Tokyo, Japan',
-    'Osaka, Japan',
+    'Osaka, Japan', 
     'Kyoto, Japan',
-    'Seoul, South Korea',
-    'Beijing, China',
-    'Shanghai, China',
-    'Hong Kong',
-    'Singapore',
-    'Bangkok, Thailand',
-    'Dubai, UAE',
-    'Istanbul, Turkey',
-    'Cairo, Egypt',
-    'Cape Town, South Africa',
-    'Johannesburg, South Africa',
-    'Sydney, Australia',
-    'Melbourne, Australia',
-    'Auckland, New Zealand',
-    'Vancouver, Canada',
-    'Toronto, Canada',
-    'Montreal, Canada',
-    'Mexico City, Mexico',
-    'Buenos Aires, Argentina',
-    'Lima, Peru',
-    'Santiago, Chile',
-    'Bogotá, Colombia',
-    'Caracas, Venezuela',
-    'Mumbai, India',
-    'Delhi, India',
-    'Bangalore, India',
-    'Jakarta, Indonesia',
-    'Manila, Philippines',
-    'Kuala Lumpur, Malaysia',
-    'Ho Chi Minh City, Vietnam',
-    'Hanoi, Vietnam',
-    'Tel Aviv, Israel',
-    'Moscow, Russia',
-    'St. Petersburg, Russia',
-    'Warsaw, Poland',
-    'Prague, Czech Republic',
-    'Budapest, Hungary',
-    'Athens, Greece',
-    'Lisbon, Portugal',
-    'Stockholm, Sweden',
-    'Oslo, Norway',
-    'Copenhagen, Denmark',
-    'Helsinki, Finland',
-    'Reykjavik, Iceland'
-  ];
-
-  const suggestions = globalDestinations.filter(city => 
+    'Nagoya, Japan',
+    'Yokohama, Japan',
+    'Hiroshima, Japan',
+    'Sapporo, Japan',
+    'Fukuoka, Japan',
+    'Sendai, Japan',
+    'Nara, Japan'
+  ].filter(city => 
     city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
   );
 
@@ -325,7 +84,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+          <div className="text-7xl md:text-8xl font-light text-foreground tracking-tighter">TRAVIS</div>
           <div className="flex items-center space-x-4">
             {/* Language Selector */}
             <DropdownMenu>
@@ -338,7 +97,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
-                    onClick={() => setCurrentLanguage(lang.code)}
+                    onClick={() => setCurrentLanguage(lang.name)}
                     className="flex items-center space-x-3"
                   >
                     <span className="text-lg">{lang.flag}</span>
@@ -359,57 +118,54 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/57f6a72e-9b61-46d9-815f-aa82e892afeb.png)',
-                    backgroundPosition: 'center center'
+                  <div className="w-8 h-8 bg-cover bg-center rounded-full" style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80)'
                   }} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/57f6a72e-9b61-46d9-815f-aa82e892afeb.png)',
-                    backgroundPosition: 'center center'
+                  <div className="w-16 h-16 bg-cover bg-center rounded-full" style={{
+                    backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80)'
                   }} />
                   <div>
                     <div className="flex items-center space-x-2">
-                      <h3 className="font-semibold text-foreground">{t.profileName}</h3>
+                      <h3 className="font-semibold text-foreground">Chris Upchurch</h3>
+                      <span className="text-lg">🇺🇸</span>
                     </div>
+                    <p className="text-sm text-muted-foreground">chris.upchurch@email.com</p>
                   </div>
                 </div>
                 
                 <div className="space-y-3 mb-4">
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.preferredAirline}</span>
+                    <span className="text-sm text-muted-foreground">Preferred Airline</span>
                     <span className="text-sm font-medium text-foreground">Delta Airlines</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.travelType}</span>
+                    <span className="text-sm text-muted-foreground">Travel Type</span>
                     <span className="text-sm font-medium text-foreground">Luxury</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.frequentFlyer}</span>
+                    <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
                     <span className="text-sm font-medium text-foreground">DL89472156</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.passport}</span>
-                    <div className="flex items-center space-x-2">
-                      <span className="text-sm font-medium text-foreground">United States</span>
-                      <span className="text-lg">🇺🇸</span>
-                    </div>
+                    <span className="text-sm text-muted-foreground">Nationality</span>
+                    <span className="text-sm font-medium text-foreground">United States</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.status}</span>
+                    <span className="text-sm text-muted-foreground">Status</span>
                     <span className="text-sm font-medium text-emerald-400">Premium Member</span>
                   </div>
                 </div>
                 
                 <DropdownMenuSeparator className="my-4" />
                 
-                <DropdownMenuItem>{t.profileSettings}</DropdownMenuItem>
-                <DropdownMenuItem>{t.savedDestinations}</DropdownMenuItem>
-                <DropdownMenuItem>{t.travelPreferences}</DropdownMenuItem>
-                <DropdownMenuItem>{t.signOut}</DropdownMenuItem>
+                <DropdownMenuItem>Profile Settings</DropdownMenuItem>
+                <DropdownMenuItem>Saved Destinations</DropdownMenuItem>
+                <DropdownMenuItem>Travel Preferences</DropdownMenuItem>
+                <DropdownMenuItem>Sign Out</DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -420,12 +176,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       <main className="flex-1 flex items-center justify-center px-6 py-16">
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section */}
-          <div className="mb-16 animate-fade-in">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter">
-              {t.title}
+          <div className="mb-32 animate-fade-in">
+            <h1 className="text-2xl font-bold text-foreground mb-4 tracking-tight">
+              The World Awaits
             </h1>
             <p className="text-xl text-muted-foreground mb-8 font-light">
-              {t.subtitle}
+              Data-driven insights for the modern explorer
             </p>
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8"></div>
           </div>
@@ -439,7 +195,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-blue-400 transition-colors z-10" />
                   <Input
                     type="text"
-                    placeholder={t.searchPlaceholder}
+                    placeholder="Tokyo, Japan"
                     value={destination}
                     onChange={(e) => {
                       setDestination(e.target.value);
@@ -480,7 +236,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
-                        {checkinDate ? format(checkinDate, 'MMM dd') : t.depart}
+                        {checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -504,7 +260,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
                       >
-                        {checkoutDate ? format(checkoutDate, 'MMM dd') : t.return}
+                        {checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -529,7 +285,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
                 >
                   <Search className="w-5 h-5 mr-2" />
-                  {t.search}
+                  Search
                 </Button>
               </div>
             </div>
@@ -540,11 +296,13 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Footer */}
       <footer className="px-6 py-8 border-t border-border/30">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div></div>
+          <p className="text-muted-foreground font-light tracking-wide text-xs">
+            Powered by <span className="text-foreground font-medium">TRAVIS</span>
+          </p>
           <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-            <button className="hover:text-foreground transition-colors">{t.privacy}</button>
-            <button className="hover:text-foreground transition-colors">{t.terms}</button>
-            <button className="hover:text-foreground transition-colors">{t.settings}</button>
+            <button className="hover:text-foreground transition-colors">Privacy</button>
+            <button className="hover:text-foreground transition-colors">Terms</button>
+            <button className="hover:text-foreground transition-colors">Settings</button>
           </div>
         </div>
       </footer>
