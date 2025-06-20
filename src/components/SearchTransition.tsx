@@ -21,11 +21,11 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Background Image - Brazil at night with city lights */}
+      {/* Background Image - Rio at night for dark mode, Brazil for light mode */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1470813740244-df37b8c1edcb?auto=format&fit=crop&w=1920&q=80')`,
+          backgroundImage: `url('https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?auto=format&fit=crop&w=1920&q=80')`, // Rio at night
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
