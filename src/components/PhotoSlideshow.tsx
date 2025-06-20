@@ -8,28 +8,28 @@ const PhotoSlideshow = () => {
   
   const photos = [
     {
-      url: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Tokyo Tower illuminated against the city skyline'
+      url: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Christ the Redeemer overlooking Rio de Janeiro at sunset'
     },
     {
-      url: 'https://images.unsplash.com/photo-1513407030348-c983a97b98d8?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Cherry blossoms frame the iconic Tokyo Skytree'
+      url: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Sugarloaf Mountain and Guanabara Bay in Rio de Janeiro'
     },
     {
-      url: 'https://images.unsplash.com/photo-1503899036084-c55cdd92da26?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Ancient Senso-ji Temple in historic Asakusa district'
+      url: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Iguazu Falls cascading through lush Brazilian rainforest'
     },
     {
-      url: 'https://images.unsplash.com/photo-1545569341-9eb8b30979d9?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Vibrant neon lights of Shibuya crossing at night'
+      url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80',
+      caption: 'São Paulo skyline illuminated against the twilight sky'
     },
     {
-      url: 'https://images.unsplash.com/photo-1554797589-7241bb691973?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Golden hour over Tokyo\'s sprawling urban landscape'
+      url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Amazon rainforest river winding through pristine wilderness'
     },
     {
-      url: 'https://images.unsplash.com/photo-1493976040374-85c8e12f0c0e?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Traditional Japanese garden oasis in the heart of Tokyo'
+      url: 'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Copacabana Beach with its iconic curved shoreline at golden hour'
     }
   ];
 

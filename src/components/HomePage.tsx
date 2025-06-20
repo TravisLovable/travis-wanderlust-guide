@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -30,7 +29,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [currentLanguage, setCurrentLanguage] = useState('English');
+  const [currentLanguage, setCurrentLanguage] = useState('en');
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -47,8 +46,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const translations = {
     en: {
       title: "The World Awaits",
-      subtitle: "Data-driven insights for the modern explorer",
-      searchPlaceholder: "Tokyo, Japan",
+      subtitle: "Data-driven Intelligence for the modern explorer",
+      searchPlaceholder: "São Paulo, Brazil",
       depart: "Depart",
       return: "Return",
       search: "Search",
@@ -69,8 +68,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     },
     zh: {
       title: "世界在等待",
-      subtitle: "为现代探险家提供数据驱动的洞察",
-      searchPlaceholder: "东京，日本",
+      subtitle: "为现代探险家提供数据驱动的智能",
+      searchPlaceholder: "圣保罗，巴西",
       depart: "出发",
       return: "返回",
       search: "搜索",
@@ -91,8 +90,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     },
     ja: {
       title: "世界があなたを待っています",
-      subtitle: "モダンな探検家のためのデータ主導の洞察",
-      searchPlaceholder: "東京、日本",
+      subtitle: "モダンな探検家のためのデータ主導のインテリジェンス",
+      searchPlaceholder: "サンパウロ、ブラジル",
       depart: "出発",
       return: "帰国",
       search: "検索",
@@ -113,8 +112,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     },
     es: {
       title: "El Mundo Te Espera",
-      subtitle: "Perspectivas basadas en datos para el explorador moderno",
-      searchPlaceholder: "Tokio, Japón",
+      subtitle: "Inteligencia basada en datos para el explorador moderno",
+      searchPlaceholder: "São Paulo, Brasil",
       depart: "Salida",
       return: "Regreso",
       search: "Buscar",
@@ -135,8 +134,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     },
     fr: {
       title: "Le Monde Vous Attend",
-      subtitle: "Des perspectives basées sur les données pour l'explorateur moderne",
-      searchPlaceholder: "Tokyo, Japon",
+      subtitle: "Intelligence basée sur les données pour l'explorateur moderne",
+      searchPlaceholder: "São Paulo, Brésil",
       depart: "Départ",
       return: "Retour",
       search: "Rechercher",
@@ -157,8 +156,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     },
     it: {
       title: "Il Mondo Ti Aspetta",
-      subtitle: "Approfondimenti basati sui dati per l'esploratore moderno",
-      searchPlaceholder: "Tokyo, Giappone",
+      subtitle: "Intelligenza basata sui dati per l'esploratore moderno",
+      searchPlaceholder: "São Paulo, Brasile",
       depart: "Partenza",
       return: "Ritorno",
       search: "Cerca",
@@ -179,8 +178,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     },
     xh: {
       title: "Ihlabathi Lilindile",
-      subtitle: "Ukuqonda okusekelwe kwidatha kumahlakani anamhlanje",
-      searchPlaceholder: "Tokyo, Japan",
+      subtitle: "Ubukrelekrele obusekelwe kwidatha kumahlakani anamhlanje",
+      searchPlaceholder: "São Paulo, Brazil",
       depart: "Ukuhamba",
       return: "Ukubuya",
       search: "Khangela",
@@ -201,8 +200,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     },
     af: {
       title: "Die Wêreld Wag",
-      subtitle: "Data-gedrewe insigte vir die moderne verkenner",
-      searchPlaceholder: "Tokio, Japan",
+      subtitle: "Data-gedrewe intelligensie vir die moderne verkenner",
+      searchPlaceholder: "São Paulo, Brasilië",
       depart: "Vertrek",
       return: "Terugkeer",
       search: "Soek",
@@ -223,26 +222,88 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     }
   };
 
-  const getCurrentLanguageCode = () => {
-    const lang = languages.find(l => l.name === currentLanguage);
-    return lang ? lang.code : 'en';
-  };
+  const t = translations[currentLanguage as keyof typeof translations] || translations.en;
 
-  const t = translations[getCurrentLanguageCode() as keyof typeof translations] || translations.en;
-
-  // Mock destination suggestions - Japan focused
-  const suggestions = [
+  // Comprehensive global destination suggestions
+  const globalDestinations = [
+    // Brazil
+    'São Paulo, Brazil',
+    'Rio de Janeiro, Brazil',
+    'Brasília, Brazil',
+    'Salvador, Brazil',
+    'Fortaleza, Brazil',
+    'Belo Horizonte, Brazil',
+    'Manaus, Brazil',
+    'Curitiba, Brazil',
+    'Recife, Brazil',
+    'Porto Alegre, Brazil',
+    // Major Global Cities
+    'New York, USA',
+    'Los Angeles, USA',
+    'Chicago, USA',
+    'Miami, USA',
+    'Las Vegas, USA',
+    'San Francisco, USA',
+    'London, UK',
+    'Paris, France',
+    'Rome, Italy',
+    'Barcelona, Spain',
+    'Madrid, Spain',
+    'Berlin, Germany',
+    'Munich, Germany',
+    'Amsterdam, Netherlands',
+    'Vienna, Austria',
+    'Zurich, Switzerland',
     'Tokyo, Japan',
-    'Osaka, Japan', 
+    'Osaka, Japan',
     'Kyoto, Japan',
-    'Nagoya, Japan',
-    'Yokohama, Japan',
-    'Hiroshima, Japan',
-    'Sapporo, Japan',
-    'Fukuoka, Japan',
-    'Sendai, Japan',
-    'Nara, Japan'
-  ].filter(city => 
+    'Seoul, South Korea',
+    'Beijing, China',
+    'Shanghai, China',
+    'Hong Kong',
+    'Singapore',
+    'Bangkok, Thailand',
+    'Dubai, UAE',
+    'Istanbul, Turkey',
+    'Cairo, Egypt',
+    'Cape Town, South Africa',
+    'Johannesburg, South Africa',
+    'Sydney, Australia',
+    'Melbourne, Australia',
+    'Auckland, New Zealand',
+    'Vancouver, Canada',
+    'Toronto, Canada',
+    'Montreal, Canada',
+    'Mexico City, Mexico',
+    'Buenos Aires, Argentina',
+    'Lima, Peru',
+    'Santiago, Chile',
+    'Bogotá, Colombia',
+    'Caracas, Venezuela',
+    'Mumbai, India',
+    'Delhi, India',
+    'Bangalore, India',
+    'Jakarta, Indonesia',
+    'Manila, Philippines',
+    'Kuala Lumpur, Malaysia',
+    'Ho Chi Minh City, Vietnam',
+    'Hanoi, Vietnam',
+    'Tel Aviv, Israel',
+    'Moscow, Russia',
+    'St. Petersburg, Russia',
+    'Warsaw, Poland',
+    'Prague, Czech Republic',
+    'Budapest, Hungary',
+    'Athens, Greece',
+    'Lisbon, Portugal',
+    'Stockholm, Sweden',
+    'Oslo, Norway',
+    'Copenhagen, Denmark',
+    'Helsinki, Finland',
+    'Reykjavik, Iceland'
+  ];
+
+  const suggestions = globalDestinations.filter(city => 
     city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
   );
 
@@ -285,7 +346,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 {languages.map((lang) => (
                   <DropdownMenuItem
                     key={lang.code}
-                    onClick={() => setCurrentLanguage(lang.name)}
+                    onClick={() => setCurrentLanguage(lang.code)}
                     className="flex items-center space-x-3"
                   >
                     <span className="text-lg">{lang.flag}</span>
@@ -306,15 +367,17 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
                 <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-8 h-8 bg-cover bg-center rounded-full" style={{
-                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)'
+                  <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
+                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)',
+                    backgroundPosition: 'center center'
                   }} />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6">
                 <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-16 h-16 bg-cover bg-center rounded-full" style={{
-                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)'
+                  <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
+                    backgroundImage: 'url(/lovable-uploads/8f269d2a-c465-411e-a4cd-d27f4f88afc0.png)',
+                    backgroundPosition: 'center center'
                   }} />
                   <div>
                     <div className="flex items-center space-x-2">
