@@ -184,7 +184,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header */}
-      <header className="bg-white/80 dark:bg-black backdrop-blur-sm border-b border-border/30 sticky top-0 z-40 dark:header-glow">
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -268,25 +268,25 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <DropdownMenuContent className="w-80 bg-card border-border shadow-lg" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Brittany J.</p>
-                      <p className="text-xs leading-none premium-glow font-medium">Premium Member</p>
+                      <p className="text-sm font-medium leading-none">{profileData.name}</p>
+                      <p className="text-xs leading-none premium-glow font-medium">{profileData.status}</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="p-2 space-y-2">
                     <div className="text-xs">
-                      <strong>Preferred Airline:</strong> Delta Airlines
+                      <strong>Preferred Airline:</strong> {profileData.preferredAirline}
                     </div>
                     <div className="text-xs">
-                      <strong>Travel Type:</strong> Luxury
+                      <strong>Travel Type:</strong> {profileData.travelType}
                     </div>
                     <div className="text-xs">
-                      <strong>Frequent Flyer #:</strong> DL89472156
+                      <strong>Frequent Flyer #:</strong> {profileData.frequentFlyerNumber}
                     </div>
                     <div className="text-xs">
                       <strong>Passport:</strong> 
                       <div className="flex items-center space-x-2 inline-block ml-1">
-                        <span>United States</span>
+                        <span>{profileData.country}</span>
                         <span className="text-lg">🇺🇸</span>
                       </div>
                     </div>
@@ -359,6 +359,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
                 <Input
                   type="text"
                   placeholder="Change destination"
@@ -367,7 +368,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   onKeyPress={handleKeyPress}
                   onFocus={() => newDestination.length > 1 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="pl-4 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full no-focus-outline"
+                  className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
                 />
                 {showSuggestions && destinationSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -378,7 +379,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                           setNewDestination(suggestion);
                           setShowSuggestions(false);
                         }}
-                        className="w-full text-left px-4 py-3 suggestion-hover transition-colors text-sm border-b border-border/20 last:border-b-0"
+                        className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
                       >
                         <span>{suggestion}</span>
                       </button>
@@ -438,9 +439,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
               <Button
                 onClick={handleNewSearch}
-                className="h-12 px-4 bg-white/10 backdrop-blur-sm rounded-r-full border-l border-border/30 search-btn-hover"
+                className="h-12 px-4 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
               >
-                <Search className="w-5 h-5 search-icon-glow" />
+                <Search className="w-5 h-5" />
               </Button>
             </div>
           </div>
