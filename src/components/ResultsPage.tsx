@@ -1,5 +1,6 @@
+
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,6 +13,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
+import AccommodationHeatMap from './AccommodationHeatMap';
 
 interface ResultsPageProps {
   destination: string;
@@ -31,43 +33,56 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
   const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
+  const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  // Mock data updated for Tokyo
+  // Brazil-focused mock data
   const mockData = {
-    currency: { rate: 149.50, symbol: '¥', name: 'Japanese Yen' },
-    time: { current: '09:42', offset: '+9', dst: false },
-    weather: { temp: 18, condition: 'Partly Cloudy', humidity: 72 },
-    airport: { code: 'NRT', name: 'Narita International Airport', address: 'Chiba Prefecture' },
-    altitude: { elevation: '40m above sea level' },
-    emergency: { police: '110', fire: '119', medical: '119' },
+    currency: { rate: 5.15, symbol: 'R$', name: 'Brazilian Real' },
+    time: { current: '14:42', offset: '-3', dst: false },
+    weather: { temp: 24, condition: 'Partly Cloudy', humidity: 65 },
+    airport: { code: 'GRU', name: 'São Paulo/Guarulhos International Airport', address: 'Guarulhos, São Paulo' },
+    altitude: { elevation: '760m above sea level' },
+    emergency: { police: '190', fire: '193', medical: '192' },
     holidays: [
-      { name: 'Spring Equinox Day', date: 'March 20, 2024' },
-      { name: 'Showa Day', date: 'April 29, 2024' },
-      { name: 'Children\'s Day', date: 'May 5, 2024' }
+      { name: 'Carnival', date: 'February 12-13, 2024' },
+      { name: 'Independence Day', date: 'September 7, 2024' },
+      { name: 'Christmas Day', date: 'December 25, 2024' }
     ],
-    religion: {
-      primary: 'Shinto & Buddhism',
-      percentage: '84%',
-      practices: ['Temple visits', 'Shrine worship', 'Meditation'],
-      etiquette: ['Remove shoes', 'Bow respectfully', 'Silence in sacred areas']
+    culture: {
+      language: { primary: 'Portuguese', secondary: 'English (limited in tourist areas)' },
+      religion: { primary: 'Roman Catholic (64.6%)', secondary: 'Protestant (22.2%), Other (13.2%)' },
+      etiquette: [
+        'Warm greetings with hugs and kisses on cheek',
+        'Dress well, appearance matters',
+        'Avoid discussing politics initially',
+        'Always say "obrigado/obrigada" (thank you)',
+        'Family values are very important'
+      ],
+      customs: [
+        'Late dining (8-10 PM is normal)',
+        'Strong coffee culture throughout day',
+        'Soccer (futebol) is a national passion',
+        'Music and dance are central to culture'
+      ]
     }
   };
 
   const fourteenDayForecast = [
-    { day: 'Today', temp: 18, condition: 'Partly Cloudy' },
-    { day: 'Tomorrow', temp: 20, condition: 'Sunny' },
-    { day: 'Wed', temp: 17, condition: 'Rainy' },
-    { day: 'Thu', temp: 22, condition: 'Sunny' },
-    { day: 'Fri', temp: 19, condition: 'Cloudy' },
-    { day: 'Sat', temp: 21, condition: 'Sunny' },
-    { day: 'Sun', temp: 16, condition: 'Rainy' },
-    { day: 'Mon', temp: 23, condition: 'Sunny' },
-    { day: 'Tue', temp: 18, condition: 'Partly Cloudy' },
-    { day: 'Wed', temp: 20, condition: 'Sunny' },
-    { day: 'Thu', temp: 19, condition: 'Cloudy' },
-    { day: 'Fri', temp: 24, condition: 'Sunny' },
-    { day: 'Sat', temp: 17, condition: 'Rainy' },
-    { day: 'Sun', temp: 21, condition: 'Partly Cloudy' }
+    { day: 'Today', temp: 24, condition: 'Partly Cloudy' },
+    { day: 'Tomorrow', temp: 26, condition: 'Sunny' },
+    { day: 'Wed', temp: 22, condition: 'Rainy' },
+    { day: 'Thu', temp: 28, condition: 'Sunny' },
+    { day: 'Fri', temp: 25, condition: 'Cloudy' },
+    { day: 'Sat', temp: 27, condition: 'Sunny' },
+    { day: 'Sun', temp: 23, condition: 'Rainy' },
+    { day: 'Mon', temp: 29, condition: 'Sunny' },
+    { day: 'Tue', temp: 24, condition: 'Partly Cloudy' },
+    { day: 'Wed', temp: 26, condition: 'Sunny' },
+    { day: 'Thu', temp: 25, condition: 'Cloudy' },
+    { day: 'Fri', temp: 30, condition: 'Sunny' },
+    { day: 'Sat', temp: 23, condition: 'Rainy' },
+    { day: 'Sun', temp: 27, condition: 'Partly Cloudy' }
   ];
 
   const widgetOptions = [
@@ -78,6 +93,28 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     { id: 'emergency', name: 'Emergency', icon: Shield, color: 'from-red-500 to-pink-600' },
     { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
   ];
+
+  // Brazilian destinations for suggestions
+  const brazilianDestinations = [
+    'São Paulo, Brazil', 'Rio de Janeiro, Brazil', 'Salvador, Brazil', 'Brasília, Brazil',
+    'Fortaleza, Brazil', 'Belo Horizonte, Brazil', 'Manaus, Brazil', 'Curitiba, Brazil',
+    'Recife, Brazil', 'Goiânia, Brazil', 'Belém, Brazil', 'Porto Alegre, Brazil',
+    'Guarulhos, Brazil', 'Campinas, Brazil', 'São Luís, Brazil', 'São Gonçalo, Brazil',
+    'Maceió, Brazil', 'Duque de Caxias, Brazil', 'Natal, Brazil', 'Florianópolis, Brazil'
+  ];
+
+  const handleDestinationChange = (value: string) => {
+    setNewDestination(value);
+    if (value.length > 1) {
+      const filtered = brazilianDestinations.filter(dest =>
+        dest.toLowerCase().includes(value.toLowerCase())
+      );
+      setDestinationSuggestions(filtered.slice(0, 5));
+      setShowSuggestions(true);
+    } else {
+      setShowSuggestions(false);
+    }
+  };
 
   const handleNewSearch = () => {
     if (newDestination && newCheckinDate && newCheckoutDate) {
@@ -112,8 +149,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     setIsAdapterSpinning(!isAdapterSpinning);
   };
 
+  const formatDateRange = (checkin: Date, checkout: Date) => {
+    const checkinFormatted = format(checkin, 'EEEE MMMM do');
+    const checkoutFormatted = format(checkout, 'EEEE MMMM do');
+    return `${checkinFormatted} - ${checkoutFormatted}`;
+  };
+
   return (
-    <div className="min-h-screen bg-gray-100">
+    <div className="min-h-screen bg-gray-200">
       {/* Header */}
       <header className="bg-white/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
@@ -141,16 +184,49 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <Pin className="w-5 h-5" />
                   </Button>
                 </div>
-                <p className="text-muted-foreground flex items-center font-light">
-                  <Calendar className="w-4 h-4 mr-2" />
-                  {dates.checkin} to {dates.checkout}
-                </p>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      className="text-muted-foreground flex items-center font-light p-0 h-auto hover:text-foreground transition-colors"
+                    >
+                      <Calendar className="w-4 h-4 mr-2" />
+                      {formatDateRange(newCheckinDate, newCheckoutDate)}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                    <div className="p-4 space-y-4">
+                      <div>
+                        <p className="text-sm font-medium mb-2">Check-in Date</p>
+                        <CalendarComponent
+                          mode="single"
+                          selected={newCheckinDate}
+                          onSelect={(date) => {
+                            if (date) setNewCheckinDate(date);
+                          }}
+                          className="pointer-events-auto"
+                        />
+                      </div>
+                      <div>
+                        <p className="text-sm font-medium mb-2">Check-out Date</p>
+                        <CalendarComponent
+                          mode="single"
+                          selected={newCheckoutDate}
+                          onSelect={(date) => {
+                            if (date) setNewCheckoutDate(date);
+                          }}
+                          className="pointer-events-auto"
+                        />
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
               </div>
             </div>
             <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
           </div>
 
-          {/* Pinned Destinations */}
+          {/* Pinned Destinations - Brazil focused */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center space-x-3">
@@ -176,11 +252,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   ))}
                 </div>
                 <div className="flex space-x-2">
-                  {['Kyoto', 'Osaka', 'Hiroshima', 'Nara'].map((city) => (
+                  {['Rio de Janeiro', 'Salvador', 'Brasília', 'Fortaleza'].map((city) => (
                     <button
                       key={city}
-                      onClick={() => handlePinDestination(city)}
-                      className="px-2 py-1 bg-blue-500/20 border border-blue-500/50 rounded text-xs text-blue-300 hover:bg-blue-500/30 transition-colors"
+                      onClick={() => handlePinDestination(`${city}, Brazil`)}
+                      className="px-2 py-1 bg-green-500/20 border border-green-500/50 rounded text-xs text-green-300 hover:bg-green-500/30 transition-colors"
                       title="Click to pin"
                     >
                       + {city}
@@ -191,8 +267,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           )}
 
-          {/* Search Bar - Updated to match homepage style */}
-          <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg">
+          {/* Search Bar with Auto-suggestions */}
+          <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
@@ -200,63 +276,36 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   type="text"
                   placeholder="Change destination"
                   value={newDestination}
-                  onChange={(e) => setNewDestination(e.target.value)}
+                  onChange={(e) => handleDestinationChange(e.target.value)}
                   onKeyPress={handleKeyPress}
+                  onFocus={() => newDestination.length > 1 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="pl-11 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
                 />
+                {showSuggestions && destinationSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                    {destinationSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => {
+                          setNewDestination(suggestion);
+                          setShowSuggestions(false);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
+                      >
+                        <div className="flex items-center space-x-2">
+                          <MapPin className="w-4 h-4 text-muted-foreground" />
+                          <span>{suggestion}</span>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
               
-              <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {format(newCheckinDate, 'MMM dd')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={newCheckinDate}
-                    onSelect={(date) => {
-                      if (date) setNewCheckinDate(date);
-                      setCheckinOpen(false);
-                    }}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-              
-              <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-                <PopoverTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
-                  >
-                    <Calendar className="w-4 h-4 mr-2" />
-                    {format(newCheckoutDate, 'MMM dd')}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                  <CalendarComponent
-                    mode="single"
-                    selected={newCheckoutDate}
-                    onSelect={(date) => {
-                      if (date) setNewCheckoutDate(date);
-                      setCheckoutOpen(false);
-                    }}
-                    initialFocus
-                    className="pointer-events-auto"
-                  />
-                </PopoverContent>
-              </Popover>
-
               <Button
                 onClick={handleNewSearch}
-                className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full border-l border-border/30"
+                className="h-12 px-6 bg-blue-600 hover:bg-blue-700 text-white rounded-r-full"
               >
                 Search
               </Button>
@@ -267,61 +316,87 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
-        {/* Photo Slideshow - Updated with Tokyo landmarks */}
+        {/* Photo Slideshow - Breathtaking Brazil landmarks */}
         <div className="mb-8">
-          <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
-            <div className="relative w-full h-full">
-              <div className="absolute inset-0">
-                <img
-                  src="https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?auto=format&fit=crop&w=1200&q=80"
-                  alt="Tokyo Tower at sunset"
-                  className="w-full h-full object-cover"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-                <div className="absolute bottom-4 left-4 right-4">
-                  <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
-                    Tokyo Tower illuminated at sunset
-                  </p>
+          <PhotoSlideshow />
+        </div>
+
+        {/* Cultural Insights Section */}
+        <Card className="travis-card mb-8 bg-white shadow-lg">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-2xl font-semibold">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
+                <Globe className="w-5 h-5 text-white" />
+              </div>
+              Cultural Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {/* Language */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                    <Globe className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-blue-700">Language</h3>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.language.primary}</p>
+                  <p className="text-sm"><span className="font-medium">Secondary:</span> {mockData.culture.language.secondary}</p>
+                </div>
+              </div>
+
+              {/* Religion */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
+                    <Church className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-purple-700">Religion</h3>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.religion.primary}</p>
+                  <p className="text-sm"><span className="font-medium">Other:</span> {mockData.culture.religion.secondary}</p>
+                </div>
+              </div>
+
+              {/* Cultural Etiquette */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-green-700">Cultural Etiquette</h3>
+                </div>
+                <div className="space-y-1">
+                  {mockData.culture.etiquette.map((rule, idx) => (
+                    <p key={idx} className="text-sm text-muted-foreground">• {rule}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Local Customs */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    <Utensils className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-orange-700">Local Customs</h3>
+                </div>
+                <div className="space-y-1">
+                  {mockData.culture.customs.map((custom, idx) => (
+                    <p key={idx} className="text-sm text-muted-foreground">• {custom}</p>
+                  ))}
                 </div>
               </div>
             </div>
-          </div>
-        </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
-          {/* Religion & Culture Card - Prioritized */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Church className="w-5 h-5 text-white" />
-                </div>
-                Practicing Religion
-                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <div className="font-semibold text-purple-700 mb-2">{mockData.religion.primary}</div>
-                <div className="text-sm text-muted-foreground">{mockData.religion.percentage} of population</div>
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium text-purple-700">Common Practices:</h4>
-                {mockData.religion.practices.map((practice, idx) => (
-                  <div key={idx} className="text-sm text-muted-foreground">• {practice}</div>
-                ))}
-              </div>
-              <div className="space-y-2">
-                <h4 className="font-medium text-purple-700">Etiquette:</h4>
-                {mockData.religion.etiquette.map((rule, idx) => (
-                  <div key={idx} className="text-sm text-muted-foreground">• {rule}</div>
-                ))}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Currency Card */}
+          {/* Currency Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -351,7 +426,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </div>
               </div>
               <p className="text-lg font-semibold text-green-400">
-                = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(0)} {mockData.currency.name}
+                = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(2)} {mockData.currency.name}
               </p>
               <div className="text-sm text-muted-foreground">
                 Live rate • Updated 2 min ago
@@ -359,37 +434,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Street Map Card - Updated with Tokyo street view */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
-                  <MapPin className="w-5 h-5 text-white" />
-                </div>
-                Street View Map
-                <Mountain className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="w-full h-48 bg-gray-200 rounded-xl overflow-hidden">
-                <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3240.827853338283!2d139.69171081531663!3d35.67143803019622!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x60188c9fa9d5a43f%3A0x5c5d0b6b5c8e0!2sShinjuku%2C%20Tokyo%2C%20Japan!5e0!3m2!1sen!2sus!4v1639123456789!5m2!1sen!2sus"
-                  width="100%"
-                  height="100%"
-                  style={{ border: 0 }}
-                  allowFullScreen
-                  loading="lazy"
-                  referrerPolicy="no-referrer-when-downgrade"
-                  className="rounded-xl"
-                />
-              </div>
-              <div className="text-sm text-muted-foreground mt-2">
-                Interactive street view of Shinjuku, Tokyo
-              </div>
-            </CardContent>
-          </Card>
+          {/* Accommodation Heat Map */}
+          <AccommodationHeatMap />
 
-          {/* World Adapters Widget - Updated with 3D spinning effect */}
+          {/* World Adapters Widget - 3D floating effect */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -402,36 +450,57 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardHeader>
             <CardContent>
               <div 
-                className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer"
+                className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer perspective-1000"
                 onClick={handleAdapterClick}
               >
                 <div 
-                  className={`w-16 h-20 mx-auto mb-3 bg-gradient-to-b from-gray-300 to-gray-500 rounded-lg relative transition-transform duration-1000 ${
-                    isAdapterSpinning ? 'animate-spin' : ''
+                  className={`w-16 h-20 mx-auto mb-3 relative transition-all duration-1000 transform-gpu ${
+                    isAdapterSpinning ? 'animate-spin rotate-y-180' : 'hover:rotate-y-12 hover:-translate-y-2'
                   }`}
                   style={{
-                    background: 'linear-gradient(135deg, #e5e7eb 0%, #9ca3af 100%)',
-                    boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
+                    background: 'linear-gradient(135deg, #f3f4f6 0%, #d1d5db 50%, #9ca3af 100%)',
+                    boxShadow: `
+                      0 20px 25px -5px rgba(0, 0, 0, 0.1),
+                      0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                      inset 0 1px 0 rgba(255, 255, 255, 0.1)
+                    `,
+                    borderRadius: '8px',
+                    transformStyle: 'preserve-3d',
                   }}
                 >
-                  {/* Type A plug visual */}
-                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2">
-                    <div className="w-2 h-6 bg-gray-700 rounded-sm mb-1"></div>
-                    <div className="w-2 h-6 bg-gray-700 rounded-sm"></div>
+                  {/* 3D depth effect */}
+                  <div 
+                    className="absolute inset-0 rounded-lg"
+                    style={{
+                      background: 'linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)',
+                      transform: 'translateZ(-2px)',
+                    }}
+                  />
+                  
+                  {/* Type C plug visual */}
+                  <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md"></div>
+                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md mt-1"></div>
                   </div>
+                  
+                  {/* Floating shadow */}
+                  <div 
+                    className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-3 bg-black/20 rounded-full blur-sm"
+                    style={{ filter: 'blur(4px)' }}
+                  />
                 </div>
-                <div className="font-bold text-lg text-yellow-400">Type A & B</div>
-                <div className="text-sm text-muted-foreground">100V • 50/60Hz</div>
+                <div className="font-bold text-lg text-yellow-400">Type C & N</div>
+                <div className="text-sm text-muted-foreground">220V • 60Hz</div>
               </div>
               <div className="text-sm space-y-1 mt-2">
-                <p><span className="font-medium">Voltage:</span> 100V (Lower than US/EU)</p>
-                <p><span className="font-medium">Frequency:</span> 50Hz (East) / 60Hz (West)</p>
-                <p><span className="font-medium">Plug Type:</span> Same as North America</p>
+                <p><span className="font-medium">Voltage:</span> 220V (Higher than US)</p>
+                <p><span className="font-medium">Frequency:</span> 60Hz</p>
+                <p><span className="font-medium">Plug Type:</span> Type C (Europlug) & Type N</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Time Zone Card */}
+          {/* Time Zone Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -446,13 +515,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <div className="grid grid-cols-2 gap-4">
                 <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                   <div className="text-xs text-muted-foreground mb-2 font-medium">YOUR TIME</div>
-                  <div className="text-2xl font-bold text-blue-400">21:42</div>
+                  <div className="text-2xl font-bold text-blue-400">17:42</div>
                   <div className="text-xs text-muted-foreground font-mono">EST</div>
                 </div>
                 <div className="text-center p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-2 font-medium">TOKYO</div>
+                  <div className="text-xs text-muted-foreground mb-2 font-medium">SÃO PAULO</div>
                   <div className="text-2xl font-bold text-blue-300">{mockData.time.current}</div>
-                  <div className="text-xs text-muted-foreground font-mono">JST {mockData.time.offset}</div>
+                  <div className="text-xs text-muted-foreground font-mono">BRT {mockData.time.offset}</div>
                 </div>
               </div>
               {!mockData.time.dst && (
@@ -464,7 +533,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Weather Card */}
+          {/* Weather Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -508,7 +577,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Local Holidays Widget */}
+          {/* Local Holidays Widget - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -527,12 +596,12 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </div>
               ))}
               <div className="text-sm text-muted-foreground">
-                <p><span className="font-medium">Note:</span> Some businesses may be closed during national holidays</p>
+                <p><span className="font-medium">Note:</span> Many businesses close during major holidays like Carnival</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Airport Info Card */}
+          {/* Airport Info Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -550,14 +619,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
               </div>
               <div className="text-sm space-y-1">
-                <p><span className="font-medium">Distance to city:</span> 60 km</p>
-                <p><span className="font-medium">Travel time:</span> 45-60 minutes</p>
-                <p><span className="font-medium">Transportation:</span> Express Train, Bus, Taxi</p>
+                <p><span className="font-medium">Distance to city:</span> 25 km</p>
+                <p><span className="font-medium">Travel time:</span> 45-90 minutes</p>
+                <p><span className="font-medium">Transportation:</span> Metro, Bus, Taxi, Uber</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Transportation Card */}
+          {/* Transportation Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -571,23 +640,23 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             <CardContent className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">JR Pass</div>
-                  <div className="text-xs text-muted-foreground">Recommended</div>
+                  <div className="font-medium text-indigo-700">Metro</div>
+                  <div className="text-xs text-muted-foreground">Extensive Network</div>
                 </div>
                 <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">Subway</div>
-                  <div className="text-xs text-muted-foreground">Extensive</div>
+                  <div className="font-medium text-indigo-700">Uber/99</div>
+                  <div className="text-xs text-muted-foreground">Widely Available</div>
                 </div>
               </div>
               <div className="text-sm space-y-1">
-                <p><span className="font-medium">JR Pass 7-day:</span> ¥29,650</p>
-                <p><span className="font-medium">Tokyo Metro day pass:</span> ¥800</p>
-                <p><span className="font-medium">IC Card:</span> Suica/Pasmo available</p>
+                <p><span className="font-medium">Metro day pass:</span> R$12.00</p>
+                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
+                <p><span className="font-medium">Bilhete Único:</span> Integrated transport card</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Visa & Entry Card */}
+          {/* Visa & Entry Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -605,8 +674,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
               <div className="text-sm space-y-1">
                 <p><span className="font-medium">Max stay:</span> 90 days</p>
-                <p><span className="font-medium">Passport validity:</span> Valid for duration</p>
-                <p><span className="font-medium">Required docs:</span> Return ticket recommended</p>
+                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
+                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
               </div>
               <Button variant="outline" size="sm" className="w-full">
                 View Full Requirements
@@ -614,7 +683,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Emergency Info Card */}
+          {/* Emergency Info Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -632,18 +701,18 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <div className="text-xs text-muted-foreground">Police</div>
                 </div>
                 <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700">{mockData.emergency.fire}</div>
-                  <div className="text-xs text-muted-foreground">Fire/Medical</div>
+                  <div className="font-bold text-red-700">{mockData.emergency.medical}</div>
+                  <div className="text-xs text-muted-foreground">Medical/Fire</div>
                 </div>
               </div>
               <div className="text-sm space-y-1">
-                <p><span className="font-medium">US Embassy:</span> +81 3 3224 5000</p>
-                <p><span className="font-medium">Tourist Hotline:</span> +81 50 3816 2787</p>
+                <p><span className="font-medium">US Consulate SP:</span> +55 11 5186-7000</p>
+                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Connectivity Card */}
+          {/* Connectivity Card - Updated for Brazil */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -658,19 +727,19 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
                 <h4 className="font-medium text-cyan-700 mb-2">Free Wi-Fi Spots</h4>
                 <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• JR East Free Wi-Fi (stations)</li>
-                  <li>• Convenience stores (konbini)</li>
-                  <li>• McDonald's, Starbucks</li>
+                  <li>• Shopping malls (most locations)</li>
+                  <li>• Starbucks, McDonald's</li>
+                  <li>• Metro stations (WiFi Livre SP)</li>
                 </ul>
               </div>
               <div className="text-sm">
                 <p className="font-medium mb-1">ATM Locations:</p>
-                <p className="text-muted-foreground">7-Eleven, Japan Post, major banks. International cards accepted at most convenience stores.</p>
+                <p className="text-muted-foreground">Banco do Brasil, Bradesco, Itaú branches. International cards widely accepted.</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Intelligence Dashboard Widget - Updated title */}
+          {/* Intelligence Dashboard Widget */}
           <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
