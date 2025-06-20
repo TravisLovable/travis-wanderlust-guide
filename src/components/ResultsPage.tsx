@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils } from 'lucide-react';
+import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -8,6 +8,15 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
@@ -34,6 +43,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
   const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
+
+  // Profile data
+  const profileData = {
+    name: "Brittany J.",
+    preferredAirline: "Delta Airlines",
+    travelType: "Luxury",
+    frequentFlyerNumber: "DL123456789",
+    nationality: "American",
+    country: "United States",
+    status: "Premium Member"
+  };
 
   // Brazil-focused mock data
   const mockData = {
@@ -149,15 +169,15 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   };
 
   const formatDateRange = (checkin: Date, checkout: Date) => {
-    const checkinFormatted = format(checkin, 'EEEE MMMM do');
-    const checkoutFormatted = format(checkout, 'EEEE MMMM do');
-    return `${checkinFormatted} - ${checkoutFormatted}`;
+    const departFormatted = format(checkin, 'EEEE MMMM do');
+    const returnFormatted = format(checkout, 'EEEE MMMM do');
+    return `Depart: ${departFormatted} • Return: ${returnFormatted}`;
   };
 
   return (
-    <div className="min-h-screen bg-gray-200">
+    <div className="min-h-screen bg-gray-300 dark:bg-black">
       {/* Header */}
-      <header className="bg-white/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
+      <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-sm border-b border-border/30 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -171,17 +191,21 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <div>
                 <div className="flex items-center space-x-3">
                   <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
-                    <MapPin className="w-7 h-7 mr-3 text-blue-400" />
                     {destination}
+                    <img 
+                      src="https://flagcdn.com/w40/br.png" 
+                      alt="Brazil Flag" 
+                      className="w-8 h-6 ml-3 mr-2 rounded shadow-sm"
+                    />
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handlePinDestination(destination)}
+                      className="text-blue-400 hover:text-blue-300"
+                    >
+                      <Pin className="w-5 h-5" />
+                    </Button>
                   </h1>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    onClick={() => handlePinDestination(destination)}
-                    className="text-blue-400 hover:text-blue-300"
-                  >
-                    <Pin className="w-5 h-5" />
-                  </Button>
                 </div>
                 <Popover>
                   <PopoverTrigger asChild>
@@ -196,7 +220,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
                     <div className="p-4 space-y-4">
                       <div>
-                        <p className="text-sm font-medium mb-2">Check-in Date</p>
+                        <p className="text-sm font-medium mb-2">Depart Date</p>
                         <CalendarComponent
                           mode="single"
                           selected={newCheckinDate}
@@ -207,7 +231,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                         />
                       </div>
                       <div>
-                        <p className="text-sm font-medium mb-2">Check-out Date</p>
+                        <p className="text-sm font-medium mb-2">Return Date</p>
                         <CalendarComponent
                           mode="single"
                           selected={newCheckoutDate}
@@ -222,10 +246,58 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </Popover>
               </div>
             </div>
-            <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+            <div className="flex items-center space-x-4">
+              <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10">
+                      <AvatarImage src="/lovable-uploads/0a529713-a2bd-4cfa-95c5-23c0084bfdd5.png" alt="Profile" />
+                      <AvatarFallback>BJ</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-80 bg-card border-border shadow-lg" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-sm font-medium leading-none">{profileData.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">{profileData.status}</p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="p-2 space-y-2">
+                    <div className="text-xs">
+                      <strong>Preferred Airline:</strong> {profileData.preferredAirline}
+                    </div>
+                    <div className="text-xs">
+                      <strong>Travel Type:</strong> {profileData.travelType}
+                    </div>
+                    <div className="text-xs">
+                      <strong>Frequent Flyer #:</strong> {profileData.frequentFlyerNumber}
+                    </div>
+                    <div className="text-xs">
+                      <strong>Nationality:</strong> {profileData.nationality}
+                    </div>
+                    <div className="text-xs">
+                      <strong>Country:</strong> {profileData.country}
+                    </div>
+                  </div>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem>
+                    Edit Profile
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Settings
+                  </DropdownMenuItem>
+                  <DropdownMenuItem>
+                    Sign out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
 
-          {/* Pinned Destinations - Brazil focused */}
+          {/* Pinned Destinations - Brazil focused with better visibility */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center space-x-3">
@@ -235,7 +307,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-secondary/30 border border-border/30 rounded-full text-sm text-foreground hover:bg-secondary/60 transition-colors"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/80 border border-blue-500/70 rounded-full text-sm text-white hover:bg-blue-600 transition-colors shadow-sm"
                     >
                       <span>{dest}</span>
                       <button
@@ -243,7 +315,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                           e.stopPropagation();
                           removePinnedDestination(dest);
                         }}
-                        className="w-4 h-4 rounded-full bg-muted-foreground/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="w-4 h-4 rounded-full bg-white/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
                       >
                         ×
                       </button>
@@ -255,7 +327,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-500/20 border border-green-500/50 rounded text-xs text-green-300 hover:bg-green-500/30 transition-colors"
+                      className="px-2 py-1 bg-green-600/80 border border-green-500/70 rounded text-xs text-white hover:bg-green-600 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
@@ -270,7 +342,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-4 h-4 z-10" />
                 <Input
                   type="text"
                   placeholder="Change destination"
@@ -279,7 +350,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   onKeyPress={handleKeyPress}
                   onFocus={() => newDestination.length > 1 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="pl-11 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                  className="pl-4 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
                 />
                 {showSuggestions && destinationSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -292,10 +363,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                         }}
                         className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
                       >
-                        <div className="flex items-center space-x-2">
-                          <MapPin className="w-4 h-4 text-muted-foreground" />
-                          <span>{suggestion}</span>
-                        </div>
+                        <span>{suggestion}</span>
                       </button>
                     ))}
                   </div>
@@ -321,7 +389,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         </div>
 
         {/* Cultural Insights Section */}
-        <Card className="travis-card mb-8 bg-white shadow-lg">
+        <Card className="travis-card mb-8 bg-white dark:bg-gray-900 shadow-lg">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center text-2xl font-semibold">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
@@ -396,7 +464,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
           {/* Currency Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
@@ -437,7 +505,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <SaoPauloAccommodationMap />
 
           {/* World Adapters Widget - 3D floating effect */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
@@ -500,7 +568,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Time Zone Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -533,7 +601,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Weather Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -577,7 +645,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Local Holidays Widget - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -601,7 +669,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Airport Info Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -626,7 +694,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Transportation Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
@@ -656,7 +724,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Visa & Entry Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -683,7 +751,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Emergency Info Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -712,7 +780,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Connectivity Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-white shadow-lg">
+          <Card className="travis-card travis-interactive group bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -739,7 +807,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Intelligence Dashboard Widget */}
-          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white shadow-lg">
+          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-white dark:bg-gray-900 shadow-lg">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
