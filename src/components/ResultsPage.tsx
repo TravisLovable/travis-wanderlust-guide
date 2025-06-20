@@ -185,7 +185,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <div>
                     <div className="flex items-center space-x-2">
                       <h3 className="font-semibold text-gray-900">Brittany J.</h3>
-                      <span className="text-lg">🇺🇸</span>
                     </div>
                   </div>
                 </div>
@@ -204,12 +203,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <span className="text-sm font-medium text-gray-900">DL89472156</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Nationality</span>
-                    <span className="text-sm font-medium text-gray-900">American</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-gray-600">Country</span>
-                    <span className="text-sm font-medium text-gray-900">United States</span>
+                    <span className="text-sm text-gray-600">Passport</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-gray-900">United States</span>
+                      <span className="text-lg">🇺🇸</span>
+                    </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-gray-600">Status</span>

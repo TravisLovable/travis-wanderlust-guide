@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Search, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -56,8 +55,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "Preferred Airline",
       travelType: "Travel Type",
       frequentFlyer: "Frequent Flyer #",
-      nationality: "Nationality",
-      country: "Country",
+      passport: "Passport",
       status: "Status",
       profileSettings: "Profile Settings",
       savedDestinations: "Saved Destinations",
@@ -78,8 +76,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "首选航空公司",
       travelType: "旅行类型",
       frequentFlyer: "常旅客号码",
-      nationality: "国籍",
-      country: "国家",
+      passport: "护照",
       status: "状态",
       profileSettings: "个人资料设置",
       savedDestinations: "保存的目的地",
@@ -100,8 +97,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "優先航空会社",
       travelType: "旅行タイプ",
       frequentFlyer: "フリークエントフライヤー番号",
-      nationality: "国籍",
-      country: "国",
+      passport: "パスポート",
       status: "ステータス",
       profileSettings: "プロフィール設定",
       savedDestinations: "保存された目的地",
@@ -122,8 +118,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "Aerolínea Preferida",
       travelType: "Tipo de Viaje",
       frequentFlyer: "Viajero Frecuente #",
-      nationality: "Nacionalidad",
-      country: "País",
+      passport: "Pasaporte",
       status: "Estado",
       profileSettings: "Configuración del Perfil",
       savedDestinations: "Destinos Guardados",
@@ -144,8 +139,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "Compagnie Aérienne Préférée",
       travelType: "Type de Voyage",
       frequentFlyer: "Voyageur Fréquent #",
-      nationality: "Nationalité",
-      country: "Pays",
+      passport: "Passeport",
       status: "Statut",
       profileSettings: "Paramètres du Profil",
       savedDestinations: "Destinations Sauvegardées",
@@ -166,8 +160,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "Compagnia Aerea Preferita",
       travelType: "Tipo di Viaggio",
       frequentFlyer: "Frequent Flyer #",
-      nationality: "Nazionalità",
-      country: "Paese",
+      passport: "Passaporto",
       status: "Stato",
       profileSettings: "Impostazioni Profilo",
       savedDestinations: "Destinazioni Salvate",
@@ -188,8 +181,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "Inqwelomoya Ekhethwayo",
       travelType: "Uhlobo Lokuhamba",
       frequentFlyer: "Umhambi Rhoqo #",
-      nationality: "Ubuzwe",
-      country: "Ilizwe",
+      passport: "Ipasipoti",
       status: "Isimo",
       profileSettings: "Iisetingi Zeprofayili",
       savedDestinations: "Iindawo Ezigciniweyo",
@@ -210,8 +202,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       preferredAirline: "Voorkeur Lugredery",
       travelType: "Reis Tipe",
       frequentFlyer: "Gereelde Vlieër #",
-      nationality: "Nasionaliteit",
-      country: "Land",
+      passport: "Paspoort",
       status: "Status",
       profileSettings: "Profiel Instellings",
       savedDestinations: "Gestoorde Bestemmings",
@@ -383,7 +374,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   <div>
                     <div className="flex items-center space-x-2">
                       <h3 className="font-semibold text-foreground">{t.profileName}</h3>
-                      <span className="text-lg">🇺🇸</span>
                     </div>
                   </div>
                 </div>
@@ -402,12 +392,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     <span className="text-sm font-medium text-foreground">DL89472156</span>
                   </div>
                   <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.nationality}</span>
-                    <span className="text-sm font-medium text-foreground">American</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">{t.country}</span>
-                    <span className="text-sm font-medium text-foreground">United States</span>
+                    <span className="text-sm text-muted-foreground">{t.passport}</span>
+                    <div className="flex items-center space-x-2">
+                      <span className="text-sm font-medium text-foreground">United States</span>
+                      <span className="text-lg">🇺🇸</span>
+                    </div>
                   </div>
                   <div className="flex justify-between items-center">
                     <span className="text-sm text-muted-foreground">{t.status}</span>
