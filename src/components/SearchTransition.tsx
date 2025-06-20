@@ -21,11 +21,13 @@ const SearchTransition = ({ destination, onComplete }: SearchTransitionProps) =>
 
   return (
     <div className="min-h-screen relative flex items-center justify-center overflow-hidden">
-      {/* Background Image - Brazil night skyline with realistic city lights */}
+      {/* Background Image - Uploaded Brazil Christ the Redeemer with moon */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
-          backgroundImage: `url('https://images.unsplash.com/photo-1544737151217-6e4e999de2a2?auto=format&fit=crop&w=1920&q=80')`,
+          backgroundImage: `url('/lovable-uploads/f5b79e39-5a50-4bbe-967b-6217be330912.png')`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center center',
         }}
       >
         <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/60" />
