@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ import { Switch } from '@/components/ui/switch';
 import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
+import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 
 interface ResultsPageProps {
   destination: string;
@@ -47,6 +47,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
+  // Use real currency exchange data
+  const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', 'BRL');
+
   // Profile data
   const profileData = {
     name: "Brittany J.",
@@ -60,7 +63,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   // Brazil-focused mock data
   const mockData = {
-    currency: { rate: 5.15, symbol: 'R$', name: 'Brazilian Real' },
     time: { current: '14:42', offset: '-3', dst: false },
     weather: { temp: 24, condition: 'Partly Cloudy', humidity: 65 },
     airport: { code: 'GRU', name: 'São Paulo/Guarulhos International Airport', address: 'Guarulhos, São Paulo' },
@@ -532,7 +534,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
-          {/* Currency Card - Compact layout without dead space */}
+          {/* Currency Card - Updated with real API data */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -544,26 +546,38 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="flex justify-between items-center p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                <span className="font-semibold">1 USD</span>
-                <span className="text-green-400 font-bold">
-                  {mockData.currency.rate} {mockData.currency.symbol}
-                </span>
-              </div>
-              <div className="flex items-center space-x-2">
-                <Input
-                  type="number"
-                  value={currencyAmount}
-                  onChange={(e) => setCurrencyAmount(Number(e.target.value))}
-                  className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-10"
-                />
-                <span className="text-green-400 font-semibold">
-                  = {mockData.currency.symbol}{(currencyAmount * mockData.currency.rate).toFixed(2)}
-                </span>
-              </div>
-              <div className="text-xs text-muted-foreground">
-                Live rate • Updated 2 min ago
-              </div>
+              {currencyLoading ? (
+                <div className="flex justify-center items-center p-6">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-400"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
+                    <span className="font-semibold">1 USD</span>
+                    <span className="text-green-400 font-bold">
+                      {currencyData?.rate.toFixed(2)} {currencyData?.symbol}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      value={currencyAmount}
+                      onChange={(e) => setCurrencyAmount(Number(e.target.value))}
+                      className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-10"
+                    />
+                    <span className="text-green-400 font-semibold">
+                      = {currencyData?.symbol}{currencyData ? (currencyAmount * currencyData.rate).toFixed(2) : '-.--'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {currencyError ? (
+                      <span className="text-orange-400">API Error - Using fallback rate</span>
+                    ) : (
+                      `Live rate • Updated ${currencyData?.lastUpdated}`
+                    )}
+                  </div>
+                </>
+              )}
             </CardContent>
           </Card>
 
