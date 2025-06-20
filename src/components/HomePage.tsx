@@ -343,6 +343,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     }
   };
 
+  const handleBarClick = (e: React.MouseEvent) => {
+    // Don't trigger if clicking on interactive elements
+    const target = e.target as HTMLElement;
+    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON' || target.closest('button') || target.closest('[role="button"]')) {
+      return;
+    }
+    handleSearch();
+  };
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
@@ -482,9 +491,16 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Google-style Search Form with fade-in animation */}
-          <form onSubmit={handleSearch} className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
-            <div className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-shadow duration-300">
+          {/* Interactive Search Bar */}
+          <div className={`mb-3 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <div 
+              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
+              onClick={handleBarClick}
+              onKeyDown={handleKeyPress}
+              tabIndex={0}
+              role="button"
+              aria-label="Launch brief"
+            >
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
                 <div className="flex-1 relative group">
@@ -499,7 +515,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     }}
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full focus:outline-none focus:ring-2 focus:ring-white"
+                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
                     required
                   />
                   {showSuggestions && suggestions.length > 0 && (
@@ -508,7 +524,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         <button
                           key={index}
                           type="button"
-                          onClick={() => {
+                          onClick={(e) => {
+                            e.stopPropagation();
                             setDestination(suggestion);
                             setShowSuggestions(false);
                           }}
@@ -531,6 +548,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                       <Button
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <span>{checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}</span>
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
@@ -556,6 +574,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                       <Button
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
+                        onClick={(e) => e.stopPropagation()}
                       >
                         <span>{checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}</span>
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
@@ -577,17 +596,20 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   </Popover>
                 </div>
 
-                {/* Launch Brief Button */}
-                <Button
-                  type="submit"
-                  className="h-12 px-6 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-r-full border-l border-border/30 transition-all duration-300 font-medium flex items-center space-x-2 travis-intelligence-glow"
-                >
-                  <Search className="w-4 h-4" />
-                  <span>Launch Brief</span>
-                </Button>
+                {/* Search Icon */}
+                <div className="h-12 px-6 flex items-center space-x-2 text-white/70 group-hover:text-white transition-colors">
+                  <Search className="w-5 h-5" />
+                </div>
               </div>
             </div>
-          </form>
+          </div>
+
+          {/* Microcopy */}
+          <div className="text-center mb-8">
+            <p className="text-sm text-muted-foreground/60">
+              Press Enter or click anywhere to launch brief
+            </p>
+          </div>
 
           {/* Inspirational Link */}
           <div className="text-center">
