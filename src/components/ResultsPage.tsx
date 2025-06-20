@@ -1,6 +1,5 @@
-
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, Calendar, MapPin, User } from 'lucide-react';
+import { Search, Calendar, MapPin, User, Star, Clock, Plane } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
   DropdownMenu,
@@ -24,6 +23,50 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [searchQuery, setSearchQuery] = useState(destination);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
+
+  // Mock travel results
+  const mockResults = [
+    {
+      id: 1,
+      type: 'flight',
+      airline: 'Delta Airlines',
+      price: '$750',
+      duration: '11h 30m',
+      departure: '08:30 AM',
+      arrival: '02:00 PM',
+      stops: 'Non-stop',
+      rating: 4.8
+    },
+    {
+      id: 2,
+      type: 'flight',
+      airline: 'American Airlines',
+      price: '$680',
+      duration: '13h 45m',
+      departure: '10:15 AM',
+      arrival: '05:30 PM',
+      stops: '1 stop',
+      rating: 4.6
+    },
+    {
+      id: 3,
+      type: 'hotel',
+      name: 'Grand Hotel São Paulo',
+      price: '$180/night',
+      location: 'Jardins District',
+      rating: 4.7,
+      amenities: ['WiFi', 'Pool', 'Gym', 'Spa']
+    },
+    {
+      id: 4,
+      type: 'hotel',
+      name: 'Business Tower Hotel',
+      price: '$120/night',
+      location: 'Paulista Avenue',
+      rating: 4.4,
+      amenities: ['WiFi', 'Business Center', 'Restaurant']
+    }
+  ];
 
   // Comprehensive global destination suggestions
   const globalDestinations = [
@@ -276,13 +319,73 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           Results for {destination}
         </h1>
 
-        {/* Placeholder for results */}
-        <div className="bg-white rounded-lg shadow overflow-hidden">
-          <div className="p-6">
-            <p className="text-gray-600">
-              No results found. Please try a different search.
-            </p>
-          </div>
+        {/* Travel Results */}
+        <div className="space-y-6">
+          {mockResults.map((result) => (
+            <div key={result.id} className="bg-white rounded-lg shadow border border-gray-200 overflow-hidden">
+              <div className="p-6">
+                {result.type === 'flight' ? (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                        <Plane className="w-6 h-6 text-blue-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">{result.airline}</h3>
+                        <div className="flex items-center space-x-4 text-sm text-gray-600">
+                          <span className="flex items-center">
+                            <Clock className="w-4 h-4 mr-1" />
+                            {result.duration}
+                          </span>
+                          <span>{result.stops}</span>
+                          <span>{result.departure} - {result.arrival}</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-blue-600">{result.price}</div>
+                      <div className="flex items-center text-sm">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                        <span>{result.rating}</span>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center space-x-4">
+                      <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                        <MapPin className="w-6 h-6 text-green-600" />
+                      </div>
+                      <div>
+                        <h3 className="font-semibold text-lg">{result.name}</h3>
+                        <p className="text-sm text-gray-600 mb-1">{result.location}</p>
+                        <div className="flex items-center space-x-2 text-sm text-gray-500">
+                          {result.amenities?.map((amenity, index) => (
+                            <span key={index} className="bg-gray-100 px-2 py-1 rounded">
+                              {amenity}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="text-right">
+                      <div className="text-2xl font-bold text-green-600">{result.price}</div>
+                      <div className="flex items-center text-sm">
+                        <Star className="w-4 h-4 text-yellow-400 fill-current mr-1" />
+                        <span>{result.rating}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
+                <div className="mt-4 flex space-x-3">
+                  <Button className="bg-blue-600 hover:bg-blue-700">
+                    {result.type === 'flight' ? 'Book Flight' : 'Book Hotel'}
+                  </Button>
+                  <Button variant="outline">View Details</Button>
+                </div>
+              </div>
+            </div>
+          ))}
         </div>
       </div>
 
