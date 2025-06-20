@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, MapPin, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -13,7 +12,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
-import AccommodationHeatMap from './AccommodationHeatMap';
+import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 
 interface ResultsPageProps {
   destination: string;
@@ -434,8 +433,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Accommodation Heat Map */}
-          <AccommodationHeatMap />
+          {/* São Paulo Accommodation Map */}
+          <SaoPauloAccommodationMap />
 
           {/* World Adapters Widget - 3D floating effect */}
           <Card className="travis-card travis-interactive group bg-white shadow-lg">
