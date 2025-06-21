@@ -40,28 +40,6 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
 
   // Filter out irrelevant photos based on alt text and context
   const isPhotoRelevant = (photo: any, destination: string) => {
-    const alt = photo.alt?.toLowerCase() || '';
-    const dest = destination.toLowerCase();
-    
-    // List of tropical/warm climate countries that shouldn't show snow
-    const tropicalCountries = ['brazil', 'thailand', 'ghana', 'india', 'indonesia', 'philippines', 
-                              'vietnam', 'malaysia', 'singapore', 'mexico', 'colombia', 'venezuela',
-                              'ecuador', 'peru', 'bolivia', 'paraguay', 'uruguay', 'argentina',
-                              'nigeria', 'kenya', 'tanzania', 'uganda', 'rwanda', 'cameroon'];
-    
-    const isTropicalCountry = tropicalCountries.some(country => dest.includes(country));
-    
-    // Filter out snow/winter images for tropical countries
-    if (isTropicalCountry && (alt.includes('snow') || alt.includes('winter') || alt.includes('skiing') || alt.includes('ice'))) {
-      return false;
-    }
-    
-    // Filter out completely unrelated content
-    const irrelevantTerms = ['wedding', 'portrait', 'studio', 'product', 'food close-up', 'abstract'];
-    if (irrelevantTerms.some(term => alt.includes(term))) {
-      return false;
-    }
-    
     return true;
   };
 
