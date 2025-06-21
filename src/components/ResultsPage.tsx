@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -66,6 +65,43 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     nationality: "American",
     country: "United States",
     status: "Premium Member"
+  };
+
+  // Dynamic flag mapping based on destination
+  const getCountryFlag = (dest: string) => {
+    const lowerDest = dest.toLowerCase();
+    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
+      return 'https://flagcdn.com/w40/br.png';
+    }
+    if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan')) {
+      return 'https://flagcdn.com/w40/it.png';
+    }
+    if (lowerDest.includes('morocco') || lowerDest.includes('marrakech') || lowerDest.includes('casablanca')) {
+      return 'https://flagcdn.com/w40/ma.png';
+    }
+    if (lowerDest.includes('france') || lowerDest.includes('paris')) {
+      return 'https://flagcdn.com/w40/fr.png';
+    }
+    if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona')) {
+      return 'https://flagcdn.com/w40/es.png';
+    }
+    if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka')) {
+      return 'https://flagcdn.com/w40/jp.png';
+    }
+    if (lowerDest.includes('united kingdom') || lowerDest.includes('london') || lowerDest.includes('uk')) {
+      return 'https://flagcdn.com/w40/gb.png';
+    }
+    if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich')) {
+      return 'https://flagcdn.com/w40/de.png';
+    }
+    if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne')) {
+      return 'https://flagcdn.com/w40/au.png';
+    }
+    if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver')) {
+      return 'https://flagcdn.com/w40/ca.png';
+    }
+    // Default to world icon if no country match
+    return null;
   };
 
   // Brazil-focused mock data
@@ -195,8 +231,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
-      {/* Header */}
-      <header className="bg-black/95 dark:bg-black/95 backdrop-blur-sm border-b border-white/20 shadow-lg shadow-white/10 sticky top-0 z-40">
+      {/* Header - More transparent */}
+      <header className="bg-black/70 dark:bg-black/70 backdrop-blur-sm border-b border-white/10 shadow-lg shadow-white/5 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -211,11 +247,15 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <div className="flex items-center space-x-3">
                   <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
                     {destination}
-                    <img 
-                      src="https://flagcdn.com/w40/br.png" 
-                      alt="Brazil Flag" 
-                      className="w-8 h-6 ml-3 mr-2 rounded shadow-sm"
-                    />
+                    {getCountryFlag(destination) ? (
+                      <img 
+                        src={getCountryFlag(destination)!} 
+                        alt="Country Flag" 
+                        className="w-8 h-6 ml-3 mr-2 rounded shadow-sm"
+                      />
+                    ) : (
+                      <Globe className="w-8 h-6 ml-3 mr-2 text-blue-400" />
+                    )}
                     <Button
                       variant="ghost"
                       size="icon"
@@ -270,14 +310,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full profile-dropdown-glow">
                     <Avatar className="h-10 w-10">
                       <AvatarImage src="/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png" alt="Profile" />
                       <AvatarFallback>BJ</AvatarFallback>
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-80 bg-card border-border shadow-lg" align="end" forceMount>
+                <DropdownMenuContent className="w-80 bg-card border-border shadow-lg profile-dropdown-glow" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-sm font-medium leading-none">{profileData.name}</p>
@@ -322,7 +362,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           </div>
 
-          {/* Pinned Destinations - Brazil focused with increased opacity */}
+          {/* Pinned Destinations - More transparent */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center space-x-3">
@@ -332,7 +372,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/95 border border-blue-500/90 rounded-full text-sm text-white hover:bg-blue-700/95 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/70 border border-blue-500/60 rounded-full text-sm text-white hover:bg-blue-700/70 transition-colors shadow-sm"
                     >
                       <span>{dest}</span>
                       <button
@@ -352,7 +392,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-600/95 border border-green-500/90 rounded text-xs text-white hover:bg-green-700/95 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600/70 border border-green-500/60 rounded text-xs text-white hover:bg-green-700/70 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
