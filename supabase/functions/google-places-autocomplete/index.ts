@@ -36,10 +36,10 @@ serve(async (req) => {
       )
     }
 
-    // Remove types filter entirely to get the broadest possible results
-    // This allows countries, regions, cities, towns, and popular areas globally
+    // Use types=(regions) to get countries, states/provinces, cities, and geographic areas
+    // This prevents the API from defaulting to businesses and addresses
     const googleResponse = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=(regions)&key=${apiKey}`
     )
 
     const data = await googleResponse.json()
