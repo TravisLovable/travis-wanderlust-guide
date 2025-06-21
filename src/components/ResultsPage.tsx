@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -24,6 +23,7 @@ import { Switch } from '@/components/ui/switch';
 import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
+import WeatherWidget from './WeatherWidget';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 
@@ -108,7 +108,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Brazil-focused mock data
   const mockData = {
     time: { current: '14:42', offset: '-3', dst: false },
-    weather: { temp: 24, condition: 'Partly Cloudy', humidity: 65 },
     airport: { code: 'GRU', name: 'São Paulo/Guarulhos International Airport', address: 'Guarulhos, São Paulo' },
     altitude: { elevation: '760m above sea level' },
     emergency: { police: '190', fire: '193', medical: '192' },
@@ -625,49 +624,12 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* 4. Weather Card - PRIORITY 4 */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
-                  <Thermometer className="w-5 h-5 text-white" />
-                </div>
-                Weather Intel
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
-                  className="ml-auto text-orange-400 hover:text-orange-300"
-                >
-                  °{tempUnit}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center p-6 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                <div className="text-4xl font-bold text-orange-400 mb-2">
-                  {convertTemp(mockData.weather.temp)}°{tempUnit}
-                </div>
-                <div className="text-lg text-muted-foreground mb-2">{mockData.weather.condition}</div>
-                <div className="text-sm text-muted-foreground">Humidity: {mockData.weather.humidity}%</div>
-              </div>
-              
-              {/* 14-day forecast */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">14-Day Forecast</p>
-                <div className="grid grid-cols-7 gap-1 text-xs">
-                  {fourteenDayForecast.map((forecast, idx) => (
-                    <div key={idx} className="text-center p-2 bg-secondary/30 rounded">
-                      <div className="font-medium text-xs truncate">{forecast.day}</div>
-                      <div className="text-orange-400 font-semibold">
-                        {convertTemp(forecast.temp)}°
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          {/* 4. Weather Card - Replace with WeatherWidget */}
+          <WeatherWidget
+            destination={destination}
+            tempUnit={tempUnit}
+            onTempUnitToggle={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
+          />
 
           {/* 5. Local Holidays Widget - Now next to Weather */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
