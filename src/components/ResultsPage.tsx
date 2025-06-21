@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils } from 'lucide-react';
+
+import React, { useState } from 'react';
+import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -229,15 +230,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     window.location.href = '/auth';
   };
 
-  // Animation delay for staggered effect
-  const [isLoaded, setIsLoaded] = useState(false);
-
-  useEffect(() => {
-    // Trigger animations after component mount
-    const timer = setTimeout(() => setIsLoaded(true), 100);
-    return () => clearTimeout(timer);
-  }, []);
-
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header - More transparent */}
@@ -416,6 +408,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <div className="bg-white/10 backdrop-blur-sm border border-border/20 rounded-full p-2 shadow-lg relative travis-glow-white">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
+                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
                 <Input
                   type="text"
                   placeholder="Search any destination worldwide..."
@@ -526,7 +519,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
           {/* 1. Visa & Entry Card - PRIORITY 1 */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '0ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -553,7 +546,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* 2. Currency Card - PRIORITY 2 */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '150ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
@@ -600,7 +593,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* 3. Time Zone Card - PRIORITY 3 */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '300ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -633,7 +626,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* 4. Weather Card - PRIORITY 4 */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '450ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -677,7 +670,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* 5. Local Holidays Widget - Now next to Weather */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '600ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -701,7 +694,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* 6. Transportation Card - Now next to Local Holidays */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '750ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
@@ -731,12 +724,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* São Paulo Accommodation Map */}
-          <div className={`transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '900ms' }}>
-            <SaoPauloAccommodationMap />
-          </div>
+          <SaoPauloAccommodationMap />
 
           {/* World Adapters Widget - 3D floating effect */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '1050ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
@@ -799,7 +790,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Airport Info Card */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '1200ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -824,7 +815,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Emergency Info Card */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '1350ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
@@ -853,7 +844,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Connectivity Card */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '1500ms' }}>
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
@@ -880,7 +871,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
           {/* Intelligence Dashboard Widget */}
-          <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform lg:col-span-2 xl:col-span-3 ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '1650ms' }}>
+          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
@@ -931,7 +922,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         </div>
 
         {/* Cultural Insights Section - Moved to bottom */}
-        <Card className={`backdrop-blur-md bg-white/10 dark:bg-black/20 border border-white/20 dark:border-gray-500/30 shadow-xl rounded-2xl transition-all duration-300 hover:shadow-2xl hover:bg-white/15 dark:hover:bg-black/30 transform transition-transform mt-8 ${isLoaded ? 'animate-fade-in translate-y-0 opacity-100' : 'translate-y-8 opacity-0'}`} style={{ animationDelay: '1800ms' }}>
+        <Card className="travis-card mt-8 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
           <CardHeader className="pb-4">
             <CardTitle className="flex items-center text-2xl font-semibold">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
