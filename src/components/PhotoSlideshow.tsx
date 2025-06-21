@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -33,6 +32,46 @@ const PhotoSlideshow = ({ destination = "travel" }: PhotoSlideshowProps) => {
     }
   ];
 
+  // Get contextual search terms based on destination
+  const getSearchQueries = (dest: string) => {
+    const baseDest = dest.toLowerCase();
+    
+    // Create multiple search queries for better results
+    return [
+      `${dest} landmarks travel`,
+      `${dest} city tourism`,
+      `${dest} culture attractions`,
+      `${dest} travel destinations`
+    ];
+  };
+
+  // Filter out irrelevant photos based on alt text and context
+  const isPhotoRelevant = (photo: any, destination: string) => {
+    const alt = photo.alt?.toLowerCase() || '';
+    const dest = destination.toLowerCase();
+    
+    // List of tropical/warm climate countries that shouldn't show snow
+    const tropicalCountries = ['brazil', 'thailand', 'ghana', 'india', 'indonesia', 'philippines', 
+                              'vietnam', 'malaysia', 'singapore', 'mexico', 'colombia', 'venezuela',
+                              'ecuador', 'peru', 'bolivia', 'paraguay', 'uruguay', 'argentina',
+                              'nigeria', 'kenya', 'tanzania', 'uganda', 'rwanda', 'cameroon'];
+    
+    const isTropicalCountry = tropicalCountries.some(country => dest.includes(country));
+    
+    // Filter out snow/winter images for tropical countries
+    if (isTropicalCountry && (alt.includes('snow') || alt.includes('winter') || alt.includes('skiing') || alt.includes('ice'))) {
+      return false;
+    }
+    
+    // Filter out completely unrelated content
+    const irrelevantTerms = ['wedding', 'portrait', 'studio', 'product', 'food close-up', 'abstract'];
+    if (irrelevantTerms.some(term => alt.includes(term))) {
+      return false;
+    }
+    
+    return true;
+  };
+
   useEffect(() => {
     const fetchPhotos = async () => {
       if (!destination) {
@@ -43,26 +82,47 @@ const PhotoSlideshow = ({ destination = "travel" }: PhotoSlideshowProps) => {
 
       try {
         setIsLoading(true);
-        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(destination)}&per_page=6&orientation=landscape`, {
-          headers: {
-            Authorization: 'TRAVIS_PHOTO_DECK'
-          }
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch photos');
-        }
-
-        const data = await response.json();
+        const searchQueries = getSearchQueries(destination);
+        let allPhotos: any[] = [];
         
-        if (data.photos && data.photos.length > 0) {
-          const formattedPhotos: Photo[] = data.photos.map((photo: any) => ({
+        // Try multiple search queries to get diverse, relevant results
+        for (const query of searchQueries) {
+          try {
+            const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=4&orientation=landscape`, {
+              headers: {
+                Authorization: 'TRAVIS_PHOTO_DECK'
+              }
+            });
+
+            if (response.ok) {
+              const data = await response.json();
+              if (data.photos && data.photos.length > 0) {
+                // Filter relevant photos and add to collection
+                const relevantPhotos = data.photos.filter((photo: any) => isPhotoRelevant(photo, destination));
+                allPhotos = [...allPhotos, ...relevantPhotos];
+              }
+            }
+          } catch (error) {
+            console.log(`Search failed for query: ${query}`, error);
+            continue;
+          }
+        }
+        
+        if (allPhotos.length > 0) {
+          // Remove duplicates and take the best 6 photos
+          const uniquePhotos = allPhotos.filter((photo, index, self) => 
+            index === self.findIndex(p => p.id === photo.id)
+          ).slice(0, 6);
+          
+          const formattedPhotos: Photo[] = uniquePhotos.map((photo: any) => ({
             url: photo.src.large2x || photo.src.large || photo.src.medium,
-            caption: photo.alt || `Beautiful view of ${destination}`
+            caption: photo.alt || `Discover the beauty of ${destination}`
           }));
+          
           setPhotos(formattedPhotos);
         } else {
-          // No photos found for destination, use fallback
+          // No relevant photos found, use fallback
+          console.log('No relevant photos found for destination:', destination);
           setPhotos(fallbackPhotos);
         }
       } catch (error) {
