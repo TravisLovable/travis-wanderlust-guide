@@ -398,3 +398,39 @@
     0 0 60px rgba(147, 51, 234, 0.4),
     0 12px 40px rgba(0, 0, 0, 0.4);
 }
+
+/* Subtle Underline Pulse Animation for Premium Feel */
+@keyframes underline-pulse {
+  0% {
+    width: 0%;
+    opacity: 0.6;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    width: 100%;
+    opacity: 0.8;
+  }
+}
+
+.animate-underline-pulse {
+  position: relative;
+}
+
+.animate-underline-pulse::after {
+  content: '';
+  position: absolute;
+  bottom: -8px;
+  left: 0;
+  height: 2px;
+  width: 0%;
+  background: linear-gradient(90deg, rgba(59, 130, 246, 0.8), rgba(147, 51, 234, 0.8));
+  animation: underline-pulse 2s ease-out 0.3s forwards;
+  border-radius: 1px;
+}
+
+.dark .animate-underline-pulse::after {
+  background: linear-gradient(90deg, rgba(255, 255, 255, 0.6), rgba(255, 255, 255, 0.4));
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.3);
+}
