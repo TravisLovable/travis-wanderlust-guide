@@ -32,6 +32,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [isLoaded, setIsLoaded] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
 
   // Use Mapbox for destination suggestions
@@ -39,6 +40,14 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     destination,
     showSuggestions && destination.length >= 2
   );
+
+  // Trigger fade-in animation on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoaded(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Word swap animation - only the last word
   const swapWords = ["explorer", "nomad", "analyst", "visionary"];
@@ -50,7 +59,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Language translations
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
     { code: 'zh', name: 'Mandarin', flag: '🇨🇳' },
@@ -61,6 +69,186 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     { code: 'xh', name: 'Xhosa', flag: '🇿🇦' },
     { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
   ];
+
+  // Language translations
+  const translations = {
+    en: {
+      title: "The World Awaits",
+      subtitle: "Data-driven Intelligence for the modern explorer",
+      searchPlaceholder: "Where to?",
+      depart: "Depart",
+      return: "Return",
+      search: "Search",
+      profileName: "Chris Upchurch",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "Preferred Airline",
+      travelType: "Travel Type",
+      frequentFlyer: "Frequent Flyer #",
+      nationality: "Nationality",
+      status: "Status",
+      profileSettings: "Profile Settings",
+      savedDestinations: "Saved Destinations",
+      travelPreferences: "Travel Preferences",
+      signOut: "Sign Out",
+      privacy: "Privacy",
+      terms: "Terms",
+      settings: "Settings"
+    },
+    zh: {
+      title: "世界在等待",
+      subtitle: "为现代探险家提供数据驱动的智能",
+      searchPlaceholder: "去哪里？",
+      depart: "出发",
+      return: "返回",
+      search: "搜索",
+      profileName: "克里斯·厄普彻奇",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "首选航空公司",
+      travelType: "旅行类型",
+      frequentFlyer: "常旅客号码",
+      nationality: "国籍",
+      status: "状态",
+      profileSettings: "个人资料设置",
+      savedDestinations: "保存的目的地",
+      travelPreferences: "旅行偏好",
+      signOut: "登出",
+      privacy: "隐私",
+      terms: "条款",
+      settings: "设置"
+    },
+    ja: {
+      title: "世界があなたを待っています",
+      subtitle: "モダンな探検家のためのデータ主導のインテリジェンス",
+      searchPlaceholder: "どこへ？",
+      depart: "出発",
+      return: "帰国",
+      search: "検索",
+      profileName: "クリス・アップチャーチ",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "優先航空会社",
+      travelType: "旅行タイプ",
+      frequentFlyer: "フリークエントフライヤー番号",
+      nationality: "国籍",
+      status: "ステータス",
+      profileSettings: "プロフィール設定",
+      savedDestinations: "保存された目的地",
+      travelPreferences: "旅行の好み",
+      signOut: "サインアウト",
+      privacy: "利用規約",
+      terms: "利用規約",
+      settings: "設定"
+    },
+    es: {
+      title: "El Mundo Te Espera",
+      subtitle: "Inteligencia basada en datos para el explorador moderno",
+      searchPlaceholder: "¿A dónde?",
+      depart: "Salida",
+      return: "Regreso",
+      search: "Buscar",
+      profileName: "Chris Upchurch",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "Aerolínea Preferida",
+      travelType: "Tipo de Viaje",
+      frequentFlyer: "Viajero Frecuente #",
+      nationality: "Nacionalidad",
+      status: "Estado",
+      profileSettings: "Configuración del Perfil",
+      savedDestinations: "Destinos Guardados",
+      travelPreferences: "Preferencias de Viaje",
+      signOut: "Cerrar Sesión",
+      privacy: "Privacidad",
+      terms: "Términos",
+      settings: "Configuración"
+    },
+    fr: {
+      title: "Le Monde Vous Attend",
+      subtitle: "Intelligence basée sur les données pour l'explorateur moderne",
+      searchPlaceholder: "Où aller ?",
+      depart: "Départ",
+      return: "Retour",
+      search: "Rechercher",
+      profileName: "Chris Upchurch",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "Compagnie Aérienne Préférée",
+      travelType: "Type de Voyage",
+      frequentFlyer: "Voyageur Fréquent #",
+      nationality: "Nationalité",
+      status: "Statut",
+      profileSettings: "Paramètres du Profil",
+      savedDestinations: "Destinations Sauvegardées",
+      travelPreferences: "Préférences de Voyage",
+      signOut: "Se Déconnecter",
+      privacy: "Confidentialité",
+      terms: "Conditions",
+      settings: "Paramètres"
+    },
+    it: {
+      title: "Il Mondo Ti Aspetta",
+      subtitle: "Intelligenza basata sui dati per l'esploratore moderno",
+      searchPlaceholder: "Dove andare?",
+      depart: "Partenza",
+      return: "Ritorno",
+      search: "Cerca",
+      profileName: "Chris Upchurch",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "Compagnia Aerea Preferita",
+      travelType: "Tipo di Viaggio",
+      frequentFlyer: "Frequent Flyer #",
+      nationality: "Nazionalità",
+      status: "Stato",
+      profileSettings: "Impostazioni Profilo",
+      savedDestinations: "Destinazioni Salvate",
+      travelPreferences: "Preferenze di Viaggio",
+      signOut: "Disconnetti",
+      privacy: "Privacy",
+      terms: "Termini",
+      settings: "Impostazioni"
+    },
+    xh: {
+      title: "Ihlabathi Lilindile",
+      subtitle: "Ubukrelekrele obusekelwe kwidatha kumahlakani anamhlanje",
+      searchPlaceholder: "Uya phi?",
+      depart: "Ukuhamba",
+      return: "Ukubuya",
+      search: "Khangela",
+      profileName: "Chris Upchurch",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "Inqwelomoya Ekhethwayo",
+      travelType: "Uhlobo Lokuhamba",
+      frequentFlyer: "Umhambi Rhoqo #",
+      nationality: "Ubuzwe",
+      status: "Isimo",
+      profileSettings: "Iisetingi Zeprofayili",
+      savedDestinations: "Iindawo Ezigciniweyo",
+      travelPreferences: "Izinto Zokukhetha Ukuhamba",
+      signOut: "Phuma",
+      privacy: "Ubumfihlo",
+      terms: "Imiqathango",
+      settings: "Iisetingi"
+    },
+    af: {
+      title: "Die Wêreld Wag",
+      subtitle: "Data-gedrewe intelligensie vir die moderne verkenner",
+      searchPlaceholder: "Waarheen?",
+      depart: "Vertrek",
+      return: "Terugkeer",
+      search: "Soek",
+      profileName: "Chris Upchurch",
+      profileEmail: "chris.upchurch@email.com",
+      preferredAirline: "Voorkeur Lugredery",
+      travelType: "Reis Tipe",
+      frequentFlyer: "Gereelde Vlieër #",
+      nationality: "Nasionaliteit",
+      status: "Status",
+      profileSettings: "Profiel Instellings",
+      savedDestinations: "Gestoorde Bestemmings",
+      travelPreferences: "Reis Voorkeure",
+      signOut: "Teken Uit",
+      privacy: "Privaatheid",
+      terms: "Voorwaardes",
+      settings: "Instellings"
+    }
+  };
 
   const t = translations[currentLanguage as keyof typeof translations] || translations.en;
 
@@ -316,12 +504,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section - removed fade-in animation */}
-          <div className="mb-10">
+          {/* Hero Section with fade-in animation */}
+          <div className={`mb-10 transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
               {t.title}
             </h1>
-            <div className="mb-6">
+            <div className={`mb-6 transition-all duration-1000 ease-out delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
               <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
                 <span>Data-driven Intelligence for the modern </span>
                 <span 
@@ -336,8 +524,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Interactive Search Bar - removed fade-in animation */}
-          <div className="mb-8 max-w-5xl mx-auto">
+          {/* Interactive Search Bar */}
+          <div className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
             <div 
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
               onClick={handleBarClick}
