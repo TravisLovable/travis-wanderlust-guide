@@ -1,500 +1,281 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
+import { Search, User, Moon, Sun, MapPin, Plane, Calendar, Users } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
+} from "@/components/ui/dropdown-menu";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { useNavigate } from 'react-router-dom';
+import PhotoSlideshow from './PhotoSlideshow';
 
-interface HomePageProps {
-  onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
-}
-
-const HomePage = ({ onSearch }: HomePageProps) => {
-  const [destination, setDestination] = useState('');
-  const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
-  const [checkinDate, setCheckinDate] = useState<Date>();
-  const [checkoutDate, setCheckoutDate] = useState<Date>();
+const HomePage = () => {
+  const [searchQuery, setSearchQuery] = useState('');
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [checkinOpen, setCheckinOpen] = useState(false);
-  const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
-  const [wordIndex, setWordIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(false);
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const navigate = useNavigate();
 
-  // Use Mapbox for destination suggestions
-  const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
-    destination,
-    showSuggestions && destination.length >= 2
-  );
-
-  // Word swap animation - only the last word
-  const swapWords = ["explorer", "nomad", "analyst", "visionary"];
-  
   useEffect(() => {
-    const interval = setInterval(() => {
-      setWordIndex((prev) => (prev + 1) % swapWords.length);
-    }, 3000);
-    return () => clearInterval(interval);
+    setMounted(true);
   }, []);
 
-  // Comprehensive global destination suggestions (fallback when Google Places is not available)
-  const globalDestinations = [
-    // Brazil
-    'São Paulo, Brazil',
-    'Rio de Janeiro, Brazil',
-    'Brasília, Brazil',
-    'Salvador, Brazil',
-    'Fortaleza, Brazil',
-    'Belo Horizonte, Brazil',
-    'Manaus, Brazil',
-    'Curitiba, Brazil',
-    'Recife, Brazil',
-    'Porto Alegre, Brazil',
-    // Major Global Cities
-    'New York, USA',
-    'Los Angeles, USA',
-    'Chicago, USA',
-    'Miami, USA',
-    'Las Vegas, USA',
-    'San Francisco, USA',
-    'London, UK',
-    'Paris, France',
-    'Rome, Italy',
-    'Barcelona, Spain',
-    'Madrid, Spain',
-    'Berlin, Germany',
-    'Munich, Germany',
-    'Amsterdam, Netherlands',
-    'Vienna, Austria',
-    'Zurich, Switzerland',
-    'Tokyo, Japan',
-    'Osaka, Japan',
-    'Kyoto, Japan',
-    'Seoul, South Korea',
-    'Beijing, China',
-    'Shanghai, China',
-    'Hong Kong',
-    'Singapore',
-    'Bangkok, Thailand',
-    'Dubai, UAE',
-    'Istanbul, Turkey',
-    'Cairo, Egypt',
-    'Cape Town, South Africa',
-    'Johannesburg, South Africa',
-    'Sydney, Australia',
-    'Melbourne, Australia',
-    'Auckland, New Zealand',
-    'Vancouver, Canada',
-    'Toronto, Canada',
-    'Montreal, Canada',
-    'Mexico City, Mexico',
-    'Buenos Aires, Argentina',
-    'Lima, Peru',
-    'Santiago, Chile',
-    'Bogotá, Colombia',
-    'Caracas, Venezuela',
-    'Mumbai, India',
-    'Delhi, India',
-    'Bangalore, India',
-    'Jakarta, Indonesia',
-    'Manila, Philippines',
-    'Kuala Lumpur, Malaysia',
-    'Ho Chi Minh City, Vietnam',
-    'Hanoi, Vietnam',
-    'Tel Aviv, Israel',
-    'Moscow, Russia',
-    'St. Petersburg, Russia',
-    'Warsaw, Poland',
-    'Prague, Czech Republic',
-    'Budapest, Hungary',
-    'Athens, Greece',
-    'Lisbon, Portugal',
-    'Stockholm, Sweden',
-    'Oslo, Norway',
-    'Copenhagen, Denmark',
-    'Helsinki, Finland',
-    'Reykjavik, Iceland'
+  const handleSearch = (query: string) => {
+    setIsLoading(true);
+    console.log(`Searching for: ${query}`);
+    setTimeout(() => {
+      setIsLoading(false);
+      navigate(`/search?q=${query}`);
+    }, 1500);
+  };
+
+  const suggestions = [
+    "Paris, France",
+    "Tokyo, Japan", 
+    "New York, USA",
+    "Barcelona, Spain",
+    "Sydney, Australia"
   ];
 
-  // Use Mapbox suggestions if available, otherwise fall back to static list
-  const staticSuggestions = globalDestinations.filter(city => 
-    city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
-  );
+  const popularDestinations = [
+    { name: "Paris", country: "France", image: "https://images.unsplash.com/photo-1502602898536-47ad22581b52?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+    { name: "Tokyo", country: "Japan", image: "https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+    { name: "Barcelona", country: "Spain", image: "https://images.unsplash.com/photo-1539037116277-4db20889f2d4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" },
+    { name: "Sydney", country: "Australia", image: "https://images.unsplash.com/photo-1506905925346-21bda4d32df4?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80" }
+  ];
 
-  const suggestions = hasApiAccess && mapboxSuggestions.length > 0 ? mapboxSuggestions : [];
-  const fallbackSuggestions = !hasApiAccess || mapboxSuggestions.length === 0 ? staticSuggestions : [];
-
-  const handleSearch = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    if (destination && checkinDate && checkoutDate) {
-      onSearch(destination, { 
-        checkin: format(checkinDate, 'yyyy-MM-dd'), 
-        checkout: format(checkoutDate, 'yyyy-MM-dd') 
-      }, selectedPlace || undefined);
-    }
-  };
-
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      handleSearch();
-    }
-  };
-
-  const handleBarClick = (e: React.MouseEvent) => {
-    // Don't trigger if clicking on interactive elements
-    const target = e.target as HTMLElement;
-    if (target.tagName === 'INPUT' || target.tagName === 'BUTTON' || target.closest('button') || target.closest('[role="button"]')) {
-      return;
-    }
-    handleSearch();
-  };
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
-
-  const handleDestinationSelect = async (suggestion: any) => {
-    // Handle both Mapbox suggestions and static suggestions
-    if (suggestion.id && suggestion.place_name) {
-      // Mapbox suggestion
-      const placeDetails = await getPlaceDetails(suggestion);
-      if (placeDetails) {
-        setDestination(placeDetails.formatted_address);
-        setSelectedPlace(placeDetails);
-        console.log('Selected place details:', placeDetails);
-      } else {
-        setDestination(suggestion.place_name);
-        setSelectedPlace(null);
-      }
-    } else {
-      // Static suggestion fallback
-      setDestination(suggestion);
-      setSelectedPlace(null);
-    }
-    setShowSuggestions(false);
-  };
+  if (!mounted) {
+    return null;
+  }
 
   return (
-    <div className="min-h-screen w-full bg-background flex flex-col relative overflow-hidden">
-      {/* Ambient Background Animation */}
-      <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
-        <div className="absolute inset-0 bg-grid-pattern animate-drift-slow"></div>
-        {[...Array(20)].map((_, i) => (
-          <div
-            key={i}
-            className="absolute w-1 h-1 bg-white rounded-full animate-float"
-            style={{
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-              animationDelay: `${Math.random() * 10}s`,
-              animationDuration: `${8 + Math.random() * 4}s`
-            }}
-          />
-        ))}
-      </div>
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-900 transition-all duration-500">
+      {/* Navigation Bar */}
+      <nav className="w-full px-4 md:px-8 lg:px-16 py-4 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md border-b border-gray-200/20 dark:border-gray-700/20">
+        <div className="flex items-center justify-between">
+          {/* Logo */}
+          <div className="flex items-center space-x-2">
+            <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-lg flex items-center justify-center">
+              <Plane className="w-5 h-5 text-white" />
+            </div>
+            <span className="text-xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent dark:text-glow">
+              TRAVIS
+            </span>
+          </div>
 
-      {/* Header - Full width, no container constraints */}
-      <header className="w-full px-4 py-6 border-b border-border/30 backdrop-blur-sm relative z-10">
-        <div className="w-full flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+          {/* Right Side Icons */}
           <div className="flex items-center space-x-4">
-            {/* Language Selector */}
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <Globe className="w-5 h-5" strokeWidth={1.5} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-48">
-                {languages.map((lang) => (
-                  <DropdownMenuItem
-                    key={lang.code}
-                    onClick={() => setCurrentLanguage(lang.code)}
-                    className="flex items-center space-x-3"
-                  >
-                    <span className="text-lg">{lang.flag}</span>
-                    <span>{lang.name}</span>
-                  </DropdownMenuItem>
-                ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-
+            {/* Theme Toggle */}
             <Button
               variant="ghost"
               size="icon"
-              onClick={toggleTheme}
-              className="rounded-full"
+              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+              className="relative w-10 h-10 rounded-full hover:bg-gray-100/80 dark:hover:bg-gray-800/80 transition-all duration-300"
             >
-              {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
+              {theme === 'dark' ? (
+                <Sun className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              ) : (
+                <Moon className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+              )}
             </Button>
+
+            {/* Profile Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
-                    backgroundPosition: 'center center'
-                  }} />
+                <Button variant="ghost" className="relative h-10 w-10 rounded-full profile-dropdown-glow">
+                  <Avatar className="h-9 w-9">
+                    <AvatarImage src="/placeholder.svg" alt="User" />
+                    <AvatarFallback className="bg-gradient-to-r from-blue-500 to-purple-600 text-white font-semibold">
+                      JD
+                    </AvatarFallback>
+                  </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6 profile-dropdown-glow">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
-                    backgroundPosition: 'center center'
-                  }} />
-                  <div>
-                    <div className="flex flex-col space-y-1">
-                      <h3 className="font-semibold text-foreground">Brittany J.</h3>
-                      <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+              <DropdownMenuContent className="w-56 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md" align="end" forceMount>
+                <DropdownMenuLabel className="font-normal">
+                  <div className="flex flex-col space-y-2">
+                    <div className="flex items-center space-x-2">
+                      <p className="text-sm font-medium leading-none">John Doe</p>
+                      <Badge className="premium-glow text-xs">Premium</Badge>
                     </div>
+                    <p className="text-xs leading-none text-muted-foreground">john@example.com</p>
                   </div>
-                </div>
-                
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Preferred Airline</span>
-                    <span className="text-sm font-semibold text-foreground">Delta Airlines</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Travel Type</span>
-                    <span className="text-sm font-semibold text-foreground">Luxury</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
-                    <span className="text-sm font-medium text-foreground">DL89472156</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Nationality</span>
-                    <span className="text-sm font-medium text-foreground">American</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Country</span>
-                    <span className="text-sm font-medium text-foreground">United States</span>
-                  </div>
-                </div>
-                
-                <DropdownMenuSeparator className="my-4" />
-                
-                <DropdownMenuItem>{t.profileSettings}</DropdownMenuItem>
-                <DropdownMenuItem>{t.savedDestinations}</DropdownMenuItem>
-                <DropdownMenuItem>{t.travelPreferences}</DropdownMenuItem>
-                <DropdownMenuItem>{t.signOut}</DropdownMenuItem>
+                </DropdownMenuLabel>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="suggestion-hover cursor-pointer">
+                  <User className="mr-2 h-4 w-4" />
+                  <span>Profile</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="suggestion-hover cursor-pointer">
+                  <span>Settings</span>
+                </DropdownMenuItem>
+                <DropdownMenuItem className="suggestion-hover cursor-pointer">
+                  <span>Billing</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="suggestion-hover cursor-pointer">
+                  <span>Log out</span>
+                </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </div>
-      </header>
+      </nav>
 
-      {/* Main Content - Full screen, no max-width constraints */}
-      <main className="flex-1 flex items-center justify-center w-full px-4 py-12 relative z-10">
-        <div className="w-full text-center">
-          {/* Hero Section */}
-          <div className="mb-10">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
-              {t.title}
-            </h1>
-            <div className="mb-6">
-              <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
-                <span>Data-driven Intelligence for the modern </span>
-                <span 
-                  key={wordIndex}
-                  className="inline-block animate-fadeIn min-w-[120px] text-left"
-                >
-                  {swapWords[wordIndex]}
-                </span>
-              </p>
+      {/* Main Content */}
+      <div className="w-full px-4 md:px-8 lg:px-16 pt-16 pb-8">
+        {/* Hero Section */}
+        <div className="text-center mb-16">
+          <h1 className="text-4xl md:text-6xl lg:text-7xl font-bold mb-6 bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 bg-clip-text text-transparent dark:text-glow leading-tight">
+            Your AI Travel Intelligence
+          </h1>
+          <p className="text-xl md:text-2xl text-gray-600 dark:text-gray-300 dark:text-glow-subtle mb-12 max-w-3xl mx-auto leading-relaxed">
+            Discover personalized travel experiences with intelligent recommendations, 
+            real-time insights, and seamless planning.
+          </p>
+
+          {/* Search Bar */}
+          <div className="relative max-w-2xl mx-auto mb-8">
+            <div className="relative travis-glow-white">
+              <Search className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 h-5 w-5 search-icon-glow transition-all duration-300" />
+              <Input
+                type="text"
+                placeholder="Where would you like to explore?"
+                value={searchQuery}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value);
+                  setShowSuggestions(e.target.value.length > 0);
+                }}
+                onFocus={() => setShowSuggestions(searchQuery.length > 0)}
+                className="pl-12 pr-4 py-4 text-lg h-14 bg-white/90 dark:bg-slate-900/90 backdrop-blur-md border-2 border-gray-200/50 dark:border-gray-700/50 rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 focus:border-blue-400 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-400/20"
+              />
             </div>
-            {/* Animated gradient underline with hover shimmer */}
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
-          </div>
 
-          {/* Interactive Search Bar - Full width, responsive */}
-          <div className="mb-8 w-full max-w-5xl mx-auto">
-            <div 
-              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
-              onClick={handleBarClick}
-              onKeyDown={handleKeyPress}
-              tabIndex={0}
-              role="button"
-              aria-label="Launch brief"
-            >
-              <div className="flex items-center gap-2">
-                {/* Destination Input */}
-                <div className="flex-1 relative group">
-                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white transition-colors z-10" />
-                  <Input
-                    type="text"
-                    placeholder={t.searchPlaceholder}
-                    value={destination}
-                    onChange={(e) => {
-                      setDestination(e.target.value);
-                      setSelectedPlace(null);
-                      setShowSuggestions(true);
-                    }}
-                    onKeyPress={handleKeyPress}
-                    onFocus={() => setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
-                    required
-                  />
-                  {showSuggestions && (suggestions.length > 0 || fallbackSuggestions.length > 0) && (
-                    <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
-                      {!hasApiAccess && destination.length >= 2 && (
-                        <div className="p-2 text-xs text-yellow-500 bg-yellow-500/10 rounded-t-xl border-b border-border/30">
-                          ⚠️ Using offline search. Connect Mapbox API for better results.
-                        </div>
-                      )}
-                      {isLoadingSuggestions && hasApiAccess && (
-                        <div className="p-4 text-center text-muted-foreground">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
-                        </div>
-                      )}
-                      {/* Mapbox suggestions */}
-                      {suggestions.map((suggestion, index) => (
-                        <button
-                          key={`mapbox-${index}`}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDestinationSelect(suggestion);
-                          }}
-                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-foreground truncate">
-                                {suggestion.text}
-                              </div>
-                              <div className="text-xs text-muted-foreground truncate">
-                                {suggestion.place_name}
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
-                      {/* Fallback static suggestions */}
-                      {fallbackSuggestions.slice(0, 8).map((suggestion, index) => (
-                        <button
-                          key={`static-${index}`}
-                          type="button"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDestinationSelect(suggestion);
-                          }}
-                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-foreground truncate">
-                                {suggestion}
-                              </div>
-                            </div>
-                          </div>
-                        </button>
-                      ))}
+            {/* Search Suggestions */}
+            {showSuggestions && (
+              <div className="absolute top-full left-0 right-0 mt-2 bg-white/95 dark:bg-slate-900/95 backdrop-blur-md rounded-2xl shadow-xl border border-gray-200/50 dark:border-gray-700/50 z-50 overflow-hidden">
+                {suggestions
+                  .filter(suggestion => suggestion.toLowerCase().includes(searchQuery.toLowerCase()))
+                  .map((suggestion, index) => (
+                    <div
+                      key={index}
+                      className="px-4 py-3 suggestion-hover cursor-pointer transition-all duration-200 flex items-center space-x-3"
+                      onClick={() => {
+                        setSearchQuery(suggestion);
+                        setShowSuggestions(false);
+                        handleSearch(suggestion);
+                      }}
+                    >
+                      <MapPin className="h-4 w-4 text-gray-400" />
+                      <span className="text-gray-700 dark:text-gray-300">{suggestion}</span>
                     </div>
-                  )}
-                </div>
-                
-                {/* Date Inputs with Calendar Icons */}
-                <div className="flex gap-1">
-                  <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span>{checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={checkinDate}
-                        onSelect={(date) => {
-                          if (date) setCheckinDate(date);
-                          setCheckinOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto"
-                        disabled={(date) => date < new Date()}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                  
-                  <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span>{checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                      <CalendarComponent
-                        mode="single"
-                        selected={checkoutDate}
-                        onSelect={(date) => {
-                          if (date) setCheckoutDate(date);
-                          setCheckoutOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto"
-                        disabled={(date) => date < (checkinDate || new Date())}
-                      />
-                    </PopoverContent>
-                  </Popover>
-                </div>
-
-                {/* Right Arrow Icon */}
-                <div className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300">
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
-                </div>
+                  ))}
               </div>
-            </div>
+            )}
           </div>
 
-          {/* Inspirational Link */}
-          <div className="text-center">
-            <button className="text-sm text-muted-foreground/80 hover:text-white transition-colors duration-300 underline-offset-4 hover:underline">
-              Not sure where to go? Get inspired.
-            </button>
-          </div>
+          {/* Get Intelligence Button */}
+          <Button 
+            onClick={() => handleSearch(searchQuery)}
+            disabled={isLoading}
+            size="lg"
+            className="px-8 py-4 text-lg font-semibold bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white rounded-2xl shadow-lg hover:shadow-xl transition-all duration-300 travis-intelligence-glow"
+          >
+            {isLoading ? (
+              <div className="flex items-center space-x-2">
+                <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                <span>Getting Intelligence...</span>
+              </div>
+            ) : (
+              "Get Intelligence"
+            )}
+          </Button>
         </div>
-      </main>
 
-      {/* Footer - Full width */}
-      <footer className="w-full px-4 py-8 border-t border-border/30 relative z-10">
-        <div className="w-full flex justify-between items-center">
-          <div></div>
-          <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-            <button className="hover:text-foreground transition-colors">{t.privacy}</button>
-            <button className="hover:text-foreground transition-colors">{t.terms}</button>
-            <button className="hover:text-foreground transition-colors">{t.settings}</button>
+        {/* Photo Slideshow */}
+        <div className="mb-16">
+          <PhotoSlideshow />
+        </div>
+
+        {/* Popular Destinations */}
+        <div className="mb-16">
+          <h2 className="text-3xl font-bold text-center mb-8 text-gray-800 dark:text-white dark:text-glow-subtle">
+            Popular Destinations
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {popularDestinations.map((destination, index) => (
+              <Card key={index} className="group cursor-pointer overflow-hidden border-0 shadow-lg hover:shadow-xl transition-all duration-300 travis-card travis-interactive">
+                <div className="relative h-48 overflow-hidden">
+                  <img 
+                    src={destination.image} 
+                    alt={destination.name}
+                    className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute bottom-4 left-4">
+                    <h3 className="text-white font-semibold text-lg drop-shadow-lg">{destination.name}</h3>
+                    <p className="text-white/80 text-sm drop-shadow-lg">{destination.country}</p>
+                  </div>
+                </div>
+              </Card>
+            ))}
           </div>
         </div>
-      </footer>
+
+        {/* Features Section */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="p-6 border-0 shadow-lg travis-card">
+            <CardContent className="p-0">
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-blue-500 to-purple-600 rounded-xl flex items-center justify-center">
+                  <MapPin className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold dark:text-glow-subtle">Smart Recommendations</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                Get personalized travel suggestions based on your preferences, budget, and travel style.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="p-6 border-0 shadow-lg travis-card">
+            <CardContent className="p-0">
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl flex items-center justify-center">
+                  <Calendar className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold dark:text-glow-subtle">Intelligent Planning</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                Create optimized itineraries with real-time updates and local insights for seamless travel.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="p-6 border-0 shadow-lg travis-card">
+            <CardContent className="p-0">
+              <div className="flex items-center space-x-4 mb-4">
+                <div className="w-12 h-12 bg-gradient-to-r from-purple-500 to-pink-600 rounded-xl flex items-center justify-center">
+                  <Users className="w-6 h-6 text-white" />
+                </div>
+                <h3 className="text-xl font-semibold dark:text-glow-subtle">Community Insights</h3>
+              </div>
+              <p className="text-gray-600 dark:text-gray-300">
+                Access curated recommendations from fellow travelers and local experts worldwide.
+              </p>
+            </CardContent>
+          </Card>
+        </div>
+      </div>
     </div>
   );
 };
