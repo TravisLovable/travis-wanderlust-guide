@@ -84,36 +84,22 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
         const data: GooglePlacesResponse = await response.json();
         
         if (data.status === 'OK') {
-          // Apply broader filtering to include countries, regions, cities, and popular areas
-          // Allow most geographic location types while excluding businesses and specific addresses
+          // Light filtering to exclude very specific addresses and businesses
+          // but allow countries, regions, cities, towns, and popular areas
           const filteredSuggestions = data.predictions.filter(prediction => {
             const types = prediction.types;
-            // Include if it contains any geographic location type
-            const hasGeographicType = types.some(type => 
-              [
-                'country',
-                'administrative_area_level_1', // States/provinces
-                'administrative_area_level_2', // Counties
-                'locality', // Cities
-                'sublocality', // Neighborhoods/districts
-                'sublocality_level_1',
-                'political',
-                'natural_feature', // Mountains, lakes, etc.
-                'colloquial_area' // Popular areas like "Silicon Valley"
-              ].includes(type)
-            );
             
-            // Exclude specific addresses and businesses
-            const hasRestrictedType = types.some(type => 
+            // Exclude very specific types that aren't useful for travel planning
+            const hasUnwantedType = types.some(type => 
               [
                 'street_address',
-                'premise',
-                'establishment',
-                'point_of_interest'
+                'premise', 
+                'street_number',
+                'route'
               ].includes(type)
             );
             
-            return hasGeographicType && !hasRestrictedType;
+            return !hasUnwantedType;
           });
           
           setSuggestions(filteredSuggestions || []);

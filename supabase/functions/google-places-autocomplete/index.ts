@@ -36,10 +36,10 @@ serve(async (req) => {
       )
     }
 
-    // Use geocode type to get broader results including countries, regions, cities, and popular areas
-    // Remove restrictive types filter to allow all geographic locations
+    // Remove types filter entirely to get the broadest possible results
+    // This allows countries, regions, cities, towns, and popular areas globally
     const googleResponse = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=geocode&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`
     )
 
     const data = await googleResponse.json()
