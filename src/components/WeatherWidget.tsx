@@ -2,6 +2,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Thermometer } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 import { useWeatherData } from '@/hooks/useWeatherData';
 
 interface WeatherWidgetProps {
@@ -75,12 +76,14 @@ const WeatherWidget = ({ destination, tempUnit, onTempUnitToggle }: WeatherWidge
             <Thermometer className="w-5 h-5 text-white" />
           </div>
           Weather Intel
-          <button 
+          <Button
             onClick={onTempUnitToggle}
-            className="ml-auto text-orange-400 hover:text-orange-300 font-medium px-2 py-1 rounded hover:bg-orange-500/10 transition-colors"
+            variant="outline"
+            size="sm"
+            className="ml-auto bg-orange-500/10 border-orange-500/30 hover:bg-orange-500/20 hover:border-orange-500/50 text-orange-300 hover:text-orange-200 font-medium px-3 py-1 rounded-lg transition-all duration-200 hover:scale-105"
           >
-            °{tempUnit}
-          </button>
+            °{tempUnit} ⇄ °{tempUnit === 'C' ? 'F' : 'C'}
+          </Button>
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
