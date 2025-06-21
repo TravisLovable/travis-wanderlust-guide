@@ -11,7 +11,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
       {/* Video Container */}
       <div className="relative w-full h-full">
         <video
-          src="/lovable-uploads/522158cc-d3f5-459c-9d11-8cdd6e223c43.png"
+          src="https://videos.pexels.com/video-files/10745869/10745869-hd_1920_1080_30fps.mp4"
           className="w-full h-full object-cover"
           autoPlay
           loop
