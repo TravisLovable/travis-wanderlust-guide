@@ -40,13 +40,9 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
             }}
           />
         )}
-        {/* Blurred gradient overlay from bottom to top */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent backdrop-blur-[1px]" />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute bottom-4 left-4 right-4">
-          <p className="text-white font-light text-lg tracking-wide" 
-             style={{
-               textShadow: '0 2px 8px rgba(0, 0, 0, 0.8), 0 4px 16px rgba(0, 0, 0, 0.6), 0 1px 3px rgba(0, 0, 0, 1)'
-             }}>
+          <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
             {destination ? `Discover the beauty of ${destination}` : 'Discover beautiful destinations around the world'}
           </p>
         </div>
