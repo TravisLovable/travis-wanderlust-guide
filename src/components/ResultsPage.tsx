@@ -24,6 +24,7 @@ import PhotoSlideshow from './PhotoSlideshow';
 import TravisChatbot from './TravisChatbot';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
+import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 
 interface ResultsPageProps {
   destination: string;
@@ -43,9 +44,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
   const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
-  const [destinationSuggestions, setDestinationSuggestions] = useState<string[]>([]);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Use Mapbox geocoding for destination suggestions
+  const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
+    newDestination,
+    showSuggestions && newDestination.length >= 2
+  );
 
   // Use real currency exchange data with destination-based currency
   const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', destination);
@@ -129,15 +135,12 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   const handleDestinationChange = (value: string) => {
     setNewDestination(value);
-    if (value.length > 1) {
-      const filtered = brazilianDestinations.filter(dest =>
-        dest.toLowerCase().includes(value.toLowerCase())
-      );
-      setDestinationSuggestions(filtered.slice(0, 5));
-      setShowSuggestions(true);
-    } else {
-      setShowSuggestions(false);
-    }
+    setShowSuggestions(value.length >= 2);
+  };
+
+  const handleDestinationSelect = (suggestion: any) => {
+    setNewDestination(suggestion.place_name);
+    setShowSuggestions(false);
   };
 
   const handleNewSearch = () => {
@@ -359,33 +362,45 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           )}
 
-          {/* Search Bar with Auto-suggestions */}
+          {/* Search Bar with Mapbox Auto-suggestions */}
           <div className="bg-white/20 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative travis-glow-white">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
                 <Input
                   type="text"
-                  placeholder="Change destination"
+                  placeholder="Search any destination worldwide..."
                   value={newDestination}
                   onChange={(e) => handleDestinationChange(e.target.value)}
                   onKeyPress={handleKeyPress}
-                  onFocus={() => newDestination.length > 1 && setShowSuggestions(true)}
+                  onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
                 />
-                {showSuggestions && destinationSuggestions.length > 0 && (
+                {showSuggestions && mapboxSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {destinationSuggestions.map((suggestion, index) => (
+                    {isLoadingSuggestions && (
+                      <div className="p-4 text-center text-muted-foreground">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
+                      </div>
+                    )}
+                    {mapboxSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
-                        onClick={() => {
-                          setNewDestination(suggestion);
-                          setShowSuggestions(false);
-                        }}
+                        onClick={() => handleDestinationSelect(suggestion)}
                         className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
                       >
-                        <span>{suggestion}</span>
+                        <div className="flex items-center space-x-3">
+                          <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-foreground truncate">
+                              {suggestion.text}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {suggestion.place_name}
+                            </div>
+                          </div>
+                        </div>
                       </button>
                     ))}
                   </div>

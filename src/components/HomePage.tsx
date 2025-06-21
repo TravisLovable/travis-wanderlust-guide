@@ -16,6 +16,7 @@ import {
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
+import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }) => void;
@@ -32,6 +33,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [isLoaded, setIsLoaded] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
+
+  // Use Mapbox geocoding for destination suggestions
+  const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
+    destination,
+    showSuggestions && destination.length >= 2
+  );
 
   // Trigger fade-in animation on page load
   useEffect(() => {
@@ -357,6 +364,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const handleDestinationSelect = (suggestion: any) => {
+    setDestination(suggestion.place_name);
+    setShowSuggestions(false);
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Ambient Background Animation */}
@@ -515,25 +527,37 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     }}
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
                     required
                   />
-                  {showSuggestions && suggestions.length > 0 && (
+                  {showSuggestions && mapboxSuggestions.length > 0 && (
                     <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
-                      {suggestions.map((suggestion, index) => (
+                      {isLoadingSuggestions && (
+                        <div className="p-4 text-center text-muted-foreground">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
+                        </div>
+                      )}
+                      {mapboxSuggestions.map((suggestion, index) => (
                         <button
                           key={index}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
-                            setDestination(suggestion);
-                            setShowSuggestions(false);
+                            handleDestinationSelect(suggestion);
                           }}
                           className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
                         >
                           <div className="flex items-center space-x-3">
-                            <MapPin className="w-4 h-4 text-blue-400" />
-                            <span>{suggestion}</span>
+                            <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-foreground truncate">
+                                {suggestion.text}
+                              </div>
+                              <div className="text-xs text-muted-foreground truncate">
+                                {suggestion.place_name}
+                              </div>
+                            </div>
                           </div>
                         </button>
                       ))}
