@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -195,7 +196,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header */}
-      <header className="bg-black/90 dark:bg-black/90 backdrop-blur-sm border-2 border-white/50 shadow-lg shadow-white/20 sticky top-0 z-40">
+      <header className="bg-black/95 dark:bg-black/95 backdrop-blur-sm border-b border-white/20 shadow-lg shadow-white/10 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -321,7 +322,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           </div>
 
-          {/* Pinned Destinations - Brazil focused with better visibility and increased opacity */}
+          {/* Pinned Destinations - Brazil focused with increased opacity */}
           {pinnedDestinations.length > 0 && (
             <div className="mb-4">
               <div className="flex items-center space-x-3">
@@ -331,7 +332,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/90 border border-blue-500/80 rounded-full text-sm text-white hover:bg-blue-700/90 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/95 border border-blue-500/90 rounded-full text-sm text-white hover:bg-blue-700/95 transition-colors shadow-sm"
                     >
                       <span>{dest}</span>
                       <button
@@ -351,7 +352,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-600/90 border border-green-500/80 rounded text-xs text-white hover:bg-green-700/90 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600/95 border border-green-500/90 rounded text-xs text-white hover:bg-green-700/95 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
