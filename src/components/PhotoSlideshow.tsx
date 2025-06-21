@@ -72,6 +72,10 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
 
   useEffect(() => {
     const fetchPhotos = async () => {
+      // Reset to loading state whenever destination changes
+      setIsLoading(true);
+      setCurrentSlide(0); // Reset slide position
+      
       // If no destination provided, use fallback photos
       if (!destination || destination.trim() === '') {
         console.log('No destination provided, using fallback photos');
@@ -81,15 +85,14 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
       }
 
       try {
-        setIsLoading(true);
-        console.log('Fetching photos for destination:', destination);
+        console.log('=== FETCHING PHOTOS FOR DESTINATION:', destination, '===');
         const searchQueries = getSearchQueries(destination);
         let allPhotos: any[] = [];
         
         // Try multiple search queries to get diverse, relevant results
         for (const query of searchQueries) {
           try {
-            console.log('Searching for:', query);
+            console.log('🔍 API Search Query:', query);
             const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=4&orientation=landscape`, {
               headers: {
                 Authorization: 'TRAVIS_PHOTO_DECK'
@@ -98,14 +101,18 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
 
             if (response.ok) {
               const data = await response.json();
+              console.log(`📸 Found ${data.photos?.length || 0} photos for query: ${query}`);
               if (data.photos && data.photos.length > 0) {
                 // Filter relevant photos and add to collection
                 const relevantPhotos = data.photos.filter((photo: any) => isPhotoRelevant(photo, destination));
+                console.log(`✅ ${relevantPhotos.length} relevant photos after filtering`);
                 allPhotos = [...allPhotos, ...relevantPhotos];
               }
+            } else {
+              console.log(`❌ API request failed for query: ${query}`, response.status);
             }
           } catch (error) {
-            console.log(`Search failed for query: ${query}`, error);
+            console.log(`❌ Search failed for query: ${query}`, error);
             continue;
           }
         }
@@ -122,10 +129,10 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
           }));
           
           setPhotos(formattedPhotos);
-          console.log(`Found ${formattedPhotos.length} relevant photos for ${destination}`);
+          console.log(`🎯 SUCCESS: Using ${formattedPhotos.length} destination-specific photos for ${destination}`);
         } else {
           // No relevant photos found, try a general fallback search
-          console.log('No relevant photos found, trying fallback search');
+          console.log('⚠️ No relevant photos found, trying fallback search');
           try {
             const fallbackResponse = await fetch(`https://api.pexels.com/v1/search?query=beautiful travel destination&per_page=6&orientation=landscape`, {
               headers: {
@@ -141,19 +148,22 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
                   caption: photo.alt || `Beautiful travel destination`
                 }));
                 setPhotos(formattedPhotos);
+                console.log('🔄 Using fallback travel photos');
               } else {
                 setPhotos(fallbackPhotos);
+                console.log('📷 Using static fallback photos');
               }
             } else {
               setPhotos(fallbackPhotos);
+              console.log('📷 API fallback failed, using static photos');
             }
           } catch (fallbackError) {
-            console.log('Fallback search also failed, using static fallback photos');
+            console.log('❌ Fallback search failed, using static fallback photos');
             setPhotos(fallbackPhotos);
           }
         }
       } catch (error) {
-        console.error('Error fetching photos:', error);
+        console.error('❌ Error fetching photos:', error);
         // Use fallback photos on error
         setPhotos(fallbackPhotos);
       } finally {
@@ -162,7 +172,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
     };
 
     fetchPhotos();
-  }, [destination]);
+  }, [destination]); // This ensures re-fetch when destination changes
 
   useEffect(() => {
     if (photos.length === 0) return;
@@ -184,7 +194,9 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
   if (isLoading) {
     return (
       <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
-        <div className="text-gray-500 dark:text-gray-400">Loading destination photos...</div>
+        <div className="text-gray-500 dark:text-gray-400">
+          Loading {destination ? `${destination} photos` : 'destination photos'}...
+        </div>
       </div>
     );
   }
