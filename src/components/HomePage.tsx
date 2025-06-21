@@ -35,7 +35,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [wordIndex, setWordIndex] = useState(0);
 
   // Use Mapbox geocoding for destination suggestions
-  const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
+  const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess } = useMapboxGeocoding(
     destination,
     showSuggestions && destination.length >= 2
   );
@@ -251,7 +251,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
   const t = translations[currentLanguage as keyof typeof translations] || translations.en;
 
-  // Comprehensive global destination suggestions
+  // Comprehensive global destination suggestions (fallback when Mapbox is not available)
   const globalDestinations = [
     // Brazil
     'São Paulo, Brazil',
@@ -330,9 +330,13 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     'Reykjavik, Iceland'
   ];
 
-  const suggestions = globalDestinations.filter(city => 
+  // Use Mapbox suggestions if available, otherwise fall back to static list
+  const staticSuggestions = globalDestinations.filter(city => 
     city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
   );
+
+  const suggestions = hasApiAccess && mapboxSuggestions.length > 0 ? mapboxSuggestions : [];
+  const fallbackSuggestions = !hasApiAccess || mapboxSuggestions.length === 0 ? staticSuggestions : [];
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -365,7 +369,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   };
 
   const handleDestinationSelect = (suggestion: any) => {
-    setDestination(suggestion.place_name);
+    // Handle both Mapbox suggestions and static suggestions
+    const selectedDestination = suggestion.place_name || suggestion;
+    setDestination(selectedDestination);
     setShowSuggestions(false);
   };
 
@@ -531,16 +537,22 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
                     required
                   />
-                  {showSuggestions && mapboxSuggestions.length > 0 && (
+                  {showSuggestions && (suggestions.length > 0 || fallbackSuggestions.length > 0) && (
                     <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
-                      {isLoadingSuggestions && (
+                      {!hasApiAccess && destination.length >= 2 && (
+                        <div className="p-2 text-xs text-yellow-500 bg-yellow-500/10 rounded-t-xl border-b border-border/30">
+                          ⚠️ Using offline search. Connect Mapbox API for better results.
+                        </div>
+                      )}
+                      {isLoadingSuggestions && hasApiAccess && (
                         <div className="p-4 text-center text-muted-foreground">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
                         </div>
                       )}
-                      {mapboxSuggestions.map((suggestion, index) => (
+                      {/* Mapbox suggestions */}
+                      {suggestions.map((suggestion, index) => (
                         <button
-                          key={index}
+                          key={`mapbox-${index}`}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -556,6 +568,27 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                               </div>
                               <div className="text-xs text-muted-foreground truncate">
                                 {suggestion.place_name}
+                              </div>
+                            </div>
+                          </div>
+                        </button>
+                      ))}
+                      {/* Fallback static suggestions */}
+                      {fallbackSuggestions.slice(0, 8).map((suggestion, index) => (
+                        <button
+                          key={`static-${index}`}
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDestinationSelect(suggestion);
+                          }}
+                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-foreground truncate">
+                                {suggestion}
                               </div>
                             </div>
                           </div>
