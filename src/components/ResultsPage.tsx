@@ -1,31 +1,11 @@
 import React, { useState } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
+import { ArrowLeft, Search, MapPin, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/components/ui/popover';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import { Switch } from '@/components/ui/switch';
-import PhotoSlideshow from './PhotoSlideshow';
-import TravisChatbot from './TravisChatbot';
-import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
-import WeatherWidget from './WeatherWidget';
-import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
-import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
+import AccommodationHeatMap from '@/components/AccommodationHeatMap';
+import TravisChatbot from '@/components/TravisChatbot';
+import WeatherWidget from '@/components/WeatherWidget';
+import HomeWeatherWidget from '@/components/HomeWeatherWidget';
 
 interface ResultsPageProps {
   destination: string;
