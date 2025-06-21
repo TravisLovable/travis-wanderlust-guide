@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -36,12 +35,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
   // Get contextual search terms based on destination
   const getSearchQueries = (dest: string) => {
     // Create multiple search queries for better results
-    return [
-      `${dest} landmarks`,
-      `${dest} tourism attractions`,
-      `${dest} city skyline`,
-      `${dest} travel photography`
-    ];
+    return [dest];
   };
 
   // Filter out irrelevant photos based on alt text and context
