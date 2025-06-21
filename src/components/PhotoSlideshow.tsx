@@ -6,6 +6,19 @@ interface PhotoSlideshowProps {
 }
 
 const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
+  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
+    console.error('Video failed to load:', e);
+    console.error('Video error details:', (e.target as HTMLVideoElement).error);
+  };
+
+  const handleVideoLoad = () => {
+    console.log('Video loaded successfully');
+  };
+
+  const handleVideoCanPlay = () => {
+    console.log('Video can start playing');
+  };
+
   return (
     <div className="relative w-full h-80 rounded-2xl overflow-hidden">
       {/* Video Container */}
@@ -17,6 +30,10 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
           loop
           muted
           playsInline
+          onError={handleVideoError}
+          onLoadedData={handleVideoLoad}
+          onCanPlay={handleVideoCanPlay}
+          onLoadStart={() => console.log('Video load started')}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute bottom-4 left-4 right-4">
