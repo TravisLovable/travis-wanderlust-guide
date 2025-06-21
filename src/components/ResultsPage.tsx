@@ -71,14 +71,75 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Dynamic flag mapping based on destination
   const getCountryFlag = (dest: string) => {
     const lowerDest = dest.toLowerCase();
+    
+    // African countries
+    if (lowerDest.includes('south africa') || lowerDest.includes('cape town') || lowerDest.includes('johannesburg') || lowerDest.includes('durban')) {
+      return 'https://flagcdn.com/w40/za.png';
+    }
+    if (lowerDest.includes('egypt') || lowerDest.includes('cairo') || lowerDest.includes('alexandria')) {
+      return 'https://flagcdn.com/w40/eg.png';
+    }
+    if (lowerDest.includes('nigeria') || lowerDest.includes('lagos') || lowerDest.includes('abuja')) {
+      return 'https://flagcdn.com/w40/ng.png';
+    }
+    if (lowerDest.includes('kenya') || lowerDest.includes('nairobi') || lowerDest.includes('mombasa')) {
+      return 'https://flagcdn.com/w40/ke.png';
+    }
+    if (lowerDest.includes('morocco') || lowerDest.includes('marrakech') || lowerDest.includes('casablanca') || lowerDest.includes('rabat')) {
+      return 'https://flagcdn.com/w40/ma.png';
+    }
+    if (lowerDest.includes('tunisia') || lowerDest.includes('tunis')) {
+      return 'https://flagcdn.com/w40/tn.png';
+    }
+    if (lowerDest.includes('ghana') || lowerDest.includes('accra')) {
+      return 'https://flagcdn.com/w40/gh.png';
+    }
+    if (lowerDest.includes('ethiopia') || lowerDest.includes('addis ababa')) {
+      return 'https://flagcdn.com/w40/et.png';
+    }
+    if (lowerDest.includes('tanzania') || lowerDest.includes('dar es salaam') || lowerDest.includes('dodoma')) {
+      return 'https://flagcdn.com/w40/tz.png';
+    }
+    if (lowerDest.includes('uganda') || lowerDest.includes('kampala')) {
+      return 'https://flagcdn.com/w40/ug.png';
+    }
+    if (lowerDest.includes('rwanda') || lowerDest.includes('kigali')) {
+      return 'https://flagcdn.com/w40/rw.png';
+    }
+    if (lowerDest.includes('senegal') || lowerDest.includes('dakar')) {
+      return 'https://flagcdn.com/w40/sn.png';
+    }
+    if (lowerDest.includes('madagascar') || lowerDest.includes('antananarivo')) {
+      return 'https://flagcdn.com/w40/mg.png';
+    }
+    if (lowerDest.includes('zimbabwe') || lowerDest.includes('harare')) {
+      return 'https://flagcdn.com/w40/zw.png';
+    }
+    if (lowerDest.includes('botswana') || lowerDest.includes('gaborone')) {
+      return 'https://flagcdn.com/w40/bw.png';
+    }
+    if (lowerDest.includes('namibia') || lowerDest.includes('windhoek')) {
+      return 'https://flagcdn.com/w40/na.png';
+    }
+    if (lowerDest.includes('zambia') || lowerDest.includes('lusaka')) {
+      return 'https://flagcdn.com/w40/zm.png';
+    }
+    if (lowerDest.includes('malawi') || lowerDest.includes('lilongwe')) {
+      return 'https://flagcdn.com/w40/mw.png';
+    }
+    if (lowerDest.includes('mozambique') || lowerDest.includes('maputo')) {
+      return 'https://flagcdn.com/w40/mz.png';
+    }
+    if (lowerDest.includes('angola') || lowerDest.includes('luanda')) {
+      return 'https://flagcdn.com/w40/ao.png';
+    }
+    
+    // Existing non-African countries
     if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
       return 'https://flagcdn.com/w40/br.png';
     }
     if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan')) {
       return 'https://flagcdn.com/w40/it.png';
-    }
-    if (lowerDest.includes('morocco') || lowerDest.includes('marrakech') || lowerDest.includes('casablanca')) {
-      return 'https://flagcdn.com/w40/ma.png';
     }
     if (lowerDest.includes('france') || lowerDest.includes('paris')) {
       return 'https://flagcdn.com/w40/fr.png';
