@@ -1,4 +1,3 @@
-
 import { useState, useEffect } from 'react';
 
 interface MapboxFeature {
@@ -21,6 +20,16 @@ interface MapboxResponse {
   features: MapboxFeature[];
 }
 
+export interface SelectedPlace {
+  name: string;
+  formatted_address: string;
+  country_code?: string;
+  latitude: number;
+  longitude: number;
+  region?: string;
+  place_id: string;
+}
+
 export const useMapboxGeocoding = (query: string, enabled: boolean = true) => {
   const [suggestions, setSuggestions] = useState<MapboxFeature[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,13 +48,12 @@ export const useMapboxGeocoding = (query: string, enabled: boolean = true) => {
         setError(null);
 
         const encodedQuery = encodeURIComponent(query);
-        // TODO: Replace with your valid Mapbox public token
         const response = await fetch(
-          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodedQuery}.json?types=country,region,place&limit=8&access_token=YOUR_MAPBOX_TOKEN_HERE`
+          `/api/mapbox-geocoding?input=${encodedQuery}`
         );
 
-        if (response.status === 403) {
-          console.warn('Mapbox API access denied. Please check your API token.');
+        if (response.status === 403 || response.status === 401) {
+          console.warn('Mapbox API access denied. Please check your API key.');
           setHasApiAccess(false);
           setError('Mapbox API access denied');
           setSuggestions([]);
@@ -57,12 +65,29 @@ export const useMapboxGeocoding = (query: string, enabled: boolean = true) => {
         }
 
         const data: MapboxResponse = await response.json();
-        setSuggestions(data.features || []);
+        
+        // Filter out very specific addresses and POIs, keep geographic places
+        const filteredSuggestions = data.features.filter(feature => {
+          const placeTypes = feature.place_type;
+          
+          // Keep geographic places: countries, regions, places (cities/towns), districts, localities
+          // Exclude: addresses, POIs, postcode
+          const hasGeoType = placeTypes.some(type => 
+            ['country', 'region', 'place', 'district', 'locality'].includes(type)
+          );
+          
+          const hasUnwantedType = placeTypes.some(type => 
+            ['address', 'poi', 'postcode'].includes(type)
+          );
+          
+          return hasGeoType && !hasUnwantedType;
+        });
+        
+        setSuggestions(filteredSuggestions || []);
       } catch (err) {
         console.error('Mapbox geocoding error:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch suggestions');
         setSuggestions([]);
-        // Don't disable API access for network errors, only for auth errors
       } finally {
         setIsLoading(false);
       }
@@ -71,5 +96,30 @@ export const useMapboxGeocoding = (query: string, enabled: boolean = true) => {
     return () => clearTimeout(timeoutId);
   }, [query, enabled, hasApiAccess]);
 
-  return { suggestions, isLoading, error, hasApiAccess };
+  const getPlaceDetails = async (feature: MapboxFeature): Promise<SelectedPlace | null> => {
+    try {
+      // Extract country and region from context
+      const countryContext = feature.context?.find(ctx => 
+        ctx.id.startsWith('country.')
+      );
+      const regionContext = feature.context?.find(ctx => 
+        ctx.id.startsWith('region.')
+      );
+
+      return {
+        name: feature.text,
+        formatted_address: feature.place_name,
+        country_code: countryContext?.short_code,
+        latitude: feature.center[1],
+        longitude: feature.center[0],
+        region: regionContext?.text,
+        place_id: feature.id
+      };
+    } catch (err) {
+      console.error('Error processing place details:', err);
+      return null;
+    }
+  };
+
+  return { suggestions, isLoading, error, hasApiAccess, getPlaceDetails };
 };
