@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -95,7 +96,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
             console.log('🔍 API Search Query:', query);
             const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(query)}&per_page=4&orientation=landscape`, {
               headers: {
-                Authorization: 'TRAVIS_PHOTO_DECK'
+                Authorization: '1acrtV7OPRQmWjmxtM9njqOuQCe47mkyZELwrSyYbhT7BkWuIbgtL2ld'
               }
             });
 
@@ -136,7 +137,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
           try {
             const fallbackResponse = await fetch(`https://api.pexels.com/v1/search?query=beautiful travel destination&per_page=6&orientation=landscape`, {
               headers: {
-                Authorization: 'TRAVIS_PHOTO_DECK'
+                Authorization: '1acrtV7OPRQmWjmxtM9njqOuQCe47mkyZELwrSyYbhT7BkWuIbgtL2ld'
               }
             });
 
