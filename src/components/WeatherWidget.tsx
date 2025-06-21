@@ -139,10 +139,10 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
         </div>
         
         {/* 7-Day Forecast for Destination - Full Width Grid */}
-        {destinationWeather && destinationWeather.forecast && (
+        {destinationWeather && destinationWeather.forecast && destinationWeather.forecast.length > 0 && (
           <div className="space-y-3">
             <p className="text-sm font-medium text-muted-foreground">7-Day Forecast - {destination}</p>
-            <div className="grid grid-cols-7 gap-2">
+            <div className="grid grid-cols-7 gap-1.5">
               {destinationWeather.forecast.slice(0, 7).map((forecast, idx) => (
                 <div key={idx} className="text-center p-2 bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-all duration-200 hover:scale-105">
                   <div className="font-medium text-xs text-orange-300 mb-1 truncate">
