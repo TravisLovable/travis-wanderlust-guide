@@ -717,18 +717,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
         </div>
 
-        {/* Row 2: Weather Widget - Full Width, Optimized */}
-        <div className="mb-6">
-          <WeatherWidget
-            destination={destination}
-            tempUnit={tempUnit}
-            onTempUnitToggle={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
-          />
-        </div>
-
-        {/* Row 3: Secondary Widgets - Medium Priority */}
+        {/* Row 2: Weather Widget - Integrated into grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-          
+          {/* Weather Widget - Takes 2 columns on larger screens */}
+          <div className="lg:col-span-2 xl:col-span-2">
+            <WeatherWidget
+              destination={destination}
+              tempUnit={tempUnit}
+              onTempUnitToggle={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
+            />
+          </div>
+
           {/* Transportation */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
@@ -782,7 +781,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </CardContent>
           </Card>
+        </div>
 
+        {/* Row 3: Secondary Widgets */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
           {/* Power Adapters */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
@@ -853,15 +855,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </CardContent>
           </Card>
-        </div>
-
-        {/* Row 4: Map and Connectivity */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
-          
-          {/* São Paulo Accommodation Map - Takes 2 columns */}
-          <div className="lg:col-span-2">
-            <SaoPauloAccommodationMap />
-          </div>
 
           {/* Connectivity */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
@@ -889,6 +882,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </CardContent>
           </Card>
+
+          {/* Placeholder for future widget */}
+          <div className="hidden xl:block"></div>
+        </div>
+
+        {/* Row 4: Map - Full Width */}
+        <div className="mb-6">
+          <SaoPauloAccommodationMap />
         </div>
 
         {/* Row 5: Intelligence Dashboard - Full Width */}
