@@ -32,7 +32,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
-  const [isLoaded, setIsLoaded] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
 
   // Use Mapbox for destination suggestions
@@ -40,14 +39,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     destination,
     showSuggestions && destination.length >= 2
   );
-
-  // Trigger fade-in animation on page load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoaded(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
 
   // Word swap animation - only the last word
   const swapWords = ["explorer", "nomad", "analyst", "visionary"];
@@ -504,12 +495,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section with fade-in animation */}
-          <div className={`mb-10 transition-all duration-1000 ease-out ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          {/* Hero Section - removed all fade-in animations */}
+          <div className="mb-10">
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
               {t.title}
             </h1>
-            <div className={`mb-6 transition-all duration-1000 ease-out delay-300 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+            <div className="mb-6">
               <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
                 <span>Data-driven Intelligence for the modern </span>
                 <span 
@@ -524,8 +515,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Interactive Search Bar */}
-          <div className={`mb-8 max-w-5xl mx-auto transition-all duration-1000 ease-out delay-500 ${isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}>
+          {/* Interactive Search Bar - removed fade-in animation */}
+          <div className="mb-8 max-w-5xl mx-auto">
             <div 
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
               onClick={handleBarClick}
