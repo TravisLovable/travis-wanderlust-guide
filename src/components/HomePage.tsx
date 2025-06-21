@@ -16,14 +16,15 @@ import {
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
+import { useGooglePlaces, SelectedPlace } from '@/hooks/useGooglePlaces';
 
 interface HomePageProps {
-  onSearch: (destination: string, dates: { checkin: string; checkout: string }) => void;
+  onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
 }
 
 const HomePage = ({ onSearch }: HomePageProps) => {
   const [destination, setDestination] = useState('');
+  const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
   const [checkinDate, setCheckinDate] = useState<Date>();
   const [checkoutDate, setCheckoutDate] = useState<Date>();
   const [showSuggestions, setShowSuggestions] = useState(false);
@@ -34,8 +35,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isLoaded, setIsLoaded] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
 
-  // Use Mapbox geocoding for destination suggestions
-  const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess } = useMapboxGeocoding(
+  // Use Google Places for destination suggestions
+  const { suggestions: googleSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useGooglePlaces(
     destination,
     showSuggestions && destination.length >= 2
   );
@@ -133,7 +134,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "保存された目的地",
       travelPreferences: "旅行の好み",
       signOut: "サインアウト",
-      privacy: "プライバシー",
+      privacy: "利用規約",
       terms: "利用規約",
       settings: "設定"
     },
@@ -251,7 +252,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
   const t = translations[currentLanguage as keyof typeof translations] || translations.en;
 
-  // Comprehensive global destination suggestions (fallback when Mapbox is not available)
+  // Comprehensive global destination suggestions (fallback when Google Places is not available)
   const globalDestinations = [
     // Brazil
     'São Paulo, Brazil',
@@ -330,13 +331,13 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     'Reykjavik, Iceland'
   ];
 
-  // Use Mapbox suggestions if available, otherwise fall back to static list
+  // Use Google Places suggestions if available, otherwise fall back to static list
   const staticSuggestions = globalDestinations.filter(city => 
     city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
   );
 
-  const suggestions = hasApiAccess && mapboxSuggestions.length > 0 ? mapboxSuggestions : [];
-  const fallbackSuggestions = !hasApiAccess || mapboxSuggestions.length === 0 ? staticSuggestions : [];
+  const suggestions = hasApiAccess && googleSuggestions.length > 0 ? googleSuggestions : [];
+  const fallbackSuggestions = !hasApiAccess || googleSuggestions.length === 0 ? staticSuggestions : [];
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -344,7 +345,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       onSearch(destination, { 
         checkin: format(checkinDate, 'yyyy-MM-dd'), 
         checkout: format(checkoutDate, 'yyyy-MM-dd') 
-      });
+      }, selectedPlace || undefined);
     }
   };
 
@@ -368,10 +369,24 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     document.documentElement.classList.toggle('dark');
   };
 
-  const handleDestinationSelect = (suggestion: any) => {
-    // Handle both Mapbox suggestions and static suggestions
-    const selectedDestination = suggestion.place_name || suggestion;
-    setDestination(selectedDestination);
+  const handleDestinationSelect = async (suggestion: any) => {
+    // Handle both Google Places suggestions and static suggestions
+    if (suggestion.place_id) {
+      // Google Places suggestion
+      const placeDetails = await getPlaceDetails(suggestion.place_id);
+      if (placeDetails) {
+        setDestination(placeDetails.formatted_address);
+        setSelectedPlace(placeDetails);
+        console.log('Selected place details:', placeDetails);
+      } else {
+        setDestination(suggestion.description);
+        setSelectedPlace(null);
+      }
+    } else {
+      // Static suggestion fallback
+      setDestination(suggestion);
+      setSelectedPlace(null);
+    }
     setShowSuggestions(false);
   };
 
@@ -529,6 +544,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     value={destination}
                     onChange={(e) => {
                       setDestination(e.target.value);
+                      setSelectedPlace(null);
                       setShowSuggestions(true);
                     }}
                     onKeyPress={handleKeyPress}
@@ -541,7 +557,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
                       {!hasApiAccess && destination.length >= 2 && (
                         <div className="p-2 text-xs text-yellow-500 bg-yellow-500/10 rounded-t-xl border-b border-border/30">
-                          ⚠️ Using offline search. Connect Mapbox API for better results.
+                          ⚠️ Using offline search. Connect Google Places API for better results.
                         </div>
                       )}
                       {isLoadingSuggestions && hasApiAccess && (
@@ -549,10 +565,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
                         </div>
                       )}
-                      {/* Mapbox suggestions */}
+                      {/* Google Places suggestions */}
                       {suggestions.map((suggestion, index) => (
                         <button
-                          key={`mapbox-${index}`}
+                          key={`google-${index}`}
                           type="button"
                           onClick={(e) => {
                             e.stopPropagation();
@@ -564,10 +580,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                             <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-foreground truncate">
-                                {suggestion.text}
+                                {suggestion.structured_formatting.main_text}
                               </div>
                               <div className="text-xs text-muted-foreground truncate">
-                                {suggestion.place_name}
+                                {suggestion.structured_formatting.secondary_text}
                               </div>
                             </div>
                           </div>
