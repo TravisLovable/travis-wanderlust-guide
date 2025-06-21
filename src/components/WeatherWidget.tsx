@@ -1,18 +1,20 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Thermometer } from 'lucide-react';
+import { Thermometer, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useWeatherData } from '@/hooks/useWeatherData';
 
 interface WeatherWidgetProps {
   destination: string;
+  currentLocation?: string;
   tempUnit: 'C' | 'F';
   onTempUnitToggle: () => void;
 }
 
-const WeatherWidget = ({ destination, tempUnit, onTempUnitToggle }: WeatherWidgetProps) => {
-  const { weatherData, isLoading, error } = useWeatherData(destination);
+const WeatherWidget = ({ destination, currentLocation = 'Current Location', tempUnit, onTempUnitToggle }: WeatherWidgetProps) => {
+  const { weatherData: destinationWeather, isLoading: destinationLoading, error: destinationError } = useWeatherData(destination);
+  const { weatherData: currentWeather, isLoading: currentLoading, error: currentError } = useWeatherData(currentLocation);
 
   const convertTemp = (temp: number) => {
     return tempUnit === 'F' ? Math.round((temp * 9/5) + 32) : Math.round(temp);
@@ -29,7 +31,58 @@ const WeatherWidget = ({ destination, tempUnit, onTempUnitToggle }: WeatherWidge
     return '🌤️';
   };
 
-  if (isLoading) {
+  const WeatherCard = ({ weather, location, isLoading, error }: any) => {
+    if (isLoading) {
+      return (
+        <div className="flex-1 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="w-4 h-4 text-orange-400" />
+            <span className="text-sm font-medium text-muted-foreground">{location}</span>
+          </div>
+          <div className="flex justify-center items-center h-20">
+            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-400"></div>
+          </div>
+        </div>
+      );
+    }
+
+    if (error || !weather) {
+      return (
+        <div className="flex-1 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+          <div className="flex items-center gap-2 mb-3">
+            <MapPin className="w-4 h-4 text-orange-400" />
+            <span className="text-sm font-medium text-muted-foreground">{location}</span>
+          </div>
+          <div className="text-center text-orange-400">
+            <p className="text-sm">Unable to load</p>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="flex-1 p-4 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+        <div className="flex items-center gap-2 mb-3">
+          <MapPin className="w-4 h-4 text-orange-400" />
+          <span className="text-sm font-medium text-muted-foreground">{location}</span>
+        </div>
+        <div className="text-center">
+          <div className="text-2xl font-bold text-orange-400 mb-1">
+            {convertTemp(weather.current.temp)}°{tempUnit}
+          </div>
+          <div className="flex items-center justify-center gap-1 mb-1">
+            <span className="text-lg">{getWeatherEmoji(weather.current.condition)}</span>
+            <span className="text-xs text-muted-foreground">{weather.current.condition}</span>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Humidity: {weather.current.humidity}%
+          </div>
+        </div>
+      </div>
+    );
+  };
+
+  if (destinationLoading && currentLoading) {
     return (
       <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
         <CardHeader className="pb-4">
@@ -46,27 +99,6 @@ const WeatherWidget = ({ destination, tempUnit, onTempUnitToggle }: WeatherWidge
       </Card>
     );
   }
-
-  if (error) {
-    return (
-      <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center text-xl font-semibold">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
-              <Thermometer className="w-5 h-5 text-white" />
-            </div>
-            Weather Intel
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="text-center text-orange-400 p-4">
-          <p>Unable to load weather data</p>
-          <p className="text-sm text-muted-foreground mt-1">{error}</p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!weatherData) return null;
 
   return (
     <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
@@ -86,43 +118,50 @@ const WeatherWidget = ({ destination, tempUnit, onTempUnitToggle }: WeatherWidge
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Current Weather */}
-        <div className="text-center p-6 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-          <div className="text-4xl font-bold text-orange-400 mb-2">
-            {convertTemp(weatherData.current.temp)}°{tempUnit}
-          </div>
-          <div className="text-lg text-muted-foreground mb-2 flex items-center justify-center gap-2">
-            <span className="text-2xl">{getWeatherEmoji(weatherData.current.condition)}</span>
-            {weatherData.current.condition}
-          </div>
-          <div className="text-sm text-muted-foreground">
-            Humidity: {weatherData.current.humidity}%
+      <CardContent className="space-y-6">
+        {/* Weather Comparison */}
+        <div className="space-y-3">
+          <p className="text-sm font-medium text-muted-foreground">Current Weather Comparison</p>
+          <div className="flex gap-4">
+            <WeatherCard 
+              weather={currentWeather} 
+              location={currentLocation}
+              isLoading={currentLoading}
+              error={currentError}
+            />
+            <WeatherCard 
+              weather={destinationWeather} 
+              location={destination}
+              isLoading={destinationLoading}
+              error={destinationError}
+            />
           </div>
         </div>
         
-        {/* 7-Day Forecast */}
-        <div className="space-y-2">
-          <p className="text-sm font-medium text-muted-foreground">7-Day Forecast</p>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {weatherData.forecast.slice(0, 7).map((forecast, idx) => (
-              <div key={idx} className="flex-shrink-0 text-center p-3 bg-secondary/30 rounded-lg min-w-[80px]">
-                <div className="font-medium text-xs text-muted-foreground mb-1">
-                  {forecast.day}
+        {/* 7-Day Forecast for Destination */}
+        {destinationWeather && (
+          <div className="space-y-2">
+            <p className="text-sm font-medium text-muted-foreground">7-Day Forecast - {destination}</p>
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {destinationWeather.forecast.slice(0, 7).map((forecast, idx) => (
+                <div key={idx} className="flex-shrink-0 text-center p-3 bg-secondary/30 rounded-lg min-w-[80px]">
+                  <div className="font-medium text-xs text-muted-foreground mb-1">
+                    {forecast.day}
+                  </div>
+                  <div className="text-xl mb-1">
+                    {getWeatherEmoji(forecast.condition)}
+                  </div>
+                  <div className="text-orange-400 font-semibold text-sm">
+                    {convertTemp(forecast.high)}°
+                  </div>
+                  <div className="text-muted-foreground text-xs">
+                    {convertTemp(forecast.low)}°
+                  </div>
                 </div>
-                <div className="text-xl mb-1">
-                  {getWeatherEmoji(forecast.condition)}
-                </div>
-                <div className="text-orange-400 font-semibold text-sm">
-                  {convertTemp(forecast.high)}°
-                </div>
-                <div className="text-muted-foreground text-xs">
-                  {convertTemp(forecast.low)}°
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </CardContent>
     </Card>
   );
