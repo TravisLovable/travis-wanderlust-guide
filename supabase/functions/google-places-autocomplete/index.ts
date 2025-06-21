@@ -36,10 +36,10 @@ serve(async (req) => {
       )
     }
 
-    // Use types=(regions|locality|administrative_area_level_1) to get countries, states/provinces, cities, and localities
-    // This provides broader geographic coverage including regions, localities, and administrative areas
+    // Remove types parameter entirely to get broadest results (countries, cities, neighborhoods, etc.)
+    // This prevents Google from defaulting to specific type restrictions
     const googleResponse = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=(regions|locality|administrative_area_level_1)&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&key=${apiKey}`
     )
 
     const data = await googleResponse.json()
