@@ -6,6 +6,70 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
 
+// Currency symbols mapping
+const currencySymbols: { [key: string]: string } = {
+  'USD': '$',
+  'EUR': '€',
+  'GBP': '£',
+  'JPY': '¥',
+  'BRL': 'R$',
+  'CAD': 'C$',
+  'AUD': 'A$',
+  'CHF': 'CHF',
+  'CNY': '¥',
+  'INR': '₹',
+  'KRW': '₩',
+  'MXN': '$',
+  'SGD': 'S$',
+  'THB': '฿',
+  'NOK': 'kr',
+  'SEK': 'kr',
+  'DKK': 'kr',
+  'RUB': '₽',
+  'TRY': '₺',
+  'ZAR': 'R',
+  'AED': 'د.إ',
+  'SAR': 'ر.س',
+  'ILS': '₪',
+  'EGP': 'E£',
+  'ARS': '$',
+  'CLP': '$',
+  'COP': '$',
+  'PEN': 'S/'
+};
+
+// Currency names mapping
+const currencyNames: { [key: string]: string } = {
+  'USD': 'US Dollar',
+  'EUR': 'Euro',
+  'GBP': 'British Pound',
+  'JPY': 'Japanese Yen',
+  'BRL': 'Brazilian Real',
+  'CAD': 'Canadian Dollar',
+  'AUD': 'Australian Dollar',
+  'CHF': 'Swiss Franc',
+  'CNY': 'Chinese Yuan',
+  'INR': 'Indian Rupee',
+  'KRW': 'South Korean Won',
+  'MXN': 'Mexican Peso',
+  'SGD': 'Singapore Dollar',
+  'THB': 'Thai Baht',
+  'NOK': 'Norwegian Krone',
+  'SEK': 'Swedish Krona',
+  'DKK': 'Danish Krone',
+  'RUB': 'Russian Ruble',
+  'TRY': 'Turkish Lira',
+  'ZAR': 'South African Rand',
+  'AED': 'UAE Dirham',
+  'SAR': 'Saudi Riyal',
+  'ILS': 'Israeli Shekel',
+  'EGP': 'Egyptian Pound',
+  'ARS': 'Argentine Peso',
+  'CLP': 'Chilean Peso',
+  'COP': 'Colombian Peso',
+  'PEN': 'Peruvian Sol'
+};
+
 serve(async (req) => {
   // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
@@ -34,8 +98,8 @@ serve(async (req) => {
     // Return the formatted response
     const result = {
       rate: rate,
-      symbol: targetCurrency === 'BRL' ? 'R$' : targetCurrency,
-      name: targetCurrency === 'BRL' ? 'Brazilian Real' : targetCurrency,
+      symbol: currencySymbols[targetCurrency] || targetCurrency,
+      name: currencyNames[targetCurrency] || targetCurrency,
       lastUpdated: new Date().toLocaleTimeString()
     }
 

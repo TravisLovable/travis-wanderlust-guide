@@ -47,8 +47,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
 
-  // Use real currency exchange data
-  const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', 'BRL');
+  // Use real currency exchange data with destination-based currency
+  const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', destination);
 
   // Profile data
   const profileData = {

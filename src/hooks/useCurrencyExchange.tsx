@@ -1,6 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { getCurrencyFromDestination } from '@/utils/currencyMapping';
 
 interface ExchangeRates {
   [key: string]: number;
@@ -13,10 +14,14 @@ interface CurrencyData {
   lastUpdated: string;
 }
 
-export const useCurrencyExchange = (baseCurrency: string = 'USD', targetCurrency: string = 'BRL') => {
+export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: string) => {
   const [currencyData, setCurrencyData] = useState<CurrencyData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // Determine target currency from destination
+  const targetCurrencyInfo = destination ? getCurrencyFromDestination(destination) : { code: 'USD', symbol: '$', name: 'US Dollar' };
+  const targetCurrency = targetCurrencyInfo.code;
 
   useEffect(() => {
     const fetchExchangeRates = async () => {
@@ -42,8 +47,8 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', targetCurrency
 
         setCurrencyData({
           rate: data.rate,
-          symbol: data.symbol || (targetCurrency === 'BRL' ? 'R$' : targetCurrency),
-          name: data.name || (targetCurrency === 'BRL' ? 'Brazilian Real' : targetCurrency),
+          symbol: data.symbol || targetCurrencyInfo.symbol,
+          name: data.name || targetCurrencyInfo.name,
           lastUpdated: data.lastUpdated || new Date().toLocaleTimeString()
         });
       } catch (err) {
@@ -52,9 +57,9 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', targetCurrency
         
         // Fallback to mock data if API fails
         setCurrencyData({
-          rate: 5.15,
-          symbol: 'R$',
-          name: 'Brazilian Real',
+          rate: targetCurrency === 'BRL' ? 5.15 : 1.0,
+          symbol: targetCurrencyInfo.symbol,
+          name: targetCurrencyInfo.name,
           lastUpdated: 'API Error - Using fallback'
         });
       } finally {
@@ -68,7 +73,7 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', targetCurrency
     const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000);
     
     return () => clearInterval(interval);
-  }, [baseCurrency, targetCurrency]);
+  }, [baseCurrency, targetCurrency, targetCurrencyInfo.symbol, targetCurrencyInfo.name]);
 
   return { currencyData, isLoading, error, refetch: () => window.location.reload() };
 };
