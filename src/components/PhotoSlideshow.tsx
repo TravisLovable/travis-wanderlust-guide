@@ -3,53 +3,83 @@ import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-const PhotoSlideshow = () => {
+interface Photo {
+  url: string;
+  caption: string;
+}
+
+interface PhotoSlideshowProps {
+  destination?: string;
+}
+
+const PhotoSlideshow = ({ destination = "travel" }: PhotoSlideshowProps) => {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [photos, setPhotos] = useState<Photo[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   
-  const photos = [
+  // Fallback photos for when API fails or no destination is provided
+  const fallbackPhotos: Photo[] = [
     {
-      url: 'https://images.unsplash.com/photo-1483729558449-99ef09a8c325?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Christ the Redeemer overlooking Rio de Janeiro at sunset'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1544966503-7cc5ac882d5e?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Iguazu Falls cascading through lush Brazilian rainforest'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1540979388789-6cee28a1cdc9?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Copacabana Beach with its iconic curved shoreline at golden hour'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1516306580123-e6e52b1b7b5f?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Sugarloaf Mountain and Guanabara Bay in Rio de Janeiro'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1578662996442-48f60103fc96?auto=format&fit=crop&w=1200&q=80',
-      caption: 'São Paulo skyline illuminated against the twilight sky'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1544551763-46a013bb70d5?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Amazon rainforest river winding through pristine wilderness'
+      url: 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Discover beautiful destinations around the world'
     },
     {
       url: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Lençóis Maranhenses National Park with pristine white sand dunes'
+      caption: 'Explore stunning landscapes and hidden gems'
     },
     {
-      url: 'https://images.unsplash.com/photo-1502780402662-acc01917949e?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Pelourinho historic center of Salvador with colorful colonial architecture'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1578972493570-9fe3b7caf159?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Brasília Cathedral with its stunning modernist architecture'
-    },
-    {
-      url: 'https://images.unsplash.com/photo-1483197452165-7abc4b1a6d12?auto=format&fit=crop&w=1200&q=80',
-      caption: 'Fernando de Noronha pristine beaches with crystal clear waters'
+      url: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?auto=format&fit=crop&w=1200&q=80',
+      caption: 'Experience unforgettable travel adventures'
     }
   ];
 
   useEffect(() => {
+    const fetchPhotos = async () => {
+      if (!destination) {
+        setPhotos(fallbackPhotos);
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        const response = await fetch(`https://api.pexels.com/v1/search?query=${encodeURIComponent(destination)}&per_page=6&orientation=landscape`, {
+          headers: {
+            Authorization: 'TRAVIS_PHOTO_DECK'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error('Failed to fetch photos');
+        }
+
+        const data = await response.json();
+        
+        if (data.photos && data.photos.length > 0) {
+          const formattedPhotos: Photo[] = data.photos.map((photo: any) => ({
+            url: photo.src.large2x || photo.src.large || photo.src.medium,
+            caption: photo.alt || `Beautiful view of ${destination}`
+          }));
+          setPhotos(formattedPhotos);
+        } else {
+          // No photos found for destination, use fallback
+          setPhotos(fallbackPhotos);
+        }
+      } catch (error) {
+        console.error('Error fetching photos:', error);
+        // Use fallback photos on error
+        setPhotos(fallbackPhotos);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPhotos();
+  }, [destination]);
+
+  useEffect(() => {
+    if (photos.length === 0) return;
+    
     const timer = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % photos.length);
     }, 5000);
@@ -63,6 +93,14 @@ const PhotoSlideshow = () => {
   const prevSlide = () => {
     setCurrentSlide((prev) => (prev - 1 + photos.length) % photos.length);
   };
+
+  if (isLoading) {
+    return (
+      <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-gray-200 dark:bg-gray-800 flex items-center justify-center">
+        <div className="text-gray-500 dark:text-gray-400">Loading destination photos...</div>
+      </div>
+    );
+  }
 
   return (
     <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
@@ -79,6 +117,10 @@ const PhotoSlideshow = () => {
               src={photo.url}
               alt={photo.caption}
               className="w-full h-full object-cover"
+              onError={(e) => {
+                // Fallback to a default image if the photo fails to load
+                e.currentTarget.src = 'https://images.unsplash.com/photo-1488646953014-85cb44e25828?auto=format&fit=crop&w=1200&q=80';
+              }}
             />
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
             <div className="absolute bottom-4 left-4 right-4">
