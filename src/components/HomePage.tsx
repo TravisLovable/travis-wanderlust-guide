@@ -495,9 +495,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       {/* Main Content */}
       <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section with subtle underline pulse animation */}
+          {/* Hero Section with subtle text glow pulse animation */}
           <div className="mb-10">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl animate-underline-pulse">
+            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl animate-text-glow-pulse">
               {t.title}
             </h1>
             <div className="mb-6">
