@@ -403,9 +403,15 @@
 @keyframes text-glow-pulse {
   0% {
     text-shadow: 
-      0 0 10px rgba(99, 102, 241, 0),
-      0 0 20px rgba(99, 102, 241, 0),
-      0 0 30px rgba(139, 92, 246, 0);
+      -100px 0 20px rgba(99, 102, 241, 0),
+      -100px 0 40px rgba(99, 102, 241, 0),
+      -100px 0 60px rgba(139, 92, 246, 0);
+  }
+  25% {
+    text-shadow: 
+      -50px 0 20px rgba(99, 102, 241, 0.4),
+      -50px 0 40px rgba(99, 102, 241, 0.3),
+      -50px 0 60px rgba(139, 92, 246, 0.2);
   }
   50% {
     text-shadow: 
@@ -413,11 +419,17 @@
       0 0 40px rgba(99, 102, 241, 0.4),
       0 0 60px rgba(139, 92, 246, 0.3);
   }
+  75% {
+    text-shadow: 
+      50px 0 20px rgba(99, 102, 241, 0.4),
+      50px 0 40px rgba(99, 102, 241, 0.3),
+      50px 0 60px rgba(139, 92, 246, 0.2);
+  }
   100% {
     text-shadow: 
-      0 0 15px rgba(99, 102, 241, 0.2),
-      0 0 30px rgba(99, 102, 241, 0.1),
-      0 0 45px rgba(139, 92, 246, 0.05);
+      100px 0 20px rgba(99, 102, 241, 0),
+      100px 0 40px rgba(99, 102, 241, 0),
+      100px 0 60px rgba(139, 92, 246, 0);
   }
 }
 
@@ -428,25 +440,4 @@
 /* Dark mode variation with enhanced glow */
 .dark .animate-text-glow-pulse {
   animation: text-glow-pulse 1.8s ease-out 0.3s forwards;
-}
-
-@keyframes text-glow-pulse {
-  0% {
-    text-shadow: 
-      0 0 10px rgba(99, 102, 241, 0),
-      0 0 20px rgba(99, 102, 241, 0),
-      0 0 30px rgba(139, 92, 246, 0);
-  }
-  50% {
-    text-shadow: 
-      0 0 20px rgba(99, 102, 241, 0.6),
-      0 0 40px rgba(99, 102, 241, 0.4),
-      0 0 60px rgba(139, 92, 246, 0.3);
-  }
-  100% {
-    text-shadow: 
-      0 0 15px rgba(99, 102, 241, 0.2),
-      0 0 30px rgba(99, 102, 241, 0.1),
-      0 0 45px rgba(139, 92, 246, 0.05);
-  }
 }
