@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -570,62 +570,64 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-8">
+      <main className="max-w-7xl mx-auto px-6 py-6">
         {/* Photo Slideshow - Breathtaking Brazil landmarks */}
-        <div className="mb-8">
+        <div className="mb-6">
           <PhotoSlideshow />
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+        {/* Optimized Widget Grid Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-6">
           
-          {/* 1. Visa & Entry Card - PRIORITY 1 */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
-                  <Shield className="w-5 h-5 text-white" />
+          {/* Row 1: Primary Info Widgets - Higher Priority, Smaller Cards */}
+          {/* Visa & Entry - High Priority */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
+                  <Shield className="w-4 h-4 text-white" />
                 </div>
-                Visa & Entry Requirements
-                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+                Visa & Entry
+                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="text-green-700 font-medium">✓ Visa-free entry</div>
+            <CardContent className="space-y-3">
+              <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="text-green-700 font-medium text-sm">✓ Visa-free entry</div>
                 <div className="text-xs text-muted-foreground">For US passport holders</div>
               </div>
-              <div className="text-sm space-y-1">
+              <div className="text-xs space-y-1">
                 <p><span className="font-medium">Max stay:</span> 90 days</p>
                 <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
                 <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
               </div>
-              <Button variant="outline" size="sm" className="w-full">
-                View Full Requirements
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                View Requirements
               </Button>
             </CardContent>
           </Card>
 
-          {/* 2. Currency Card - PRIORITY 2 */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-3">
+          {/* Currency - High Priority */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-2">
                   <CreditCard className="w-4 h-4 text-white" />
                 </div>
-                Currency Exchange
-                <TrendingUp className="w-4 h-4 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
+                Currency
+                <TrendingUp className="w-3 h-3 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-2">
               {currencyLoading ? (
-                <div className="flex justify-center items-center p-6">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-400"></div>
+                <div className="flex justify-center items-center p-4">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-400"></div>
                 </div>
               ) : (
                 <>
-                  <div className="flex justify-between items-center p-3 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <span className="font-semibold">1 USD</span>
-                    <span className="text-green-400 font-bold">
+                  <div className="flex justify-between items-center p-2 bg-green-500/10 border border-green-500/20 rounded-xl">
+                    <span className="font-semibold text-sm">1 USD</span>
+                    <span className="text-green-400 font-bold text-sm">
                       {currencyData?.rate.toFixed(2)} {currencyData?.symbol}
                     </span>
                   </div>
@@ -634,17 +636,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       type="number"
                       value={currencyAmount}
                       onChange={(e) => setCurrencyAmount(Number(e.target.value))}
-                      className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-10"
+                      className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-8 text-sm"
                     />
-                    <span className="text-green-400 font-semibold">
+                    <span className="text-green-400 font-semibold text-sm">
                       = {currencyData?.symbol}{currencyData ? (currencyAmount * currencyData.rate).toFixed(2) : '-.--'}
                     </span>
                   </div>
                   <div className="text-xs text-muted-foreground">
                     {currencyError ? (
-                      <span className="text-orange-400">API Error - Using fallback rate</span>
+                      <span className="text-orange-400">API Error - Using fallback</span>
                     ) : (
-                      `Live rate • Updated ${currencyData?.lastUpdated}`
+                      `Live rate • ${currencyData?.lastUpdated}`
                     )}
                   </div>
                 </>
@@ -652,364 +654,358 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* 3. Time Zone Card - PRIORITY 3 */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
-                  <Clock className="w-5 h-5 text-white" />
+          {/* Time Zone - High Priority */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-2">
+                  <Clock className="w-4 h-4 text-white" />
                 </div>
-                Time Intelligence
-                <Zap className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
+                Time Zone
+                <Zap className="w-3 h-3 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-2 font-medium">YOUR TIME</div>
-                  <div className="text-2xl font-bold text-blue-400">17:42</div>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
+                  <div className="text-lg font-bold text-blue-400">17:42</div>
                   <div className="text-xs text-muted-foreground font-mono">EST</div>
                 </div>
-                <div className="text-center p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-2 font-medium">SÃO PAULO</div>
-                  <div className="text-2xl font-bold text-blue-300">{mockData.time.current}</div>
+                <div className="text-center p-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-1 font-medium uppercase">{destination.split(',')[0]}</div>
+                  <div className="text-lg font-bold text-blue-300">{mockData.time.current}</div>
                   <div className="text-xs text-muted-foreground font-mono">BRT {mockData.time.offset}</div>
                 </div>
               </div>
               {!mockData.time.dst && (
-                <div className="flex items-center justify-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <Clock className="w-4 h-4 mr-2 text-blue-400" />
-                  <span className="text-sm text-blue-400 font-medium">Standard Time Active</span>
+                <div className="flex items-center justify-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <Clock className="w-3 h-3 mr-1 text-blue-400" />
+                  <span className="text-xs text-blue-400 font-medium">Standard Time Active</span>
                 </div>
               )}
             </CardContent>
           </Card>
 
-          {/* 4. Weather Card - Replace with WeatherWidget */}
+          {/* Emergency Info - High Priority, Compact */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                Emergency
+                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.police}</div>
+                  <div className="text-xs text-muted-foreground">Police</div>
+                </div>
+                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.medical}</div>
+                  <div className="text-xs text-muted-foreground">Medical</div>
+                </div>
+              </div>
+              <div className="text-xs space-y-1">
+                <p><span className="font-medium">US Consulate:</span> +55 11 5186-7000</p>
+                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Row 2: Weather Widget - Full Width, Optimized */}
+        <div className="mb-6">
           <WeatherWidget
             destination={destination}
             tempUnit={tempUnit}
             onTempUnitToggle={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
           />
+        </div>
 
-          {/* 5. Local Holidays Widget - Now next to Weather */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <CalendarDays className="w-5 h-5 text-white" />
-                </div>
-                Local Holidays
-                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {mockData.holidays.map((holiday, idx) => (
-                <div key={idx} className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                  <div className="font-medium text-purple-300">{holiday.name}</div>
-                  <div className="text-sm text-muted-foreground">{holiday.date}</div>
-                </div>
-              ))}
-              <div className="text-sm text-muted-foreground">
-                <p><span className="font-medium">Note:</span> Many businesses close during major holidays like Carnival</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* 6. Transportation Card - Now next to Local Holidays */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Car className="w-5 h-5 text-white" />
-                </div>
-                Transportation
-                <Car className="w-4 h-4 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">Metro</div>
-                  <div className="text-xs text-muted-foreground">Extensive Network</div>
-                </div>
-                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">Uber/99</div>
-                  <div className="text-xs text-muted-foreground">Widely Available</div>
-                </div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Metro day pass:</span> R$12.00</p>
-                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
-                <p><span className="font-medium">Bilhete Único:</span> Integrated transport card</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* São Paulo Accommodation Map */}
-          <SaoPauloAccommodationMap />
-
-          {/* World Adapters Widget - 3D floating effect */}
+        {/* Row 3: Secondary Widgets - Medium Priority */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+          
+          {/* Transportation */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-3">
-                  <Plug className="w-5 h-5 text-white" />
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-2">
+                  <Car className="w-4 h-4 text-white" />
                 </div>
-                Power Adapters
-                <Zap className="w-4 h-4 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
+                Transport
+                <Car className="w-3 h-3 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="grid grid-cols-2 gap-2">
+                <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700 text-sm">Metro</div>
+                  <div className="text-xs text-muted-foreground">Network</div>
+                </div>
+                <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700 text-sm">Uber/99</div>
+                  <div className="text-xs text-muted-foreground">Available</div>
+                </div>
+              </div>
+              <div className="text-xs space-y-1">
+                <p><span className="font-medium">Metro pass:</span> R$12.00</p>
+                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
+                <p><span className="font-medium">Card:</span> Bilhete Único</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Local Holidays */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
+                  <CalendarDays className="w-4 h-4 text-white" />
+                </div>
+                Holidays
+                <Mountain className="w-3 h-3 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {mockData.holidays.slice(0, 2).map((holiday, idx) => (
+                <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                  <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
+                  <div className="text-xs text-muted-foreground">{holiday.date}</div>
+                </div>
+              ))}
+              <div className="text-xs text-muted-foreground">
+                <p>Many businesses close during major holidays</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Power Adapters */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-2">
+                  <Plug className="w-4 h-4 text-white" />
+                </div>
+                Power
+                <Zap className="w-3 h-3 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
             <CardContent>
               <div 
-                className="text-center p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer perspective-1000"
+                className="text-center p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer perspective-1000"
                 onClick={handleAdapterClick}
               >
                 <div 
-                  className={`w-16 h-20 mx-auto mb-3 relative transition-all duration-1000 transform-gpu ${
+                  className={`w-12 h-16 mx-auto mb-2 relative transition-all duration-1000 transform-gpu ${
                     isAdapterSpinning ? 'animate-spin rotate-y-180' : 'hover:rotate-y-12 hover:-translate-y-2'
                   }`}
                   style={{
                     background: 'linear-gradient(135deg, #f3f4f6 0%, #d1d5db 50%, #9ca3af 100%)',
                     boxShadow: `
-                      0 20px 25px -5px rgba(0, 0, 0, 0.1),
-                      0 10px 10px -5px rgba(0, 0, 0, 0.04),
+                      0 15px 20px -5px rgba(0, 0, 0, 0.1),
+                      0 8px 8px -5px rgba(0, 0, 0, 0.04),
                       inset 0 1px 0 rgba(255, 255, 255, 0.1)
                     `,
-                    borderRadius: '8px',
+                    borderRadius: '6px',
                     transformStyle: 'preserve-3d',
                   }}
                 >
-                  {/* 3D depth effect */}
-                  <div 
-                    className="absolute inset-0 rounded-lg"
-                    style={{
-                      background: 'linear-gradient(90deg, rgba(0,0,0,0.1) 0%, transparent 50%, rgba(255,255,255,0.1) 100%)',
-                      transform: 'translateZ(-2px)',
-                    }}
-                  />
-                  
-                  {/* Type C plug visual */}
-                  <div className="absolute top-3 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md"></div>
-                    <div className="w-1.5 h-8 bg-gray-700 rounded-full shadow-md mt-1"></div>
+                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10">
+                    <div className="w-1 h-6 bg-gray-700 rounded-full shadow-md"></div>
+                    <div className="w-1 h-6 bg-gray-700 rounded-full shadow-md mt-1"></div>
                   </div>
-                  
-                  {/* Floating shadow */}
-                  <div 
-                    className="absolute -bottom-4 left-1/2 transform -translate-x-1/2 w-12 h-3 bg-black/20 rounded-full blur-sm"
-                    style={{ filter: 'blur(4px)' }}
-                  />
                 </div>
-                <div className="font-bold text-lg text-yellow-400">Type C & N</div>
-                <div className="text-sm text-muted-foreground">220V • 60Hz</div>
+                <div className="font-bold text-sm text-yellow-400">Type C & N</div>
+                <div className="text-xs text-muted-foreground">220V • 60Hz</div>
               </div>
-              <div className="text-sm space-y-1 mt-2">
-                <p><span className="font-medium">Voltage:</span> 220V (Higher than US)</p>
+              <div className="text-xs space-y-1 mt-2">
+                <p><span className="font-medium">Voltage:</span> 220V</p>
                 <p><span className="font-medium">Frequency:</span> 60Hz</p>
-                <p><span className="font-medium">Plug Type:</span> Type C (Europlug) & Type N</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Airport Info Card */}
+          {/* Airport Info */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Plane className="w-5 h-5 text-white" />
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
+                  <Plane className="w-4 h-4 text-white" />
                 </div>
-                Airport Information
-                <Plane className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+                Airport
+                <Plane className="w-3 h-3 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+            <CardContent className="space-y-3">
+              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                 <div className="font-bold text-lg text-purple-700">{mockData.airport.code}</div>
                 <div className="text-sm font-medium">{mockData.airport.name}</div>
                 <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
               </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Distance to city:</span> 25 km</p>
-                <p><span className="font-medium">Travel time:</span> 45-90 minutes</p>
-                <p><span className="font-medium">Transportation:</span> Metro, Bus, Taxi, Uber</p>
+              <div className="text-xs space-y-1">
+                <p><span className="font-medium">Distance:</span> 25 km</p>
+                <p><span className="font-medium">Travel time:</span> 45-90 min</p>
+                <p><span className="font-medium">Options:</span> Metro, Bus, Taxi</p>
               </div>
             </CardContent>
           </Card>
+        </div>
 
-          {/* Emergency Info Card */}
+        {/* Row 4: Map and Connectivity */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          
+          {/* São Paulo Accommodation Map - Takes 2 columns */}
+          <div className="lg:col-span-2">
+            <SaoPauloAccommodationMap />
+          </div>
+
+          {/* Connectivity */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
-                  <Shield className="w-5 h-5 text-white" />
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-2">
+                  <Wifi className="w-4 h-4 text-white" />
                 </div>
-                Emergency Information
-                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+                Connectivity
+                <Wifi className="w-3 h-3 ml-auto text-teal-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700">{mockData.emergency.police}</div>
-                  <div className="text-xs text-muted-foreground">Police</div>
-                </div>
-                <div className="text-center p-3 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700">{mockData.emergency.medical}</div>
-                  <div className="text-xs text-muted-foreground">Medical/Fire</div>
-                </div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">US Consulate SP:</span> +55 11 5186-7000</p>
-                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Connectivity Card */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-3">
-                  <Wifi className="w-5 h-5 text-white" />
-                </div>
-                Connectivity & ATMs
-                <Wifi className="w-4 h-4 ml-auto text-teal-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
-                <h4 className="font-medium text-cyan-700 mb-2">Free Wi-Fi Spots</h4>
-                <ul className="text-sm text-muted-foreground space-y-1">
-                  <li>• Shopping malls (most locations)</li>
+            <CardContent className="space-y-3">
+              <div className="p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
+                <h4 className="font-medium text-cyan-700 mb-1 text-sm">Free Wi-Fi Spots</h4>
+                <ul className="text-xs text-muted-foreground space-y-1">
+                  <li>• Shopping malls</li>
                   <li>• Starbucks, McDonald's</li>
                   <li>• Metro stations (WiFi Livre SP)</li>
                 </ul>
               </div>
-              <div className="text-sm">
+              <div className="text-xs">
                 <p className="font-medium mb-1">ATM Locations:</p>
-                <p className="text-muted-foreground">Banco do Brasil, Bradesco, Itaú branches. International cards widely accepted.</p>
+                <p className="text-muted-foreground">Banco do Brasil, Bradesco, Itaú branches. International cards accepted.</p>
               </div>
             </CardContent>
           </Card>
-
-          {/* Intelligence Dashboard Widget */}
-          <Card className="travis-card lg:col-span-2 xl:col-span-3 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Palette className="w-5 h-5 text-white" />
-                </div>
-                Intelligence Dashboard
-                <Users className="w-4 h-4 ml-auto text-purple-400" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-6">
-              <p className="text-muted-foreground">Configure your travel intelligence dashboard:</p>
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
-                {widgetOptions.map((widget) => {
-                  const Icon = widget.icon;
-                  const isSelected = selectedWidgets.includes(widget.id);
-                  return (
-                    <button
-                      key={widget.id}
-                      onClick={() => {
-                        if (isSelected) {
-                          setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
-                        } else {
-                          setSelectedWidgets([...selectedWidgets, widget.id]);
-                        }
-                      }}
-                      className={`p-4 rounded-xl border transition-all duration-300 travis-interactive ${
-                        isSelected
-                          ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
-                          : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
-                      }`}
-                    >
-                      <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-2`}>
-                        <Icon className="w-4 h-4 text-white" />
-                      </div>
-                      <div className="text-sm font-medium">{widget.name}</div>
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="p-4 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <p className="text-purple-300 font-medium">
-                  {selectedWidgets.length} modules selected for your travel intelligence dashboard
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-
         </div>
 
-        {/* Cultural Insights Section - Moved to bottom */}
-        <Card className="travis-card mt-8 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center text-2xl font-semibold">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
-                <Globe className="w-5 h-5 text-white" />
+        {/* Row 5: Intelligence Dashboard - Full Width */}
+        <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-xl font-semibold">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
+                <Palette className="w-4 h-4 text-white" />
+              </div>
+              Intelligence Dashboard
+              <Users className="w-4 h-4 ml-auto text-purple-400" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground text-sm">Configure your travel intelligence dashboard:</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {widgetOptions.map((widget) => {
+                const Icon = widget.icon;
+                const isSelected = selectedWidgets.includes(widget.id);
+                return (
+                  <button
+                    key={widget.id}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
+                      } else {
+                        setSelectedWidgets([...selectedWidgets, widget.id]);
+                      }
+                    }}
+                    className={`p-3 rounded-xl border transition-all duration-300 travis-interactive ${
+                      isSelected
+                        ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+                        : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-1`}>
+                      <Icon className="w-3 h-3 text-white" />
+                    </div>
+                    <div className="text-xs font-medium">{widget.name}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+              <p className="text-purple-300 font-medium text-sm">
+                {selectedWidgets.length} modules selected for your travel intelligence dashboard
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Cultural Insights Section - Optimized */}
+        <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-xl font-semibold">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-2">
+                <Globe className="w-4 h-4 text-white" />
               </div>
               Cultural Insights
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Language */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
-                    <Globe className="w-4 h-4 text-white" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                    <Globe className="w-3 h-3 text-white" />
                   </div>
-                  <h3 className="font-semibold text-lg text-blue-700">Language</h3>
+                  <h3 className="font-semibold text-sm text-blue-700">Language</h3>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.language.primary}</p>
-                  <p className="text-sm"><span className="font-medium">Secondary:</span> {mockData.culture.language.secondary}</p>
+                <div className="space-y-1">
+                  <p className="text-xs"><span className="font-medium">Primary:</span> {mockData.culture.language.primary}</p>
+                  <p className="text-xs"><span className="font-medium">Secondary:</span> {mockData.culture.language.secondary}</p>
                 </div>
               </div>
 
               {/* Religion */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
-                    <Church className="w-4 h-4 text-white" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
+                    <Church className="w-3 h-3 text-white" />
                   </div>
-                  <h3 className="font-semibold text-lg text-purple-700">Religion</h3>
+                  <h3 className="font-semibold text-sm text-purple-700">Religion</h3>
                 </div>
-                <div className="space-y-2">
-                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.religion.primary}</p>
-                  <p className="text-sm"><span className="font-medium">Other:</span> {mockData.culture.religion.secondary}</p>
+                <div className="space-y-1">
+                  <p className="text-xs"><span className="font-medium">Primary:</span> {mockData.culture.religion.primary}</p>
+                  <p className="text-xs"><span className="font-medium">Other:</span> {mockData.culture.religion.secondary}</p>
                 </div>
               </div>
 
               {/* Cultural Etiquette */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                    <Heart className="w-4 h-4 text-white" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <Heart className="w-3 h-3 text-white" />
                   </div>
-                  <h3 className="font-semibold text-lg text-green-700">Cultural Etiquette</h3>
+                  <h3 className="font-semibold text-sm text-green-700">Etiquette</h3>
                 </div>
                 <div className="space-y-1">
-                  {mockData.culture.etiquette.map((rule, idx) => (
-                    <p key={idx} className="text-sm text-muted-foreground">• {rule}</p>
+                  {mockData.culture.etiquette.slice(0, 3).map((rule, idx) => (
+                    <p key={idx} className="text-xs text-muted-foreground">• {rule}</p>
                   ))}
                 </div>
               </div>
 
               {/* Local Customs */}
-              <div className="space-y-3">
+              <div className="space-y-2">
                 <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                    <Utensils className="w-4 h-4 text-white" />
+                  <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    <Utensils className="w-3 h-3 text-white" />
                   </div>
-                  <h3 className="font-semibold text-lg text-orange-700">Local Customs</h3>
+                  <h3 className="font-semibold text-sm text-orange-700">Customs</h3>
                 </div>
                 <div className="space-y-1">
-                  {mockData.culture.customs.map((custom, idx) => (
-                    <p key={idx} className="text-sm text-muted-foreground">• {custom}</p>
+                  {mockData.culture.customs.slice(0, 3).map((custom, idx) => (
+                    <p key={idx} className="text-xs text-muted-foreground">• {custom}</p>
                   ))}
                 </div>
               </div>
