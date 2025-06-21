@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -232,7 +233,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header - More transparent */}
-      <header className="bg-black/10 dark:bg-black/10 backdrop-blur-sm border-b border-white/10 shadow-lg shadow-white/5 sticky top-0 z-40">
+      <header className="bg-black/5 dark:bg-black/5 backdrop-blur-sm border-b border-white/5 shadow-lg shadow-white/5 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -372,7 +373,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/70 border border-blue-500/60 rounded-full text-sm text-white hover:bg-blue-700/70 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-sm text-white hover:bg-blue-700/40 transition-colors shadow-sm"
                     >
                       <span>{dest}</span>
                       <button
@@ -392,7 +393,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <button
                       key={city}
                       onClick={() => handlePinDestination(`${city}, Brazil`)}
-                      className="px-2 py-1 bg-green-600/70 border border-green-500/60 rounded text-xs text-white hover:bg-green-700/70 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white hover:bg-green-700/40 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
@@ -404,7 +405,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           )}
 
           {/* Search Bar with Mapbox Auto-suggestions */}
-          <div className="bg-white/20 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-lg relative travis-glow-white">
+          <div className="bg-white/10 backdrop-blur-sm border border-border/20 rounded-full p-2 shadow-lg relative travis-glow-white">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
@@ -668,10 +669,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* São Paulo Accommodation Map */}
-          <SaoPauloAccommodationMap />
-
-          {/* Local Holidays Widget */}
+          {/* 5. Local Holidays Widget - Now next to Weather */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -694,6 +692,39 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </CardContent>
           </Card>
+
+          {/* 6. Transportation Card - Now next to Local Holidays */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
+                  <Car className="w-5 h-5 text-white" />
+                </div>
+                Transportation
+                <Car className="w-4 h-4 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-3">
+                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700">Metro</div>
+                  <div className="text-xs text-muted-foreground">Extensive Network</div>
+                </div>
+                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
+                  <div className="font-medium text-indigo-700">Uber/99</div>
+                  <div className="text-xs text-muted-foreground">Widely Available</div>
+                </div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Metro day pass:</span> R$12.00</p>
+                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
+                <p><span className="font-medium">Bilhete Único:</span> Integrated transport card</p>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* São Paulo Accommodation Map */}
+          <SaoPauloAccommodationMap />
 
           {/* World Adapters Widget - 3D floating effect */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
@@ -779,36 +810,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <p><span className="font-medium">Distance to city:</span> 25 km</p>
                 <p><span className="font-medium">Travel time:</span> 45-90 minutes</p>
                 <p><span className="font-medium">Transportation:</span> Metro, Bus, Taxi, Uber</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Transportation Card */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-3">
-                  <Car className="w-5 h-5 text-white" />
-                </div>
-                Transportation
-                <Car className="w-4 h-4 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-3">
-                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">Metro</div>
-                  <div className="text-xs text-muted-foreground">Extensive Network</div>
-                </div>
-                <div className="p-3 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700">Uber/99</div>
-                  <div className="text-xs text-muted-foreground">Widely Available</div>
-                </div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Metro day pass:</span> R$12.00</p>
-                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
-                <p><span className="font-medium">Bilhete Único:</span> Integrated transport card</p>
               </div>
             </CardContent>
           </Card>
