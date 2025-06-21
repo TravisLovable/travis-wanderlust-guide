@@ -40,15 +40,26 @@ export const useWeatherData = (destination: string) => {
           body: { location: destination }
         });
 
-        if (functionError) throw functionError;
+        if (functionError) {
+          console.error('Supabase function error:', functionError);
+          throw new Error(`Function error: ${functionError.message}`);
+        }
+
+        if (data?.error) {
+          console.error('Weather API error:', data.error);
+          throw new Error(data.error);
+        }
 
         if (data) {
           setWeatherData(data);
           console.log('Weather data fetched successfully:', data);
+        } else {
+          throw new Error('No weather data received');
         }
       } catch (err) {
         console.error('Error fetching weather data:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch weather data';
+        setError(errorMessage);
       } finally {
         setIsLoading(false);
       }
