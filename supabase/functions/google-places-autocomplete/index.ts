@@ -36,10 +36,10 @@ serve(async (req) => {
       )
     }
 
-    // Use types=(regions) to get countries, states/provinces, cities, and geographic areas
-    // This prevents the API from defaulting to businesses and addresses
+    // Use types=(regions|locality|administrative_area_level_1) to get countries, states/provinces, cities, and localities
+    // This provides broader geographic coverage including regions, localities, and administrative areas
     const googleResponse = await fetch(
-      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=(regions)&key=${apiKey}`
+      `https://maps.googleapis.com/maps/api/place/autocomplete/json?input=${encodeURIComponent(input)}&types=(regions|locality|administrative_area_level_1)&key=${apiKey}`
     )
 
     const data = await googleResponse.json()
