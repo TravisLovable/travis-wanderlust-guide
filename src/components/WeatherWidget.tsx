@@ -36,13 +36,13 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
   const WeatherCard = ({ weather, location, isLoading, error }: any) => {
     if (isLoading) {
       return (
-        <div className="flex-1 p-5 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/10 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10">
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="w-4 h-4 text-orange-400" />
-            <span className="text-sm font-medium text-muted-foreground/80">{location}</span>
+        <div className="flex-1 p-3 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/10 rounded-xl backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:shadow-orange-500/10">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="w-3 h-3 text-orange-400" />
+            <span className="text-xs font-medium text-muted-foreground/80">{location}</span>
           </div>
-          <div className="flex justify-center items-center h-16">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-400"></div>
+          <div className="flex justify-center items-center h-12">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-400"></div>
           </div>
         </div>
       );
@@ -50,31 +50,31 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
     if (error || !weather) {
       return (
-        <div className="flex-1 p-5 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/10 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10">
-          <div className="flex items-center gap-2 mb-4">
-            <MapPin className="w-4 h-4 text-orange-400" />
-            <span className="text-sm font-medium text-muted-foreground/80">{location}</span>
+        <div className="flex-1 p-3 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/10 rounded-xl backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:shadow-orange-500/10">
+          <div className="flex items-center gap-2 mb-2">
+            <MapPin className="w-3 h-3 text-orange-400" />
+            <span className="text-xs font-medium text-muted-foreground/80">{location}</span>
           </div>
           <div className="text-center text-orange-400">
-            <p className="text-sm">Unable to load</p>
+            <p className="text-xs">Unable to load</p>
           </div>
         </div>
       );
     }
 
     return (
-      <div className="flex-1 p-5 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/10 rounded-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-lg hover:shadow-orange-500/10 hover:scale-[1.02]">
-        <div className="flex items-center gap-2 mb-4">
-          <MapPin className="w-4 h-4 text-orange-400" />
-          <span className="text-sm font-semibold text-muted-foreground/90">{location}</span>
+      <div className="flex-1 p-3 bg-gradient-to-br from-orange-500/5 to-red-500/5 border border-orange-500/10 rounded-xl backdrop-blur-sm transition-all duration-300 hover:shadow-md hover:shadow-orange-500/10 hover:scale-[1.01] hover:bg-gradient-to-br hover:from-orange-500/8 hover:to-red-500/8">
+        <div className="flex items-center gap-2 mb-2">
+          <MapPin className="w-3 h-3 text-orange-400" />
+          <span className="text-xs font-semibold text-muted-foreground/90">{location}</span>
         </div>
-        <div className="text-center space-y-2">
-          <div className="text-3xl font-bold text-orange-400 mb-2">
+        <div className="text-center space-y-1">
+          <div className="text-2xl font-bold text-orange-400 mb-1">
             {convertTemp(weather.current.temp)}°{tempUnit}
           </div>
-          <div className="flex items-center justify-center gap-2 mb-2">
-            <span className="text-2xl">{getWeatherEmoji(weather.current.condition)}</span>
-            <span className="text-sm font-medium text-muted-foreground/90">{weather.current.condition}</span>
+          <div className="flex items-center justify-center gap-2 mb-1">
+            <span className="text-lg">{getWeatherEmoji(weather.current.condition)}</span>
+            <span className="text-xs font-medium text-muted-foreground/90">{weather.current.condition}</span>
           </div>
           <div className="text-xs text-muted-foreground/70 font-medium">
             Humidity: {weather.current.humidity}%
@@ -86,17 +86,17 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   if (destinationLoading && currentLoading) {
     return (
-      <Card className="travis-card travis-interactive group bg-gradient-to-br from-black via-gray-900 to-black dark:from-black dark:via-gray-900 dark:to-black border-gray-600 dark:border-gray-600 shadow-xl dark:shadow-gray-500/20 w-full col-span-full rounded-3xl backdrop-blur-sm">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center text-xl font-semibold">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-4 shadow-lg">
-              <Thermometer className="w-6 h-6 text-white" />
+      <Card className="travis-card travis-interactive group bg-gradient-to-br from-black via-gray-900 to-black dark:from-black dark:via-gray-900 dark:to-black border-gray-600 dark:border-gray-600 shadow-xl dark:shadow-gray-500/20 w-full col-span-full rounded-2xl backdrop-blur-sm max-w-4xl mx-auto">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center text-lg font-semibold">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3 shadow-lg">
+              <Thermometer className="w-5 h-5 text-white" />
             </div>
             Weather Intel
           </CardTitle>
         </CardHeader>
-        <CardContent className="flex justify-center items-center p-8">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-400"></div>
+        <CardContent className="flex justify-center items-center p-6">
+          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-400"></div>
         </CardContent>
       </Card>
     );
@@ -104,31 +104,31 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   return (
     <TooltipProvider>
-      <Card className="travis-card travis-interactive group bg-gradient-to-br from-black via-gray-900 to-black dark:from-black dark:via-gray-900 dark:to-black border-gray-600 dark:border-gray-600 shadow-xl dark:shadow-gray-500/20 w-full col-span-full rounded-3xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl">
-        <CardHeader className="pb-6">
-          <CardTitle className="flex items-center text-xl font-semibold">
-            <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-4 shadow-lg">
-              <Thermometer className="w-6 h-6 text-white" />
+      <Card className="travis-card travis-interactive group bg-gradient-to-br from-black via-gray-900 to-black dark:from-black dark:via-gray-900 dark:to-black border-gray-600 dark:border-gray-600 shadow-xl dark:shadow-gray-500/20 w-full col-span-full rounded-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl max-w-4xl mx-auto">
+        <CardHeader className="pb-4">
+          <CardTitle className="flex items-center text-lg font-semibold">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3 shadow-lg">
+              <Thermometer className="w-5 h-5 text-white" />
             </div>
             Weather Intel
             <Button
               onClick={onTempUnitToggle}
               variant="outline"
               size="sm"
-              className="ml-auto bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30 hover:bg-gradient-to-r hover:from-orange-500/20 hover:to-red-500/20 hover:border-orange-500/50 text-orange-300 hover:text-orange-200 font-semibold px-4 py-2 rounded-xl transition-all duration-300 hover:scale-105 hover:shadow-lg"
+              className="ml-auto bg-gradient-to-r from-orange-500/10 to-red-500/10 border-orange-500/30 hover:bg-gradient-to-r hover:from-orange-500/20 hover:to-red-500/20 hover:border-orange-500/50 text-orange-300 hover:text-orange-200 font-semibold px-3 py-1 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md text-xs"
             >
               °{tempUnit} ⇄ °{tempUnit === 'C' ? 'F' : 'C'}
             </Button>
           </CardTitle>
         </CardHeader>
-        <CardContent className="space-y-8">
+        <CardContent className="space-y-5">
           {/* Current Weather Comparison */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <div className="flex items-center gap-2">
-              <h3 className="text-sm font-bold text-muted-foreground/90 uppercase tracking-wide">Current Weather Comparison</h3>
+              <h3 className="text-xs font-bold text-muted-foreground/90 uppercase tracking-wide">Current Weather Comparison</h3>
               <div className="flex-1 h-px bg-gradient-to-r from-orange-500/30 to-transparent"></div>
             </div>
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid grid-cols-2 gap-4">
               <WeatherCard 
                 weather={currentWeather} 
                 location={currentLocation}
@@ -148,26 +148,26 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
           
           {/* 7-Day Forecast */}
           {destinationWeather && destinationWeather.forecast && destinationWeather.forecast.length > 0 && (
-            <div className="space-y-5">
+            <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-sm font-bold text-muted-foreground/90 uppercase tracking-wide">7-Day Forecast - {destination}</h3>
+                <h3 className="text-xs font-bold text-muted-foreground/90 uppercase tracking-wide">7-Day Forecast - {destination}</h3>
                 <div className="flex-1 h-px bg-gradient-to-r from-orange-500/30 to-transparent"></div>
               </div>
-              <div className="grid grid-cols-7 gap-3">
+              <div className="grid grid-cols-7 gap-2">
                 {destinationWeather.forecast.slice(0, 7).map((forecast, idx) => (
                   <Tooltip key={idx}>
                     <TooltipTrigger asChild>
-                      <div className="text-center p-4 bg-gradient-to-br from-orange-500/8 to-red-500/8 border border-orange-500/15 rounded-2xl hover:bg-gradient-to-br hover:from-orange-500/15 hover:to-red-500/15 hover:border-orange-500/30 transition-all duration-300 hover:scale-105 hover:shadow-lg hover:shadow-orange-500/10 cursor-pointer backdrop-blur-sm">
-                        <div className="font-bold text-sm text-orange-300 mb-3 truncate">
+                      <div className="text-center p-3 bg-gradient-to-br from-orange-500/8 to-red-500/8 border border-orange-500/15 rounded-xl hover:bg-gradient-to-br hover:from-orange-500/15 hover:to-red-500/15 hover:border-orange-500/30 transition-all duration-300 hover:scale-105 hover:shadow-md hover:shadow-orange-500/10 cursor-pointer backdrop-blur-sm">
+                        <div className="font-bold text-xs text-orange-300 mb-2 truncate">
                           {forecast.day}
                         </div>
-                        <div className="text-2xl mb-3">
+                        <div className="text-xl mb-2">
                           {getWeatherEmoji(forecast.condition)}
                         </div>
-                        <div className="text-orange-400 font-bold text-base mb-2">
+                        <div className="text-orange-400 font-bold text-sm mb-1">
                           {convertTemp(forecast.high)}°
                         </div>
-                        <div className="text-muted-foreground/80 text-sm mb-3">
+                        <div className="text-muted-foreground/80 text-xs mb-2">
                           {convertTemp(forecast.low)}°
                         </div>
                         <div className="text-xs text-muted-foreground/70 truncate font-medium">
@@ -177,9 +177,9 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
                     </TooltipTrigger>
                     <TooltipContent>
                       <div className="text-center">
-                        <p className="font-semibold">{forecast.day}</p>
-                        <p className="text-sm">{forecast.condition}</p>
-                        <p className="text-sm">High: {convertTemp(forecast.high)}° | Low: {convertTemp(forecast.low)}°</p>
+                        <p className="font-semibold text-sm">{forecast.day}</p>
+                        <p className="text-xs">{forecast.condition}</p>
+                        <p className="text-xs">High: {convertTemp(forecast.high)}° | Low: {convertTemp(forecast.low)}°</p>
                       </div>
                     </TooltipContent>
                   </Tooltip>
