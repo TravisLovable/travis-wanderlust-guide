@@ -84,7 +84,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   if (destinationLoading && currentLoading) {
     return (
-      <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full max-w-6xl">
+      <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full max-w-7xl">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-xl font-semibold">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -101,7 +101,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
   }
 
   return (
-    <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full max-w-6xl">
+    <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full max-w-7xl">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center text-xl font-semibold">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -118,7 +118,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
           </Button>
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-4">
         {/* Current Weather Comparison - Horizontal Layout */}
         <div className="space-y-3">
           <p className="text-sm font-medium text-muted-foreground">Current Weather Comparison</p>
@@ -139,25 +139,25 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
         </div>
         
         {/* 7-Day Forecast for Destination - Horizontal Layout */}
-        {destinationWeather && (
-          <div className="space-y-4">
+        {destinationWeather && destinationWeather.forecast && (
+          <div className="space-y-3">
             <p className="text-sm font-medium text-muted-foreground">7-Day Forecast - {destination}</p>
-            <div className="grid grid-cols-7 gap-3">
-              {destinationWeather.forecast.slice(0, 7).map((forecast, idx) => (
-                <div key={idx} className="text-center p-4 bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-xl hover:bg-orange-500/20 transition-all duration-200 hover:scale-105">
-                  <div className="font-medium text-sm text-orange-300 mb-2">
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {destinationWeather.forecast.map((forecast, idx) => (
+                <div key={idx} className="flex-shrink-0 text-center p-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-all duration-200 hover:scale-105 min-w-[100px]">
+                  <div className="font-medium text-sm text-orange-300 mb-1">
                     {forecast.day}
                   </div>
-                  <div className="text-2xl mb-2">
+                  <div className="text-xl mb-1">
                     {getWeatherEmoji(forecast.condition)}
                   </div>
-                  <div className="text-orange-400 font-bold text-lg mb-1">
+                  <div className="text-orange-400 font-bold text-sm mb-1">
                     {convertTemp(forecast.high)}°
                   </div>
-                  <div className="text-muted-foreground text-sm">
+                  <div className="text-muted-foreground text-xs mb-1">
                     {convertTemp(forecast.low)}°
                   </div>
-                  <div className="text-xs text-muted-foreground mt-1 truncate">
+                  <div className="text-xs text-muted-foreground truncate">
                     {forecast.condition}
                   </div>
                 </div>
