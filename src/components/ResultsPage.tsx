@@ -232,7 +232,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header - More transparent */}
-      <header className="bg-black/30 dark:bg-black/30 backdrop-blur-sm border-b border-white/20 shadow-lg shadow-white/5 sticky top-0 z-40">
+      <header className="bg-black/10 dark:bg-black/10 backdrop-blur-sm border-b border-white/10 shadow-lg shadow-white/5 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -514,79 +514,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         <div className="mb-8">
           <PhotoSlideshow />
         </div>
-
-        {/* Cultural Insights Section */}
-        <Card className="travis-card mb-8 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center text-2xl font-semibold">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
-                <Globe className="w-5 h-5 text-white" />
-              </div>
-              Cultural Insights
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-              {/* Language */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
-                    <Globe className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-lg text-blue-700">Language</h3>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.language.primary}</p>
-                  <p className="text-sm"><span className="font-medium">Secondary:</span> {mockData.culture.language.secondary}</p>
-                </div>
-              </div>
-
-              {/* Religion */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
-                    <Church className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-lg text-purple-700">Religion</h3>
-                </div>
-                <div className="space-y-2">
-                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.religion.primary}</p>
-                  <p className="text-sm"><span className="font-medium">Other:</span> {mockData.culture.religion.secondary}</p>
-                </div>
-              </div>
-
-              {/* Cultural Etiquette */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                    <Heart className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-lg text-green-700">Cultural Etiquette</h3>
-                </div>
-                <div className="space-y-1">
-                  {mockData.culture.etiquette.map((rule, idx) => (
-                    <p key={idx} className="text-sm text-muted-foreground">• {rule}</p>
-                  ))}
-                </div>
-              </div>
-
-              {/* Local Customs */}
-              <div className="space-y-3">
-                <div className="flex items-center space-x-2">
-                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                    <Utensils className="w-4 h-4 text-white" />
-                  </div>
-                  <h3 className="font-semibold text-lg text-orange-700">Local Customs</h3>
-                </div>
-                <div className="space-y-1">
-                  {mockData.culture.customs.map((custom, idx) => (
-                    <p key={idx} className="text-sm text-muted-foreground">• {custom}</p>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
@@ -992,6 +919,79 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </Card>
 
         </div>
+
+        {/* Cultural Insights Section - Moved to bottom */}
+        <Card className="travis-card mt-8 bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center text-2xl font-semibold">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-3">
+                <Globe className="w-5 h-5 text-white" />
+              </div>
+              Cultural Insights
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {/* Language */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
+                    <Globe className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-blue-700">Language</h3>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.language.primary}</p>
+                  <p className="text-sm"><span className="font-medium">Secondary:</span> {mockData.culture.language.secondary}</p>
+                </div>
+              </div>
+
+              {/* Religion */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
+                    <Church className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-purple-700">Religion</h3>
+                </div>
+                <div className="space-y-2">
+                  <p className="text-sm"><span className="font-medium">Primary:</span> {mockData.culture.religion.primary}</p>
+                  <p className="text-sm"><span className="font-medium">Other:</span> {mockData.culture.religion.secondary}</p>
+                </div>
+              </div>
+
+              {/* Cultural Etiquette */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
+                    <Heart className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-green-700">Cultural Etiquette</h3>
+                </div>
+                <div className="space-y-1">
+                  {mockData.culture.etiquette.map((rule, idx) => (
+                    <p key={idx} className="text-sm text-muted-foreground">• {rule}</p>
+                  ))}
+                </div>
+              </div>
+
+              {/* Local Customs */}
+              <div className="space-y-3">
+                <div className="flex items-center space-x-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
+                    <Utensils className="w-4 h-4 text-white" />
+                  </div>
+                  <h3 className="font-semibold text-lg text-orange-700">Local Customs</h3>
+                </div>
+                <div className="space-y-1">
+                  {mockData.culture.customs.map((custom, idx) => (
+                    <p key={idx} className="text-sm text-muted-foreground">• {custom}</p>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </main>
 
       {/* Travis Chatbot */}
