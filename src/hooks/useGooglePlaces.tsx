@@ -84,12 +84,38 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
         const data: GooglePlacesResponse = await response.json();
         
         if (data.status === 'OK') {
-          // Filter for countries, regions, and cities only
-          const filteredSuggestions = data.predictions.filter(prediction =>
-            prediction.types.some(type => 
-              ['country', 'administrative_area_level_1', 'locality', 'sublocality', 'political'].includes(type)
-            )
-          );
+          // Apply broader filtering to include countries, regions, cities, and popular areas
+          // Allow most geographic location types while excluding businesses and specific addresses
+          const filteredSuggestions = data.predictions.filter(prediction => {
+            const types = prediction.types;
+            // Include if it contains any geographic location type
+            const hasGeographicType = types.some(type => 
+              [
+                'country',
+                'administrative_area_level_1', // States/provinces
+                'administrative_area_level_2', // Counties
+                'locality', // Cities
+                'sublocality', // Neighborhoods/districts
+                'sublocality_level_1',
+                'political',
+                'natural_feature', // Mountains, lakes, etc.
+                'colloquial_area' // Popular areas like "Silicon Valley"
+              ].includes(type)
+            );
+            
+            // Exclude specific addresses and businesses
+            const hasRestrictedType = types.some(type => 
+              [
+                'street_address',
+                'premise',
+                'establishment',
+                'point_of_interest'
+              ].includes(type)
+            );
+            
+            return hasGeographicType && !hasRestrictedType;
+          });
+          
           setSuggestions(filteredSuggestions || []);
         } else {
           setSuggestions([]);
