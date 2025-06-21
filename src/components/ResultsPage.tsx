@@ -232,7 +232,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
       {/* Header - More transparent */}
-      <header className="bg-black/70 dark:bg-black/70 backdrop-blur-sm border-b border-white/10 shadow-lg shadow-white/5 sticky top-0 z-40">
+      <header className="bg-black/30 dark:bg-black/30 backdrop-blur-sm border-b border-white/20 shadow-lg shadow-white/5 sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center space-x-4">
@@ -590,7 +590,34 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
           
-          {/* Currency Card - Updated with real API data */}
+          {/* 1. Visa & Entry Card - PRIORITY 1 */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
+                  <Shield className="w-5 h-5 text-white" />
+                </div>
+                Visa & Entry Requirements
+                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="text-green-700 font-medium">✓ Visa-free entry</div>
+                <div className="text-xs text-muted-foreground">For US passport holders</div>
+              </div>
+              <div className="text-sm space-y-1">
+                <p><span className="font-medium">Max stay:</span> 90 days</p>
+                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
+                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
+              </div>
+              <Button variant="outline" size="sm" className="w-full">
+                View Full Requirements
+              </Button>
+            </CardContent>
+          </Card>
+
+          {/* 2. Currency Card - PRIORITY 2 */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-3">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -637,8 +664,109 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
+          {/* 3. Time Zone Card - PRIORITY 3 */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
+                  <Clock className="w-5 h-5 text-white" />
+                </div>
+                Time Intelligence
+                <Zap className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-2 font-medium">YOUR TIME</div>
+                  <div className="text-2xl font-bold text-blue-400">17:42</div>
+                  <div className="text-xs text-muted-foreground font-mono">EST</div>
+                </div>
+                <div className="text-center p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                  <div className="text-xs text-muted-foreground mb-2 font-medium">SÃO PAULO</div>
+                  <div className="text-2xl font-bold text-blue-300">{mockData.time.current}</div>
+                  <div className="text-xs text-muted-foreground font-mono">BRT {mockData.time.offset}</div>
+                </div>
+              </div>
+              {!mockData.time.dst && (
+                <div className="flex items-center justify-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                  <Clock className="w-4 h-4 mr-2 text-blue-400" />
+                  <span className="text-sm text-blue-400 font-medium">Standard Time Active</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* 4. Weather Card - PRIORITY 4 */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
+                  <Thermometer className="w-5 h-5 text-white" />
+                </div>
+                Weather Intel
+                <Button 
+                  variant="ghost" 
+                  size="sm" 
+                  onClick={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
+                  className="ml-auto text-orange-400 hover:text-orange-300"
+                >
+                  °{tempUnit}
+                </Button>
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center p-6 bg-orange-500/10 border border-orange-500/20 rounded-xl">
+                <div className="text-4xl font-bold text-orange-400 mb-2">
+                  {convertTemp(mockData.weather.temp)}°{tempUnit}
+                </div>
+                <div className="text-lg text-muted-foreground mb-2">{mockData.weather.condition}</div>
+                <div className="text-sm text-muted-foreground">Humidity: {mockData.weather.humidity}%</div>
+              </div>
+              
+              {/* 14-day forecast */}
+              <div className="space-y-2">
+                <p className="text-sm font-medium text-muted-foreground">14-Day Forecast</p>
+                <div className="grid grid-cols-7 gap-1 text-xs">
+                  {fourteenDayForecast.map((forecast, idx) => (
+                    <div key={idx} className="text-center p-2 bg-secondary/30 rounded">
+                      <div className="font-medium text-xs truncate">{forecast.day}</div>
+                      <div className="text-orange-400 font-semibold">
+                        {convertTemp(forecast.temp)}°
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
           {/* São Paulo Accommodation Map */}
           <SaoPauloAccommodationMap />
+
+          {/* Local Holidays Widget */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center text-xl font-semibold">
+                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
+                  <CalendarDays className="w-5 h-5 text-white" />
+                </div>
+                Local Holidays
+                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              {mockData.holidays.map((holiday, idx) => (
+                <div key={idx} className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                  <div className="font-medium text-purple-300">{holiday.name}</div>
+                  <div className="text-sm text-muted-foreground">{holiday.date}</div>
+                </div>
+              ))}
+              <div className="text-sm text-muted-foreground">
+                <p><span className="font-medium">Note:</span> Many businesses close during major holidays like Carnival</p>
+              </div>
+            </CardContent>
+          </Card>
 
           {/* World Adapters Widget - 3D floating effect */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
@@ -703,108 +831,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Time Zone Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-3">
-                  <Clock className="w-5 h-5 text-white" />
-                </div>
-                Time Intelligence
-                <Zap className="w-4 h-4 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="text-center p-4 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-2 font-medium">YOUR TIME</div>
-                  <div className="text-2xl font-bold text-blue-400">17:42</div>
-                  <div className="text-xs text-muted-foreground font-mono">EST</div>
-                </div>
-                <div className="text-center p-4 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-2 font-medium">SÃO PAULO</div>
-                  <div className="text-2xl font-bold text-blue-300">{mockData.time.current}</div>
-                  <div className="text-xs text-muted-foreground font-mono">BRT {mockData.time.offset}</div>
-                </div>
-              </div>
-              {!mockData.time.dst && (
-                <div className="flex items-center justify-center p-3 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <Clock className="w-4 h-4 mr-2 text-blue-400" />
-                  <span className="text-sm text-blue-400 font-medium">Standard Time Active</span>
-                </div>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Weather Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
-                  <Thermometer className="w-5 h-5 text-white" />
-                </div>
-                Weather Intel
-                <Button 
-                  variant="ghost" 
-                  size="sm" 
-                  onClick={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
-                  className="ml-auto text-orange-400 hover:text-orange-300"
-                >
-                  °{tempUnit}
-                </Button>
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center p-6 bg-orange-500/10 border border-orange-500/20 rounded-xl">
-                <div className="text-4xl font-bold text-orange-400 mb-2">
-                  {convertTemp(mockData.weather.temp)}°{tempUnit}
-                </div>
-                <div className="text-lg text-muted-foreground mb-2">{mockData.weather.condition}</div>
-                <div className="text-sm text-muted-foreground">Humidity: {mockData.weather.humidity}%</div>
-              </div>
-              
-              {/* 14-day forecast */}
-              <div className="space-y-2">
-                <p className="text-sm font-medium text-muted-foreground">14-Day Forecast</p>
-                <div className="grid grid-cols-7 gap-1 text-xs">
-                  {fourteenDayForecast.map((forecast, idx) => (
-                    <div key={idx} className="text-center p-2 bg-secondary/30 rounded">
-                      <div className="font-medium text-xs truncate">{forecast.day}</div>
-                      <div className="text-orange-400 font-semibold">
-                        {convertTemp(forecast.temp)}°
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Local Holidays Widget - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-3">
-                  <CalendarDays className="w-5 h-5 text-white" />
-                </div>
-                Local Holidays
-                <Mountain className="w-4 h-4 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              {mockData.holidays.map((holiday, idx) => (
-                <div key={idx} className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                  <div className="font-medium text-purple-300">{holiday.name}</div>
-                  <div className="text-sm text-muted-foreground">{holiday.date}</div>
-                </div>
-              ))}
-              <div className="text-sm text-muted-foreground">
-                <p><span className="font-medium">Note:</span> Many businesses close during major holidays like Carnival</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Airport Info Card - Updated for Brazil */}
+          {/* Airport Info Card */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -829,7 +856,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Transportation Card - Updated for Brazil */}
+          {/* Transportation Card */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -859,34 +886,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Visa & Entry Card - Updated for Brazil */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-3">
-                  <Shield className="w-5 h-5 text-white" />
-                </div>
-                Visa & Entry Requirements
-                <Shield className="w-4 h-4 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="p-3 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="text-green-700 font-medium">✓ Visa-free entry</div>
-                <div className="text-xs text-muted-foreground">For US passport holders</div>
-              </div>
-              <div className="text-sm space-y-1">
-                <p><span className="font-medium">Max stay:</span> 90 days</p>
-                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
-                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full">
-                View Full Requirements
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Emergency Info Card - Updated for Brazil */}
+          {/* Emergency Info Card */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
@@ -915,7 +915,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Connectivity Card - Updated for Brazil */}
+          {/* Connectivity Card */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-4">
               <CardTitle className="flex items-center text-xl font-semibold">
