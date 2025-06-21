@@ -84,7 +84,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   if (destinationLoading && currentLoading) {
     return (
-      <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full max-w-7xl">
+      <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full col-span-full">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-xl font-semibold">
             <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -101,7 +101,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
   }
 
   return (
-    <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full max-w-7xl">
+    <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 w-full col-span-full">
       <CardHeader className="pb-4">
         <CardTitle className="flex items-center text-xl font-semibold">
           <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-3">
@@ -138,17 +138,17 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
           </div>
         </div>
         
-        {/* 7-Day Forecast for Destination - Horizontal Layout */}
+        {/* 7-Day Forecast for Destination - Full Width Grid */}
         {destinationWeather && destinationWeather.forecast && (
           <div className="space-y-3">
             <p className="text-sm font-medium text-muted-foreground">7-Day Forecast - {destination}</p>
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {destinationWeather.forecast.map((forecast, idx) => (
-                <div key={idx} className="flex-shrink-0 text-center p-3 bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-all duration-200 hover:scale-105 min-w-[100px]">
-                  <div className="font-medium text-sm text-orange-300 mb-1">
+            <div className="grid grid-cols-7 gap-2">
+              {destinationWeather.forecast.slice(0, 7).map((forecast, idx) => (
+                <div key={idx} className="text-center p-2 bg-gradient-to-br from-orange-500/10 to-red-500/10 border border-orange-500/20 rounded-lg hover:bg-orange-500/20 transition-all duration-200 hover:scale-105">
+                  <div className="font-medium text-xs text-orange-300 mb-1 truncate">
                     {forecast.day}
                   </div>
-                  <div className="text-xl mb-1">
+                  <div className="text-lg mb-1">
                     {getWeatherEmoji(forecast.condition)}
                   </div>
                   <div className="text-orange-400 font-bold text-sm mb-1">
