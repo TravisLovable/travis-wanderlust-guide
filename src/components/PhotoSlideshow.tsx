@@ -1,40 +1,45 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 
 interface PhotoSlideshowProps {
   destination?: string;
 }
 
 const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
+  const [videoError, setVideoError] = useState(false);
+
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video failed to load:', e);
-    console.error('Video error details:', (e.target as HTMLVideoElement).error);
+    console.error('Video failed to load, showing fallback image');
+    setVideoError(true);
   };
 
   const handleVideoLoad = () => {
     console.log('Video loaded successfully');
   };
 
-  const handleVideoCanPlay = () => {
-    console.log('Video can start playing');
-  };
-
   return (
     <div className="relative w-full h-80 rounded-2xl overflow-hidden">
       {/* Video Container */}
       <div className="relative w-full h-full">
-        <video
-          src="https://videos.pexels.com/video-files/8357290/8357290-hd_1920_1080_30fps.mp4"
-          className="w-full h-full object-cover"
-          autoPlay
-          loop
-          muted
-          playsInline
-          onError={handleVideoError}
-          onLoadedData={handleVideoLoad}
-          onCanPlay={handleVideoCanPlay}
-          onLoadStart={() => console.log('Video load started')}
-        />
+        {!videoError ? (
+          <video
+            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            className="w-full h-full object-cover"
+            autoPlay
+            loop
+            muted
+            playsInline
+            onError={handleVideoError}
+            onLoadedData={handleVideoLoad}
+          />
+        ) : (
+          <div 
+            className="w-full h-full bg-cover bg-center bg-no-repeat"
+            style={{
+              backgroundImage: `url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')`,
+            }}
+          />
+        )}
         <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
         <div className="absolute bottom-4 left-4 right-4">
           <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
