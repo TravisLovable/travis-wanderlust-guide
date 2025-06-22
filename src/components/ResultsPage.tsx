@@ -26,12 +26,32 @@ import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 import WeatherWidget from './WeatherWidget';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
+import { supabase } from '@/integrations/supabase/client';
 
 interface ResultsPageProps {
   destination: string;
   dates: { checkin: string; checkout: string };
   onBack: () => void;
   onNewSearch: (destination: string, dates: { checkin: string; checkout: string }) => void;
+}
+
+interface WorldClockData {
+  origin: {
+    timeZone: string;
+    time: string;
+    date: string;
+    fullDateTime: string;
+    isDst: boolean;
+  };
+  destination: {
+    timeZone: string;
+    time: string;
+    date: string;
+    fullDateTime: string; 
+    isDst: boolean;
+  };
+  timeDifferenceHours: number;
+  timeDifferenceText: string;
 }
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
@@ -47,6 +67,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
+  const [worldClockData, setWorldClockData] = useState<WorldClockData | null>(null);
+  const [isLoadingWorldClock, setIsLoadingWorldClock] = useState(false);
 
   // Use Mapbox geocoding for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
@@ -56,6 +78,75 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   // Use real currency exchange data with destination-based currency
   const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', destination);
+
+  // Fetch world clock data
+  useEffect(() => {
+    const fetchWorldClockData = async () => {
+      setIsLoadingWorldClock(true);
+      try {
+        console.log('Fetching world clock data for:', destination);
+        
+        // Get timezone for destination - map common destinations to timezone identifiers
+        const getTimezoneForDestination = (dest: string) => {
+          const lowerDest = dest.toLowerCase();
+          
+          // Brazil
+          if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
+            return 'America/Sao_Paulo';
+          }
+          
+          // Add more destination mappings as needed
+          if (lowerDest.includes('bali') || lowerDest.includes('indonesia')) {
+            return 'Asia/Makassar';
+          }
+          
+          if (lowerDest.includes('chicago')) {
+            return 'America/Chicago';
+          }
+          
+          if (lowerDest.includes('london')) {
+            return 'Europe/London';
+          }
+          
+          if (lowerDest.includes('tokyo')) {
+            return 'Asia/Tokyo';
+          }
+          
+          if (lowerDest.includes('paris')) {
+            return 'Europe/Paris';
+          }
+          
+          // Default fallback
+          return 'UTC';
+        };
+
+        const destinationTimezone = getTimezoneForDestination(destination);
+        const originTimezone = 'America/New_York'; // User's timezone (EST)
+
+        const { data, error } = await supabase.functions.invoke('get-world-clock', {
+          body: {
+            originTimeZone: originTimezone,
+            destinationTimeZone: destinationTimezone
+          }
+        });
+
+        if (error) {
+          console.error('Error fetching world clock data:', error);
+          throw error;
+        }
+
+        console.log('World clock data received:', data);
+        setWorldClockData(data);
+      } catch (error) {
+        console.error('Failed to fetch world clock data:', error);
+        // Keep existing mock data as fallback
+      } finally {
+        setIsLoadingWorldClock(false);
+      }
+    };
+
+    fetchWorldClockData();
+  }, [destination]);
 
   // Profile data
   const profileData = {
@@ -654,7 +745,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Time Zone - High Priority */}
+          {/* Time Zone - High Priority - NOW USES REAL API DATA */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -666,23 +757,43 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
-                  <div className="text-lg font-bold text-blue-400">17:42</div>
-                  <div className="text-xs text-muted-foreground font-mono">EST</div>
+              {isLoadingWorldClock ? (
+                <div className="flex justify-center items-center p-4">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
                 </div>
-                <div className="text-center p-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                  <div className="text-xs text-muted-foreground mb-1 font-medium uppercase">{destination.split(',')[0]}</div>
-                  <div className="text-lg font-bold text-blue-300">{mockData.time.current}</div>
-                  <div className="text-xs text-muted-foreground font-mono">BRT {mockData.time.offset}</div>
-                </div>
-              </div>
-              {!mockData.time.dst && (
-                <div className="flex items-center justify-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                  <Clock className="w-3 h-3 mr-1 text-blue-400" />
-                  <span className="text-xs text-blue-400 font-medium">Standard Time Active</span>
-                </div>
+              ) : (
+                <>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div className="text-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                      <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
+                      <div className="text-lg font-bold text-blue-400">
+                        {worldClockData?.origin.time || '17:42'}
+                      </div>
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {worldClockData?.origin.timeZone.split('/')[1] || 'EST'}
+                      </div>
+                    </div>
+                    <div className="text-center p-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
+                      <div className="text-xs text-muted-foreground mb-1 font-medium uppercase">
+                        {destination.split(',')[0]}
+                      </div>
+                      <div className="text-lg font-bold text-blue-300">
+                        {worldClockData?.destination.time || mockData.time.current}
+                      </div>
+                      <div className="text-xs text-muted-foreground font-mono">
+                        {worldClockData?.destination.timeZone.split('/')[1] || 'BRT'}
+                      </div>
+                    </div>
+                  </div>
+                  {worldClockData && (
+                    <div className="flex items-center justify-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                      <Clock className="w-3 h-3 mr-1 text-blue-400" />
+                      <span className="text-xs text-blue-400 font-medium">
+                        {worldClockData.timeDifferenceText}
+                      </span>
+                    </div>
+                  )}
+                </>
               )}
             </CardContent>
           </Card>
