@@ -54,6 +54,32 @@ interface WorldClockData {
   timeDifferenceText: string;
 }
 
+interface HolidayData {
+  country: string;
+  year: number;
+  totalHolidays: number;
+  upcomingHolidays: Array<{
+    date: string;
+    name: string;
+    localName: string;
+    countryCode: string;
+    fixed: boolean;
+    global: boolean;
+    counties: string[] | null;
+    type: string;
+  }>;
+  allHolidays: Array<{
+    date: string;
+    name: string;
+    localName: string;
+    countryCode: string;
+    fixed: boolean;
+    global: boolean;
+    counties: string[] | null;
+    type: string;
+  }>;
+}
+
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
   const [currencyAmount, setCurrencyAmount] = useState(100);
   const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
@@ -69,6 +95,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [worldClockData, setWorldClockData] = useState<WorldClockData | null>(null);
   const [isLoadingWorldClock, setIsLoadingWorldClock] = useState(false);
+  const [holidayData, setHolidayData] = useState<HolidayData | null>(null);
+  const [isLoadingHolidays, setIsLoadingHolidays] = useState(false);
 
   // Use Mapbox geocoding for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
@@ -146,6 +174,84 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     };
 
     fetchWorldClockData();
+  }, [destination]);
+
+  // Fetch holiday data
+  useEffect(() => {
+    const fetchHolidayData = async () => {
+      setIsLoadingHolidays(true);
+      try {
+        console.log('Fetching holiday data for:', destination);
+        
+        // Get country code for destination
+        const getCountryCodeForDestination = (dest: string) => {
+          const lowerDest = dest.toLowerCase();
+          
+          // Map destinations to ISO country codes
+          if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
+            return 'BR';
+          }
+          if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+            return 'PE';
+          }
+          if (lowerDest.includes('united states') || lowerDest.includes('usa') || lowerDest.includes('chicago') || lowerDest.includes('new york')) {
+            return 'US';
+          }
+          if (lowerDest.includes('united kingdom') || lowerDest.includes('uk') || lowerDest.includes('london')) {
+            return 'GB';
+          }
+          if (lowerDest.includes('france') || lowerDest.includes('paris')) {
+            return 'FR';
+          }
+          if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich')) {
+            return 'DE';
+          }
+          if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka')) {
+            return 'JP';
+          }
+          if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan')) {
+            return 'IT';
+          }
+          if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona')) {
+            return 'ES';
+          }
+          if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver')) {
+            return 'CA';
+          }
+          if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne')) {
+            return 'AU';
+          }
+          
+          // Default fallback to Brazil for now
+          return 'BR';
+        };
+
+        const countryCode = getCountryCodeForDestination(destination);
+        const currentYear = new Date().getFullYear();
+
+        const { data, error } = await supabase.functions.invoke('get-holidays', {
+          body: {
+            country: countryCode,
+            year: currentYear
+          }
+        });
+
+        if (error) {
+          console.error('Error fetching holiday data:', error);
+          throw error;
+        }
+
+        console.log('Holiday data received:', data);
+        setHolidayData(data);
+      } catch (error) {
+        console.error('Failed to fetch holiday data:', error);
+        // Keep existing fallback data if API fails
+      } finally {
+        setIsLoadingHolidays(false);
+      }
+    };
+
+    fetchHolidayData();
   }, [destination]);
 
   // Profile data
@@ -229,6 +335,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
       return 'https://flagcdn.com/w40/br.png';
     }
+    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+      return 'https://flagcdn.com/w40/pe.png';
+    }
     if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan')) {
       return 'https://flagcdn.com/w40/it.png';
     }
@@ -257,7 +366,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return null;
   };
 
-  // Brazil-focused mock data
+  // Brazil-focused mock data (fallback)
   const mockData = {
     time: { current: '14:42', offset: '-3', dst: false },
     airport: { code: 'GRU', name: 'São Paulo/Guarulhos International Airport', address: 'Guarulhos, São Paulo' },
@@ -869,7 +978,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Local Holidays */}
+          {/* Local Holidays - NOW USES REAL API DATA */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -881,15 +990,46 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-2">
-              {mockData.holidays.slice(0, 2).map((holiday, idx) => (
-                <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                  <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
-                  <div className="text-xs text-muted-foreground">{holiday.date}</div>
+              {isLoadingHolidays ? (
+                <div className="flex justify-center items-center p-4">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-400"></div>
                 </div>
-              ))}
-              <div className="text-xs text-muted-foreground">
-                <p>Many businesses close during major holidays</p>
-              </div>
+              ) : (
+                <>
+                  {holidayData && holidayData.upcomingHolidays.length > 0 ? (
+                    <>
+                      {holidayData.upcomingHolidays.slice(0, 2).map((holiday, idx) => (
+                        <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                          <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
+                          <div className="text-xs text-muted-foreground">
+                            {new Date(holiday.date).toLocaleDateString('en-US', { 
+                              month: 'long', 
+                              day: 'numeric',
+                              year: 'numeric'
+                            })}
+                          </div>
+                        </div>
+                      ))}
+                      <div className="text-xs text-muted-foreground">
+                        <p>{holidayData.totalHolidays} total holidays this year</p>
+                      </div>
+                    </>
+                  ) : (
+                    // Fallback to mock data if no holidays or API error
+                    <>
+                      {mockData.holidays.slice(0, 2).map((holiday, idx) => (
+                        <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                          <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
+                          <div className="text-xs text-muted-foreground">{holiday.date}</div>
+                        </div>
+                      ))}
+                      <div className="text-xs text-muted-foreground">
+                        <p>Many businesses close during major holidays</p>
+                      </div>
+                    </>
+                  )}
+                </>
+              )}
             </CardContent>
           </Card>
         </div>
