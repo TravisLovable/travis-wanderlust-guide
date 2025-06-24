@@ -1,79 +1,80 @@
+
 export const getContextualDestinations = (destination: string): string[] => {
   const lowerDest = destination.toLowerCase();
   
   // United States - Specific Cities
   if (lowerDest.includes('kansas city')) {
-    return ['The Plaza', 'Crossroads District', 'River Market', 'Westport'];
+    return ['St. Louis', 'Omaha', 'Des Moines', 'Oklahoma City'];
   }
   
   if (lowerDest.includes('st. louis') || lowerDest.includes('saint louis')) {
-    return ['The Hill', 'Central West End', 'Soulard', 'Clayton'];
+    return ['Kansas City', 'Chicago', 'Nashville', 'Indianapolis'];
   }
   
   if (lowerDest.includes('milwaukee')) {
-    return ['Third Ward', 'Brady Street', 'Water Street', 'East Town'];
+    return ['Chicago', 'Madison', 'Minneapolis', 'Green Bay'];
   }
   
   if (lowerDest.includes('minneapolis')) {
-    return ['Uptown', 'Northeast', 'North Loop', 'Mill District'];
+    return ['Milwaukee', 'Chicago', 'Des Moines', 'Duluth'];
   }
   
   if (lowerDest.includes('cleveland')) {
-    return ['Ohio City', 'Tremont', 'University Circle', 'Flats'];
+    return ['Pittsburgh', 'Detroit', 'Columbus', 'Cincinnati'];
   }
   
   if (lowerDest.includes('detroit')) {
-    return ['Downtown', 'Midtown', 'Corktown', 'Eastern Market'];
+    return ['Chicago', 'Cleveland', 'Grand Rapids', 'Toledo'];
   }
   
   if (lowerDest.includes('indianapolis')) {
-    return ['Mass Ave', 'Fountain Square', 'Broad Ripple', 'Fletcher Place'];
+    return ['Chicago', 'Cincinnati', 'Louisville', 'St. Louis'];
   }
   
   if (lowerDest.includes('columbus')) {
-    return ['Short North', 'German Village', 'Arena District', 'Clintonville'];
+    return ['Cleveland', 'Cincinnati', 'Pittsburgh', 'Indianapolis'];
   }
   
   if (lowerDest.includes('pittsburgh')) {
-    return ['Lawrenceville', 'Strip District', 'Shadyside', 'South Side'];
+    return ['Cleveland', 'Philadelphia', 'Columbus', 'Buffalo'];
   }
   
   if (lowerDest.includes('cincinnati')) {
-    return ['Over-the-Rhine', 'Mount Adams', 'Oakley', 'Hyde Park'];
+    return ['Louisville', 'Columbus', 'Indianapolis', 'Nashville'];
   }
   
   if (lowerDest.includes('omaha')) {
-    return ['Old Market', 'Benson', 'Blackstone', 'Midtown'];
+    return ['Kansas City', 'Des Moines', 'Lincoln', 'Sioux City'];
   }
   
   if (lowerDest.includes('des moines')) {
-    return ['East Village', 'Court Avenue', 'Western Gateway', 'Ingersoll'];
+    return ['Omaha', 'Kansas City', 'Minneapolis', 'Cedar Rapids'];
   }
   
   // Peru
   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-    return ['Miraflores', 'San Isidro', 'Barranco', 'Cusco'];
+    return ['Cusco', 'Arequipa', 'Trujillo', 'Iquitos'];
   }
   
   if (lowerDest.includes('cusco') || lowerDest.includes('cuzco')) {
-    return ['Sacred Valley', 'Ollantaytambo', 'Pisac', 'Machu Picchu'];
+    return ['Lima', 'Arequipa', 'Puno', 'Huacachina'];
   }
   
   // Spain
   if (lowerDest.includes('madrid')) {
-    return ['Malasaña', 'Chueca', 'La Latina', 'Retiro'];
+    return ['Barcelona', 'Seville', 'Valencia', 'Bilbao'];
   }
   
   if (lowerDest.includes('barcelona')) {
-    return ['Gothic Quarter', 'Eixample', 'Gràcia', 'El Born'];
+    return ['Madrid', 'Valencia', 'Seville', 'Bilbao'];
   }
   
   if (lowerDest.includes('seville') || lowerDest.includes('sevilla')) {
-    return ['Santa Cruz', 'Triana', 'Alameda', 'Macarena'];
+    return ['Madrid', 'Barcelona', 'Granada', 'Córdoba'];
   }
   
   if (lowerDest.includes('canary islands') || lowerDest.includes('gran canaria') || lowerDest.includes('tenerife')) {
-    return ['Las Palmas', 'Santa Cruz', 'Playa del Inglés', 'Puerto de la Cruz'];
+    return ['Madrid', 'Barcelona', 'Lisbon', 'Marrakech'];
   }
   
   if (lowerDest.includes('spain') && !lowerDest.includes('madrid') && !lowerDest.includes('barcelona')) {
@@ -82,28 +83,28 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Portugal
   if (lowerDest.includes('lisbon') || lowerDest.includes('lisboa')) {
-    return ['Alfama', 'Bairro Alto', 'Chiado', 'Belém'];
+    return ['Porto', 'Madrid', 'Seville', 'Faro'];
   }
   
   if (lowerDest.includes('porto') || lowerDest.includes('oporto')) {
-    return ['Ribeira', 'Cedofeita', 'Vila Nova de Gaia', 'Foz do Douro'];
+    return ['Lisbon', 'Braga', 'Coimbra', 'Santiago de Compostela'];
   }
   
   if (lowerDest.includes('portugal') && !lowerDest.includes('lisbon') && !lowerDest.includes('porto')) {
-    return ['Lisbon', 'Porto', 'Sintra', 'Cascais'];
+    return ['Lisbon', 'Porto', 'Madrid', 'Seville'];
   }
   
   // France
   if (lowerDest.includes('paris')) {
-    return ['Montmartre', 'Le Marais', 'Saint-Germain', 'Champs-Élysées'];
+    return ['Lyon', 'Marseille', 'Nice', 'Bordeaux'];
   }
   
   if (lowerDest.includes('nice')) {
-    return ['Vieux Nice', 'Promenade des Anglais', 'Cannes', 'Monaco'];
+    return ['Monaco', 'Cannes', 'Marseille', 'Barcelona'];
   }
   
   if (lowerDest.includes('lyon')) {
-    return ['Vieux Lyon', 'Presqu\'île', 'Croix-Rousse', 'Confluence'];
+    return ['Paris', 'Marseille', 'Geneva', 'Bordeaux'];
   }
   
   if (lowerDest.includes('france') && !lowerDest.includes('paris') && !lowerDest.includes('nice')) {
@@ -112,23 +113,23 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Italy
   if (lowerDest.includes('rome') || lowerDest.includes('roma')) {
-    return ['Trastevere', 'Centro Storico', 'Vatican City', 'Testaccio'];
+    return ['Florence', 'Naples', 'Milan', 'Venice'];
   }
   
   if (lowerDest.includes('milan') || lowerDest.includes('milano')) {
-    return ['Brera', 'Navigli', 'Quadrilatero', 'Porta Nuova'];
+    return ['Rome', 'Florence', 'Venice', 'Turin'];
   }
   
   if (lowerDest.includes('florence') || lowerDest.includes('firenze')) {
-    return ['Centro Storico', 'Oltrarno', 'Santa Croce', 'San Lorenzo'];
+    return ['Rome', 'Milan', 'Pisa', 'Siena'];
   }
   
   if (lowerDest.includes('venice') || lowerDest.includes('venezia')) {
-    return ['San Marco', 'Dorsoduro', 'Cannaregio', 'Castello'];
+    return ['Milan', 'Florence', 'Rome', 'Verona'];
   }
   
   if (lowerDest.includes('naples') || lowerDest.includes('napoli')) {
-    return ['Centro Storico', 'Vomero', 'Chiaia', 'Quartieri Spagnoli'];
+    return ['Rome', 'Amalfi', 'Pompeii', 'Capri'];
   }
   
   if (lowerDest.includes('italy') && !lowerDest.includes('rome') && !lowerDest.includes('milan')) {
@@ -137,15 +138,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Greece
   if (lowerDest.includes('athens') || lowerDest.includes('athina')) {
-    return ['Plaka', 'Monastiraki', 'Psyrri', 'Kolonaki'];
+    return ['Santorini', 'Mykonos', 'Thessaloniki', 'Rhodes'];
   }
   
   if (lowerDest.includes('santorini')) {
-    return ['Oia', 'Fira', 'Imerovigli', 'Kamari'];
+    return ['Mykonos', 'Athens', 'Crete', 'Paros'];
   }
   
   if (lowerDest.includes('mykonos')) {
-    return ['Mykonos Town', 'Paradise Beach', 'Super Paradise', 'Little Venice'];
+    return ['Santorini', 'Athens', 'Paros', 'Naxos'];
   }
   
   if (lowerDest.includes('greece') && !lowerDest.includes('athens') && !lowerDest.includes('santorini')) {
@@ -154,15 +155,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Germany
   if (lowerDest.includes('berlin')) {
-    return ['Mitte', 'Kreuzberg', 'Prenzlauer Berg', 'Charlottenburg'];
+    return ['Munich', 'Hamburg', 'Cologne', 'Frankfurt'];
   }
   
   if (lowerDest.includes('munich') || lowerDest.includes('münchen')) {
-    return ['Altstadt', 'Schwabing', 'Maxvorstadt', 'Glockenbachviertel'];
+    return ['Berlin', 'Vienna', 'Salzburg', 'Frankfurt'];
   }
   
   if (lowerDest.includes('hamburg')) {
-    return ['St. Pauli', 'HafenCity', 'Speicherstadt', 'Altona'];
+    return ['Berlin', 'Amsterdam', 'Copenhagen', 'Bremen'];
   }
   
   if (lowerDest.includes('germany') && !lowerDest.includes('berlin') && !lowerDest.includes('munich')) {
@@ -171,11 +172,11 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // United Kingdom
   if (lowerDest.includes('london')) {
-    return ['Westminster', 'Camden', 'Shoreditch', 'Kensington'];
+    return ['Edinburgh', 'Manchester', 'Liverpool', 'Bath'];
   }
   
   if (lowerDest.includes('edinburgh')) {
-    return ['Old Town', 'New Town', 'Leith', 'Stockbridge'];
+    return ['London', 'Glasgow', 'Inverness', 'York'];
   }
   
   if (lowerDest.includes('uk') || lowerDest.includes('united kingdom')) {
@@ -184,7 +185,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Netherlands
   if (lowerDest.includes('amsterdam')) {
-    return ['Jordaan', 'De Pijp', 'Vondelpark', 'Red Light District'];
+    return ['Utrecht', 'Rotterdam', 'The Hague', 'Brussels'];
   }
   
   if (lowerDest.includes('netherlands') && !lowerDest.includes('amsterdam')) {
@@ -193,43 +194,43 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // United States - Major Cities
   if (lowerDest.includes('new york')) {
-    return ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx'];
+    return ['Philadelphia', 'Boston', 'Washington DC', 'Newark'];
   }
   
   if (lowerDest.includes('los angeles')) {
-    return ['Hollywood', 'Beverly Hills', 'Santa Monica', 'Venice Beach'];
+    return ['San Diego', 'San Francisco', 'Las Vegas', 'Phoenix'];
   }
   
   if (lowerDest.includes('san francisco')) {
-    return ['Union Square', 'Fisherman\'s Wharf', 'Chinatown', 'Castro'];
+    return ['Los Angeles', 'San Jose', 'Oakland', 'Sacramento'];
   }
   
   if (lowerDest.includes('chicago')) {
-    return ['The Loop', 'Lincoln Park', 'Wicker Park', 'River North'];
+    return ['Milwaukee', 'Detroit', 'Indianapolis', 'St. Louis'];
   }
   
   if (lowerDest.includes('miami')) {
-    return ['South Beach', 'Wynwood', 'Little Havana', 'Coral Gables'];
+    return ['Fort Lauderdale', 'Orlando', 'Tampa', 'Key West'];
   }
   
   if (lowerDest.includes('seattle')) {
-    return ['Capitol Hill', 'Fremont', 'Ballard', 'Queen Anne'];
+    return ['Portland', 'Vancouver', 'Spokane', 'Tacoma'];
   }
   
   if (lowerDest.includes('boston')) {
-    return ['Back Bay', 'North End', 'Beacon Hill', 'Cambridge'];
+    return ['New York', 'Portland ME', 'Providence', 'Hartford'];
   }
   
   if (lowerDest.includes('denver')) {
-    return ['LoDo', 'Capitol Hill', 'RiNo', 'Highlands'];
+    return ['Colorado Springs', 'Boulder', 'Salt Lake City', 'Aspen'];
   }
   
   if (lowerDest.includes('austin')) {
-    return ['Downtown', 'South by Southwest', 'East Austin', 'Zilker'];
+    return ['San Antonio', 'Houston', 'Dallas', 'Fort Worth'];
   }
   
   if (lowerDest.includes('nashville')) {
-    return ['Music Row', 'The Gulch', 'East Nashville', 'Broadway'];
+    return ['Memphis', 'Louisville', 'Chattanooga', 'Knoxville'];
   }
   
   // US Regional patterns
@@ -247,15 +248,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Canada
   if (lowerDest.includes('toronto')) {
-    return ['Downtown', 'Kensington Market', 'Distillery District', 'Queen Street West'];
+    return ['Montreal', 'Ottawa', 'Niagara Falls', 'Hamilton'];
   }
   
   if (lowerDest.includes('vancouver')) {
-    return ['Gastown', 'Yaletown', 'Granville Island', 'Kitsilano'];
+    return ['Seattle', 'Victoria', 'Calgary', 'Whistler'];
   }
   
   if (lowerDest.includes('montreal')) {
-    return ['Old Montreal', 'Plateau', 'Downtown', 'Mile End'];
+    return ['Toronto', 'Quebec City', 'Ottawa', 'Boston'];
   }
   
   if (lowerDest.includes('canada') && !lowerDest.includes('toronto') && !lowerDest.includes('vancouver')) {
@@ -264,15 +265,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Mexico
   if (lowerDest.includes('mexico city')) {
-    return ['Roma Norte', 'Condesa', 'Polanco', 'Coyoacán'];
+    return ['Guadalajara', 'Puebla', 'Querétaro', 'Toluca'];
   }
   
   if (lowerDest.includes('cancun')) {
-    return ['Hotel Zone', 'Downtown Cancun', 'Playa del Carmen', 'Tulum'];
+    return ['Playa del Carmen', 'Cozumel', 'Tulum', 'Mérida'];
   }
   
   if (lowerDest.includes('playa del carmen')) {
-    return ['Fifth Avenue', 'Playacar', 'Cancun', 'Cozumel'];
+    return ['Cancun', 'Tulum', 'Cozumel', 'Akumel'];
   }
   
   if (lowerDest.includes('mexico') && !lowerDest.includes('mexico city') && !lowerDest.includes('cancun')) {
@@ -281,15 +282,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Brazil
   if (lowerDest.includes('rio de janeiro')) {
-    return ['Copacabana', 'Ipanema', 'Santa Teresa', 'Leblon'];
+    return ['São Paulo', 'Brasília', 'Salvador', 'Belo Horizonte'];
   }
   
   if (lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-    return ['Vila Madalena', 'Jardins', 'Centro', 'Liberdade'];
+    return ['Rio de Janeiro', 'Brasília', 'Campinas', 'Santos'];
   }
   
   if (lowerDest.includes('salvador')) {
-    return ['Pelourinho', 'Barra', 'Rio Vermelho', 'Itapuã'];
+    return ['Rio de Janeiro', 'São Paulo', 'Recife', 'Fortaleza'];
   }
   
   if (lowerDest.includes('brazil') && !lowerDest.includes('rio') && !lowerDest.includes('são paulo')) {
@@ -298,7 +299,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Argentina
   if (lowerDest.includes('buenos aires')) {
-    return ['Palermo', 'Recoleta', 'San Telmo', 'Puerto Madero'];
+    return ['Córdoba', 'Rosario', 'Mendoza', 'Montevideo'];
   }
   
   if (lowerDest.includes('argentina') && !lowerDest.includes('buenos aires')) {
@@ -307,7 +308,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Chile
   if (lowerDest.includes('santiago')) {
-    return ['Providencia', 'Las Condes', 'Ñuñoa', 'Bellavista'];
+    return ['Valparaíso', 'Viña del Mar', 'Concepción', 'La Serena'];
   }
   
   if (lowerDest.includes('chile') && !lowerDest.includes('santiago')) {
@@ -316,15 +317,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Colombia
   if (lowerDest.includes('bogota') || lowerDest.includes('bogotá')) {
-    return ['La Candelaria', 'Zona Rosa', 'Chapinero', 'Usaquén'];
+    return ['Medellín', 'Cartagena', 'Cali', 'Barranquilla'];
   }
   
   if (lowerDest.includes('medellin') || lowerDest.includes('medellín')) {
-    return ['El Poblado', 'Laureles', 'Envigado', 'Centro'];
+    return ['Bogotá', 'Cartagena', 'Cali', 'Pereira'];
   }
   
   if (lowerDest.includes('cartagena')) {
-    return ['Old City', 'Bocagrande', 'Getsemaní', 'San Diego'];
+    return ['Bogotá', 'Medellín', 'Barranquilla', 'Santa Marta'];
   }
   
   if (lowerDest.includes('colombia') && !lowerDest.includes('bogota') && !lowerDest.includes('medellin')) {
@@ -333,15 +334,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Japan
   if (lowerDest.includes('tokyo')) {
-    return ['Shibuya', 'Shinjuku', 'Harajuku', 'Ginza'];
+    return ['Osaka', 'Kyoto', 'Yokohama', 'Hiroshima'];
   }
   
   if (lowerDest.includes('osaka')) {
-    return ['Dotonbori', 'Namba', 'Umeda', 'Shinsekai'];
+    return ['Tokyo', 'Kyoto', 'Kobe', 'Nara'];
   }
   
   if (lowerDest.includes('kyoto')) {
-    return ['Gion', 'Arashiyama', 'Fushimi', 'Higashiyama'];
+    return ['Tokyo', 'Osaka', 'Nara', 'Hiroshima'];
   }
   
   if (lowerDest.includes('japan') && !lowerDest.includes('tokyo') && !lowerDest.includes('osaka')) {
@@ -350,7 +351,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // South Korea
   if (lowerDest.includes('seoul')) {
-    return ['Gangnam', 'Myeongdong', 'Hongdae', 'Itaewon'];
+    return ['Busan', 'Incheon', 'Daegu', 'Jeju'];
   }
   
   if (lowerDest.includes('south korea') && !lowerDest.includes('seoul')) {
@@ -359,15 +360,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // China
   if (lowerDest.includes('beijing')) {
-    return ['Forbidden City', 'Hutongs', 'Chaoyang', 'Wangfujing'];
+    return ['Shanghai', 'Tianjin', 'Xi\'an', 'Chengdu'];
   }
   
   if (lowerDest.includes('shanghai')) {
-    return ['The Bund', 'French Concession', 'Pudong', 'Xintiandi'];
+    return ['Beijing', 'Hangzhou', 'Suzhou', 'Nanjing'];
   }
   
   if (lowerDest.includes('hong kong')) {
-    return ['Central', 'Tsim Sha Tsui', 'Causeway Bay', 'Mong Kok'];
+    return ['Macau', 'Shenzhen', 'Guangzhou', 'Taipei'];
   }
   
   if (lowerDest.includes('china') && !lowerDest.includes('beijing') && !lowerDest.includes('shanghai')) {
@@ -376,15 +377,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Thailand
   if (lowerDest.includes('bangkok')) {
-    return ['Khao San Road', 'Sukhumvit', 'Silom', 'Chatuchak'];
+    return ['Chiang Mai', 'Phuket', 'Pattaya', 'Ayutthaya'];
   }
   
   if (lowerDest.includes('chiang mai')) {
-    return ['Old City', 'Nimman', 'Night Bazaar', 'Doi Suthep'];
+    return ['Bangkok', 'Chiang Rai', 'Pai', 'Sukhothai'];
   }
   
   if (lowerDest.includes('phuket')) {
-    return ['Patong Beach', 'Kata Beach', 'Phuket Town', 'Kamala'];
+    return ['Bangkok', 'Krabi', 'Koh Samui', 'Phi Phi'];
   }
   
   if (lowerDest.includes('thailand') && !lowerDest.includes('bangkok') && !lowerDest.includes('chiang mai')) {
@@ -393,11 +394,11 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Vietnam
   if (lowerDest.includes('ho chi minh') || lowerDest.includes('saigon')) {
-    return ['District 1', 'District 3', 'Cholon', 'Thao Dien'];
+    return ['Hanoi', 'Da Nang', 'Hoi An', 'Nha Trang'];
   }
   
   if (lowerDest.includes('hanoi')) {
-    return ['Old Quarter', 'French Quarter', 'West Lake', 'Dong Da'];
+    return ['Ho Chi Minh City', 'Halong Bay', 'Sapa', 'Hue'];
   }
   
   if (lowerDest.includes('vietnam') && !lowerDest.includes('ho chi minh') && !lowerDest.includes('hanoi')) {
@@ -406,11 +407,11 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Indonesia
   if (lowerDest.includes('jakarta')) {
-    return ['Menteng', 'Kemang', 'Senayan', 'Thamrin'];
+    return ['Bandung', 'Surabaya', 'Yogyakarta', 'Semarang'];
   }
   
   if (lowerDest.includes('bali')) {
-    return ['Ubud', 'Seminyak', 'Canggu', 'Sanur'];
+    return ['Jakarta', 'Yogyakarta', 'Lombok', 'Gili Islands'];
   }
   
   if (lowerDest.includes('indonesia') && !lowerDest.includes('jakarta') && !lowerDest.includes('bali')) {
@@ -419,7 +420,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Malaysia
   if (lowerDest.includes('kuala lumpur')) {
-    return ['KLCC', 'Bukit Bintang', 'Chinatown', 'Mont Kiara'];
+    return ['Penang', 'Johor Bahru', 'Ipoh', 'Melaka'];
   }
   
   if (lowerDest.includes('malaysia') && !lowerDest.includes('kuala lumpur')) {
@@ -428,16 +429,16 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Singapore
   if (lowerDest.includes('singapore')) {
-    return ['Marina Bay', 'Orchard Road', 'Chinatown', 'Little India'];
+    return ['Kuala Lumpur', 'Jakarta', 'Bangkok', 'Ho Chi Minh City'];
   }
   
   // Philippines
   if (lowerDest.includes('manila')) {
-    return ['Makati', 'BGC', 'Malate', 'Quezon City'];
+    return ['Cebu', 'Davao', 'Iloilo', 'Baguio'];
   }
   
   if (lowerDest.includes('cebu')) {
-    return ['Cebu City', 'Lahug', 'IT Park', 'Colon'];
+    return ['Manila', 'Bohol', 'Dumaguete', 'Siquijor'];
   }
   
   if (lowerDest.includes('philippines') && !lowerDest.includes('manila') && !lowerDest.includes('cebu')) {
@@ -446,19 +447,19 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // India
   if (lowerDest.includes('delhi')) {
-    return ['Connaught Place', 'Khan Market', 'Hauz Khas', 'Chandni Chowk'];
+    return ['Mumbai', 'Jaipur', 'Agra', 'Gurgaon'];
   }
   
   if (lowerDest.includes('mumbai')) {
-    return ['Colaba', 'Bandra', 'Juhu', 'Fort'];
+    return ['Delhi', 'Pune', 'Bangalore', 'Goa'];
   }
   
   if (lowerDest.includes('bangalore') || lowerDest.includes('bengaluru')) {
-    return ['MG Road', 'Koramangala', 'Indiranagar', 'Whitefield'];
+    return ['Mumbai', 'Chennai', 'Hyderabad', 'Mysore'];
   }
   
   if (lowerDest.includes('goa')) {
-    return ['Panaji', 'Calangute', 'Anjuna', 'Vagator'];
+    return ['Mumbai', 'Bangalore', 'Pune', 'Chennai'];
   }
   
   if (lowerDest.includes('india') && !lowerDest.includes('delhi') && !lowerDest.includes('mumbai')) {
@@ -467,11 +468,11 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // UAE
   if (lowerDest.includes('dubai')) {
-    return ['Downtown Dubai', 'Dubai Marina', 'Jumeirah', 'Deira'];
+    return ['Abu Dhabi', 'Sharjah', 'Ras Al Khaimah', 'Fujairah'];
   }
   
   if (lowerDest.includes('abu dhabi')) {
-    return ['Corniche', 'Saadiyat Island', 'Yas Island', 'Al Ain'];
+    return ['Dubai', 'Al Ain', 'Sharjah', 'Ras Al Khaimah'];
   }
   
   if (lowerDest.includes('uae') || lowerDest.includes('united arab emirates')) {
@@ -480,7 +481,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Turkey
   if (lowerDest.includes('istanbul')) {
-    return ['Sultanahmet', 'Beyoğlu', 'Galata', 'Beşiktaş'];
+    return ['Ankara', 'Antalya', 'Izmir', 'Cappadocia'];
   }
   
   if (lowerDest.includes('turkey') && !lowerDest.includes('istanbul')) {
@@ -489,7 +490,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Egypt
   if (lowerDest.includes('cairo')) {
-    return ['Islamic Cairo', 'Zamalek', 'Heliopolis', 'Maadi'];
+    return ['Alexandria', 'Luxor', 'Aswan', 'Sharm El Sheikh'];
   }
   
   if (lowerDest.includes('egypt') && !lowerDest.includes('cairo')) {
@@ -498,11 +499,11 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Morocco
   if (lowerDest.includes('marrakech') || lowerDest.includes('marrakesh')) {
-    return ['Medina', 'Gueliz', 'Majorelle', 'Palmeraie'];
+    return ['Casablanca', 'Fez', 'Rabat', 'Chefchaouen'];
   }
   
   if (lowerDest.includes('casablanca')) {
-    return ['Hassan II', 'Ain Diab', 'Maarif', 'Habous'];
+    return ['Marrakech', 'Rabat', 'Fez', 'Tangier'];
   }
   
   if (lowerDest.includes('morocco') && !lowerDest.includes('marrakech') && !lowerDest.includes('casablanca')) {
@@ -511,11 +512,11 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // South Africa
   if (lowerDest.includes('cape town')) {
-    return ['V&A Waterfront', 'City Bowl', 'Camps Bay', 'Stellenbosch'];
+    return ['Johannesburg', 'Durban', 'Port Elizabeth', 'Stellenbosch'];
   }
   
   if (lowerDest.includes('johannesburg')) {
-    return ['Sandton', 'Rosebank', 'Maboneng', 'Soweto'];
+    return ['Cape Town', 'Durban', 'Pretoria', 'Bloemfontein'];
   }
   
   if (lowerDest.includes('south africa') && !lowerDest.includes('cape town') && !lowerDest.includes('johannesburg')) {
@@ -524,7 +525,7 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Kenya
   if (lowerDest.includes('nairobi')) {
-    return ['Westlands', 'Karen', 'Kilimani', 'CBD'];
+    return ['Mombasa', 'Kisumu', 'Nakuru', 'Eldoret'];
   }
   
   if (lowerDest.includes('kenya') && !lowerDest.includes('nairobi')) {
@@ -533,15 +534,15 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // Australia
   if (lowerDest.includes('sydney')) {
-    return ['Circular Quay', 'Bondi Beach', 'Darling Harbour', 'The Rocks'];
+    return ['Melbourne', 'Brisbane', 'Gold Coast', 'Newcastle'];
   }
   
   if (lowerDest.includes('melbourne')) {
-    return ['CBD', 'St Kilda', 'Fitzroy', 'South Yarra'];
+    return ['Sydney', 'Adelaide', 'Brisbane', 'Geelong'];
   }
   
   if (lowerDest.includes('brisbane')) {
-    return ['South Bank', 'Fortitude Valley', 'West End', 'CBD'];
+    return ['Sydney', 'Gold Coast', 'Melbourne', 'Sunshine Coast'];
   }
   
   if (lowerDest.includes('australia') && !lowerDest.includes('sydney') && !lowerDest.includes('melbourne')) {
@@ -550,17 +551,17 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   // New Zealand
   if (lowerDest.includes('auckland')) {
-    return ['CBD', 'Viaduct Harbour', 'Ponsonby', 'Mission Bay'];
+    return ['Wellington', 'Christchurch', 'Hamilton', 'Rotorua'];
   }
   
   if (lowerDest.includes('wellington')) {
-    return ['Te Aro', 'Mount Victoria', 'Thorndon', 'Newtown'];
+    return ['Auckland', 'Christchurch', 'Palmerston North', 'Nelson'];
   }
   
   if (lowerDest.includes('new zealand') && !lowerDest.includes('auckland') && !lowerDest.includes('wellington')) {
     return ['Auckland', 'Wellington', 'Queenstown', 'Christchurch'];
   }
   
-  // Default fallback - popular global city neighborhoods/areas
-  return ['Times Square, NYC', 'Champs-Élysées, Paris', 'Shibuya, Tokyo', 'Piccadilly, London'];
+  // Default fallback - popular global destinations
+  return ['Paris', 'London', 'Tokyo', 'New York'];
 };
