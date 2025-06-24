@@ -27,6 +27,7 @@ import WeatherWidget from './WeatherWidget';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 import { supabase } from '@/integrations/supabase/client';
+import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
 
 interface ResultsPageProps {
   destination: string;
@@ -581,18 +582,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   // Dynamic destination suggestions based on the current destination region
   const getRegionalDestinations = (currentDest: string) => {
-    const lowerDest = currentDest.toLowerCase();
-    
-    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-      return ['Cusco, Peru', 'Arequipa, Peru', 'Trujillo, Peru', 'Iquitos, Peru'];
-    }
-    
-    if (lowerDest.includes('brazil')) {
-      return ['Rio de Janeiro, Brazil', 'Salvador, Brazil', 'Brasília, Brazil', 'Fortaleza, Brazil'];
-    }
-    
-    // Default suggestions for other regions
-    return ['Paris, France', 'Tokyo, Japan', 'London, UK', 'Sydney, Australia'];
+    return getContextualDestinations(currentDest);
   };
 
   const handleDestinationChange = (value: string) => {
@@ -820,7 +810,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white hover:bg-green-700/40 transition-colors shadow-sm"
                       title="Click to pin"
                     >
-                      + {city.split(',')[0]}
+                      + {city}
                     </button>
                   ))}
                 </div>
