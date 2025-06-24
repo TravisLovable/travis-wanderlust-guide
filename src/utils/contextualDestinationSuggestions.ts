@@ -1,6 +1,54 @@
-
 export const getContextualDestinations = (destination: string): string[] => {
   const lowerDest = destination.toLowerCase();
+  
+  // United States - Specific Cities
+  if (lowerDest.includes('kansas city')) {
+    return ['The Plaza', 'Crossroads District', 'River Market', 'Westport'];
+  }
+  
+  if (lowerDest.includes('st. louis') || lowerDest.includes('saint louis')) {
+    return ['The Hill', 'Central West End', 'Soulard', 'Clayton'];
+  }
+  
+  if (lowerDest.includes('milwaukee')) {
+    return ['Third Ward', 'Brady Street', 'Water Street', 'East Town'];
+  }
+  
+  if (lowerDest.includes('minneapolis')) {
+    return ['Uptown', 'Northeast', 'North Loop', 'Mill District'];
+  }
+  
+  if (lowerDest.includes('cleveland')) {
+    return ['Ohio City', 'Tremont', 'University Circle', 'Flats'];
+  }
+  
+  if (lowerDest.includes('detroit')) {
+    return ['Downtown', 'Midtown', 'Corktown', 'Eastern Market'];
+  }
+  
+  if (lowerDest.includes('indianapolis')) {
+    return ['Mass Ave', 'Fountain Square', 'Broad Ripple', 'Fletcher Place'];
+  }
+  
+  if (lowerDest.includes('columbus')) {
+    return ['Short North', 'German Village', 'Arena District', 'Clintonville'];
+  }
+  
+  if (lowerDest.includes('pittsburgh')) {
+    return ['Lawrenceville', 'Strip District', 'Shadyside', 'South Side'];
+  }
+  
+  if (lowerDest.includes('cincinnati')) {
+    return ['Over-the-Rhine', 'Mount Adams', 'Oakley', 'Hyde Park'];
+  }
+  
+  if (lowerDest.includes('omaha')) {
+    return ['Old Market', 'Benson', 'Blackstone', 'Midtown'];
+  }
+  
+  if (lowerDest.includes('des moines')) {
+    return ['East Village', 'Court Avenue', 'Western Gateway', 'Ingersoll'];
+  }
   
   // Peru
   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
@@ -143,7 +191,7 @@ export const getContextualDestinations = (destination: string): string[] => {
     return ['Amsterdam', 'Utrecht', 'Rotterdam', 'The Hague'];
   }
   
-  // United States
+  // United States - Major Cities
   if (lowerDest.includes('new york')) {
     return ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx'];
   }
@@ -170,6 +218,27 @@ export const getContextualDestinations = (destination: string): string[] => {
   
   if (lowerDest.includes('boston')) {
     return ['Back Bay', 'North End', 'Beacon Hill', 'Cambridge'];
+  }
+  
+  if (lowerDest.includes('denver')) {
+    return ['LoDo', 'Capitol Hill', 'RiNo', 'Highlands'];
+  }
+  
+  if (lowerDest.includes('austin')) {
+    return ['Downtown', 'South by Southwest', 'East Austin', 'Zilker'];
+  }
+  
+  if (lowerDest.includes('nashville')) {
+    return ['Music Row', 'The Gulch', 'East Nashville', 'Broadway'];
+  }
+  
+  // US Regional patterns
+  if ((lowerDest.includes('missouri') || lowerDest.includes('kansas') || lowerDest.includes('iowa') || lowerDest.includes('nebraska')) && !lowerDest.includes('kansas city')) {
+    return ['Kansas City', 'St. Louis', 'Des Moines', 'Omaha'];
+  }
+  
+  if ((lowerDest.includes('ohio') || lowerDest.includes('michigan') || lowerDest.includes('indiana') || lowerDest.includes('wisconsin')) && !lowerDest.includes('chicago')) {
+    return ['Chicago', 'Detroit', 'Cleveland', 'Milwaukee'];
   }
   
   if (lowerDest.includes('united states') || lowerDest.includes('usa')) {
