@@ -940,82 +940,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         {/* Optimized Widget Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-6">
           
-          {/* Row 1: Primary Info Widgets - Higher Priority, Smaller Cards */}
-          {/* Visa & Entry - High Priority */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
-                  <Shield className="w-4 h-4 text-white" />
-                </div>
-                Visa & Entry
-                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="text-green-700 font-medium text-sm">✓ Visa-free entry</div>
-                <div className="text-xs text-muted-foreground">For US passport holders</div>
-              </div>
-              <div className="text-xs space-y-1">
-                <p><span className="font-medium">Max stay:</span> 90 days</p>
-                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
-                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                View Requirements
-              </Button>
-            </CardContent>
-          </Card>
-
-          {/* Currency - High Priority */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-2">
-                  <CreditCard className="w-4 h-4 text-white" />
-                </div>
-                Currency
-                <TrendingUp className="w-3 h-3 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {currencyLoading ? (
-                <div className="flex justify-center items-center p-4">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-400"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex justify-between items-center p-2 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <span className="font-semibold text-sm">1 USD</span>
-                    <span className="text-green-400 font-bold text-sm">
-                      {currencyData?.rate.toFixed(2)} {currencyData?.symbol}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      type="number"
-                      value={currencyAmount}
-                      onChange={(e) => setCurrencyAmount(Number(e.target.value))}
-                      className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-8 text-sm"
-                    />
-                    <span className="text-green-400 font-semibold text-sm">
-                      = {currencyData?.symbol}{currencyData ? (currencyAmount * currencyData.rate).toFixed(2) : '-.--'}
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {currencyError ? (
-                      <span className="text-orange-400">API Error - Using fallback</span>
-                    ) : (
-                      `Live rate • ${currencyData?.lastUpdated}`
-                    )}
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Time Zone - High Priority - Updated with standard and military time */}
+          {/* Row 1: Primary Info Widgets - Reordered as requested */}
+          {/* Time Zone - First position */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -1074,7 +1000,54 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Airport Info - Swapped position with Emergency */}
+          {/* Currency - Second position */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
+            <CardHeader className="pb-2">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-2">
+                  <CreditCard className="w-4 h-4 text-white" />
+                </div>
+                Currency
+                <TrendingUp className="w-3 h-3 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {currencyLoading ? (
+                <div className="flex justify-center items-center p-4">
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-400"></div>
+                </div>
+              ) : (
+                <>
+                  <div className="flex justify-between items-center p-2 bg-green-500/10 border border-green-500/20 rounded-xl">
+                    <span className="font-semibold text-sm">1 USD</span>
+                    <span className="text-green-400 font-bold text-sm">
+                      {currencyData?.rate.toFixed(2)} {currencyData?.symbol}
+                    </span>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <Input
+                      type="number"
+                      value={currencyAmount}
+                      onChange={(e) => setCurrencyAmount(Number(e.target.value))}
+                      className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-8 text-sm"
+                    />
+                    <span className="text-green-400 font-semibold text-sm">
+                      = {currencyData?.symbol}{currencyData ? (currencyAmount * currencyData.rate).toFixed(2) : '-.--'}
+                    </span>
+                  </div>
+                  <div className="text-xs text-muted-foreground">
+                    {currencyError ? (
+                      <span className="text-orange-400">API Error - Using fallback</span>
+                    ) : (
+                      `Live rate • ${currencyData?.lastUpdated}`
+                    )}
+                  </div>
+                </>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Airport Info - Third position */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -1096,6 +1069,33 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <p><span className="font-medium">Travel time:</span> 45-90 min</p>
                 <p><span className="font-medium">Options:</span> Metro, Bus, Taxi</p>
               </div>
+            </CardContent>
+          </Card>
+
+          {/* Visa & Entry - Fourth position */}
+          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center text-lg font-semibold">
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
+                  <Shield className="w-4 h-4 text-white" />
+                </div>
+                Visa & Entry
+                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-3">
+              <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
+                <div className="text-green-700 font-medium text-sm">✓ Visa-free entry</div>
+                <div className="text-xs text-muted-foreground">For US passport holders</div>
+              </div>
+              <div className="text-xs space-y-1">
+                <p><span className="font-medium">Max stay:</span> 90 days</p>
+                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
+                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
+              </div>
+              <Button variant="outline" size="sm" className="w-full text-xs">
+                View Requirements
+              </Button>
             </CardContent>
           </Card>
         </div>
@@ -1256,7 +1256,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Emergency Info - Swapped position with Airport */}
+          {/* Emergency Info */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">

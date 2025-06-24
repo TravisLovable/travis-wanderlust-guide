@@ -80,7 +80,7 @@ const Index = () => {
     );
   }
 
-  return <HomePage onSearch={handleSearch} />;
+  return <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />;
 };
 
 export default Index;
