@@ -234,8 +234,34 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             return 'CO';
           }
           
-          // Default fallback to Peru if no match (since that's what user is testing)
-          return 'PE';
+          // Default fallback - try to extract country code from destination string
+          const parts = dest.split(',');
+          if (parts.length > 1) {
+            const lastPart = parts[parts.length - 1].trim();
+            // Simple country name to code mapping
+            const countryMap: { [key: string]: string } = {
+              'Brazil': 'BR',
+              'Peru': 'PE',
+              'United States': 'US',
+              'USA': 'US',
+              'United Kingdom': 'GB',
+              'UK': 'GB',
+              'France': 'FR',
+              'Germany': 'DE',
+              'Japan': 'JP',
+              'Italy': 'IT',
+              'Spain': 'ES',
+              'Canada': 'CA',
+              'Australia': 'AU',
+              'Mexico': 'MX',
+              'Argentina': 'AR',
+              'Chile': 'CL',
+              'Colombia': 'CO'
+            };
+            return countryMap[lastPart] || 'US'; // Default to US if no match
+          }
+          
+          return 'US'; // Final fallback
         };
 
         const countryCode = getCountryCodeForDestination(destination);
@@ -257,7 +283,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         console.log('Holiday data received:', data);
         
-        // Filter holidays to show ONLY holidays within the exact travel dates
+        // Filter holidays to show ONLY holidays that fall within the travel period
         if (data && data.allHolidays) {
           const checkinDate = new Date(dates.checkin);
           const checkoutDate = new Date(dates.checkout);
@@ -266,9 +292,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             checkin: checkinDate.toISOString().split('T')[0], 
             checkout: checkoutDate.toISOString().split('T')[0] 
           });
-          console.log('All holidays for', countryCode, ':', data.allHolidays.map((h: any) => ({ name: h.name, date: h.date })));
+          console.log('All holidays for', countryCode, ':', data.allHolidays.map((h: any) => ({ name: h.name, date: h.date, region: h.region })));
           
-          // Filter to show ONLY holidays that fall within the travel period
+          // Filter to show ONLY holidays that fall within the exact travel dates
           const relevantHolidays = data.allHolidays.filter((holiday: any) => {
             const holidayDate = new Date(holiday.date);
             const isWithinTravelDates = holidayDate >= checkinDate && holidayDate <= checkoutDate;
@@ -283,7 +309,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           // Update the data with filtered holidays
           const updatedData = {
             ...data,
-            upcomingHolidays: relevantHolidays.slice(0, 5), // Show up to 5 holidays within travel dates
+            upcomingHolidays: relevantHolidays.slice(0, 10), // Show up to 10 holidays within travel dates
             countryCode: countryCode // Add country code for reference
           };
           
@@ -1026,7 +1052,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Local Holidays - NOW USES REAL API DATA */}
+          {/* Local Holidays - Enhanced with Time and Date API */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -1049,26 +1075,35 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       <div className="text-xs text-purple-300 mb-2 font-medium">
                         During your trip to {destination}:
                       </div>
-                      {holidayData.upcomingHolidays.slice(0, 3).map((holiday, idx) => (
+                      {holidayData.upcomingHolidays.map((holiday, idx) => (
                         <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                           <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
-                          <div className="text-xs text-muted-foreground">
-                            {new Date(holiday.date).toLocaleDateString('en-US', { 
-                              month: 'long', 
-                              day: 'numeric',
-                              year: 'numeric'
-                            })}
+                          <div className="text-xs text-muted-foreground flex justify-between">
+                            <span>
+                              {new Date(holiday.date).toLocaleDateString('en-US', { 
+                                month: 'long', 
+                                day: 'numeric',
+                                year: 'numeric'
+                              })}
+                            </span>
+                            {holiday.region && holiday.region !== 'National' && (
+                              <span className="text-purple-400">
+                                {holiday.region}
+                              </span>
+                            )}
                           </div>
+                          {holiday.type && (
+                            <div className="text-xs text-purple-400 mt-1">
+                              {holiday.type === 'national' ? 'National' : holiday.type}
+                            </div>
+                          )}
                         </div>
                       ))}
-                      {holidayData.upcomingHolidays.length === 0 && (
-                        <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
-                          <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
-                        </div>
-                      )}
+                      <div className="text-xs text-muted-foreground mt-2">
+                        Source: {holidayData.source === 'timeanddate' ? 'Time and Date API' : 'Public Holidays API'}
+                      </div>
                     </>
                   ) : (
-                    // Fallback message when no holidays are found
                     <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
                       <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
                       <div className="text-xs text-muted-foreground">

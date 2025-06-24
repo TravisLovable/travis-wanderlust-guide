@@ -25,30 +25,17 @@ serve(async (req) => {
       );
     }
 
-    const holidayApiKey = Deno.env.get('HOLIDAY_API_KEY');
-    if (!holidayApiKey) {
-      return new Response(
-        JSON.stringify({ error: 'Holiday API key not found' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
-    }
-
+    const timeAndDateApiKey = '6NbsuamveP';
+    
     // Use current year if not provided
     const targetYear = year || new Date().getFullYear();
     
     console.log(`Fetching holidays for country: ${country}, year: ${targetYear}`);
 
     // Call Time and Date Holidays API
-    const holidayUrl = `https://api.timezonedb.com/v2.1/list-time-zone?key=${holidayApiKey}&format=json&country=${country}&year=${targetYear}`;
+    const holidayUrl = `https://api.timezonedb.com/v2.1/list-holidays?key=${timeAndDateApiKey}&format=json&country=${country}&year=${targetYear}`;
     
-    // Note: The actual Time and Date Holidays API endpoint would be different
-    // Using a more appropriate endpoint for holidays
-    const actualHolidayUrl = `https://date.nager.at/api/v3/PublicHolidays/${targetYear}/${country}`;
-    
-    const response = await fetch(actualHolidayUrl, {
+    const response = await fetch(holidayUrl, {
       method: 'GET',
       headers: {
         'Content-Type': 'application/json',
@@ -56,49 +43,84 @@ serve(async (req) => {
     });
 
     if (!response.ok) {
-      console.error(`Holiday API error: ${response.status} ${response.statusText}`);
-      return new Response(
-        JSON.stringify({ 
-          error: `Failed to fetch holidays: ${response.status} ${response.statusText}` 
-        }),
-        { 
-          status: response.status, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
-        }
-      );
+      console.error(`Time and Date API error: ${response.status} ${response.statusText}`);
+      
+      // Fallback to nager.at API if Time and Date API fails
+      const fallbackUrl = `https://date.nager.at/api/v3/PublicHolidays/${targetYear}/${country}`;
+      console.log(`Falling back to nager.at API: ${fallbackUrl}`);
+      
+      const fallbackResponse = await fetch(fallbackUrl, {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!fallbackResponse.ok) {
+        return new Response(
+          JSON.stringify({ 
+            error: `Failed to fetch holidays from both APIs: ${response.status} ${response.statusText}` 
+          }),
+          { 
+            status: response.status, 
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          }
+        );
+      }
+
+      const fallbackData = await fallbackResponse.json();
+      console.log(`Successfully fetched ${fallbackData.length} holidays from fallback API`);
+
+      // Transform fallback data to consistent format
+      const holidays = fallbackData.map((holiday: any) => ({
+        date: holiday.date,
+        name: holiday.name,
+        localName: holiday.localName,
+        countryCode: holiday.countryCode,
+        fixed: holiday.fixed,
+        global: holiday.global,
+        counties: holiday.counties,
+        type: holiday.type || 'Public',
+        region: holiday.counties ? holiday.counties.join(', ') : 'National'
+      }));
+
+      const result = {
+        country,
+        year: targetYear,
+        totalHolidays: holidays.length,
+        allHolidays: holidays,
+        source: 'fallback'
+      };
+
+      return new Response(JSON.stringify(result), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+      });
     }
 
     const holidayData = await response.json();
-    console.log(`Successfully fetched ${holidayData.length} holidays`);
+    console.log(`Successfully fetched holidays from Time and Date API`);
 
-    // Transform the data to a cleaner format
-    const holidays = holidayData.map((holiday: any) => ({
-      date: holiday.date,
-      name: holiday.name,
-      localName: holiday.localName,
-      countryCode: holiday.countryCode,
-      fixed: holiday.fixed,
-      global: holiday.global,
-      counties: holiday.counties,
-      type: holiday.type || 'Public'
-    }));
-
-    // Filter for upcoming holidays (next 30 days)
-    const today = new Date();
-    const thirtyDaysFromNow = new Date();
-    thirtyDaysFromNow.setDate(today.getDate() + 30);
-
-    const upcomingHolidays = holidays.filter((holiday: any) => {
-      const holidayDate = new Date(holiday.date);
-      return holidayDate >= today && holidayDate <= thirtyDaysFromNow;
-    });
+    // Transform Time and Date API data to consistent format
+    let holidays = [];
+    if (holidayData.holidays && Array.isArray(holidayData.holidays)) {
+      holidays = holidayData.holidays.map((holiday: any) => ({
+        date: holiday.date,
+        name: holiday.name,
+        localName: holiday.localname || holiday.name,
+        countryCode: country,
+        fixed: true,
+        global: holiday.type === 'national',
+        type: holiday.type || 'Public',
+        region: holiday.locations || 'National'
+      }));
+    }
 
     const result = {
       country,
       year: targetYear,
       totalHolidays: holidays.length,
-      upcomingHolidays: upcomingHolidays.slice(0, 5), // Limit to 5 upcoming holidays
-      allHolidays: holidays
+      allHolidays: holidays,
+      source: 'timeanddate'
     };
 
     return new Response(JSON.stringify(result), {
