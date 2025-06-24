@@ -541,10 +541,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0 text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full focus:outline-none cursor-pointer"
+                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
                     required
                   />
-                  {/* Suggestions dropdown */}
                   {showSuggestions && (suggestions.length > 0 || fallbackSuggestions.length > 0) && (
                     <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
                       {!hasApiAccess && destination.length >= 2 && (
