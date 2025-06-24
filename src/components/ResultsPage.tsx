@@ -243,22 +243,31 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         console.log('Holiday data received:', data);
         
-        // Filter holidays based on travel dates instead of fixed 30-day window
+        // Filter holidays based on travel dates with improved logic
         if (data && data.allHolidays) {
           const checkinDate = new Date(dates.checkin);
           const checkoutDate = new Date(dates.checkout);
           
-          // Extend the date range slightly to include holidays around the travel period
+          console.log('Travel dates:', { checkin: checkinDate, checkout: checkoutDate });
+          console.log('All holidays:', data.allHolidays.map((h: any) => ({ name: h.name, date: h.date })));
+          
+          // Create a wider date range to capture relevant holidays
           const startDate = new Date(checkinDate);
-          startDate.setDate(startDate.getDate() - 7); // 7 days before checkin
+          startDate.setDate(startDate.getDate() - 14); // 2 weeks before checkin
           
           const endDate = new Date(checkoutDate);
-          endDate.setDate(endDate.getDate() + 7); // 7 days after checkout
+          endDate.setDate(endDate.getDate() + 14); // 2 weeks after checkout
 
           const relevantHolidays = data.allHolidays.filter((holiday: any) => {
             const holidayDate = new Date(holiday.date);
-            return holidayDate >= startDate && holidayDate <= endDate;
+            const isInRange = holidayDate >= startDate && holidayDate <= endDate;
+            
+            console.log(`Holiday ${holiday.name} (${holiday.date}): ${isInRange ? 'INCLUDED' : 'EXCLUDED'}`);
+            
+            return isInRange;
           });
+
+          console.log('Filtered holidays:', relevantHolidays);
 
           // Update the data with filtered holidays
           const updatedData = {
