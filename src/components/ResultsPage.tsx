@@ -39,16 +39,20 @@ interface WorldClockData {
   origin: {
     timeZone: string;
     time: string;
+    time12: string;
     date: string;
     fullDateTime: string;
     isDst: boolean;
+    abbreviation: string;
   };
   destination: {
     timeZone: string;
     time: string;
+    time12: string;
     date: string;
     fullDateTime: string; 
     isDst: boolean;
+    abbreviation: string;
   };
   timeDifferenceHours: number;
   timeDifferenceText: string;
@@ -126,30 +130,26 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             return 'America/Lima';
           }
           
-          // Brazil
+          // South America
           if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
             return 'America/Sao_Paulo';
           }
           
-          // Add more destination mappings
-          if (lowerDest.includes('bali') || lowerDest.includes('indonesia')) {
-            return 'Asia/Makassar';
+          if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires')) {
+            return 'America/Argentina/Buenos_Aires';
           }
           
+          if (lowerDest.includes('chile') || lowerDest.includes('santiago')) {
+            return 'America/Santiago';
+          }
+          
+          if (lowerDest.includes('colombia') || lowerDest.includes('bogota')) {
+            return 'America/Bogota';
+          }
+          
+          // North America
           if (lowerDest.includes('chicago')) {
             return 'America/Chicago';
-          }
-          
-          if (lowerDest.includes('london')) {
-            return 'Europe/London';
-          }
-          
-          if (lowerDest.includes('tokyo')) {
-            return 'Asia/Tokyo';
-          }
-          
-          if (lowerDest.includes('paris')) {
-            return 'Europe/Paris';
           }
           
           if (lowerDest.includes('new york')) {
@@ -164,16 +164,22 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             return 'America/Mexico_City';
           }
           
-          if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires')) {
-            return 'America/Argentina/Buenos_Aires';
+          // Europe
+          if (lowerDest.includes('london')) {
+            return 'Europe/London';
           }
           
-          if (lowerDest.includes('chile') || lowerDest.includes('santiago')) {
-            return 'America/Santiago';
+          if (lowerDest.includes('paris')) {
+            return 'Europe/Paris';
           }
           
-          if (lowerDest.includes('colombia') || lowerDest.includes('bogota')) {
-            return 'America/Bogota';
+          // Asia
+          if (lowerDest.includes('bali') || lowerDest.includes('indonesia')) {
+            return 'Asia/Makassar';
+          }
+          
+          if (lowerDest.includes('tokyo')) {
+            return 'Asia/Tokyo';
           }
           
           // Default fallback
@@ -507,11 +513,15 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return null;
   };
 
-  // Brazil-focused mock data (fallback)
+  // Dynamic mock data based on destination (removed hardcoded Brazil references)
   const mockData = {
     time: { current: '14:42', offset: '-3', dst: false },
-    airport: { code: 'GRU', name: 'São Paulo/Guarulhos International Airport', address: 'Guarulhos, São Paulo' },
-    altitude: { elevation: '760m above sea level' },
+    airport: { 
+      code: destination.toLowerCase().includes('lima') ? 'LIM' : 'GRU', 
+      name: destination.toLowerCase().includes('lima') ? 'Jorge Chávez International Airport' : 'São Paulo/Guarulhos International Airport', 
+      address: destination.toLowerCase().includes('lima') ? 'Lima, Peru' : 'Guarulhos, São Paulo' 
+    },
+    altitude: { elevation: destination.toLowerCase().includes('lima') ? '113m above sea level' : '760m above sea level' },
     emergency: { police: '190', fire: '193', medical: '192' },
     holidays: [
       { name: 'Carnival', date: 'February 12-13, 2024' },
@@ -519,19 +529,25 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       { name: 'Christmas Day', date: 'December 25, 2024' }
     ],
     culture: {
-      language: { primary: 'Portuguese', secondary: 'English (limited in tourist areas)' },
-      religion: { primary: 'Roman Catholic (64.6%)', secondary: 'Protestant (22.2%), Other (13.2%)' },
+      language: { 
+        primary: destination.toLowerCase().includes('lima') ? 'Spanish' : 'Portuguese', 
+        secondary: 'English (limited in tourist areas)' 
+      },
+      religion: { 
+        primary: destination.toLowerCase().includes('lima') ? 'Roman Catholic (76%)' : 'Roman Catholic (64.6%)', 
+        secondary: destination.toLowerCase().includes('lima') ? 'Protestant (14%), Other (10%)' : 'Protestant (22.2%), Other (13.2%)' 
+      },
       etiquette: [
         'Warm greetings with hugs and kisses on cheek',
         'Dress well, appearance matters',
         'Avoid discussing politics initially',
-        'Always say "obrigado/obrigada" (thank you)',
+        destination.toLowerCase().includes('lima') ? 'Always say "gracias" (thank you)' : 'Always say "obrigado/obrigada" (thank you)',
         'Family values are very important'
       ],
       customs: [
         'Late dining (8-10 PM is normal)',
         'Strong coffee culture throughout day',
-        'Soccer (futebol) is a national passion',
+        destination.toLowerCase().includes('lima') ? 'Food culture is central to identity' : 'Soccer (futebol) is a national passion',
         'Music and dance are central to culture'
       ]
     }
@@ -563,14 +579,21 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
   ];
 
-  // Brazilian destinations for suggestions
-  const brazilianDestinations = [
-    'São Paulo, Brazil', 'Rio de Janeiro, Brazil', 'Salvador, Brazil', 'Brasília, Brazil',
-    'Fortaleza, Brazil', 'Belo Horizonte, Brazil', 'Manaus, Brazil', 'Curitiba, Brazil',
-    'Recife, Brazil', 'Goiânia, Brazil', 'Belém, Brazil', 'Porto Alegre, Brazil',
-    'Guarulhos, Brazil', 'Campinas, Brazil', 'São Luís, Brazil', 'São Gonçalo, Brazil',
-    'Maceió, Brazil', 'Duque de Caxias, Brazil', 'Natal, Brazil', 'Florianópolis, Brazil'
-  ];
+  // Dynamic destination suggestions based on the current destination region
+  const getRegionalDestinations = (currentDest: string) => {
+    const lowerDest = currentDest.toLowerCase();
+    
+    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+      return ['Cusco, Peru', 'Arequipa, Peru', 'Trujillo, Peru', 'Iquitos, Peru'];
+    }
+    
+    if (lowerDest.includes('brazil')) {
+      return ['Rio de Janeiro, Brazil', 'Salvador, Brazil', 'Brasília, Brazil', 'Fortaleza, Brazil'];
+    }
+    
+    // Default suggestions for other regions
+    return ['Paris, France', 'Tokyo, Japan', 'London, UK', 'Sydney, Australia'];
+  };
 
   const handleDestinationChange = (value: string) => {
     setNewDestination(value);
@@ -790,14 +813,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   ))}
                 </div>
                 <div className="flex space-x-2">
-                  {['Rio de Janeiro', 'Salvador', 'Brasília', 'Fortaleza'].map((city) => (
+                  {getRegionalDestinations(destination).map((city) => (
                     <button
                       key={city}
-                      onClick={() => handlePinDestination(`${city}, Brazil`)}
+                      onClick={() => handlePinDestination(city)}
                       className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white hover:bg-green-700/40 transition-colors shadow-sm"
                       title="Click to pin"
                     >
-                      + {city}
+                      + {city.split(',')[0]}
                     </button>
                   ))}
                 </div>
@@ -912,7 +935,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
-        {/* Photo Slideshow - Breathtaking Brazil landmarks */}
+        {/* Photo Slideshow */}
         <div className="mb-6">
           <PhotoSlideshow />
         </div>
@@ -995,7 +1018,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Time Zone - High Priority - NOW USES REAL API DATA */}
+          {/* Time Zone - High Priority - Updated with standard and military time */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -1017,10 +1040,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <div className="text-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                       <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
                       <div className="text-lg font-bold text-blue-400">
+                        {worldClockData?.origin.time12 || '4:50 PM'}
+                      </div>
+                      <div className="text-xs text-muted-foreground opacity-75">
                         {worldClockData?.origin.time || '16:50'}
                       </div>
-                      <div className="text-xs text-muted-foreground font-mono">
-                        {worldClockData?.origin.timezone || 'CST'}
+                      <div className="text-xs text-muted-foreground font-mono mt-1">
+                        {worldClockData?.origin.abbreviation || 'CST'}
                       </div>
                     </div>
                     <div className="text-center p-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
@@ -1028,10 +1054,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                         {destination.split(',')[0]}
                       </div>
                       <div className="text-lg font-bold text-blue-300">
+                        {worldClockData?.destination.time12 || '4:50 PM'}
+                      </div>
+                      <div className="text-xs text-muted-foreground opacity-75">
                         {worldClockData?.destination.time || '16:50'}
                       </div>
-                      <div className="text-xs text-muted-foreground font-mono">
-                        {worldClockData?.destination.timezone || 'PET'}
+                      <div className="text-xs text-muted-foreground font-mono mt-1">
+                        {worldClockData?.destination.abbreviation || 'PET'}
                       </div>
                     </div>
                   </div>

@@ -39,12 +39,20 @@ serve(async (req) => {
       try {
         const date = new Date()
         
-        // Get the time in the specified timezone
-        const timeString = date.toLocaleTimeString('en-US', {
+        // Get 12-hour time format
+        const time12 = date.toLocaleTimeString('en-US', {
           timeZone: timezone,
           hour: '2-digit',
           minute: '2-digit',
-          hour12: false // Use 24-hour format for consistency
+          hour12: true
+        })
+        
+        // Get 24-hour time format (military time)
+        const time24 = date.toLocaleTimeString('en-US', {
+          timeZone: timezone,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: false
         })
         
         const dateString = date.toLocaleDateString('en-US', {
@@ -54,33 +62,51 @@ serve(async (req) => {
           day: 'numeric'
         })
         
-        // Get timezone abbreviation
+        // Get timezone abbreviation based on timezone
         const getTimezoneAbbr = (tz: string) => {
-          if (tz === 'America/Chicago') return 'CST'
-          if (tz === 'America/Lima') return 'PET'
-          if (tz === 'America/New_York') return 'EST'
-          if (tz === 'America/Los_Angeles') return 'PST'
-          if (tz === 'Europe/London') return 'GMT'
-          if (tz === 'Asia/Tokyo') return 'JST'
-          if (tz === 'America/Sao_Paulo') return 'BRT'
-          // Default to extracting from timezone string
-          return tz.split('/')[1] || 'UTC'
+          const abbreviations: { [key: string]: string } = {
+            'America/Chicago': 'CST',
+            'America/Lima': 'PET',
+            'America/New_York': 'EST',
+            'America/Los_Angeles': 'PST',
+            'America/Sao_Paulo': 'BRT',
+            'America/Argentina/Buenos_Aires': 'ART',
+            'America/Santiago': 'CLT',
+            'America/Bogota': 'COT',
+            'America/Mexico_City': 'CST',
+            'Europe/London': 'GMT',
+            'Europe/Paris': 'CET',
+            'Asia/Tokyo': 'JST',
+            'Asia/Makassar': 'WITA',
+            'UTC': 'UTC'
+          }
+          
+          return abbreviations[tz] || tz.split('/')[1]?.toUpperCase() || 'UTC'
         }
         
         return {
-          time: timeString,
+          timeZone: timezone,
+          time: time24, // 24-hour format
+          time12: time12, // 12-hour format 
           date: dateString,
-          timezone: getTimezoneAbbr(timezone),
-          fullDateTime: new Date(date.toLocaleString('en-US', { timeZone: timezone })).toISOString()
+          abbreviation: getTimezoneAbbr(timezone),
+          fullDateTime: new Date(date.toLocaleString('en-US', { timeZone: timezone })).toISOString(),
+          isDst: false
         }
       } catch (error) {
         console.error(`Error formatting time for timezone ${timezone}:`, error)
         // Fallback to UTC if timezone is invalid
-        const utcTime = date.toLocaleTimeString('en-US', {
+        const utcTime24 = date.toLocaleTimeString('en-US', {
           timeZone: 'UTC',
           hour: '2-digit',
           minute: '2-digit',
           hour12: false
+        })
+        const utcTime12 = date.toLocaleTimeString('en-US', {
+          timeZone: 'UTC',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
         })
         const utcDate = date.toLocaleDateString('en-US', {
           timeZone: 'UTC',
@@ -89,10 +115,13 @@ serve(async (req) => {
           day: 'numeric'
         })
         return {
-          time: utcTime,
+          timeZone: 'UTC',
+          time: utcTime24,
+          time12: utcTime12,
           date: utcDate,
-          timezone: 'UTC',
-          fullDateTime: date.toISOString()
+          abbreviation: 'UTC',
+          fullDateTime: date.toISOString(),
+          isDst: false
         }
       }
     }
@@ -100,14 +129,20 @@ serve(async (req) => {
     const originTime = formatTimeForTimezone(originTimeZone)
     const destinationTime = formatTimeForTimezone(destinationTimeZone)
     
-    // Calculate time difference more accurately
+    // Calculate time difference more accurately using Intl API
     const getTimezoneOffsetMinutes = (timezone: string) => {
       try {
-        const date = new Date()
-        const utc = new Date(date.getTime() + (date.getTimezoneOffset() * 60000))
-        const local = new Date(date.toLocaleString('en-US', { timeZone: timezone }))
-        return Math.round((local.getTime() - utc.getTime()) / (1000 * 60))
+        const now = new Date()
+        
+        // Create dates in both UTC and the target timezone
+        const utcDate = new Date(now.toLocaleString('en-CA', { timeZone: 'UTC' }))
+        const tzDate = new Date(now.toLocaleString('en-CA', { timeZone: timezone }))
+        
+        // Calculate the difference in minutes
+        const diffMs = tzDate.getTime() - utcDate.getTime()
+        return Math.round(diffMs / (1000 * 60))
       } catch (error) {
+        console.error(`Error calculating offset for ${timezone}:`, error)
         return 0
       }
     }
@@ -118,22 +153,8 @@ serve(async (req) => {
     const diffHours = diffMinutes / 60
     
     const result = {
-      origin: {
-        timeZone: originTimeZone,
-        time: originTime.time,
-        date: originTime.date,
-        timezone: originTime.timezone,
-        fullDateTime: originTime.fullDateTime,
-        isDst: false // We'll keep this simple for now
-      },
-      destination: {
-        timeZone: destinationTimeZone,
-        time: destinationTime.time,
-        date: destinationTime.date,
-        timezone: destinationTime.timezone,
-        fullDateTime: destinationTime.fullDateTime,
-        isDst: false // We'll keep this simple for now
-      },
+      origin: originTime,
+      destination: destinationTime,
       timeDifferenceHours: Math.round(diffHours),
       timeDifferenceText: diffHours === 0 
         ? 'Same time zone' 
