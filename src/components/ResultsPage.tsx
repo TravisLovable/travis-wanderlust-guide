@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -118,6 +117,18 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   // Use real currency exchange data with destination-based currency
   const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', destination);
+
+  // Update pinned destinations when destination changes
+  useEffect(() => {
+    if (!pinnedDestinations.includes(destination)) {
+      setPinnedDestinations(prev => [destination, ...prev.slice(0, 4)]); // Keep max 5 pinned destinations
+    }
+  }, [destination]);
+
+  // Update newDestination when destination prop changes
+  useEffect(() => {
+    setNewDestination(destination);
+  }, [destination]);
 
   // Fetch world clock data
   useEffect(() => {
