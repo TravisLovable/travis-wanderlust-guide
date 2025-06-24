@@ -242,7 +242,34 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         }
 
         console.log('Holiday data received:', data);
-        setHolidayData(data);
+        
+        // Filter holidays based on travel dates instead of fixed 30-day window
+        if (data && data.allHolidays) {
+          const checkinDate = new Date(dates.checkin);
+          const checkoutDate = new Date(dates.checkout);
+          
+          // Extend the date range slightly to include holidays around the travel period
+          const startDate = new Date(checkinDate);
+          startDate.setDate(startDate.getDate() - 7); // 7 days before checkin
+          
+          const endDate = new Date(checkoutDate);
+          endDate.setDate(endDate.getDate() + 7); // 7 days after checkout
+
+          const relevantHolidays = data.allHolidays.filter((holiday: any) => {
+            const holidayDate = new Date(holiday.date);
+            return holidayDate >= startDate && holidayDate <= endDate;
+          });
+
+          // Update the data with filtered holidays
+          const updatedData = {
+            ...data,
+            upcomingHolidays: relevantHolidays.slice(0, 5) // Limit to 5 most relevant holidays
+          };
+          
+          setHolidayData(updatedData);
+        } else {
+          setHolidayData(data);
+        }
       } catch (error) {
         console.error('Failed to fetch holiday data:', error);
         // Keep existing fallback data if API fails
@@ -252,7 +279,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     };
 
     fetchHolidayData();
-  }, [destination]);
+  }, [destination, dates.checkin, dates.checkout]);
 
   // Profile data
   const profileData = {
