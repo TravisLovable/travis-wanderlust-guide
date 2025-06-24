@@ -11,15 +11,6 @@ interface WorldClockRequest {
   destinationTimeZone: string;
 }
 
-interface TimeApiResponse {
-  utc_datetime: string;
-  timezone: string;
-  datetime: string;
-  dst: boolean;
-  dst_offset: number;
-  utc_offset: string;
-}
-
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders })
@@ -40,86 +31,107 @@ serve(async (req) => {
       )
     }
 
-    const apiKey = Deno.env.get('TIME_DATE_API_KEY')
-    if (!apiKey) {
-      return new Response(
-        JSON.stringify({ error: 'Time and Date API key not configured' }),
-        { 
-          status: 500, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+    // Get current time for both timezones using JavaScript's built-in Intl API
+    const now = new Date()
+    
+    // Format times for each timezone
+    const formatTimeForTimezone = (timezone: string) => {
+      try {
+        const date = new Date()
+        
+        // Get the time in the specified timezone
+        const timeString = date.toLocaleTimeString('en-US', {
+          timeZone: timezone,
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        })
+        
+        const dateString = date.toLocaleDateString('en-US', {
+          timeZone: timezone,
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        })
+        
+        const fullDateTime = new Date(date.toLocaleString('en-CA', { timeZone: timezone })).toISOString()
+        
+        return {
+          time: timeString,
+          date: dateString,
+          fullDateTime: fullDateTime
         }
-      )
+      } catch (error) {
+        console.error(`Error formatting time for timezone ${timezone}:`, error)
+        // Fallback to UTC if timezone is invalid
+        const utcTime = date.toLocaleTimeString('en-US', {
+          timeZone: 'UTC',
+          hour: '2-digit',
+          minute: '2-digit',
+          hour12: true
+        })
+        const utcDate = date.toLocaleDateString('en-US', {
+          timeZone: 'UTC',
+          weekday: 'short',
+          month: 'short',
+          day: 'numeric'
+        })
+        return {
+          time: utcTime,
+          date: utcDate,
+          fullDateTime: date.toISOString()
+        }
+      }
     }
-
-    // Get current time for both timezones
-    const [originResponse, destinationResponse] = await Promise.all([
-      fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=zone&zone=${encodeURIComponent(originTimeZone)}`),
-      fetch(`https://api.timezonedb.com/v2.1/get-time-zone?key=${apiKey}&format=json&by=zone&zone=${encodeURIComponent(destinationTimeZone)}`)
-    ])
-
-    if (!originResponse.ok || !destinationResponse.ok) {
-      throw new Error('Failed to fetch timezone data from TimeZoneDB API')
-    }
-
-    const originData = await originResponse.json()
-    const destinationData = await destinationResponse.json()
-
-    if (originData.status === 'FAIL' || destinationData.status === 'FAIL') {
-      throw new Error(originData.message || destinationData.message || 'Invalid timezone provided')
-    }
-
-    // Parse timestamps and calculate time difference
-    const originTimestamp = parseInt(originData.timestamp)
-    const destinationTimestamp = parseInt(destinationData.timestamp)
     
-    // Convert UTC timestamps to local times using GMT offsets
-    const originOffset = parseInt(originData.gmtOffset)
-    const destinationOffset = parseInt(destinationData.gmtOffset)
-    
-    const originLocalTime = new Date((originTimestamp + originOffset) * 1000)
-    const destinationLocalTime = new Date((destinationTimestamp + destinationOffset) * 1000)
+    const originTime = formatTimeForTimezone(originTimeZone)
+    const destinationTime = formatTimeForTimezone(destinationTimeZone)
     
     // Calculate time difference in hours
-    const timeDifferenceHours = (destinationOffset - originOffset) / 3600
-
-    // Format times for display
-    const formatTime = (date: Date) => {
-      return date.toLocaleTimeString('en-US', {
-        hour: '2-digit',
-        minute: '2-digit',
-        hour12: true,
-        timeZone: 'UTC' // Since we already adjusted for timezone
-      })
+    const getTimezoneOffset = (timezone: string) => {
+      try {
+        const date = new Date()
+        const utc = date.getTime() + (date.getTimezoneOffset() * 60000)
+        const targetTime = new Date(utc + (0 * 3600000)) // UTC time
+        const localTime = new Date(date.toLocaleString('en-US', { timeZone: timezone }))
+        const offsetMs = localTime.getTime() - targetTime.getTime()
+        return offsetMs / (1000 * 60 * 60) // Convert to hours
+      } catch (error) {
+        console.error(`Error calculating offset for ${timezone}:`, error)
+        return 0
+      }
     }
-
-    const formatDate = (date: Date) => {
-      return date.toLocaleDateString('en-US', {
-        weekday: 'short',
-        month: 'short',
-        day: 'numeric',
-        timeZone: 'UTC' // Since we already adjusted for timezone
-      })
-    }
-
+    
+    // For a more accurate calculation, we'll use the built-in method
+    const originOffset = -new Date().toLocaleString('en-US', { timeZone: originTimeZone, timeZoneName: 'longOffset' }).match(/GMT([+-]\d+)/)?.[1] || 0
+    const destOffset = -new Date().toLocaleString('en-US', { timeZone: destinationTimeZone, timeZoneName: 'longOffset' }).match(/GMT([+-]\d+)/)?.[1] || 0
+    
+    // Simple calculation: get the actual time difference
+    const originDate = new Date(new Date().toLocaleString('en-US', { timeZone: originTimeZone }))
+    const destDate = new Date(new Date().toLocaleString('en-US', { timeZone: destinationTimeZone }))
+    const timeDifferenceHours = (destDate.getTime() - originDate.getTime()) / (1000 * 60 * 60)
+    
     const result = {
       origin: {
         timeZone: originTimeZone,
-        time: formatTime(originLocalTime),
-        date: formatDate(originLocalTime),
-        fullDateTime: originLocalTime.toISOString(),
-        isDst: originData.dst === '1'
+        time: originTime.time,
+        date: originTime.date,
+        fullDateTime: originTime.fullDateTime,
+        isDst: false // We'll keep this simple for now
       },
       destination: {
         timeZone: destinationTimeZone,
-        time: formatTime(destinationLocalTime),
-        date: formatDate(destinationLocalTime),
-        fullDateTime: destinationLocalTime.toISOString(),
-        isDst: destinationData.dst === '1'
+        time: destinationTime.time,
+        date: destinationTime.date,
+        fullDateTime: destinationTime.fullDateTime,
+        isDst: false // We'll keep this simple for now
       },
-      timeDifferenceHours: timeDifferenceHours,
-      timeDifferenceText: timeDifferenceHours >= 0 
-        ? `+${timeDifferenceHours}h ahead` 
-        : `${Math.abs(timeDifferenceHours)}h behind`
+      timeDifferenceHours: Math.round(timeDifferenceHours),
+      timeDifferenceText: timeDifferenceHours === 0 
+        ? 'Same time zone' 
+        : timeDifferenceHours > 0 
+          ? `+${Math.abs(Math.round(timeDifferenceHours))}h ahead` 
+          : `${Math.abs(Math.round(timeDifferenceHours))}h behind`
     }
 
     console.log('World clock data fetched successfully:', result)

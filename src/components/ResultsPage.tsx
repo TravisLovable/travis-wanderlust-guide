@@ -117,16 +117,21 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       try {
         console.log('Fetching world clock data for:', destination);
         
-        // Get timezone for destination - map common destinations to timezone identifiers
+        // Get timezone for destination - improved mapping with more destinations
         const getTimezoneForDestination = (dest: string) => {
           const lowerDest = dest.toLowerCase();
+          
+          // Peru
+          if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+            return 'America/Lima';
+          }
           
           // Brazil
           if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
             return 'America/Sao_Paulo';
           }
           
-          // Add more destination mappings as needed
+          // Add more destination mappings
           if (lowerDest.includes('bali') || lowerDest.includes('indonesia')) {
             return 'Asia/Makassar';
           }
@@ -147,12 +152,38 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             return 'Europe/Paris';
           }
           
+          if (lowerDest.includes('new york')) {
+            return 'America/New_York';
+          }
+          
+          if (lowerDest.includes('los angeles')) {
+            return 'America/Los_Angeles';
+          }
+          
+          if (lowerDest.includes('mexico')) {
+            return 'America/Mexico_City';
+          }
+          
+          if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires')) {
+            return 'America/Argentina/Buenos_Aires';
+          }
+          
+          if (lowerDest.includes('chile') || lowerDest.includes('santiago')) {
+            return 'America/Santiago';
+          }
+          
+          if (lowerDest.includes('colombia') || lowerDest.includes('bogota')) {
+            return 'America/Bogota';
+          }
+          
           // Default fallback
           return 'UTC';
         };
 
         const destinationTimezone = getTimezoneForDestination(destination);
-        const originTimezone = 'America/New_York'; // User's timezone (EST)
+        const originTimezone = 'America/Chicago'; // User's timezone (CST)
+
+        console.log(`Using timezones: origin=${originTimezone}, destination=${destinationTimezone}`);
 
         const { data, error } = await supabase.functions.invoke('get-world-clock', {
           body: {
