@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -611,6 +612,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
+      e.preventDefault();
       handleSearch();
     }
   };
@@ -824,7 +826,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           )}
 
           {/* Search Bar with Mapbox Auto-suggestions */}
-          <div className="bg-white/10 backdrop-blur-sm border border-border/20 rounded-full p-2 shadow-lg relative travis-glow-white">
+          <form onSubmit={handleSearch} className="bg-white/10 backdrop-blur-sm border border-border/20 rounded-full p-2 shadow-lg relative travis-glow-white">
             <div className="flex items-center gap-2">
               <div className="flex-1 relative">
                 <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
@@ -918,13 +920,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
 
               <Button
-                onClick={handleSearch}
+                type="submit"
                 className="h-12 px-4 bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow"
               >
                 <Search className="w-5 h-5" />
               </Button>
             </div>
-          </div>
+          </form>
         </div>
       </header>
 
@@ -1072,31 +1074,27 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Emergency Info - High Priority, Compact */}
+          {/* Airport Info - Swapped position with Emergency */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
-                  <Shield className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
+                  <Plane className="w-4 h-4 text-white" />
                 </div>
-                Emergency
-                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
+                Airport
+                <Plane className="w-3 h-3 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.police}</div>
-                  <div className="text-xs text-muted-foreground">Police</div>
-                </div>
-                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.medical}</div>
-                  <div className="text-xs text-muted-foreground">Medical</div>
-                </div>
+              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                <div className="font-bold text-lg text-purple-700">{mockData.airport.code}</div>
+                <div className="text-sm font-medium">{mockData.airport.name}</div>
+                <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
               </div>
               <div className="text-xs space-y-1">
-                <p><span className="font-medium">US Consulate:</span> +55 11 5186-7000</p>
-                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
+                <p><span className="font-medium">Distance:</span> 25 km</p>
+                <p><span className="font-medium">Travel time:</span> 45-90 min</p>
+                <p><span className="font-medium">Options:</span> Metro, Bus, Taxi</p>
               </div>
             </CardContent>
           </Card>
@@ -1258,27 +1256,31 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Airport Info */}
+          {/* Emergency Info - Swapped position with Airport */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
-                  <Plane className="w-4 h-4 text-white" />
+                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
+                  <Shield className="w-4 h-4 text-white" />
                 </div>
-                Airport
-                <Plane className="w-3 h-3 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+                Emergency
+                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-3">
-              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <div className="font-bold text-lg text-purple-700">{mockData.airport.code}</div>
-                <div className="text-sm font-medium">{mockData.airport.name}</div>
-                <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.police}</div>
+                  <div className="text-xs text-muted-foreground">Police</div>
+                </div>
+                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
+                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.medical}</div>
+                  <div className="text-xs text-muted-foreground">Medical</div>
+                </div>
               </div>
               <div className="text-xs space-y-1">
-                <p><span className="font-medium">Distance:</span> 25 km</p>
-                <p><span className="font-medium">Travel time:</span> 45-90 min</p>
-                <p><span className="font-medium">Options:</span> Metro, Bus, Taxi</p>
+                <p><span className="font-medium">US Consulate:</span> +55 11 5186-7000</p>
+                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
               </div>
             </CardContent>
           </Card>
