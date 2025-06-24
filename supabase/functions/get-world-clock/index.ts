@@ -74,10 +74,43 @@ serve(async (req) => {
             'America/Santiago': 'CLT',
             'America/Bogota': 'COT',
             'America/Mexico_City': 'CST',
+            'America/Caracas': 'VET',
+            'America/Guayaquil': 'ECT',
+            'America/La_Paz': 'BOT',
+            'America/Montevideo': 'UYT',
+            'America/Asuncion': 'PYT',
+            'America/Toronto': 'EST',
+            'America/Denver': 'MST',
+            'America/Phoenix': 'MST',
             'Europe/London': 'GMT',
             'Europe/Paris': 'CET',
+            'Europe/Berlin': 'CET',
+            'Europe/Rome': 'CET',
+            'Europe/Madrid': 'CET',
+            'Europe/Amsterdam': 'CET',
+            'Europe/Stockholm': 'CET',
+            'Europe/Oslo': 'CET',
+            'Europe/Copenhagen': 'CET',
+            'Europe/Helsinki': 'EET',
+            'Europe/Moscow': 'MSK',
             'Asia/Tokyo': 'JST',
-            'Asia/Makassar': 'WITA',
+            'Asia/Shanghai': 'CST',
+            'Asia/Kolkata': 'IST',
+            'Asia/Bangkok': 'ICT',
+            'Asia/Singapore': 'SGT',
+            'Asia/Jakarta': 'WIB',
+            'Asia/Manila': 'PHT',
+            'Asia/Seoul': 'KST',
+            'Asia/Dubai': 'GST',
+            'Asia/Riyadh': 'AST',
+            'Africa/Johannesburg': 'SAST',
+            'Africa/Cairo': 'EET',
+            'Africa/Lagos': 'WAT',
+            'Africa/Nairobi': 'EAT',
+            'Africa/Casablanca': 'WET',
+            'Australia/Sydney': 'AEDT',
+            'Australia/Melbourne': 'AEDT',
+            'Pacific/Auckland': 'NZDT',
             'UTC': 'UTC'
           }
           
@@ -129,38 +162,65 @@ serve(async (req) => {
     const originTime = formatTimeForTimezone(originTimeZone)
     const destinationTime = formatTimeForTimezone(destinationTimeZone)
     
-    // Calculate time difference more accurately using Intl API
-    const getTimezoneOffsetMinutes = (timezone: string) => {
+    // Calculate time difference using Date objects
+    const calculateTimeDifference = () => {
       try {
         const now = new Date()
         
-        // Create dates in both UTC and the target timezone
-        const utcDate = new Date(now.toLocaleString('en-CA', { timeZone: 'UTC' }))
-        const tzDate = new Date(now.toLocaleString('en-CA', { timeZone: timezone }))
+        // Create date objects for both timezones at the same moment
+        const originDate = new Date(now.toLocaleString('en-US', { timeZone: originTimeZone }))
+        const destDate = new Date(now.toLocaleString('en-US', { timeZone: destinationTimeZone }))
         
-        // Calculate the difference in minutes
-        const diffMs = tzDate.getTime() - utcDate.getTime()
-        return Math.round(diffMs / (1000 * 60))
+        // Get the UTC offset for each timezone
+        const originOffset = -originDate.getTimezoneOffset() // Convert to positive minutes ahead of UTC
+        const destOffset = -destDate.getTimezoneOffset()
+        
+        // Calculate difference in minutes
+        const diffMinutes = destOffset - originOffset
+        const diffHours = diffMinutes / 60
+        
+        let timeDifferenceText = ''
+        
+        if (diffHours === 0) {
+          timeDifferenceText = 'Same time'
+        } else if (diffHours > 0) {
+          const hours = Math.floor(Math.abs(diffHours))
+          const minutes = Math.abs(diffMinutes) % 60
+          if (minutes === 0) {
+            timeDifferenceText = `${hours}h ahead`
+          } else {
+            timeDifferenceText = `${hours}h ${minutes}m ahead`
+          }
+        } else {
+          const hours = Math.floor(Math.abs(diffHours))
+          const minutes = Math.abs(diffMinutes) % 60
+          if (minutes === 0) {
+            timeDifferenceText = `${hours}h behind`
+          } else {
+            timeDifferenceText = `${hours}h ${minutes}m behind`
+          }
+        }
+        
+        return {
+          timeDifferenceHours: Math.round(diffHours),
+          timeDifferenceText
+        }
       } catch (error) {
-        console.error(`Error calculating offset for ${timezone}:`, error)
-        return 0
+        console.error('Error calculating time difference:', error)
+        return {
+          timeDifferenceHours: 0,
+          timeDifferenceText: 'Same time'
+        }
       }
     }
     
-    const originOffsetMin = getTimezoneOffsetMinutes(originTimeZone)
-    const destOffsetMin = getTimezoneOffsetMinutes(destinationTimeZone)
-    const diffMinutes = destOffsetMin - originOffsetMin
-    const diffHours = diffMinutes / 60
+    const { timeDifferenceHours, timeDifferenceText } = calculateTimeDifference()
     
     const result = {
       origin: originTime,
       destination: destinationTime,
-      timeDifferenceHours: Math.round(diffHours),
-      timeDifferenceText: diffHours === 0 
-        ? 'Same time zone' 
-        : diffHours > 0 
-          ? `+${Math.abs(Math.round(diffHours))}h ahead` 
-          : `${Math.abs(Math.round(diffHours))}h behind`
+      timeDifferenceHours,
+      timeDifferenceText
     }
 
     console.log('World clock data fetched successfully:', result)
