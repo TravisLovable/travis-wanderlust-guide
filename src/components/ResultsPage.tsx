@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin, Flag } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -664,283 +664,101 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   };
 
   return (
-    <div className="min-h-screen bg-gray-400 dark:bg-black">
-      {/* Header - More transparent */}
-      <header className="bg-black/5 dark:bg-black/5 backdrop-blur-sm border-b border-white/5 shadow-lg shadow-white/5 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={onBack}
-                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive"
-              >
-                <ArrowLeft className="w-5 h-5" />
-              </Button>
-              <div>
-                <div className="flex items-center space-x-3">
-                  <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
-                    {destination}
-                    {getCountryFlag(destination) ? (
-                      <img 
-                        src={getCountryFlag(destination)!} 
-                        alt="Country Flag" 
-                        className="w-8 h-6 ml-3 mr-2 rounded shadow-sm"
-                      />
-                    ) : (
-                      <Globe className="w-8 h-6 ml-3 mr-2 text-blue-400" />
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handlePinDestination(destination)}
-                      className="text-blue-400 hover:text-blue-300"
-                    >
-                      <Pin className="w-5 h-5" />
-                    </Button>
-                  </h1>
-                </div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="text-muted-foreground flex items-center font-light p-0 h-auto hover:text-foreground transition-colors"
-                    >
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {formatDateRange(newCheckinDate, newCheckoutDate)}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <div className="p-4 space-y-4">
-                      <div>
-                        <p className="text-sm font-medium mb-2">Depart Date</p>
-                        <CalendarComponent
-                          mode="single"
-                          selected={newCheckinDate}
-                          onSelect={(date) => {
-                            if (date) setNewCheckinDate(date);
-                          }}
-                          className="pointer-events-auto"
-                        />
-                      </div>
-                      <div>
-                        <p className="text-sm font-medium mb-2">Return Date</p>
-                        <CalendarComponent
-                          mode="single"
-                          selected={newCheckoutDate}
-                          onSelect={(date) => {
-                            if (date) setNewCheckoutDate(date);
-                          }}
-                          className="pointer-events-auto"
-                        />
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
-            </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-xl font-medium text-foreground">Welcome back, B!</span>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full profile-dropdown-glow">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src="/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png" alt="Profile" />
-                      <AvatarFallback>BJ</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-80 bg-card border-border shadow-lg profile-dropdown-glow" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{profileData.name}</p>
-                      <p className="text-xs leading-none premium-glow font-medium">{profileData.status}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <div className="p-2 space-y-2">
-                    <div className="text-xs">
-                      <strong>Preferred Airline:</strong> {profileData.preferredAirline}
-                    </div>
-                    <div className="text-xs">
-                      <strong>Travel Type:</strong> {profileData.travelType}
-                    </div>
-                    <div className="text-xs">
-                      <strong>Frequent Flyer #:</strong> {profileData.frequentFlyerNumber}
-                    </div>
-                    <div className="text-xs">
-                      <strong>Passport:</strong> {profileData.country}
-                    </div>
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs text-muted-foreground">Dark Mode</span>
-                      <Switch
-                        checked={isDarkMode}
-                        onCheckedChange={toggleTheme}
-                        className="scale-75"
-                      />
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    Edit Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
-            </div>
-          </div>
-
-          {/* Pinned Destinations - More transparent */}
-          {pinnedDestinations.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-muted-foreground font-medium">PINNED:</span>
-                <div className="flex space-x-2 flex-wrap">
-                  {pinnedDestinations.map((dest) => (
-                    <button
-                      key={dest}
-                      onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-sm text-white hover:bg-blue-700/40 transition-colors shadow-sm"
-                    >
-                      <span>{dest}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removePinnedDestination(dest);
-                        }}
-                        className="w-4 h-4 rounded-full bg-white/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
-                      >
-                        ×
-                      </button>
-                    </button>
-                  ))}
-                </div>
-                <div className="flex space-x-2">
-                  {getRegionalDestinations(destination).map((city) => (
-                    <button
-                      key={city}
-                      onClick={() => handlePinDestination(city)}
-                      className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white hover:bg-green-700/40 transition-colors shadow-sm"
-                      title="Click to pin"
-                    >
-                      + {city}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          )}
-
-          {/* Search Bar with Mapbox Auto-suggestions */}
-          <form onSubmit={handleSearch} className="bg-white/10 backdrop-blur-sm border border-border/20 rounded-full p-2 shadow-lg relative travis-glow-white">
-            <div className="flex items-center gap-2">
-              <div className="flex-1 relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
-                <Input
-                  type="text"
-                  placeholder="Search any destination worldwide..."
-                  value={newDestination}
-                  onChange={(e) => handleDestinationChange(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+      {/* Header */}
+      <div className="sticky top-0 z-40 bg-black/20 backdrop-blur-md border-b border-white/10">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <Button
+              onClick={onBack}
+              variant="ghost"
+              className="text-white hover:bg-white/10 mr-4"
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back
+            </Button>
+            
+            {/* Search Bar */}
+            <div className="flex items-center space-x-3 flex-1 max-w-md">
+              <div className="flex items-center space-x-2">
+                <img 
+                  src={`https://flagcdn.com/24x18/${getCountryCodeForDestination(destination).toLowerCase()}.png`}
+                  alt={`${destination} flag`}
+                  className="w-6 h-4 rounded-sm shadow-sm"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.style.display = 'none';
+                  }}
                 />
-                {showSuggestions && mapboxSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {isLoadingSuggestions && (
-                      <div className="p-4 text-center text-muted-foreground">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
-                      </div>
-                    )}
-                    {mapboxSuggestions.map((suggestion, index) => (
+                <Flag className="w-4 h-4 text-blue-300" />
+              </div>
+              <div className="text-left">
+                <h1 className="text-xl font-bold text-white">{destination}</h1>
+                <p className="text-sm text-blue-200">{format(new Date(dates.checkin), 'MMM dd, yyyy')} - {format(new Date(dates.checkout), 'MMM dd, yyyy')}</p>
+              </div>
+            </div>
+
+            {/* New Search Input */}
+            <div className="relative flex-1 max-w-sm">
+              <MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-white/60 w-4 h-4 z-10" />
+              <Input
+                type="text"
+                placeholder="Search new destination..."
+                value={newDestination}
+                onChange={(e) => handleDestinationChange(e.target.value)}
+                onKeyPress={handleKeyPress}
+                onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
+                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                className="pl-10 bg-white/10 border-white/20 text-white placeholder:text-white/60 hover:bg-white/15 focus:bg-white/15 focus:ring-0 focus-visible:ring-0 focus-visible:ring-offset-0"
+              />
+              <Button
+                onClick={handleSearch}
+                size="sm"
+                className="absolute right-1 top-1/2 transform -translate-y-1/2 bg-blue-600 hover:bg-blue-700 text-white h-8 px-3"
+              >
+                <Search className="w-3 h-3" />
+              </Button>
+              
+              {/* Search Suggestions Dropdown */}
+              {showSuggestions && newDestination.length >= 2 && (
+                <div className="absolute top-full left-0 right-0 bg-slate-800/95 backdrop-blur-sm border border-white/20 rounded-lg mt-2 shadow-2xl z-50 max-h-60 overflow-y-auto">
+                  {getRegionalDestinations(destination)
+                    .filter(suggestion => 
+                      suggestion.toLowerCase().includes(newDestination.toLowerCase()) && 
+                      suggestion.toLowerCase() !== newDestination.toLowerCase()
+                    )
+                    .slice(0, 8)
+                    .map((suggestion, index) => (
                       <button
                         key={index}
-                        onClick={() => handleDestinationSelect(suggestion)}
-                        className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setNewDestination(suggestion);
+                          setShowSuggestions(false);
+                          onNewSearch(suggestion, { 
+                            checkin: format(new Date(dates.checkin), 'yyyy-MM-dd'), 
+                            checkout: format(new Date(dates.checkout), 'yyyy-MM-dd') 
+                          }, true);
+                        }}
+                        className="w-full text-left px-4 py-3 hover:bg-white/10 transition-colors first:rounded-t-lg last:rounded-b-lg"
                       >
                         <div className="flex items-center space-x-3">
                           <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-foreground truncate">
-                              {suggestion.text}
-                            </div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {suggestion.place_name}
+                            <div className="font-medium text-white truncate">
+                              {suggestion}
                             </div>
                           </div>
                         </div>
                       </button>
                     ))}
-                  </div>
-                )}
-              </div>
-              
-              {/* Date Inputs */}
-              <div className="flex gap-1">
-                <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
-                    >
-                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Depart'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={newCheckinDate}
-                      onSelect={(date) => {
-                        if (date) setNewCheckinDate(date);
-                        setCheckinOpen(false);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-                
-                <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
-                    >
-                      {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Return'}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={newCheckoutDate}
-                      onSelect={(date) => {
-                        if (date) setNewCheckoutDate(date);
-                        setCheckoutOpen(false);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
-              </div>
-
-              <Button
-                type="submit"
-                className="h-12 px-4 bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow"
-              >
-                <Search className="w-5 h-5" />
-              </Button>
+                </div>
+              )}
             </div>
-          </form>
+          </div>
         </div>
-      </header>
+      </div>
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-6 py-6">
