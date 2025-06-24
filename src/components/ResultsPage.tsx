@@ -1017,10 +1017,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <div className="text-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                       <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
                       <div className="text-lg font-bold text-blue-400">
-                        {worldClockData?.origin.time || '17:42'}
+                        {worldClockData?.origin.time || '16:50'}
                       </div>
                       <div className="text-xs text-muted-foreground font-mono">
-                        {worldClockData?.origin.timeZone.split('/')[1] || 'EST'}
+                        {worldClockData?.origin.timezone || 'CST'}
                       </div>
                     </div>
                     <div className="text-center p-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
@@ -1028,10 +1028,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                         {destination.split(',')[0]}
                       </div>
                       <div className="text-lg font-bold text-blue-300">
-                        {worldClockData?.destination.time || mockData.time.current}
+                        {worldClockData?.destination.time || '16:50'}
                       </div>
                       <div className="text-xs text-muted-foreground font-mono">
-                        {worldClockData?.destination.timeZone.split('/')[1] || 'BRT'}
+                        {worldClockData?.destination.timezone || 'PET'}
                       </div>
                     </div>
                   </div>
