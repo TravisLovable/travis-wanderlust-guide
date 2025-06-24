@@ -78,6 +78,7 @@ serve(async (req) => {
             'Europe/Paris': 'CET',
             'Asia/Tokyo': 'JST',
             'Asia/Makassar': 'WITA',
+            'Africa/Johannesburg': 'SAST',
             'UTC': 'UTC'
           }
           
@@ -129,37 +130,59 @@ serve(async (req) => {
     const originTime = formatTimeForTimezone(originTimeZone)
     const destinationTime = formatTimeForTimezone(destinationTimeZone)
     
-    // Calculate time difference more accurately using Intl API
-    const getTimezoneOffsetMinutes = (timezone: string) => {
+    // Calculate time difference using proper timezone offset calculation
+    const getTimezoneOffsetHours = (timezone: string) => {
       try {
         const now = new Date()
         
-        // Create dates in both UTC and the target timezone
-        const utcDate = new Date(now.toLocaleString('en-CA', { timeZone: 'UTC' }))
-        const tzDate = new Date(now.toLocaleString('en-CA', { timeZone: timezone }))
+        // Create a date formatter for the timezone
+        const formatter = new Intl.DateTimeFormat('en-CA', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+          second: '2-digit',
+          hour12: false
+        })
         
-        // Calculate the difference in minutes
-        const diffMs = tzDate.getTime() - utcDate.getTime()
-        return Math.round(diffMs / (1000 * 60))
+        // Get the formatted date parts
+        const parts = formatter.formatToParts(now)
+        const tzDateStr = `${parts.find(p => p.type === 'year')?.value}-${parts.find(p => p.type === 'month')?.value}-${parts.find(p => p.type === 'day')?.value}T${parts.find(p => p.type === 'hour')?.value}:${parts.find(p => p.type === 'minute')?.value}:${parts.find(p => p.type === 'second')?.value}`
+        
+        // Calculate offset in hours
+        const utcTime = now.getTime()
+        const tzTime = new Date(tzDateStr).getTime()
+        const offsetMs = tzTime - utcTime
+        const offsetHours = offsetMs / (1000 * 60 * 60)
+        
+        return offsetHours
       } catch (error) {
         console.error(`Error calculating offset for ${timezone}:`, error)
-        return 0
+        // Fallback to standard timezone offset calculation
+        const date = new Date()
+        const utcDate = new Date(date.toLocaleString('en-US', { timeZone: 'UTC' }))
+        const tzDate = new Date(date.toLocaleString('en-US', { timeZone: timezone }))
+        const diffMs = tzDate.getTime() - utcDate.getTime()
+        return diffMs / (1000 * 60 * 60)
       }
     }
     
-    const originOffsetMin = getTimezoneOffsetMinutes(originTimeZone)
-    const destOffsetMin = getTimezoneOffsetMinutes(destinationTimeZone)
-    const diffMinutes = destOffsetMin - originOffsetMin
-    const diffHours = diffMinutes / 60
+    const originOffsetHours = getTimezoneOffsetHours(originTimeZone)
+    const destOffsetHours = getTimezoneOffsetHours(destinationTimeZone)
+    const diffHours = destOffsetHours - originOffsetHours
+    
+    console.log(`Origin offset: ${originOffsetHours}h, Destination offset: ${destOffsetHours}h, Difference: ${diffHours}h`)
     
     const result = {
       origin: originTime,
       destination: destinationTime,
       timeDifferenceHours: Math.round(diffHours),
       timeDifferenceText: diffHours === 0 
-        ? 'Same time zone' 
+        ? 'Same time' 
         : diffHours > 0 
-          ? `+${Math.abs(Math.round(diffHours))}h ahead` 
+          ? `${Math.abs(Math.round(diffHours))}h ahead` 
           : `${Math.abs(Math.round(diffHours))}h behind`
     }
 
