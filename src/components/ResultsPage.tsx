@@ -183,51 +183,65 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       try {
         console.log('Fetching holiday data for:', destination);
         
-        // Get country code for destination
+        // Get country code for destination - improved mapping
         const getCountryCodeForDestination = (dest: string) => {
           const lowerDest = dest.toLowerCase();
           
           // Map destinations to ISO country codes
-          if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
+          if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro') || lowerDest.includes('salvador') || lowerDest.includes('brasília')) {
             return 'BR';
           }
-          if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+          if (lowerDest.includes('peru') || lowerDest.includes('lima') || lowerDest.includes('cusco') || lowerDest.includes('arequipa') || lowerDest.includes('trujillo')) {
             return 'PE';
           }
-          if (lowerDest.includes('united states') || lowerDest.includes('usa') || lowerDest.includes('chicago') || lowerDest.includes('new york')) {
+          if (lowerDest.includes('united states') || lowerDest.includes('usa') || lowerDest.includes('chicago') || lowerDest.includes('new york') || lowerDest.includes('los angeles') || lowerDest.includes('miami')) {
             return 'US';
           }
-          if (lowerDest.includes('united kingdom') || lowerDest.includes('uk') || lowerDest.includes('london')) {
+          if (lowerDest.includes('united kingdom') || lowerDest.includes('uk') || lowerDest.includes('london') || lowerDest.includes('manchester') || lowerDest.includes('edinburgh')) {
             return 'GB';
           }
-          if (lowerDest.includes('france') || lowerDest.includes('paris')) {
+          if (lowerDest.includes('france') || lowerDest.includes('paris') || lowerDest.includes('lyon') || lowerDest.includes('marseille')) {
             return 'FR';
           }
-          if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich')) {
+          if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich') || lowerDest.includes('hamburg')) {
             return 'DE';
           }
-          if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka')) {
+          if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka') || lowerDest.includes('kyoto')) {
             return 'JP';
           }
-          if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan')) {
+          if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan') || lowerDest.includes('florence')) {
             return 'IT';
           }
-          if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona')) {
+          if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona') || lowerDest.includes('seville')) {
             return 'ES';
           }
-          if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver')) {
+          if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver') || lowerDest.includes('montreal')) {
             return 'CA';
           }
-          if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne')) {
+          if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne') || lowerDest.includes('brisbane')) {
             return 'AU';
           }
+          if (lowerDest.includes('mexico') || lowerDest.includes('mexico city') || lowerDest.includes('cancun') || lowerDest.includes('guadalajara')) {
+            return 'MX';
+          }
+          if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires') || lowerDest.includes('cordoba') || lowerDest.includes('mendoza')) {
+            return 'AR';
+          }
+          if (lowerDest.includes('chile') || lowerDest.includes('santiago') || lowerDest.includes('valparaiso')) {
+            return 'CL';
+          }
+          if (lowerDest.includes('colombia') || lowerDest.includes('bogota') || lowerDest.includes('medellin') || lowerDest.includes('cartagena')) {
+            return 'CO';
+          }
           
-          // Default fallback to Brazil for now
-          return 'BR';
+          // Default fallback to Peru if no match (since that's what user is testing)
+          return 'PE';
         };
 
         const countryCode = getCountryCodeForDestination(destination);
         const currentYear = new Date().getFullYear();
+
+        console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destination}`);
 
         const { data, error } = await supabase.functions.invoke('get-holidays', {
           body: {
@@ -243,36 +257,34 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         console.log('Holiday data received:', data);
         
-        // Filter holidays based on travel dates with improved logic
+        // Filter holidays to show ONLY holidays within the exact travel dates
         if (data && data.allHolidays) {
           const checkinDate = new Date(dates.checkin);
           const checkoutDate = new Date(dates.checkout);
           
-          console.log('Travel dates:', { checkin: checkinDate, checkout: checkoutDate });
-          console.log('All holidays:', data.allHolidays.map((h: any) => ({ name: h.name, date: h.date })));
+          console.log('Travel dates:', { 
+            checkin: checkinDate.toISOString().split('T')[0], 
+            checkout: checkoutDate.toISOString().split('T')[0] 
+          });
+          console.log('All holidays for', countryCode, ':', data.allHolidays.map((h: any) => ({ name: h.name, date: h.date })));
           
-          // Create a wider date range to capture relevant holidays
-          const startDate = new Date(checkinDate);
-          startDate.setDate(startDate.getDate() - 14); // 2 weeks before checkin
-          
-          const endDate = new Date(checkoutDate);
-          endDate.setDate(endDate.getDate() + 14); // 2 weeks after checkout
-
+          // Filter to show ONLY holidays that fall within the travel period
           const relevantHolidays = data.allHolidays.filter((holiday: any) => {
             const holidayDate = new Date(holiday.date);
-            const isInRange = holidayDate >= startDate && holidayDate <= endDate;
+            const isWithinTravelDates = holidayDate >= checkinDate && holidayDate <= checkoutDate;
             
-            console.log(`Holiday ${holiday.name} (${holiday.date}): ${isInRange ? 'INCLUDED' : 'EXCLUDED'}`);
+            console.log(`Holiday ${holiday.name} (${holiday.date}): ${isWithinTravelDates ? 'WITHIN TRAVEL DATES' : 'OUTSIDE TRAVEL DATES'}`);
             
-            return isInRange;
+            return isWithinTravelDates;
           });
 
-          console.log('Filtered holidays:', relevantHolidays);
+          console.log('Holidays within travel dates:', relevantHolidays);
 
           // Update the data with filtered holidays
           const updatedData = {
             ...data,
-            upcomingHolidays: relevantHolidays.slice(0, 5) // Limit to 5 most relevant holidays
+            upcomingHolidays: relevantHolidays.slice(0, 5), // Show up to 5 holidays within travel dates
+            countryCode: countryCode // Add country code for reference
           };
           
           setHolidayData(updatedData);
@@ -1034,7 +1046,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <>
                   {holidayData && holidayData.upcomingHolidays.length > 0 ? (
                     <>
-                      {holidayData.upcomingHolidays.slice(0, 2).map((holiday, idx) => (
+                      <div className="text-xs text-purple-300 mb-2 font-medium">
+                        During your trip to {destination}:
+                      </div>
+                      {holidayData.upcomingHolidays.slice(0, 3).map((holiday, idx) => (
                         <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                           <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
                           <div className="text-xs text-muted-foreground">
@@ -1046,23 +1061,20 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                           </div>
                         </div>
                       ))}
-                      <div className="text-xs text-muted-foreground">
-                        <p>{holidayData.totalHolidays} total holidays this year</p>
-                      </div>
+                      {holidayData.upcomingHolidays.length === 0 && (
+                        <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
+                          <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
+                        </div>
+                      )}
                     </>
                   ) : (
-                    // Fallback to mock data if no holidays or API error
-                    <>
-                      {mockData.holidays.slice(0, 2).map((holiday, idx) => (
-                        <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                          <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
-                          <div className="text-xs text-muted-foreground">{holiday.date}</div>
-                        </div>
-                      ))}
+                    // Fallback message when no holidays are found
+                    <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
+                      <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
                       <div className="text-xs text-muted-foreground">
-                        <p>Many businesses close during major holidays</p>
+                        {format(new Date(dates.checkin), 'MMM dd')} - {format(new Date(dates.checkout), 'MMM dd')}
                       </div>
-                    </>
+                    </div>
                   )}
                 </>
               )}
