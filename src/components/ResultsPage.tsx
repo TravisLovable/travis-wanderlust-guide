@@ -618,6 +618,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         checkin: format(newCheckinDate, 'yyyy-MM-dd'), 
         checkout: format(newCheckoutDate, 'yyyy-MM-dd') 
       }, true);
+      setShowSuggestions(false); // Hide suggestions after search
     }
   };
 
