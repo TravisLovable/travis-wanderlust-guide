@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import HomePage from '@/components/HomePage';
 import LoadingIntelligence from '@/components/LoadingIntelligence';
@@ -15,9 +16,15 @@ const Index = () => {
   const [searchData, setSearchData] = useState<SearchData | null>(null);
   const [showLoading, setShowLoading] = useState(false);
 
-  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }) => {
+  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }, skipTransition = false) => {
     setSearchData({ destination, dates });
-    setShowLoading(true);
+    
+    // Skip loading transition if requested (for searches from results page)
+    if (skipTransition) {
+      setShowLoading(false);
+    } else {
+      setShowLoading(true);
+    }
   };
 
   const handleLoadingComplete = () => {

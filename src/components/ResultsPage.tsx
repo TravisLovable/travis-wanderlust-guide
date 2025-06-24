@@ -31,9 +31,12 @@ import { getContextualDestinations } from '@/utils/contextualDestinationSuggesti
 
 interface ResultsPageProps {
   destination: string;
-  dates: { checkin: string; checkout: string };
+  dates: {
+    checkin: string;
+    checkout: string;
+  };
   onBack: () => void;
-  onNewSearch: (destination: string, dates: { checkin: string; checkout: string }) => void;
+  onNewSearch: (destination: string, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
 }
 
 interface WorldClockData {
@@ -595,18 +598,20 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     setShowSuggestions(false);
   };
 
-  const handleNewSearch = () => {
+  const handleSearch = (e?: React.FormEvent) => {
+    e?.preventDefault();
     if (newDestination && newCheckinDate && newCheckoutDate) {
-      onNewSearch(newDestination, {
-        checkin: format(newCheckinDate, 'yyyy-MM-dd'),
-        checkout: format(newCheckoutDate, 'yyyy-MM-dd')
-      });
+      // Pass skipTransition as true to avoid loading screen
+      onNewSearch(newDestination, { 
+        checkin: format(newCheckinDate, 'yyyy-MM-dd'), 
+        checkout: format(newCheckoutDate, 'yyyy-MM-dd') 
+      }, true);
     }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleNewSearch();
+      handleSearch();
     }
   };
 
@@ -913,7 +918,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
 
               <Button
-                onClick={handleNewSearch}
+                onClick={handleSearch}
                 className="h-12 px-4 bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow"
               >
                 <Search className="w-5 h-5" />
