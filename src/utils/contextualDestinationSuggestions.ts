@@ -2,453 +2,496 @@
 export const getContextualDestinations = (destination: string): string[] => {
   const lowerDest = destination.toLowerCase();
   
-  // Europe
-  if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona') || 
-      lowerDest.includes('seville') || lowerDest.includes('valencia') || lowerDest.includes('canary islands') ||
-      lowerDest.includes('balearic islands') || lowerDest.includes('mallorca') || lowerDest.includes('ibiza')) {
-    return ['Portugal', 'France', 'Italy', 'Morocco'];
+  // Peru
+  if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+    return ['Miraflores', 'San Isidro', 'Barranco', 'Cusco'];
   }
   
-  if (lowerDest.includes('portugal') || lowerDest.includes('lisbon') || lowerDest.includes('porto')) {
-    return ['Spain', 'Morocco', 'France', 'Azores'];
+  if (lowerDest.includes('cusco') || lowerDest.includes('cuzco')) {
+    return ['Sacred Valley', 'Ollantaytambo', 'Pisac', 'Machu Picchu'];
   }
   
-  if (lowerDest.includes('france') || lowerDest.includes('paris') || lowerDest.includes('lyon') || 
-      lowerDest.includes('marseille') || lowerDest.includes('nice') || lowerDest.includes('cannes')) {
-    return ['Spain', 'Italy', 'Switzerland', 'Belgium'];
+  // Spain
+  if (lowerDest.includes('madrid')) {
+    return ['Malasaña', 'Chueca', 'La Latina', 'Retiro'];
   }
   
-  if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan') || 
-      lowerDest.includes('florence') || lowerDest.includes('venice') || lowerDest.includes('naples')) {
-    return ['France', 'Switzerland', 'Austria', 'Greece'];
+  if (lowerDest.includes('barcelona')) {
+    return ['Gothic Quarter', 'Eixample', 'Gràcia', 'El Born'];
   }
   
-  if (lowerDest.includes('greece') || lowerDest.includes('athens') || lowerDest.includes('santorini') || 
-      lowerDest.includes('mykonos') || lowerDest.includes('crete')) {
-    return ['Italy', 'Turkey', 'Cyprus', 'Croatia'];
+  if (lowerDest.includes('seville') || lowerDest.includes('sevilla')) {
+    return ['Santa Cruz', 'Triana', 'Alameda', 'Macarena'];
   }
   
-  if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich') || 
-      lowerDest.includes('hamburg') || lowerDest.includes('cologne')) {
-    return ['Austria', 'Switzerland', 'Netherlands', 'Czech Republic'];
+  if (lowerDest.includes('canary islands') || lowerDest.includes('gran canaria') || lowerDest.includes('tenerife')) {
+    return ['Las Palmas', 'Santa Cruz', 'Playa del Inglés', 'Puerto de la Cruz'];
   }
   
-  if (lowerDest.includes('united kingdom') || lowerDest.includes('uk') || lowerDest.includes('london') || 
-      lowerDest.includes('edinburgh') || lowerDest.includes('manchester') || lowerDest.includes('glasgow')) {
-    return ['Ireland', 'France', 'Netherlands', 'Belgium'];
+  if (lowerDest.includes('spain') && !lowerDest.includes('madrid') && !lowerDest.includes('barcelona')) {
+    return ['Madrid', 'Barcelona', 'Seville', 'Valencia'];
   }
   
-  if (lowerDest.includes('netherlands') || lowerDest.includes('amsterdam') || lowerDest.includes('rotterdam')) {
-    return ['Belgium', 'Germany', 'United Kingdom', 'Denmark'];
+  // Portugal
+  if (lowerDest.includes('lisbon') || lowerDest.includes('lisboa')) {
+    return ['Alfama', 'Bairro Alto', 'Chiado', 'Belém'];
   }
   
-  if (lowerDest.includes('switzerland') || lowerDest.includes('zurich') || lowerDest.includes('geneva') || 
-      lowerDest.includes('bern') || lowerDest.includes('basel')) {
-    return ['Austria', 'Germany', 'France', 'Italy'];
+  if (lowerDest.includes('porto') || lowerDest.includes('oporto')) {
+    return ['Ribeira', 'Cedofeita', 'Vila Nova de Gaia', 'Foz do Douro'];
   }
   
-  if (lowerDest.includes('austria') || lowerDest.includes('vienna') || lowerDest.includes('salzburg') || 
-      lowerDest.includes('innsbruck')) {
-    return ['Germany', 'Switzerland', 'Italy', 'Czech Republic'];
+  if (lowerDest.includes('portugal') && !lowerDest.includes('lisbon') && !lowerDest.includes('porto')) {
+    return ['Lisbon', 'Porto', 'Sintra', 'Cascais'];
   }
   
-  if (lowerDest.includes('czech republic') || lowerDest.includes('prague') || lowerDest.includes('brno')) {
-    return ['Austria', 'Germany', 'Slovakia', 'Poland'];
+  // France
+  if (lowerDest.includes('paris')) {
+    return ['Montmartre', 'Le Marais', 'Saint-Germain', 'Champs-Élysées'];
   }
   
-  if (lowerDest.includes('poland') || lowerDest.includes('warsaw') || lowerDest.includes('krakow') || 
-      lowerDest.includes('gdansk')) {
-    return ['Czech Republic', 'Germany', 'Lithuania', 'Slovakia'];
+  if (lowerDest.includes('nice')) {
+    return ['Vieux Nice', 'Promenade des Anglais', 'Cannes', 'Monaco'];
   }
   
-  if (lowerDest.includes('scandinavia') || lowerDest.includes('sweden') || lowerDest.includes('stockholm') || 
-      lowerDest.includes('gothenburg') || lowerDest.includes('malmö')) {
-    return ['Norway', 'Denmark', 'Finland', 'Germany'];
+  if (lowerDest.includes('lyon')) {
+    return ['Vieux Lyon', 'Presqu\'île', 'Croix-Rousse', 'Confluence'];
   }
   
-  if (lowerDest.includes('norway') || lowerDest.includes('oslo') || lowerDest.includes('bergen') || 
-      lowerDest.includes('trondheim')) {
-    return ['Sweden', 'Denmark', 'Iceland', 'Finland'];
+  if (lowerDest.includes('france') && !lowerDest.includes('paris') && !lowerDest.includes('nice')) {
+    return ['Paris', 'Nice', 'Lyon', 'Marseille'];
   }
   
-  if (lowerDest.includes('denmark') || lowerDest.includes('copenhagen') || lowerDest.includes('aarhus')) {
-    return ['Sweden', 'Norway', 'Germany', 'Netherlands'];
+  // Italy
+  if (lowerDest.includes('rome') || lowerDest.includes('roma')) {
+    return ['Trastevere', 'Centro Storico', 'Vatican City', 'Testaccio'];
   }
   
-  if (lowerDest.includes('finland') || lowerDest.includes('helsinki') || lowerDest.includes('tampere')) {
-    return ['Sweden', 'Norway', 'Estonia', 'Russia'];
+  if (lowerDest.includes('milan') || lowerDest.includes('milano')) {
+    return ['Brera', 'Navigli', 'Quadrilatero', 'Porta Nuova'];
   }
   
-  if (lowerDest.includes('iceland') || lowerDest.includes('reykjavik')) {
-    return ['Norway', 'Denmark', 'United Kingdom', 'Faroe Islands'];
+  if (lowerDest.includes('florence') || lowerDest.includes('firenze')) {
+    return ['Centro Storico', 'Oltrarno', 'Santa Croce', 'San Lorenzo'];
   }
   
-  // Eastern Europe
-  if (lowerDest.includes('russia') || lowerDest.includes('moscow') || lowerDest.includes('st petersburg')) {
-    return ['Finland', 'Estonia', 'Latvia', 'Lithuania'];
+  if (lowerDest.includes('venice') || lowerDest.includes('venezia')) {
+    return ['San Marco', 'Dorsoduro', 'Cannaregio', 'Castello'];
   }
   
-  if (lowerDest.includes('ukraine') || lowerDest.includes('kiev') || lowerDest.includes('lviv')) {
-    return ['Poland', 'Romania', 'Hungary', 'Moldova'];
+  if (lowerDest.includes('naples') || lowerDest.includes('napoli')) {
+    return ['Centro Storico', 'Vomero', 'Chiaia', 'Quartieri Spagnoli'];
   }
   
-  if (lowerDest.includes('romania') || lowerDest.includes('bucharest') || lowerDest.includes('brasov')) {
-    return ['Hungary', 'Bulgaria', 'Serbia', 'Moldova'];
+  if (lowerDest.includes('italy') && !lowerDest.includes('rome') && !lowerDest.includes('milan')) {
+    return ['Rome', 'Milan', 'Florence', 'Venice'];
   }
   
-  if (lowerDest.includes('hungary') || lowerDest.includes('budapest') || lowerDest.includes('debrecen')) {
-    return ['Austria', 'Slovakia', 'Romania', 'Serbia'];
+  // Greece
+  if (lowerDest.includes('athens') || lowerDest.includes('athina')) {
+    return ['Plaka', 'Monastiraki', 'Psyrri', 'Kolonaki'];
   }
   
-  if (lowerDest.includes('croatia') || lowerDest.includes('zagreb') || lowerDest.includes('split') || 
-      lowerDest.includes('dubrovnik')) {
-    return ['Slovenia', 'Bosnia and Herzegovina', 'Montenegro', 'Italy'];
+  if (lowerDest.includes('santorini')) {
+    return ['Oia', 'Fira', 'Imerovigli', 'Kamari'];
   }
   
-  if (lowerDest.includes('serbia') || lowerDest.includes('belgrade') || lowerDest.includes('novi sad')) {
-    return ['Croatia', 'Bosnia and Herzegovina', 'Montenegro', 'Hungary'];
+  if (lowerDest.includes('mykonos')) {
+    return ['Mykonos Town', 'Paradise Beach', 'Super Paradise', 'Little Venice'];
   }
   
-  // North America
-  if (lowerDest.includes('united states') || lowerDest.includes('usa') || lowerDest.includes('new york') || 
-      lowerDest.includes('los angeles') || lowerDest.includes('chicago') || lowerDest.includes('miami') || 
-      lowerDest.includes('san francisco') || lowerDest.includes('seattle') || lowerDest.includes('boston')) {
-    return ['Canada', 'Mexico', 'Bermuda', 'Bahamas'];
+  if (lowerDest.includes('greece') && !lowerDest.includes('athens') && !lowerDest.includes('santorini')) {
+    return ['Athens', 'Santorini', 'Mykonos', 'Thessaloniki'];
   }
   
-  if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver') || 
-      lowerDest.includes('montreal') || lowerDest.includes('calgary') || lowerDest.includes('ottawa')) {
-    return ['United States', 'Iceland', 'Greenland', 'Alaska'];
+  // Germany
+  if (lowerDest.includes('berlin')) {
+    return ['Mitte', 'Kreuzberg', 'Prenzlauer Berg', 'Charlottenburg'];
   }
   
-  if (lowerDest.includes('mexico') || lowerDest.includes('mexico city') || lowerDest.includes('cancun') || 
-      lowerDest.includes('guadalajara') || lowerDest.includes('playa del carmen') || lowerDest.includes('tulum')) {
-    return ['United States', 'Guatemala', 'Belize', 'Cuba'];
+  if (lowerDest.includes('munich') || lowerDest.includes('münchen')) {
+    return ['Altstadt', 'Schwabing', 'Maxvorstadt', 'Glockenbachviertel'];
   }
   
-  // Central America & Caribbean
-  if (lowerDest.includes('guatemala') || lowerDest.includes('guatemala city') || lowerDest.includes('antigua')) {
-    return ['Mexico', 'Belize', 'El Salvador', 'Honduras'];
+  if (lowerDest.includes('hamburg')) {
+    return ['St. Pauli', 'HafenCity', 'Speicherstadt', 'Altona'];
   }
   
-  if (lowerDest.includes('costa rica') || lowerDest.includes('san jose') || lowerDest.includes('manuel antonio')) {
-    return ['Panama', 'Nicaragua', 'Colombia', 'United States'];
+  if (lowerDest.includes('germany') && !lowerDest.includes('berlin') && !lowerDest.includes('munich')) {
+    return ['Berlin', 'Munich', 'Hamburg', 'Cologne'];
   }
   
-  if (lowerDest.includes('panama') || lowerDest.includes('panama city')) {
-    return ['Costa Rica', 'Colombia', 'Nicaragua', 'United States'];
+  // United Kingdom
+  if (lowerDest.includes('london')) {
+    return ['Westminster', 'Camden', 'Shoreditch', 'Kensington'];
   }
   
-  if (lowerDest.includes('cuba') || lowerDest.includes('havana') || lowerDest.includes('varadero')) {
-    return ['Mexico', 'Jamaica', 'Bahamas', 'Dominican Republic'];
+  if (lowerDest.includes('edinburgh')) {
+    return ['Old Town', 'New Town', 'Leith', 'Stockbridge'];
   }
   
-  if (lowerDest.includes('jamaica') || lowerDest.includes('kingston') || lowerDest.includes('montego bay')) {
-    return ['Cuba', 'Bahamas', 'Cayman Islands', 'Dominican Republic'];
+  if (lowerDest.includes('uk') || lowerDest.includes('united kingdom')) {
+    return ['London', 'Edinburgh', 'Bath', 'Oxford'];
   }
   
-  if (lowerDest.includes('dominican republic') || lowerDest.includes('santo domingo') || lowerDest.includes('punta cana')) {
-    return ['Haiti', 'Puerto Rico', 'Cuba', 'Jamaica'];
+  // Netherlands
+  if (lowerDest.includes('amsterdam')) {
+    return ['Jordaan', 'De Pijp', 'Vondelpark', 'Red Light District'];
   }
   
-  if (lowerDest.includes('puerto rico') || lowerDest.includes('san juan')) {
-    return ['Dominican Republic', 'US Virgin Islands', 'British Virgin Islands', 'Barbados'];
+  if (lowerDest.includes('netherlands') && !lowerDest.includes('amsterdam')) {
+    return ['Amsterdam', 'Utrecht', 'Rotterdam', 'The Hague'];
   }
   
-  if (lowerDest.includes('barbados') || lowerDest.includes('bridgetown')) {
-    return ['Trinidad and Tobago', 'Saint Lucia', 'Grenada', 'Saint Vincent'];
+  // United States
+  if (lowerDest.includes('new york')) {
+    return ['Manhattan', 'Brooklyn', 'Queens', 'The Bronx'];
   }
   
-  // South America
-  if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro') || 
-      lowerDest.includes('salvador') || lowerDest.includes('brasília') || lowerDest.includes('fortaleza')) {
-    return ['Argentina', 'Peru', 'Colombia', 'Uruguay'];
+  if (lowerDest.includes('los angeles')) {
+    return ['Hollywood', 'Beverly Hills', 'Santa Monica', 'Venice Beach'];
   }
   
-  if (lowerDest.includes('peru') || lowerDest.includes('lima') || lowerDest.includes('cusco') || 
-      lowerDest.includes('arequipa') || lowerDest.includes('trujillo')) {
-    return ['Bolivia', 'Ecuador', 'Colombia', 'Chile'];
+  if (lowerDest.includes('san francisco')) {
+    return ['Union Square', 'Fisherman\'s Wharf', 'Chinatown', 'Castro'];
   }
   
-  if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires') || lowerDest.includes('cordoba') || 
-      lowerDest.includes('mendoza') || lowerDest.includes('bariloche')) {
-    return ['Chile', 'Uruguay', 'Brazil', 'Paraguay'];
+  if (lowerDest.includes('chicago')) {
+    return ['The Loop', 'Lincoln Park', 'Wicker Park', 'River North'];
   }
   
-  if (lowerDest.includes('chile') || lowerDest.includes('santiago') || lowerDest.includes('valparaiso') || 
-      lowerDest.includes('atacama')) {
-    return ['Argentina', 'Peru', 'Bolivia', 'Easter Island'];
+  if (lowerDest.includes('miami')) {
+    return ['South Beach', 'Wynwood', 'Little Havana', 'Coral Gables'];
   }
   
-  if (lowerDest.includes('colombia') || lowerDest.includes('bogota') || lowerDest.includes('medellin') || 
-      lowerDest.includes('cartagena') || lowerDest.includes('cali')) {
-    return ['Ecuador', 'Peru', 'Panama', 'Venezuela'];
+  if (lowerDest.includes('seattle')) {
+    return ['Capitol Hill', 'Fremont', 'Ballard', 'Queen Anne'];
   }
   
-  if (lowerDest.includes('ecuador') || lowerDest.includes('quito') || lowerDest.includes('guayaquil') || 
-      lowerDest.includes('galapagos')) {
-    return ['Peru', 'Colombia', 'Galapagos Islands', 'Panama'];
+  if (lowerDest.includes('boston')) {
+    return ['Back Bay', 'North End', 'Beacon Hill', 'Cambridge'];
   }
   
-  if (lowerDest.includes('bolivia') || lowerDest.includes('la paz') || lowerDest.includes('sucre') || 
-      lowerDest.includes('santa cruz')) {
-    return ['Peru', 'Chile', 'Argentina', 'Paraguay'];
+  if (lowerDest.includes('united states') || lowerDest.includes('usa')) {
+    return ['New York', 'Los Angeles', 'Chicago', 'Miami'];
   }
   
-  if (lowerDest.includes('uruguay') || lowerDest.includes('montevideo') || lowerDest.includes('punta del este')) {
-    return ['Argentina', 'Brazil', 'Paraguay', 'Chile'];
+  // Canada
+  if (lowerDest.includes('toronto')) {
+    return ['Downtown', 'Kensington Market', 'Distillery District', 'Queen Street West'];
   }
   
-  if (lowerDest.includes('venezuela') || lowerDest.includes('caracas') || lowerDest.includes('valencia')) {
-    return ['Colombia', 'Guyana', 'Trinidad and Tobago', 'Brazil'];
+  if (lowerDest.includes('vancouver')) {
+    return ['Gastown', 'Yaletown', 'Granville Island', 'Kitsilano'];
   }
   
-  // Asia
-  if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka') || 
-      lowerDest.includes('kyoto') || lowerDest.includes('hiroshima') || lowerDest.includes('nara')) {
-    return ['South Korea', 'China', 'Taiwan', 'Philippines'];
+  if (lowerDest.includes('montreal')) {
+    return ['Old Montreal', 'Plateau', 'Downtown', 'Mile End'];
   }
   
-  if (lowerDest.includes('south korea') || lowerDest.includes('seoul') || lowerDest.includes('busan') || 
-      lowerDest.includes('jeju')) {
-    return ['Japan', 'China', 'Taiwan', 'North Korea'];
+  if (lowerDest.includes('canada') && !lowerDest.includes('toronto') && !lowerDest.includes('vancouver')) {
+    return ['Toronto', 'Vancouver', 'Montreal', 'Calgary'];
   }
   
-  if (lowerDest.includes('china') || lowerDest.includes('beijing') || lowerDest.includes('shanghai') || 
-      lowerDest.includes('guangzhou') || lowerDest.includes('shenzhen') || lowerDest.includes('hong kong')) {
-    return ['Japan', 'South Korea', 'Taiwan', 'Vietnam'];
+  // Mexico
+  if (lowerDest.includes('mexico city')) {
+    return ['Roma Norte', 'Condesa', 'Polanco', 'Coyoacán'];
   }
   
-  if (lowerDest.includes('taiwan') || lowerDest.includes('taipei') || lowerDest.includes('kaohsiung')) {
-    return ['Japan', 'Philippines', 'China', 'South Korea'];
+  if (lowerDest.includes('cancun')) {
+    return ['Hotel Zone', 'Downtown Cancun', 'Playa del Carmen', 'Tulum'];
   }
   
-  if (lowerDest.includes('thailand') || lowerDest.includes('bangkok') || lowerDest.includes('chiang mai') || 
-      lowerDest.includes('phuket') || lowerDest.includes('koh samui')) {
-    return ['Vietnam', 'Cambodia', 'Laos', 'Malaysia'];
+  if (lowerDest.includes('playa del carmen')) {
+    return ['Fifth Avenue', 'Playacar', 'Cancun', 'Cozumel'];
   }
   
-  if (lowerDest.includes('vietnam') || lowerDest.includes('ho chi minh city') || lowerDest.includes('hanoi') || 
-      lowerDest.includes('da nang') || lowerDest.includes('hoi an')) {
-    return ['Cambodia', 'Thailand', 'Laos', 'China'];
+  if (lowerDest.includes('mexico') && !lowerDest.includes('mexico city') && !lowerDest.includes('cancun')) {
+    return ['Mexico City', 'Cancun', 'Guadalajara', 'Puerto Vallarta'];
   }
   
-  if (lowerDest.includes('cambodia') || lowerDest.includes('phnom penh') || lowerDest.includes('siem reap')) {
-    return ['Vietnam', 'Thailand', 'Laos', 'Malaysia'];
+  // Brazil
+  if (lowerDest.includes('rio de janeiro')) {
+    return ['Copacabana', 'Ipanema', 'Santa Teresa', 'Leblon'];
   }
   
-  if (lowerDest.includes('laos') || lowerDest.includes('vientiane') || lowerDest.includes('luang prabang')) {
-    return ['Thailand', 'Vietnam', 'Cambodia', 'Myanmar'];
+  if (lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
+    return ['Vila Madalena', 'Jardins', 'Centro', 'Liberdade'];
   }
   
-  if (lowerDest.includes('malaysia') || lowerDest.includes('kuala lumpur') || lowerDest.includes('penang') || 
-      lowerDest.includes('langkawi')) {
-    return ['Singapore', 'Thailand', 'Indonesia', 'Brunei'];
+  if (lowerDest.includes('salvador')) {
+    return ['Pelourinho', 'Barra', 'Rio Vermelho', 'Itapuã'];
   }
   
+  if (lowerDest.includes('brazil') && !lowerDest.includes('rio') && !lowerDest.includes('são paulo')) {
+    return ['Rio de Janeiro', 'São Paulo', 'Salvador', 'Brasília'];
+  }
+  
+  // Argentina
+  if (lowerDest.includes('buenos aires')) {
+    return ['Palermo', 'Recoleta', 'San Telmo', 'Puerto Madero'];
+  }
+  
+  if (lowerDest.includes('argentina') && !lowerDest.includes('buenos aires')) {
+    return ['Buenos Aires', 'Bariloche', 'Mendoza', 'Córdoba'];
+  }
+  
+  // Chile
+  if (lowerDest.includes('santiago')) {
+    return ['Providencia', 'Las Condes', 'Ñuñoa', 'Bellavista'];
+  }
+  
+  if (lowerDest.includes('chile') && !lowerDest.includes('santiago')) {
+    return ['Santiago', 'Valparaíso', 'Viña del Mar', 'Atacama'];
+  }
+  
+  // Colombia
+  if (lowerDest.includes('bogota') || lowerDest.includes('bogotá')) {
+    return ['La Candelaria', 'Zona Rosa', 'Chapinero', 'Usaquén'];
+  }
+  
+  if (lowerDest.includes('medellin') || lowerDest.includes('medellín')) {
+    return ['El Poblado', 'Laureles', 'Envigado', 'Centro'];
+  }
+  
+  if (lowerDest.includes('cartagena')) {
+    return ['Old City', 'Bocagrande', 'Getsemaní', 'San Diego'];
+  }
+  
+  if (lowerDest.includes('colombia') && !lowerDest.includes('bogota') && !lowerDest.includes('medellin')) {
+    return ['Bogotá', 'Medellín', 'Cartagena', 'Cali'];
+  }
+  
+  // Japan
+  if (lowerDest.includes('tokyo')) {
+    return ['Shibuya', 'Shinjuku', 'Harajuku', 'Ginza'];
+  }
+  
+  if (lowerDest.includes('osaka')) {
+    return ['Dotonbori', 'Namba', 'Umeda', 'Shinsekai'];
+  }
+  
+  if (lowerDest.includes('kyoto')) {
+    return ['Gion', 'Arashiyama', 'Fushimi', 'Higashiyama'];
+  }
+  
+  if (lowerDest.includes('japan') && !lowerDest.includes('tokyo') && !lowerDest.includes('osaka')) {
+    return ['Tokyo', 'Osaka', 'Kyoto', 'Hiroshima'];
+  }
+  
+  // South Korea
+  if (lowerDest.includes('seoul')) {
+    return ['Gangnam', 'Myeongdong', 'Hongdae', 'Itaewon'];
+  }
+  
+  if (lowerDest.includes('south korea') && !lowerDest.includes('seoul')) {
+    return ['Seoul', 'Busan', 'Jeju Island', 'Incheon'];
+  }
+  
+  // China
+  if (lowerDest.includes('beijing')) {
+    return ['Forbidden City', 'Hutongs', 'Chaoyang', 'Wangfujing'];
+  }
+  
+  if (lowerDest.includes('shanghai')) {
+    return ['The Bund', 'French Concession', 'Pudong', 'Xintiandi'];
+  }
+  
+  if (lowerDest.includes('hong kong')) {
+    return ['Central', 'Tsim Sha Tsui', 'Causeway Bay', 'Mong Kok'];
+  }
+  
+  if (lowerDest.includes('china') && !lowerDest.includes('beijing') && !lowerDest.includes('shanghai')) {
+    return ['Beijing', 'Shanghai', 'Guangzhou', 'Shenzhen'];
+  }
+  
+  // Thailand
+  if (lowerDest.includes('bangkok')) {
+    return ['Khao San Road', 'Sukhumvit', 'Silom', 'Chatuchak'];
+  }
+  
+  if (lowerDest.includes('chiang mai')) {
+    return ['Old City', 'Nimman', 'Night Bazaar', 'Doi Suthep'];
+  }
+  
+  if (lowerDest.includes('phuket')) {
+    return ['Patong Beach', 'Kata Beach', 'Phuket Town', 'Kamala'];
+  }
+  
+  if (lowerDest.includes('thailand') && !lowerDest.includes('bangkok') && !lowerDest.includes('chiang mai')) {
+    return ['Bangkok', 'Chiang Mai', 'Phuket', 'Pattaya'];
+  }
+  
+  // Vietnam
+  if (lowerDest.includes('ho chi minh') || lowerDest.includes('saigon')) {
+    return ['District 1', 'District 3', 'Cholon', 'Thao Dien'];
+  }
+  
+  if (lowerDest.includes('hanoi')) {
+    return ['Old Quarter', 'French Quarter', 'West Lake', 'Dong Da'];
+  }
+  
+  if (lowerDest.includes('vietnam') && !lowerDest.includes('ho chi minh') && !lowerDest.includes('hanoi')) {
+    return ['Ho Chi Minh City', 'Hanoi', 'Da Nang', 'Hoi An'];
+  }
+  
+  // Indonesia
+  if (lowerDest.includes('jakarta')) {
+    return ['Menteng', 'Kemang', 'Senayan', 'Thamrin'];
+  }
+  
+  if (lowerDest.includes('bali')) {
+    return ['Ubud', 'Seminyak', 'Canggu', 'Sanur'];
+  }
+  
+  if (lowerDest.includes('indonesia') && !lowerDest.includes('jakarta') && !lowerDest.includes('bali')) {
+    return ['Jakarta', 'Bali', 'Yogyakarta', 'Surabaya'];
+  }
+  
+  // Malaysia
+  if (lowerDest.includes('kuala lumpur')) {
+    return ['KLCC', 'Bukit Bintang', 'Chinatown', 'Mont Kiara'];
+  }
+  
+  if (lowerDest.includes('malaysia') && !lowerDest.includes('kuala lumpur')) {
+    return ['Kuala Lumpur', 'Penang', 'Langkawi', 'Johor Bahru'];
+  }
+  
+  // Singapore
   if (lowerDest.includes('singapore')) {
-    return ['Malaysia', 'Indonesia', 'Thailand', 'Philippines'];
+    return ['Marina Bay', 'Orchard Road', 'Chinatown', 'Little India'];
   }
   
-  if (lowerDest.includes('indonesia') || lowerDest.includes('jakarta') || lowerDest.includes('bali') || 
-      lowerDest.includes('yogyakarta') || lowerDest.includes('lombok')) {
-    return ['Malaysia', 'Singapore', 'Philippines', 'Australia'];
+  // Philippines
+  if (lowerDest.includes('manila')) {
+    return ['Makati', 'BGC', 'Malate', 'Quezon City'];
   }
   
-  if (lowerDest.includes('philippines') || lowerDest.includes('manila') || lowerDest.includes('cebu') || 
-      lowerDest.includes('boracay') || lowerDest.includes('palawan')) {
-    return ['Taiwan', 'Malaysia', 'Indonesia', 'Vietnam'];
+  if (lowerDest.includes('cebu')) {
+    return ['Cebu City', 'Lahug', 'IT Park', 'Colon'];
   }
   
-  if (lowerDest.includes('india') || lowerDest.includes('delhi') || lowerDest.includes('mumbai') || 
-      lowerDest.includes('bangalore') || lowerDest.includes('goa') || lowerDest.includes('kerala')) {
-    return ['Nepal', 'Sri Lanka', 'Bhutan', 'Maldives'];
+  if (lowerDest.includes('philippines') && !lowerDest.includes('manila') && !lowerDest.includes('cebu')) {
+    return ['Manila', 'Cebu', 'Boracay', 'Palawan'];
   }
   
-  if (lowerDest.includes('nepal') || lowerDest.includes('kathmandu') || lowerDest.includes('pokhara')) {
-    return ['India', 'Tibet', 'Bhutan', 'Bangladesh'];
+  // India
+  if (lowerDest.includes('delhi')) {
+    return ['Connaught Place', 'Khan Market', 'Hauz Khas', 'Chandni Chowk'];
   }
   
-  if (lowerDest.includes('sri lanka') || lowerDest.includes('colombo') || lowerDest.includes('kandy')) {
-    return ['India', 'Maldives', 'Bangladesh', 'Myanmar'];
+  if (lowerDest.includes('mumbai')) {
+    return ['Colaba', 'Bandra', 'Juhu', 'Fort'];
   }
   
-  if (lowerDest.includes('maldives') || lowerDest.includes('male')) {
-    return ['Sri Lanka', 'India', 'Mauritius', 'Seychelles'];
+  if (lowerDest.includes('bangalore') || lowerDest.includes('bengaluru')) {
+    return ['MG Road', 'Koramangala', 'Indiranagar', 'Whitefield'];
   }
   
-  // Middle East
-  if (lowerDest.includes('united arab emirates') || lowerDest.includes('uae') || lowerDest.includes('dubai') || 
-      lowerDest.includes('abu dhabi') || lowerDest.includes('sharjah')) {
-    return ['Oman', 'Qatar', 'Saudi Arabia', 'Bahrain'];
+  if (lowerDest.includes('goa')) {
+    return ['Panaji', 'Calangute', 'Anjuna', 'Vagator'];
   }
   
-  if (lowerDest.includes('qatar') || lowerDest.includes('doha')) {
-    return ['UAE', 'Bahrain', 'Saudi Arabia', 'Kuwait'];
+  if (lowerDest.includes('india') && !lowerDest.includes('delhi') && !lowerDest.includes('mumbai')) {
+    return ['Delhi', 'Mumbai', 'Bangalore', 'Goa'];
   }
   
-  if (lowerDest.includes('oman') || lowerDest.includes('muscat')) {
-    return ['UAE', 'Yemen', 'Saudi Arabia', 'Iran'];
+  // UAE
+  if (lowerDest.includes('dubai')) {
+    return ['Downtown Dubai', 'Dubai Marina', 'Jumeirah', 'Deira'];
   }
   
-  if (lowerDest.includes('saudi arabia') || lowerDest.includes('riyadh') || lowerDest.includes('jeddah') || 
-      lowerDest.includes('mecca')) {
-    return ['UAE', 'Jordan', 'Kuwait', 'Qatar'];
+  if (lowerDest.includes('abu dhabi')) {
+    return ['Corniche', 'Saadiyat Island', 'Yas Island', 'Al Ain'];
   }
   
-  if (lowerDest.includes('jordan') || lowerDest.includes('amman') || lowerDest.includes('petra')) {
-    return ['Israel', 'Syria', 'Saudi Arabia', 'Iraq'];
+  if (lowerDest.includes('uae') || lowerDest.includes('united arab emirates')) {
+    return ['Dubai', 'Abu Dhabi', 'Sharjah', 'Fujairah'];
   }
   
-  if (lowerDest.includes('israel') || lowerDest.includes('tel aviv') || lowerDest.includes('jerusalem')) {
-    return ['Jordan', 'Palestine', 'Lebanon', 'Egypt'];
+  // Turkey
+  if (lowerDest.includes('istanbul')) {
+    return ['Sultanahmet', 'Beyoğlu', 'Galata', 'Beşiktaş'];
   }
   
-  if (lowerDest.includes('turkey') || lowerDest.includes('istanbul') || lowerDest.includes('ankara') || 
-      lowerDest.includes('cappadocia') || lowerDest.includes('antalya')) {
-    return ['Greece', 'Bulgaria', 'Georgia', 'Armenia'];
+  if (lowerDest.includes('turkey') && !lowerDest.includes('istanbul')) {
+    return ['Istanbul', 'Ankara', 'Cappadocia', 'Antalya'];
   }
   
-  if (lowerDest.includes('iran') || lowerDest.includes('tehran') || lowerDest.includes('isfahan')) {
-    return ['Turkey', 'Iraq', 'Afghanistan', 'Armenia'];
+  // Egypt
+  if (lowerDest.includes('cairo')) {
+    return ['Islamic Cairo', 'Zamalek', 'Heliopolis', 'Maadi'];
   }
   
-  // Africa
-  if (lowerDest.includes('south africa') || lowerDest.includes('cape town') || lowerDest.includes('johannesburg') || 
-      lowerDest.includes('durban') || lowerDest.includes('pretoria')) {
-    return ['Namibia', 'Botswana', 'Zimbabwe', 'Lesotho'];
+  if (lowerDest.includes('egypt') && !lowerDest.includes('cairo')) {
+    return ['Cairo', 'Alexandria', 'Luxor', 'Aswan'];
   }
   
-  if (lowerDest.includes('egypt') || lowerDest.includes('cairo') || lowerDest.includes('alexandria') || 
-      lowerDest.includes('luxor') || lowerDest.includes('aswan')) {
-    return ['Jordan', 'Israel', 'Sudan', 'Libya'];
+  // Morocco
+  if (lowerDest.includes('marrakech') || lowerDest.includes('marrakesh')) {
+    return ['Medina', 'Gueliz', 'Majorelle', 'Palmeraie'];
   }
   
-  if (lowerDest.includes('morocco') || lowerDest.includes('marrakech') || lowerDest.includes('casablanca') || 
-      lowerDest.includes('rabat') || lowerDest.includes('fez')) {
-    return ['Spain', 'Portugal', 'Algeria', 'Tunisia'];
+  if (lowerDest.includes('casablanca')) {
+    return ['Hassan II', 'Ain Diab', 'Maarif', 'Habous'];
   }
   
-  if (lowerDest.includes('tunisia') || lowerDest.includes('tunis') || lowerDest.includes('sousse')) {
-    return ['Morocco', 'Algeria', 'Libya', 'Italy'];
+  if (lowerDest.includes('morocco') && !lowerDest.includes('marrakech') && !lowerDest.includes('casablanca')) {
+    return ['Marrakech', 'Casablanca', 'Fez', 'Rabat'];
   }
   
-  if (lowerDest.includes('kenya') || lowerDest.includes('nairobi') || lowerDest.includes('mombasa')) {
-    return ['Tanzania', 'Uganda', 'Ethiopia', 'Rwanda'];
+  // South Africa
+  if (lowerDest.includes('cape town')) {
+    return ['V&A Waterfront', 'City Bowl', 'Camps Bay', 'Stellenbosch'];
   }
   
-  if (lowerDest.includes('tanzania') || lowerDest.includes('dar es salaam') || lowerDest.includes('dodoma') || 
-      lowerDest.includes('arusha') || lowerDest.includes('zanzibar')) {
-    return ['Kenya', 'Uganda', 'Rwanda', 'Burundi'];
+  if (lowerDest.includes('johannesburg')) {
+    return ['Sandton', 'Rosebank', 'Maboneng', 'Soweto'];
   }
   
-  if (lowerDest.includes('uganda') || lowerDest.includes('kampala')) {
-    return ['Kenya', 'Tanzania', 'Rwanda', 'Democratic Republic of Congo'];
+  if (lowerDest.includes('south africa') && !lowerDest.includes('cape town') && !lowerDest.includes('johannesburg')) {
+    return ['Cape Town', 'Johannesburg', 'Durban', 'Pretoria'];
   }
   
-  if (lowerDest.includes('rwanda') || lowerDest.includes('kigali')) {
-    return ['Uganda', 'Tanzania', 'Burundi', 'Democratic Republic of Congo'];
+  // Kenya
+  if (lowerDest.includes('nairobi')) {
+    return ['Westlands', 'Karen', 'Kilimani', 'CBD'];
   }
   
-  if (lowerDest.includes('ethiopia') || lowerDest.includes('addis ababa')) {
-    return ['Kenya', 'Sudan', 'Eritrea', 'Somalia'];
+  if (lowerDest.includes('kenya') && !lowerDest.includes('nairobi')) {
+    return ['Nairobi', 'Mombasa', 'Kisumu', 'Nakuru'];
   }
   
-  if (lowerDest.includes('nigeria') || lowerDest.includes('lagos') || lowerDest.includes('abuja')) {
-    return ['Ghana', 'Benin', 'Cameroon', 'Niger'];
+  // Australia
+  if (lowerDest.includes('sydney')) {
+    return ['Circular Quay', 'Bondi Beach', 'Darling Harbour', 'The Rocks'];
   }
   
-  if (lowerDest.includes('ghana') || lowerDest.includes('accra') || lowerDest.includes('kumasi')) {
-    return ['Togo', 'Burkina Faso', 'Côte d\'Ivoire', 'Nigeria'];
+  if (lowerDest.includes('melbourne')) {
+    return ['CBD', 'St Kilda', 'Fitzroy', 'South Yarra'];
   }
   
-  if (lowerDest.includes('senegal') || lowerDest.includes('dakar')) {
-    return ['Gambia', 'Mauritania', 'Mali', 'Guinea'];
+  if (lowerDest.includes('brisbane')) {
+    return ['South Bank', 'Fortitude Valley', 'West End', 'CBD'];
   }
   
-  if (lowerDest.includes('madagascar') || lowerDest.includes('antananarivo')) {
-    return ['Mauritius', 'Comoros', 'Réunion', 'Seychelles'];
+  if (lowerDest.includes('australia') && !lowerDest.includes('sydney') && !lowerDest.includes('melbourne')) {
+    return ['Sydney', 'Melbourne', 'Brisbane', 'Perth'];
   }
   
-  if (lowerDest.includes('mauritius') || lowerDest.includes('port louis')) {
-    return ['Réunion', 'Madagascar', 'Seychelles', 'Rodrigues'];
+  // New Zealand
+  if (lowerDest.includes('auckland')) {
+    return ['CBD', 'Viaduct Harbour', 'Ponsonby', 'Mission Bay'];
   }
   
-  if (lowerDest.includes('seychelles') || lowerDest.includes('victoria')) {
-    return ['Mauritius', 'Madagascar', 'Comoros', 'Maldives'];
+  if (lowerDest.includes('wellington')) {
+    return ['Te Aro', 'Mount Victoria', 'Thorndon', 'Newtown'];
   }
   
-  if (lowerDest.includes('zimbabwe') || lowerDest.includes('harare') || lowerDest.includes('bulawayo')) {
-    return ['Botswana', 'South Africa', 'Zambia', 'Mozambique'];
+  if (lowerDest.includes('new zealand') && !lowerDest.includes('auckland') && !lowerDest.includes('wellington')) {
+    return ['Auckland', 'Wellington', 'Queenstown', 'Christchurch'];
   }
   
-  if (lowerDest.includes('botswana') || lowerDest.includes('gaborone')) {
-    return ['South Africa', 'Namibia', 'Zimbabwe', 'Zambia'];
-  }
-  
-  if (lowerDest.includes('namibia') || lowerDest.includes('windhoek')) {
-    return ['South Africa', 'Botswana', 'Angola', 'Zambia'];
-  }
-  
-  if (lowerDest.includes('zambia') || lowerDest.includes('lusaka')) {
-    return ['Zimbabwe', 'Botswana', 'Namibia', 'Malawi'];
-  }
-  
-  if (lowerDest.includes('malawi') || lowerDest.includes('lilongwe') || lowerDest.includes('blantyre')) {
-    return ['Zambia', 'Tanzania', 'Mozambique', 'Zimbabwe'];
-  }
-  
-  if (lowerDest.includes('mozambique') || lowerDest.includes('maputo')) {
-    return ['South Africa', 'Zimbabwe', 'Malawi', 'Tanzania'];
-  }
-  
-  if (lowerDest.includes('angola') || lowerDest.includes('luanda')) {
-    return ['Namibia', 'Zambia', 'Democratic Republic of Congo', 'Republic of Congo'];
-  }
-  
-  // Oceania
-  if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne') || 
-      lowerDest.includes('brisbane') || lowerDest.includes('perth') || lowerDest.includes('adelaide')) {
-    return ['New Zealand', 'Fiji', 'Papua New Guinea', 'Indonesia'];
-  }
-  
-  if (lowerDest.includes('new zealand') || lowerDest.includes('auckland') || lowerDest.includes('wellington') || 
-      lowerDest.includes('christchurch') || lowerDest.includes('queenstown')) {
-    return ['Australia', 'Fiji', 'Cook Islands', 'Samoa'];
-  }
-  
-  if (lowerDest.includes('fiji') || lowerDest.includes('suva') || lowerDest.includes('nadi')) {
-    return ['New Zealand', 'Australia', 'Vanuatu', 'Tonga'];
-  }
-  
-  if (lowerDest.includes('papua new guinea') || lowerDest.includes('port moresby')) {
-    return ['Australia', 'Indonesia', 'Solomon Islands', 'Philippines'];
-  }
-  
-  if (lowerDest.includes('vanuatu') || lowerDest.includes('port vila')) {
-    return ['Fiji', 'New Caledonia', 'Solomon Islands', 'Australia'];
-  }
-  
-  if (lowerDest.includes('samoa') || lowerDest.includes('apia')) {
-    return ['Fiji', 'Tonga', 'American Samoa', 'Cook Islands'];
-  }
-  
-  if (lowerDest.includes('tonga') || lowerDest.includes('nuku\'alofa')) {
-    return ['Fiji', 'Samoa', 'New Zealand', 'Cook Islands'];
-  }
-  
-  if (lowerDest.includes('cook islands') || lowerDest.includes('rarotonga')) {
-    return ['New Zealand', 'Samoa', 'Tonga', 'French Polynesia'];
-  }
-  
-  if (lowerDest.includes('french polynesia') || lowerDest.includes('tahiti') || lowerDest.includes('bora bora')) {
-    return ['Cook Islands', 'Fiji', 'Hawaii', 'New Zealand'];
-  }
-  
-  if (lowerDest.includes('hawaii') || lowerDest.includes('honolulu') || lowerDest.includes('maui')) {
-    return ['California', 'Alaska', 'French Polynesia', 'Fiji'];
-  }
-  
-  // Default fallback for unknown destinations - global popular destinations
-  return ['London, UK', 'Paris, France', 'Tokyo, Japan', 'New York, USA'];
+  // Default fallback - popular global city neighborhoods/areas
+  return ['Times Square, NYC', 'Champs-Élysées, Paris', 'Shibuya, Tokyo', 'Piccadilly, London'];
 };
