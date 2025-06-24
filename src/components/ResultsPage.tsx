@@ -67,6 +67,7 @@ interface HolidayData {
     global: boolean;
     counties: string[] | null;
     type: string;
+    region?: string;
   }>;
   allHolidays: Array<{
     date: string;
@@ -77,7 +78,9 @@ interface HolidayData {
     global: boolean;
     counties: string[] | null;
     type: string;
+    region?: string;
   }>;
+  source?: string;
 }
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
@@ -176,7 +179,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     fetchWorldClockData();
   }, [destination]);
 
-  // Fetch holiday data
+  // Fetch holiday data - Updated to handle multiple years
   useEffect(() => {
     const fetchHolidayData = async () => {
       setIsLoadingHolidays(true);
@@ -265,37 +268,59 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         };
 
         const countryCode = getCountryCodeForDestination(destination);
-        const currentYear = new Date().getFullYear();
+        const checkinDate = new Date(dates.checkin);
+        const checkoutDate = new Date(dates.checkout);
+        const startYear = checkinDate.getFullYear();
+        const endYear = checkoutDate.getFullYear();
 
         console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destination}`);
+        console.log(`Travel dates span from ${startYear} to ${endYear}`);
 
-        const { data, error } = await supabase.functions.invoke('get-holidays', {
-          body: {
-            country: countryCode,
-            year: currentYear
-          }
-        });
-
-        if (error) {
-          console.error('Error fetching holiday data:', error);
-          throw error;
+        // Fetch holidays for all years in the travel date range
+        const years = [];
+        for (let year = startYear; year <= endYear; year++) {
+          years.push(year);
         }
 
-        console.log('Holiday data received:', data);
+        console.log('Years to fetch:', years);
+
+        // Fetch holidays for each year
+        const allHolidaysData = [];
+        for (const year of years) {
+          try {
+            console.log(`Fetching holidays for year ${year}`);
+            const { data, error } = await supabase.functions.invoke('get-holidays', {
+              body: {
+                country: countryCode,
+                year: year
+              }
+            });
+
+            if (error) {
+              console.error(`Error fetching holiday data for ${year}:`, error);
+              continue;
+            }
+
+            if (data && data.allHolidays) {
+              console.log(`Got ${data.allHolidays.length} holidays for ${year}`);
+              allHolidaysData.push(...data.allHolidays);
+            }
+          } catch (yearError) {
+            console.error(`Failed to fetch holidays for year ${year}:`, yearError);
+          }
+        }
+
+        console.log(`Total holidays fetched across all years: ${allHolidaysData.length}`);
         
         // Filter holidays to show ONLY holidays that fall within the travel period
-        if (data && data.allHolidays) {
-          const checkinDate = new Date(dates.checkin);
-          const checkoutDate = new Date(dates.checkout);
-          
+        if (allHolidaysData.length > 0) {
           console.log('Travel dates:', { 
             checkin: checkinDate.toISOString().split('T')[0], 
             checkout: checkoutDate.toISOString().split('T')[0] 
           });
-          console.log('All holidays for', countryCode, ':', data.allHolidays.map((h: any) => ({ name: h.name, date: h.date, region: h.region })));
           
           // Filter to show ONLY holidays that fall within the exact travel dates
-          const relevantHolidays = data.allHolidays.filter((holiday: any) => {
+          const relevantHolidays = allHolidaysData.filter((holiday: any) => {
             const holidayDate = new Date(holiday.date);
             const isWithinTravelDates = holidayDate >= checkinDate && holidayDate <= checkoutDate;
             
@@ -308,14 +333,25 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
           // Update the data with filtered holidays
           const updatedData = {
-            ...data,
+            country: countryCode,
+            year: startYear, // Use start year as primary
+            totalHolidays: relevantHolidays.length,
             upcomingHolidays: relevantHolidays.slice(0, 10), // Show up to 10 holidays within travel dates
-            countryCode: countryCode // Add country code for reference
+            allHolidays: relevantHolidays,
+            source: 'multi-year-fetch'
           };
           
           setHolidayData(updatedData);
         } else {
-          setHolidayData(data);
+          // No holidays found
+          setHolidayData({
+            country: countryCode,
+            year: startYear,
+            totalHolidays: 0,
+            upcomingHolidays: [],
+            allHolidays: [],
+            source: 'multi-year-fetch'
+          });
         }
       } catch (error) {
         console.error('Failed to fetch holiday data:', error);
@@ -1099,15 +1135,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                           )}
                         </div>
                       ))}
-                      <div className="text-xs text-muted-foreground mt-2">
-                        Source: {holidayData.source === 'timeanddate' ? 'Time and Date API' : 'Public Holidays API'}
-                      </div>
+                      {holidayData.source && (
+                        <div className="text-xs text-muted-foreground mt-2">
+                          Source: {holidayData.source === 'timeanddate' ? 'Time and Date API' : holidayData.source === 'multi-year-fetch' ? 'Multi-year Holiday API' : 'Public Holidays API'}
+                        </div>
+                      )}
                     </>
                   ) : (
                     <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
                       <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
                       <div className="text-xs text-muted-foreground">
-                        {format(new Date(dates.checkin), 'MMM dd')} - {format(new Date(dates.checkout), 'MMM dd')}
+                        {format(new Date(dates.checkin), 'MMM dd, yyyy')} - {format(new Date(dates.checkout), 'MMM dd, yyyy')}
                       </div>
                     </div>
                   )}
