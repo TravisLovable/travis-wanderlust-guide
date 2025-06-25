@@ -8,24 +8,23 @@ interface AuthNavigationButtonsProps {
 }
 
 const AuthNavigationButtons = ({ onBack }: AuthNavigationButtonsProps) => {
-  // Always show the close button, even if onBack is not provided
   const handleClose = () => {
     if (onBack) {
       onBack();
     } else {
-      // Fallback: navigate to home if no onBack callback
+      // Navigate to home if no onBack callback
       window.location.href = '/';
     }
   };
 
   return (
     <>
-      {/* Back Button */}
+      {/* Back Button - only show if onBack is provided */}
       {onBack && (
         <Button
           variant="ghost"
           onClick={onBack}
-          className="absolute top-6 left-6 text-white/70 hover:text-white hover:bg-white/10"
+          className="absolute top-6 left-6 text-white/70 hover:text-white hover:bg-white/10 z-10"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
@@ -36,7 +35,8 @@ const AuthNavigationButtons = ({ onBack }: AuthNavigationButtonsProps) => {
       <Button
         variant="ghost"
         onClick={handleClose}
-        className="absolute top-6 right-6 text-white/70 hover:text-white hover:bg-white/10 p-2"
+        className="absolute top-6 right-6 text-white/70 hover:text-white hover:bg-white/10 p-2 z-10"
+        aria-label="Close"
       >
         <X className="w-5 h-5" />
       </Button>
