@@ -37,6 +37,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [checkoutDate, setCheckoutDate] = useState<Date>(new Date(dates.checkout));
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -113,6 +114,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
+  };
+
+  const handleTempUnitToggle = () => {
+    setTempUnit(tempUnit === 'C' ? 'F' : 'C');
   };
 
   const handleUpdateSearch = () => {
@@ -276,7 +281,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             <div className="space-y-6">
               {/* Weather Widget */}
               <div className="bg-card border border-border/30 rounded-xl p-6">
-                <WeatherWidget destination={destination} />
+                <WeatherWidget 
+                  destination={destination} 
+                  tempUnit={tempUnit}
+                  onTempUnitToggle={handleTempUnitToggle}
+                />
               </div>
 
               {/* Photo Slideshow */}
