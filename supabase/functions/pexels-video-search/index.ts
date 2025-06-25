@@ -47,12 +47,18 @@ serve(async (req) => {
     
     console.log('🎬 Pexels edge function called with destination:', destination);
     
+    // Get the Pexels API key from Supabase secrets
     const PEXELS_API_KEY = Deno.env.get('PHOTO_SLIDE-DECK');
     
+    console.log('🔑 Checking Pexels API key availability:', PEXELS_API_KEY ? 'Found' : 'Missing');
+    
     if (!PEXELS_API_KEY) {
-      console.error('❌ PHOTO_SLIDE-DECK secret not configured');
+      console.error('❌ PHOTO_SLIDE-DECK secret not configured in Supabase');
       return new Response(
-        JSON.stringify({ error: 'Pexels API key not configured' }), 
+        JSON.stringify({ 
+          error: 'Pexels API key not configured',
+          details: 'PHOTO_SLIDE-DECK secret is missing from Supabase environment'
+        }), 
         { 
           status: 500, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -63,7 +69,10 @@ serve(async (req) => {
     if (!destination) {
       console.log('❌ No destination provided');
       return new Response(
-        JSON.stringify({ error: 'No destination provided' }), 
+        JSON.stringify({ 
+          error: 'No destination provided',
+          details: 'Destination parameter is required for video search'
+        }), 
         { 
           status: 400, 
           headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
@@ -86,7 +95,7 @@ serve(async (req) => {
     const countryName = extractCountryName(destination);
     console.log('🔍 Will search for videos using country:', countryName);
     
-    // Define search queries with specific hierarchy
+    // Define search queries with specific hierarchy as requested
     const searchQueries = [
       `Drone ${countryName}`,
       `Travel ${countryName}`,
@@ -103,29 +112,45 @@ serve(async (req) => {
       console.log(`🔍 Pexels search attempt: "${query}"`);
       
       try {
-        const response = await fetch(
-          `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=10&orientation=landscape`,
-          {
-            headers: {
-              'Authorization': PEXELS_API_KEY,
-            },
-          }
-        );
+        const pexelsUrl = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=10&orientation=landscape`;
+        console.log('📡 Making request to Pexels API:', pexelsUrl);
+        
+        const response = await fetch(pexelsUrl, {
+          headers: {
+            'Authorization': PEXELS_API_KEY,
+          },
+        });
 
         console.log(`📡 Pexels API response status for "${query}":`, response.status);
 
         if (!response.ok) {
-          console.error(`❌ Pexels API error for "${query}":`, response.status, response.statusText);
+          const errorText = await response.text();
+          console.error(`❌ Pexels API error for "${query}":`, {
+            status: response.status,
+            statusText: response.statusText,
+            body: errorText
+          });
           continue;
         }
 
         const data: PexelsResponse = await response.json();
         console.log(`📊 Results for "${query}": ${data.total_results} videos found`);
-        console.log(`📋 First few videos:`, data.videos?.slice(0, 3)?.map(v => ({ id: v.id, duration: v.duration })));
-
+        
         if (data.videos && data.videos.length > 0) {
+          console.log(`📋 First few videos for "${query}":`, 
+            data.videos.slice(0, 3).map(v => ({ 
+              id: v.id, 
+              duration: v.duration, 
+              fileCount: v.video_files?.length 
+            }))
+          );
+
           const video = data.videos[0];
-          console.log(`🎥 Examining video:`, { id: video.id, files: video.video_files?.length });
+          console.log(`🎥 Examining video ${video.id}:`, { 
+            id: video.id, 
+            files: video.video_files?.length,
+            fileTypes: video.video_files?.map(f => ({ quality: f.quality, type: f.file_type }))
+          });
           
           const hdVideo = video.video_files.find(file => 
             file.quality === 'hd' && file.file_type === 'video/mp4'
@@ -134,19 +159,30 @@ serve(async (req) => {
           );
 
           if (hdVideo) {
-            console.log(`✅ SUCCESS: Found video for "${query}":`, hdVideo.link);
+            console.log(`✅ SUCCESS: Found video for "${query}":`, {
+              videoId: video.id,
+              quality: hdVideo.quality,
+              url: hdVideo.link
+            });
             selectedVideo = hdVideo.link;
             break; // Stop searching once we find a video
           } else {
-            console.log(`⚠️ No suitable video file found for "${query}"`);
+            console.log(`⚠️ No suitable video file found for "${query}" - available files:`, 
+              video.video_files?.map(f => ({ quality: f.quality, type: f.file_type }))
+            );
           }
+        } else {
+          console.log(`📭 No videos returned for "${query}"`);
         }
       } catch (queryError) {
-        console.error(`🚨 Error during query "${query}":`, queryError);
+        console.error(`🚨 Error during query "${query}":`, {
+          error: queryError.message,
+          stack: queryError.stack
+        });
       }
     }
 
-    console.log('🎯 Returning video URL:', selectedVideo);
+    console.log('🎯 Final result - returning video URL:', selectedVideo);
     
     return new Response(
       JSON.stringify({ videoUrl: selectedVideo }), 
@@ -156,9 +192,15 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('🚨 Error in pexels-video-search function:', error);
+    console.error('🚨 Critical error in pexels-video-search function:', {
+      message: error.message,
+      stack: error.stack
+    });
     return new Response(
-      JSON.stringify({ error: error.message }), 
+      JSON.stringify({ 
+        error: 'Internal server error',
+        details: error.message 
+      }), 
       { 
         status: 500, 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 

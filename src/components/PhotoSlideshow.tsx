@@ -10,27 +10,33 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
   const [videoError, setVideoError] = useState(false);
   const { videoUrl, isLoading, error } = usePexelsVideo(destination || '');
 
+  console.log('📺 PhotoSlideshow - videoUrl:', videoUrl);
+  console.log('📺 PhotoSlideshow - isLoading:', isLoading);
+  console.log('📺 PhotoSlideshow - error:', error);
+
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video failed to load, showing fallback image');
+    console.error('❌ Video failed to load:', e);
     setVideoError(true);
   };
 
   const handleVideoLoad = () => {
-    console.log('Video loaded successfully');
+    console.log('✅ Video loaded successfully');
     setVideoError(false);
   };
 
-  // Fallback video URL (original Big Buck Bunny)
+  // Fallback video URL (only used when video fails to load)
   const fallbackVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
   
-  // Use Pexels video if available, otherwise use fallback
-  const currentVideoUrl = videoUrl || fallbackVideoUrl;
+  // Use Pexels video if available and no error, otherwise use fallback only if there was a loading error
+  const currentVideoUrl = videoUrl && !videoError ? videoUrl : (videoError ? fallbackVideoUrl : null);
+
+  console.log('🎯 PhotoSlideshow - currentVideoUrl:', currentVideoUrl);
 
   return (
     <div className="relative w-full h-80 rounded-2xl overflow-hidden">
       {/* Video Container */}
       <div className="relative w-full h-full">
-        {!videoError ? (
+        {currentVideoUrl && !videoError ? (
           <video
             src={currentVideoUrl}
             className="w-full h-full object-cover"
@@ -58,7 +64,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
             <p className="text-white/70 text-sm mt-1">Loading destination video...</p>
           )}
           {error && (
-            <p className="text-white/70 text-sm mt-1">Using fallback video</p>
+            <p className="text-white/70 text-sm mt-1">Video loading failed: {error}</p>
           )}
         </div>
       </div>

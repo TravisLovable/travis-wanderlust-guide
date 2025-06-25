@@ -11,14 +11,17 @@ export const usePexelsVideo = (destination: string) => {
     console.log('🎬 usePexelsVideo hook called with destination:', destination);
     
     const fetchVideo = async () => {
-      if (!destination) {
-        console.log('❌ No destination provided, skipping video fetch');
+      if (!destination || destination.trim() === '') {
+        console.log('❌ No valid destination provided, skipping video fetch');
+        setVideoUrl(null);
+        setError(null);
         return;
       }
 
       console.log('🚀 Starting Pexels video fetch via edge function for:', destination);
       setIsLoading(true);
       setError(null);
+      setVideoUrl(null); // Clear previous video
 
       try {
         console.log('📡 Calling pexels-video-search edge function...');
@@ -39,14 +42,17 @@ export const usePexelsVideo = (destination: string) => {
         if (data?.videoUrl) {
           console.log('✅ SUCCESS: Received video URL from edge function:', data.videoUrl);
           setVideoUrl(data.videoUrl);
+          setError(null);
         } else {
           console.log('❌ No video URL returned from edge function');
           setVideoUrl(null);
+          setError(data?.error || 'No video found for destination');
         }
 
       } catch (err) {
         console.error('🚨 Error calling pexels-video-search edge function:', err);
-        setError(err instanceof Error ? err.message : 'Failed to fetch video');
+        const errorMessage = err instanceof Error ? err.message : 'Failed to fetch video';
+        setError(errorMessage);
         setVideoUrl(null);
       } finally {
         console.log('✅ Pexels video fetch completed');
