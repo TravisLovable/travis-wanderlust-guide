@@ -14,12 +14,13 @@ const Auth = () => {
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [message, setMessage] = useState<string | null>(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Redirect if already authenticated
+  // Redirect if already authenticated and email is confirmed
   useEffect(() => {
-    if (user) {
+    if (user && user.email_confirmed_at) {
       navigate('/');
     }
   }, [user, navigate]);
@@ -28,6 +29,7 @@ const Auth = () => {
     e.preventDefault();
     setLoading(true);
     setError(null);
+    setMessage(null);
 
     try {
       if (isSignUp) {
@@ -40,7 +42,7 @@ const Auth = () => {
           }
         });
         if (error) throw error;
-        setError('Check your email for the confirmation link!');
+        setMessage('Please check your email for the confirmation link!');
       } else {
         const { error } = await supabase.auth.signInWithPassword({
           email,
@@ -54,6 +56,36 @@ const Auth = () => {
       setLoading(false);
     }
   };
+
+  // Show message if user is not confirmed
+  if (user && !user.email_confirmed_at) {
+    return (
+      <div className="min-h-screen bg-gray-400 dark:bg-black flex items-center justify-center p-6">
+        <Card className="w-full max-w-md bg-black border-gray-600 shadow-lg">
+          <CardHeader className="text-center">
+            <CardTitle className="text-2xl font-bold text-white">
+              Email Verification Required
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="text-center">
+            <p className="text-gray-300 mb-4">
+              Please check your email and click the confirmation link to verify your account.
+            </p>
+            <p className="text-sm text-gray-400 mb-4">
+              Didn't receive the email? Check your spam folder or try signing up again.
+            </p>
+            <Button
+              onClick={() => supabase.auth.signOut()}
+              variant="outline"
+              className="w-full"
+            >
+              Sign Out
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black flex items-center justify-center p-6">
@@ -86,12 +118,13 @@ const Auth = () => {
               />
             </div>
             {error && (
-              <div className={`text-sm p-2 rounded ${
-                error.includes('Check your email') 
-                  ? 'text-green-400 bg-green-400/10' 
-                  : 'text-red-400 bg-red-400/10'
-              }`}>
+              <div className="text-red-400 bg-red-400/10 text-sm p-2 rounded">
                 {error}
+              </div>
+            )}
+            {message && (
+              <div className="text-green-400 bg-green-400/10 text-sm p-2 rounded">
+                {message}
               </div>
             )}
             <Button
