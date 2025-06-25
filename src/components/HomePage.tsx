@@ -541,7 +541,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full focus:outline-none focus:ring-2 focus:ring-white cursor-pointer"
+                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 focus:outline-none text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full cursor-pointer"
                     required
                   />
                   {showSuggestions && (suggestions.length > 0 || fallbackSuggestions.length > 0) && (
