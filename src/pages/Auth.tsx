@@ -7,6 +7,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useNavigate } from 'react-router-dom';
 import { useEffect } from 'react';
+import { X } from 'lucide-react';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
@@ -55,9 +56,23 @@ const Auth = () => {
     }
   };
 
+  const handleClose = () => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black flex items-center justify-center p-6">
-      <Card className="w-full max-w-md bg-black border-gray-600 shadow-lg">
+      <Card className="w-full max-w-md bg-black border-gray-600 shadow-lg relative">
+        {/* Close Button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleClose}
+          className="absolute top-4 right-4 h-8 w-8 text-white/70 hover:text-white hover:bg-white/10 rounded-full z-10"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-white">
             {isSignUp ? 'Create Account' : 'Welcome Back'}
