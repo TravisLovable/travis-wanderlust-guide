@@ -1,6 +1,5 @@
-
 import React, { useState } from 'react';
-import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, Mail, Lock, User, Eye, EyeOff, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -56,6 +55,17 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
+        </Button>
+      )}
+
+      {/* Close Button */}
+      {onBack && (
+        <Button
+          variant="ghost"
+          onClick={onBack}
+          className="absolute top-6 right-6 text-white/70 hover:text-white hover:bg-white/10 p-2"
+        >
+          <X className="w-5 h-5" />
         </Button>
       )}
 
