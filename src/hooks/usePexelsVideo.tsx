@@ -60,51 +60,21 @@ export const usePexelsVideo = (destination: string) => {
         // Extract country name for better search results
         const countryName = extractCountryName(destination);
         
-        // Prioritize drone footage with country-specific search
-        const query = `${countryName} drone aerial scenic landscape`;
+        // Try multiple search strategies
+        const searchQueries = [
+          `${countryName} drone aerial landscape`,
+          `${countryName} travel beautiful scenic`,
+          `${countryName} nature landscape`,
+          `${countryName}` // Just the country name as fallback
+        ];
         
-        console.log('Searching Pexels for drone videos:', query);
+        let selectedVideo = null;
 
-        const response = await fetch(
-          `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=15&orientation=landscape`,
-          {
-            headers: {
-              'Authorization': PEXELS_API_KEY,
-            },
-          }
-        );
-
-        if (!response.ok) {
-          throw new Error(`Pexels API error: ${response.status}`);
-        }
-
-        const data: PexelsResponse = await response.json();
-        console.log('Pexels API response for drone search:', data);
-
-        if (data.videos && data.videos.length > 0) {
-          // Find the best quality HD video
-          const video = data.videos[0];
-          const hdVideo = video.video_files.find(file => 
-            file.quality === 'hd' && file.file_type === 'video/mp4'
-          ) || video.video_files.find(file => 
-            file.file_type === 'video/mp4'
-          );
-
-          if (hdVideo) {
-            console.log('Selected drone video URL:', hdVideo.link);
-            setVideoUrl(hdVideo.link);
-          } else {
-            throw new Error('No suitable video format found');
-          }
-        } else {
-          console.log('No drone videos found, trying fallback search');
+        for (const query of searchQueries) {
+          console.log(`Trying Pexels search: "${query}"`);
           
-          // Fallback: try broader search without "drone"
-          const fallbackQuery = `${countryName} travel scenic nature`;
-          console.log('Fallback search:', fallbackQuery);
-          
-          const fallbackResponse = await fetch(
-            `https://api.pexels.com/videos/search?query=${encodeURIComponent(fallbackQuery)}&per_page=10&orientation=landscape`,
+          const response = await fetch(
+            `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=10&orientation=landscape`,
             {
               headers: {
                 'Authorization': PEXELS_API_KEY,
@@ -112,27 +82,34 @@ export const usePexelsVideo = (destination: string) => {
             }
           );
 
-          if (fallbackResponse.ok) {
-            const fallbackData: PexelsResponse = await fallbackResponse.json();
-            console.log('Fallback search results:', fallbackData);
-            
-            if (fallbackData.videos && fallbackData.videos.length > 0) {
-              const video = fallbackData.videos[0];
-              const hdVideo = video.video_files.find(file => 
-                file.quality === 'hd' && file.file_type === 'video/mp4'
-              ) || video.video_files.find(file => 
-                file.file_type === 'video/mp4'
-              );
+          if (!response.ok) {
+            console.error(`Pexels API error for query "${query}":`, response.status);
+            continue;
+          }
 
-              if (hdVideo) {
-                console.log('Selected fallback video URL:', hdVideo.link);
-                setVideoUrl(hdVideo.link);
-                return;
-              }
+          const data: PexelsResponse = await response.json();
+          console.log(`Pexels results for "${query}":`, data.total_results, 'videos found');
+
+          if (data.videos && data.videos.length > 0) {
+            const video = data.videos[0];
+            const hdVideo = video.video_files.find(file => 
+              file.quality === 'hd' && file.file_type === 'video/mp4'
+            ) || video.video_files.find(file => 
+              file.file_type === 'video/mp4'
+            );
+
+            if (hdVideo) {
+              console.log(`SUCCESS: Found video for "${query}":`, hdVideo.link);
+              selectedVideo = hdVideo.link;
+              break; // Stop searching once we find a video
             }
           }
-          
-          console.log('No videos found for destination, using default');
+        }
+
+        if (selectedVideo) {
+          setVideoUrl(selectedVideo);
+        } else {
+          console.log('No videos found for any search term, using fallback');
           setVideoUrl(null);
         }
       } catch (err) {
