@@ -1,5 +1,6 @@
 
 import React, { useState } from 'react';
+import { usePexelsVideo } from '@/hooks/usePexelsVideo';
 
 interface PhotoSlideshowProps {
   destination?: string;
@@ -7,6 +8,7 @@ interface PhotoSlideshowProps {
 
 const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
   const [videoError, setVideoError] = useState(false);
+  const { videoUrl, isLoading, error } = usePexelsVideo(destination || '');
 
   const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
     console.error('Video failed to load, showing fallback image');
@@ -15,7 +17,14 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
 
   const handleVideoLoad = () => {
     console.log('Video loaded successfully');
+    setVideoError(false);
   };
+
+  // Fallback video URL (original Big Buck Bunny)
+  const fallbackVideoUrl = "https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4";
+  
+  // Use Pexels video if available, otherwise use fallback
+  const currentVideoUrl = videoUrl || fallbackVideoUrl;
 
   return (
     <div className="relative w-full h-80 rounded-2xl overflow-hidden">
@@ -23,7 +32,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
       <div className="relative w-full h-full">
         {!videoError ? (
           <video
-            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
+            src={currentVideoUrl}
             className="w-full h-full object-cover"
             autoPlay
             loop
@@ -45,6 +54,12 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
           <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
             {destination ? `Discover the beauty of ${destination}` : 'Discover beautiful destinations around the world'}
           </p>
+          {isLoading && (
+            <p className="text-white/70 text-sm mt-1">Loading destination video...</p>
+          )}
+          {error && (
+            <p className="text-white/70 text-sm mt-1">Using fallback video</p>
+          )}
         </div>
       </div>
     </div>
