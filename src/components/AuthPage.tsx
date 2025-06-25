@@ -32,15 +32,15 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-800 flex items-center justify-center p-6">
+    <div className="min-h-screen bg-gradient-to-br from-slate-900 via-black to-slate-800 flex items-center justify-center p-6 relative">
       {/* Background Pattern */}
       <AuthBackground />
 
-      {/* Navigation Buttons */}
+      {/* Navigation Buttons - positioned relative to the main container */}
       <AuthNavigationButtons onBack={onBack} />
 
       {/* Main Auth Card */}
-      <Card className="w-full max-w-md bg-black/40 border border-white/20 backdrop-blur-xl shadow-2xl">
+      <Card className="w-full max-w-md bg-black/40 border border-white/20 backdrop-blur-xl shadow-2xl relative z-0">
         <AuthHeader isSignUp={isSignUp} />
         
         <CardContent className="space-y-6">
@@ -61,7 +61,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
       </Card>
 
       {/* Bottom Quote */}
-      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center">
+      <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center z-0">
         <p className="text-white/60 text-sm italic max-w-md">
           "The world is a book and those who do not travel read only one page."
         </p>

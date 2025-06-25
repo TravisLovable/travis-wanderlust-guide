@@ -24,7 +24,7 @@ const AuthNavigationButtons = ({ onBack }: AuthNavigationButtonsProps) => {
         <Button
           variant="ghost"
           onClick={onBack}
-          className="absolute top-6 left-6 text-white/70 hover:text-white hover:bg-white/10 z-10"
+          className="absolute top-6 left-6 text-white/70 hover:text-white hover:bg-white/10 z-20"
         >
           <ArrowLeft className="w-5 h-5 mr-2" />
           Back
@@ -35,7 +35,7 @@ const AuthNavigationButtons = ({ onBack }: AuthNavigationButtonsProps) => {
       <Button
         variant="ghost"
         onClick={handleClose}
-        className="absolute top-6 right-6 text-white/70 hover:text-white hover:bg-white/10 p-2 z-10"
+        className="absolute top-6 right-6 text-white/70 hover:text-white hover:bg-white/10 p-2 z-20"
         aria-label="Close"
       >
         <X className="w-5 h-5" />
