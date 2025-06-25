@@ -17,6 +17,8 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
@@ -33,6 +35,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
+  
+  const { user, loading } = useAuth();
+  const navigate = useNavigate();
 
   // Use Mapbox for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
@@ -81,6 +86,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "Saved Destinations",
       travelPreferences: "Travel Preferences",
       signOut: "Sign Out",
+      signIn: "Sign In",
+      createAccount: "Create Account",
       privacy: "Privacy",
       terms: "Terms",
       settings: "Settings"
@@ -103,6 +110,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "保存的目的地",
       travelPreferences: "旅行偏好",
       signOut: "登出",
+      signIn: "登录",
+      createAccount: "创建账户",
       privacy: "隐私",
       terms: "条款",
       settings: "设置"
@@ -125,6 +134,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "保存された目的地",
       travelPreferences: "旅行の好み",
       signOut: "サインアウト",
+      signIn: "サインイン",
+      createAccount: "アカウント作成",
       privacy: "利用規約",
       terms: "利用規約",
       settings: "設定"
@@ -147,6 +158,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "Destinos Guardados",
       travelPreferences: "Preferencias de Viaje",
       signOut: "Cerrar Sesión",
+      signIn: "Iniciar Sesión",
+      createAccount: "Crear Cuenta",
       privacy: "Privacidad",
       terms: "Términos",
       settings: "Configuración"
@@ -169,6 +182,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "Destinations Sauvegardées",
       travelPreferences: "Préférences de Voyage",
       signOut: "Se Déconnecter",
+      signIn: "Se Connecter",
+      createAccount: "Créer un Compte",
       privacy: "Confidentialité",
       terms: "Conditions",
       settings: "Paramètres"
@@ -191,6 +206,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "Destinazioni Salvate",
       travelPreferences: "Preferenze di Viaggio",
       signOut: "Disconnetti",
+      signIn: "Accedi",
+      createAccount: "Crea Account",
       privacy: "Privacy",
       terms: "Termini",
       settings: "Impostazioni"
@@ -213,6 +230,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "Iindawo Ezigciniweyo",
       travelPreferences: "Izinto Zokukhetha Ukuhamba",
       signOut: "Phuma",
+      signIn: "Ngena",
+      createAccount: "Yenza iAkhawunti",
       privacy: "Ubumfihlo",
       terms: "Imiqathango",
       settings: "Iisetingi"
@@ -235,6 +254,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       savedDestinations: "Gestoorde Bestemmings",
       travelPreferences: "Reis Voorkeure",
       signOut: "Teken Uit",
+      signIn: "Teken In",
+      createAccount: "Skep Rekening",
       privacy: "Privaatheid",
       terms: "Voorwaardes",
       settings: "Instellings"
@@ -381,6 +402,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     setShowSuggestions(false);
   };
 
+  const handleSignOut = async () => {
+    const { signOut } = useAuth();
+    await signOut();
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Ambient Background Animation */}
@@ -434,60 +460,77 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             >
               {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                  <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
-                    backgroundPosition: 'center center'
-                  }} />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6 profile-dropdown-glow">
-                <div className="flex items-center space-x-4 mb-4">
-                  <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
-                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
-                    backgroundPosition: 'center center'
-                  }} />
-                  <div>
-                    <div className="flex flex-col space-y-1">
-                      <h3 className="font-semibold text-foreground">Brittany J.</h3>
-                      <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+            
+            {/* Conditional Profile/Auth Section */}
+            {loading ? (
+              <Button variant="ghost" size="icon" className="rounded-full" disabled>
+                <div className="w-8 h-8 rounded-full bg-gray-600 animate-pulse" />
+              </Button>
+            ) : user ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="rounded-full">
+                    <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
+                      backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
+                      backgroundPosition: 'center center'
+                    }} />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6 profile-dropdown-glow">
+                  <div className="flex items-center space-x-4 mb-4">
+                    <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
+                      backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
+                      backgroundPosition: 'center center'
+                    }} />
+                    <div>
+                      <div className="flex flex-col space-y-1">
+                        <h3 className="font-semibold text-foreground">Brittany J.</h3>
+                        <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+                      </div>
                     </div>
                   </div>
-                </div>
-                
-                <div className="space-y-3 mb-4">
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Preferred Airline</span>
-                    <span className="text-sm font-semibold text-foreground">Delta Airlines</span>
+                  
+                  <div className="space-y-3 mb-4">
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Preferred Airline</span>
+                      <span className="text-sm font-semibold text-foreground">Delta Airlines</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Travel Type</span>
+                      <span className="text-sm font-semibold text-foreground">Luxury</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
+                      <span className="text-sm font-medium text-foreground">DL89472156</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Nationality</span>
+                      <span className="text-sm font-medium text-foreground">American</span>
+                    </div>
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm text-muted-foreground">Country</span>
+                      <span className="text-sm font-medium text-foreground">United States</span>
+                    </div>
                   </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Travel Type</span>
-                    <span className="text-sm font-semibold text-foreground">Luxury</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
-                    <span className="text-sm font-medium text-foreground">DL89472156</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Nationality</span>
-                    <span className="text-sm font-medium text-foreground">American</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm text-muted-foreground">Country</span>
-                    <span className="text-sm font-medium text-foreground">United States</span>
-                  </div>
-                </div>
-                
-                <DropdownMenuSeparator className="my-4" />
-                
-                <DropdownMenuItem>{t.profileSettings}</DropdownMenuItem>
-                <DropdownMenuItem>{t.savedDestinations}</DropdownMenuItem>
-                <DropdownMenuItem>{t.travelPreferences}</DropdownMenuItem>
-                <DropdownMenuItem>{t.signOut}</DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
+                  
+                  <DropdownMenuSeparator className="my-4" />
+                  
+                  <DropdownMenuItem>{t.profileSettings}</DropdownMenuItem>
+                  <DropdownMenuItem>{t.savedDestinations}</DropdownMenuItem>
+                  <DropdownMenuItem>{t.travelPreferences}</DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleSignOut}>{t.signOut}</DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : (
+              <Button 
+                variant="ghost" 
+                onClick={() => navigate('/auth')}
+                className="text-sm px-4 py-2 rounded-full border border-border/30 hover:bg-white/5"
+              >
+                <User className="w-4 h-4 mr-2" />
+                {t.signIn}
+              </Button>
+            )}
           </div>
         </div>
       </header>
