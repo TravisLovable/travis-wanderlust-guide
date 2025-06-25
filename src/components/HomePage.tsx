@@ -434,16 +434,60 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             >
               {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
-            
-            {/* Auth placeholder container */}
-            <div className="auth-placeholder">
-              {/* TODO: Replace with authentication-aware component */}
-              {/* If logged in: show profile dropdown */}
-              {/* If not logged in: show "Sign In / Create Account" button */}
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <User className="w-5 h-5" strokeWidth={1.5} />
-              </Button>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
+                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
+                    backgroundPosition: 'center center'
+                  }} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6 profile-dropdown-glow">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
+                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
+                    backgroundPosition: 'center center'
+                  }} />
+                  <div>
+                    <div className="flex flex-col space-y-1">
+                      <h3 className="font-semibold text-foreground">Brittany J.</h3>
+                      <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Preferred Airline</span>
+                    <span className="text-sm font-semibold text-foreground">Delta Airlines</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Travel Type</span>
+                    <span className="text-sm font-semibold text-foreground">Luxury</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
+                    <span className="text-sm font-medium text-foreground">DL89472156</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Nationality</span>
+                    <span className="text-sm font-medium text-foreground">American</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Country</span>
+                    <span className="text-sm font-medium text-foreground">United States</span>
+                  </div>
+                </div>
+                
+                <DropdownMenuSeparator className="my-4" />
+                
+                <DropdownMenuItem>{t.profileSettings}</DropdownMenuItem>
+                <DropdownMenuItem>{t.savedDestinations}</DropdownMenuItem>
+                <DropdownMenuItem>{t.travelPreferences}</DropdownMenuItem>
+                <DropdownMenuItem>{t.signOut}</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
