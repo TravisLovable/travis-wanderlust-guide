@@ -515,7 +515,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Interactive Search Bar - removed fade-in animation */}
+          {/* Interactive Search Bar */}
           <div className="mb-8 max-w-5xl mx-auto">
             <div 
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
@@ -618,7 +618,14 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                    <PopoverContent 
+                      className="w-auto p-0 bg-card border-border" 
+                      align="start"
+                      side="bottom"
+                      sideOffset={8}
+                      avoidCollisions={false}
+                      sticky="always"
+                    >
                       <CalendarComponent
                         mode="single"
                         selected={checkinDate}
@@ -627,8 +634,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                           setCheckinOpen(false);
                         }}
                         initialFocus
-                        className="pointer-events-auto"
+                        className="pointer-events-auto w-[280px]"
                         disabled={(date) => date < new Date()}
+                        fixedWeeks
                       />
                     </PopoverContent>
                   </Popover>
@@ -644,7 +652,14 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                    <PopoverContent 
+                      className="w-auto p-0 bg-card border-border" 
+                      align="start"
+                      side="bottom"
+                      sideOffset={8}
+                      avoidCollisions={false}
+                      sticky="always"
+                    >
                       <CalendarComponent
                         mode="single"
                         selected={checkoutDate}
@@ -653,8 +668,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                           setCheckoutOpen(false);
                         }}
                         initialFocus
-                        className="pointer-events-auto"
+                        className="pointer-events-auto w-[280px]"
                         disabled={(date) => date < (checkinDate || new Date())}
+                        fixedWeeks
                       />
                     </PopoverContent>
                   </Popover>
