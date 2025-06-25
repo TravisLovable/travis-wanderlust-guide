@@ -60,18 +60,19 @@ export const usePexelsVideo = (destination: string) => {
         // Extract country name for better search results
         const countryName = extractCountryName(destination);
         
-        // Try multiple search strategies
+        // Define search queries with specific hierarchy
         const searchQueries = [
-          `${countryName} drone aerial landscape`,
-          `${countryName} travel beautiful scenic`,
-          `${countryName} nature landscape`,
-          `${countryName}` // Just the country name as fallback
+          `Drone ${countryName}`,
+          `Travel ${countryName}`,
+          `Scenic ${countryName}`,
+          `Nature ${countryName}`,
+          `Drone travel` // Global fallback
         ];
         
         let selectedVideo = null;
 
         for (const query of searchQueries) {
-          console.log(`Trying Pexels search: "${query}"`);
+          console.log(`🔍 Pexels search attempt: "${query}"`);
           
           const response = await fetch(
             `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=10&orientation=landscape`,
@@ -83,12 +84,12 @@ export const usePexelsVideo = (destination: string) => {
           );
 
           if (!response.ok) {
-            console.error(`Pexels API error for query "${query}":`, response.status);
+            console.error(`❌ Pexels API error for "${query}":`, response.status);
             continue;
           }
 
           const data: PexelsResponse = await response.json();
-          console.log(`Pexels results for "${query}":`, data.total_results, 'videos found');
+          console.log(`📊 Results for "${query}": ${data.total_results} videos found`);
 
           if (data.videos && data.videos.length > 0) {
             const video = data.videos[0];
@@ -99,7 +100,7 @@ export const usePexelsVideo = (destination: string) => {
             );
 
             if (hdVideo) {
-              console.log(`SUCCESS: Found video for "${query}":`, hdVideo.link);
+              console.log(`✅ SUCCESS: Found video for "${query}":`, hdVideo.link);
               selectedVideo = hdVideo.link;
               break; // Stop searching once we find a video
             }
@@ -109,7 +110,7 @@ export const usePexelsVideo = (destination: string) => {
         if (selectedVideo) {
           setVideoUrl(selectedVideo);
         } else {
-          console.log('No videos found for any search term, using fallback');
+          console.log('❌ No videos found for any search term, using fallback');
           setVideoUrl(null);
         }
       } catch (err) {
