@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -619,20 +618,18 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start" side="bottom" sideOffset={8}>
-                      <div className="w-[300px]">
-                        <CalendarComponent
-                          mode="single"
-                          selected={checkinDate}
-                          onSelect={(date) => {
-                            if (date) setCheckinDate(date);
-                            setCheckinOpen(false);
-                          }}
-                          initialFocus
-                          className="pointer-events-auto w-full"
-                          disabled={(date) => date < new Date()}
-                        />
-                      </div>
+                    <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
+                      <CalendarComponent
+                        mode="single"
+                        selected={checkinDate}
+                        onSelect={(date) => {
+                          if (date) setCheckinDate(date);
+                          setCheckinOpen(false);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto w-full"
+                        disabled={(date) => date < new Date()}
+                      />
                     </PopoverContent>
                   </Popover>
                   
@@ -647,20 +644,18 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start" side="bottom" sideOffset={8}>
-                      <div className="w-[300px]">
-                        <CalendarComponent
-                          mode="single"
-                          selected={checkoutDate}
-                          onSelect={(date) => {
-                            if (date) setCheckoutDate(date);
-                            setCheckoutOpen(false);
-                          }}
-                          initialFocus
-                          className="pointer-events-auto w-full"
-                          disabled={(date) => date < (checkinDate || new Date())}
-                        />
-                      </div>
+                    <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
+                      <CalendarComponent
+                        mode="single"
+                        selected={checkoutDate}
+                        onSelect={(date) => {
+                          if (date) setCheckoutDate(date);
+                          setCheckoutOpen(false);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto w-full"
+                        disabled={(date) => date < (checkinDate || new Date())}
+                      />
                     </PopoverContent>
                   </Popover>
                 </div>
