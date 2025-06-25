@@ -28,6 +28,8 @@ import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 import { supabase } from '@/integrations/supabase/client';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
+import { useAuth } from '@/hooks/useAuth';
+import { useNavigate } from 'react-router-dom';
 
 interface ResultsPageProps {
   destination: string;
@@ -117,6 +119,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   // Use real currency exchange data with destination-based currency
   const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', destination);
+
+  // Add authentication
+  const { user, session, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
 
   // Update pinned destinations when destination changes
   useEffect(() => {
@@ -417,6 +423,20 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     fetchHolidayData();
   }, [destination, dates.checkin, dates.checkout]);
 
+  // Get user display data
+  const getUserDisplayData = () => {
+    if (!user) return null;
+    
+    const email = user.email || '';
+    const firstName = user.user_metadata?.first_name || '';
+    const displayName = firstName || email.split('@')[0] || 'User';
+    const initials = firstName ? firstName.charAt(0).toUpperCase() : email.charAt(0).toUpperCase();
+    
+    return { displayName, initials, email };
+  };
+
+  const userDisplay = getUserDisplayData();
+
   // Profile data
   const profileData = {
     name: "Brittany J.",
@@ -658,9 +678,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return `Depart: ${departFormatted} • Return: ${returnFormatted}`;
   };
 
-  const handleSignOut = () => {
-    // Navigate to sign out/sign in page
-    window.location.href = '/auth';
+  const handleSignOut = async () => {
+    await signOut();
+    navigate('/auth');
+  };
+
+  const handleSignIn = () => {
+    navigate('/auth');
   };
 
   return (
@@ -740,59 +764,74 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-xl font-medium text-foreground">Welcome back, B!</span>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full profile-dropdown-glow">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src="/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png" alt="Profile" />
-                      <AvatarFallback>BJ</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-80 bg-card border-border shadow-lg profile-dropdown-glow" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{profileData.name}</p>
-                      <p className="text-xs leading-none premium-glow font-medium">{profileData.status}</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <div className="p-2 space-y-2">
-                    <div className="text-xs">
-                      <strong>Preferred Airline:</strong> {profileData.preferredAirline}
-                    </div>
-                    <div className="text-xs">
-                      <strong>Travel Type:</strong> {profileData.travelType}
-                    </div>
-                    <div className="text-xs">
-                      <strong>Frequent Flyer #:</strong> {profileData.frequentFlyerNumber}
-                    </div>
-                    <div className="text-xs">
-                      <strong>Passport:</strong> {profileData.country}
-                    </div>
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs text-muted-foreground">Dark Mode</span>
-                      <Switch
-                        checked={isDarkMode}
-                        onCheckedChange={toggleTheme}
-                        className="scale-75"
-                      />
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    Edit Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              {authLoading ? (
+                <div className="w-10 h-10 rounded-full bg-gray-600 animate-pulse"></div>
+              ) : user && userDisplay ? (
+                <>
+                  <span className="text-xl font-medium text-foreground">
+                    Welcome back, {userDisplay.displayName}!
+                  </span>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button variant="ghost" className="relative h-10 w-10 rounded-full profile-dropdown-glow">
+                        <Avatar className="h-10 w-10">
+                          <AvatarImage src="/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png" alt="Profile" />
+                          <AvatarFallback>{userDisplay.initials}</AvatarFallback>
+                        </Avatar>
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="w-80 bg-card border-border shadow-lg profile-dropdown-glow" align="end" forceMount>
+                      <DropdownMenuLabel className="font-normal">
+                        <div className="flex flex-col space-y-1">
+                          <p className="text-sm font-medium leading-none">{userDisplay.displayName}</p>
+                          <p className="text-xs leading-none text-muted-foreground">{userDisplay.email}</p>
+                          <p className="text-xs leading-none premium-glow font-medium">Premium Member</p>
+                        </div>
+                      </DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                      <div className="p-2 space-y-2">
+                        <div className="text-xs">
+                          <strong>Preferred Airline:</strong> Delta Airlines
+                        </div>
+                        <div className="text-xs">
+                          <strong>Travel Type:</strong> Luxury
+                        </div>
+                        <div className="text-xs">
+                          <strong>Frequent Flyer #:</strong> DL89472156
+                        </div>
+                        <div className="text-xs">
+                          <strong>Passport:</strong> United States
+                        </div>
+                        <div className="flex items-center justify-between pt-2">
+                          <span className="text-xs text-muted-foreground">Dark Mode</span>
+                          <Switch
+                            checked={isDarkMode}
+                            onCheckedChange={toggleTheme}
+                            className="scale-75"
+                          />
+                        </div>
+                      </div>
+                      <DropdownMenuSeparator />
+                      <DropdownMenuItem>
+                        Edit Profile
+                      </DropdownMenuItem>
+                      <DropdownMenuItem>
+                        Settings
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={handleSignOut}>
+                        Sign out
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </>
+              ) : (
+                <Button 
+                  onClick={handleSignIn}
+                  className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-medium transition-colors"
+                >
+                  Sign In / Create Account
+                </Button>
+              )}
             </div>
           </div>
 
