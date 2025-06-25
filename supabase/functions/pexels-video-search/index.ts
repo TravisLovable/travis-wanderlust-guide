@@ -46,6 +46,8 @@ serve(async (req) => {
     const { destination } = await req.json();
     
     console.log('🎬 Pexels edge function called with destination:', destination);
+    console.log('🎬 Destination type:', typeof destination);
+    console.log('🎬 Destination length:', destination?.length);
     
     // Get the Pexels API key from Supabase secrets
     const PEXELS_API_KEY = Deno.env.get('PHOTO_SLIDE-DECK');
@@ -88,14 +90,18 @@ serve(async (req) => {
       const parts = destination.split(',').map(part => part.trim());
       const countryName = parts[parts.length - 1];
       
-      console.log('🌍 Extracted country from destination:', { destination, countryName });
+      console.log('🌍 Extracted country from destination:', { 
+        originalDestination: destination, 
+        splitParts: parts, 
+        extractedCountry: countryName 
+      });
       return countryName;
     };
 
     const countryName = extractCountryName(destination);
     console.log('🔍 Will search for videos using country:', countryName);
     
-    // Define search queries with specific hierarchy as requested
+    // Define search queries with specific hierarchy
     const searchQueries = [
       `Drone ${countryName}`,
       `Travel ${countryName}`,
@@ -107,9 +113,10 @@ serve(async (req) => {
     console.log('📋 Search queries prepared:', searchQueries);
     
     let selectedVideo = null;
+    let successfulQuery = null;
 
     for (const query of searchQueries) {
-      console.log(`🔍 Pexels search attempt: "${query}"`);
+      console.log(`🔍 Starting Pexels search attempt: "${query}"`);
       
       try {
         const pexelsUrl = `https://api.pexels.com/videos/search?query=${encodeURIComponent(query)}&per_page=10&orientation=landscape`;
@@ -137,6 +144,7 @@ serve(async (req) => {
         console.log(`📊 Results for "${query}": ${data.total_results} videos found`);
         
         if (data.videos && data.videos.length > 0) {
+          console.log(`✅ Found ${data.videos.length} videos for query: "${query}"`);
           console.log(`📋 First few videos for "${query}":`, 
             data.videos.slice(0, 3).map(v => ({ 
               id: v.id, 
@@ -159,12 +167,13 @@ serve(async (req) => {
           );
 
           if (hdVideo) {
-            console.log(`✅ SUCCESS: Found video for "${query}":`, {
+            console.log(`✅ SUCCESS: Found suitable video for "${query}":`, {
               videoId: video.id,
               quality: hdVideo.quality,
               url: hdVideo.link
             });
             selectedVideo = hdVideo.link;
+            successfulQuery = query;
             break; // Stop searching once we find a video
           } else {
             console.log(`⚠️ No suitable video file found for "${query}" - available files:`, 
@@ -182,10 +191,19 @@ serve(async (req) => {
       }
     }
 
-    console.log('🎯 Final result - returning video URL:', selectedVideo);
+    console.log('🎯 Final result summary:', {
+      selectedVideo: selectedVideo,
+      successfulQuery: successfulQuery,
+      totalQueriesAttempted: searchQueries.length
+    });
     
     return new Response(
-      JSON.stringify({ videoUrl: selectedVideo }), 
+      JSON.stringify({ 
+        videoUrl: selectedVideo,
+        query: successfulQuery,
+        destination: destination,
+        extractedCountry: extractCountryName(destination)
+      }), 
       { 
         headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
       }
