@@ -9,48 +9,7 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      users: {
-        Row: {
-          auth_id: string
-          country: string | null
-          created_at: string
-          frequent_flyer_number: string | null
-          full_name: string | null
-          id: string
-          nationality: string | null
-          onboarding_completed: boolean
-          preferred_airline: string | null
-          travel_type: string | null
-          updated_at: string
-        }
-        Insert: {
-          auth_id: string
-          country?: string | null
-          created_at?: string
-          frequent_flyer_number?: string | null
-          full_name?: string | null
-          id?: string
-          nationality?: string | null
-          onboarding_completed?: boolean
-          preferred_airline?: string | null
-          travel_type?: string | null
-          updated_at?: string
-        }
-        Update: {
-          auth_id?: string
-          country?: string | null
-          created_at?: string
-          frequent_flyer_number?: string | null
-          full_name?: string | null
-          id?: string
-          nationality?: string | null
-          onboarding_completed?: boolean
-          preferred_airline?: string | null
-          travel_type?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
