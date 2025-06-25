@@ -268,12 +268,12 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             <div className="lg:col-span-2 space-y-6">
               {/* Travis Chatbot */}
               <div className="bg-card border border-border/30 rounded-xl overflow-hidden">
-                <TravisChatbot destination={destination} dates={dates} />
+                <TravisChatbot />
               </div>
 
               {/* Accommodation Heat Map */}
               <div className="bg-card border border-border/30 rounded-xl p-6">
-                <AccommodationHeatMap destination={destination} />
+                <AccommodationHeatMap />
               </div>
             </div>
 
