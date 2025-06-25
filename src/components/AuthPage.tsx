@@ -36,29 +36,31 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
       {/* Background Pattern */}
       <AuthBackground />
 
-      {/* Navigation Buttons - positioned relative to the main container */}
-      <AuthNavigationButtons onBack={onBack} />
+      {/* Main Auth Card - Modal Container with relative positioning */}
+      <div className="relative w-full max-w-md">
+        {/* Navigation Buttons - positioned relative to the modal container */}
+        <AuthNavigationButtons onBack={onBack} />
 
-      {/* Main Auth Card */}
-      <Card className="w-full max-w-md bg-black/40 border border-white/20 backdrop-blur-xl shadow-2xl relative z-0">
-        <AuthHeader isSignUp={isSignUp} />
-        
-        <CardContent className="space-y-6">
-          <AuthForm
-            isSignUp={isSignUp}
-            formData={formData}
-            onInputChange={handleInputChange}
-            onSubmit={handleSubmit}
-          />
+        <Card className="w-full bg-black/40 border border-white/20 backdrop-blur-xl shadow-2xl relative">
+          <AuthHeader isSignUp={isSignUp} />
+          
+          <CardContent className="space-y-6">
+            <AuthForm
+              isSignUp={isSignUp}
+              formData={formData}
+              onInputChange={handleInputChange}
+              onSubmit={handleSubmit}
+            />
 
-          <SocialLogin />
+            <SocialLogin />
 
-          <AuthToggle
-            isSignUp={isSignUp}
-            onToggle={() => setIsSignUp(!isSignUp)}
-          />
-        </CardContent>
-      </Card>
+            <AuthToggle
+              isSignUp={isSignUp}
+              onToggle={() => setIsSignUp(!isSignUp)}
+            />
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Bottom Quote */}
       <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 text-center z-0">
