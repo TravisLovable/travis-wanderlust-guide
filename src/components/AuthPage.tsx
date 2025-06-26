@@ -4,6 +4,9 @@ import { ArrowLeft, Mail, Lock, User, Eye, EyeOff } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { supabase } from '@/integrations/supabase/client';
+import { useNavigate } from 'react-router-dom';
 
 interface AuthPageProps {
   onBack?: () => void;
@@ -12,6 +15,9 @@ interface AuthPageProps {
 const AuthPage = ({ onBack }: AuthPageProps) => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -19,14 +25,99 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
     confirmPassword: ''
   });
 
+  const navigate = useNavigate();
+
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
+    // Clear error when user starts typing
+    if (error) setError('');
+    if (success) setSuccess('');
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const validateForm = () => {
+    if (!formData.email || !formData.password) {
+      setError('Email and password are required');
+      return false;
+    }
+
+    if (isSignUp) {
+      if (!formData.name) {
+        setError('Full name is required for sign up');
+        return false;
+      }
+      if (formData.password !== formData.confirmPassword) {
+        setError('Passwords do not match');
+        return false;
+      }
+      if (formData.password.length < 6) {
+        setError('Password must be at least 6 characters long');
+        return false;
+      }
+    }
+
+    return true;
+  };
+
+  const handleSignIn = async () => {
+    console.log('Attempting sign in with:', formData.email);
+    
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email: formData.email,
+      password: formData.password,
+    });
+
+    if (signInError) {
+      console.error('Sign in error:', signInError);
+      
+      if (signInError.message.includes('Email not confirmed')) {
+        setError('Please check your email and click the verification link before signing in.');
+      } else if (signInError.message.includes('Invalid login credentials')) {
+        setError('Invalid email or password. Please check your credentials and try again.');
+      } else {
+        setError(signInError.message || 'Failed to sign in. Please try again.');
+      }
+      return;
+    }
+
+    if (data.user) {
+      console.log('Sign in successful:', data.user.id);
+      setSuccess('Sign in successful! Redirecting...');
+      
+      // Wait a moment for the success message to show, then redirect
+      setTimeout(() => {
+        navigate('/');
+      }, 1500);
+    }
+  };
+
+  const handleSignUp = async () => {
+    console.log('Sign up not implemented in AuthPage - redirecting to onboarding modal');
+    setError('Please use the "Sign In / Create Account" button on the homepage for full account creation with travel preferences.');
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    // Handle sign in/sign up logic here
-    console.log('Form submitted:', formData);
+    
+    if (!validateForm()) {
+      return;
+    }
+
+    setIsLoading(true);
+    setError('');
+    setSuccess('');
+
+    try {
+      if (isSignUp) {
+        await handleSignUp();
+      } else {
+        await handleSignIn();
+      }
+    } catch (error) {
+      console.error('Authentication error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -79,6 +170,20 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
         </CardHeader>
         
         <CardContent className="space-y-6">
+          {/* Error Message */}
+          {error && (
+            <Alert variant="destructive">
+              <AlertDescription>{error}</AlertDescription>
+            </Alert>
+          )}
+
+          {/* Success Message */}
+          {success && (
+            <Alert className="border-green-500 bg-green-500/10">
+              <AlertDescription className="text-green-400">{success}</AlertDescription>
+            </Alert>
+          )}
+
           <form onSubmit={handleSubmit} className="space-y-4">
             {/* Name Field (Sign Up Only) */}
             {isSignUp && (
@@ -90,6 +195,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
                   value={formData.name}
                   onChange={(e) => handleInputChange('name', e.target.value)}
                   className="pl-12 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400 rounded-xl"
+                  disabled={isLoading}
                 />
               </div>
             )}
@@ -103,6 +209,8 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
                 value={formData.email}
                 onChange={(e) => handleInputChange('email', e.target.value)}
                 className="pl-12 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400 rounded-xl"
+                disabled={isLoading}
+                required
               />
             </div>
 
@@ -115,11 +223,14 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
                 value={formData.password}
                 onChange={(e) => handleInputChange('password', e.target.value)}
                 className="pl-12 pr-12 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400 rounded-xl"
+                disabled={isLoading}
+                required
               />
               <button
                 type="button"
                 onClick={() => setShowPassword(!showPassword)}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/80"
+                disabled={isLoading}
               >
                 {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
               </button>
@@ -135,6 +246,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
                   value={formData.confirmPassword}
                   onChange={(e) => handleInputChange('confirmPassword', e.target.value)}
                   className="pl-12 h-12 bg-white/10 border-white/20 text-white placeholder:text-white/50 focus:border-blue-400 rounded-xl"
+                  disabled={isLoading}
                 />
               </div>
             )}
@@ -142,9 +254,10 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
             {/* Submit Button */}
             <Button
               type="submit"
-              className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all"
+              disabled={isLoading}
+              className="w-full h-12 bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white font-semibold rounded-xl shadow-lg hover:shadow-xl transition-all disabled:opacity-50"
             >
-              {isSignUp ? 'Create Account' : 'Sign In'}
+              {isLoading ? 'Please wait...' : (isSignUp ? 'Create Account' : 'Sign In')}
             </Button>
           </form>
 
@@ -163,6 +276,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
             <Button
               variant="outline"
               className="h-12 bg-white/5 border-white/20 text-white hover:bg-white/10 rounded-xl"
+              disabled={isLoading}
             >
               <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24">
                 <path fill="currentColor" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
@@ -175,6 +289,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
             <Button
               variant="outline"
               className="h-12 bg-white/5 border-white/20 text-white hover:bg-white/10 rounded-xl"
+              disabled={isLoading}
             >
               <svg className="w-5 h-5 mr-2" fill="currentColor" viewBox="0 0 24 24">
                 <path d="M24 4.557c-.883.392-1.832.656-2.828.775 1.017-.609 1.798-1.574 2.165-2.724-.951.564-2.005.974-3.127 1.195-.897-.957-2.178-1.555-3.594-1.555-3.179 0-5.515 2.966-4.797 6.045-4.091-.205-7.719-2.165-10.148-5.144-1.29 2.213-.669 5.108 1.523 6.574-.806-.026-1.566-.247-2.229-.616-.054 2.281 1.581 4.415 3.949 4.89-.693.188-1.452.232-2.224.084.626 1.956 2.444 3.379 4.6 3.419-2.07 1.623-4.678 2.348-7.29 2.04 2.179 1.397 4.768 2.212 7.548 2.212 9.142 0 14.307-7.721 13.995-14.646.962-.695 1.797-1.562 2.457-2.549z"/>
@@ -188,18 +303,31 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
             <p className="text-white/60">
               {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
               <button
-                onClick={() => setIsSignUp(!isSignUp)}
+                onClick={() => {
+                  setIsSignUp(!isSignUp);
+                  setError('');
+                  setSuccess('');
+                }}
                 className="text-blue-400 hover:text-blue-300 font-medium transition-colors"
+                disabled={isLoading}
               >
                 {isSignUp ? 'Sign In' : 'Sign Up'}
               </button>
             </p>
+            {isSignUp && (
+              <p className="text-white/50 text-xs mt-2">
+                For full account setup with travel preferences, use the main sign-up flow on the homepage.
+              </p>
+            )}
           </div>
 
           {/* Forgot Password Link (Sign In Only) */}
           {!isSignUp && (
             <div className="text-center">
-              <button className="text-white/60 hover:text-white/80 text-sm transition-colors">
+              <button 
+                className="text-white/60 hover:text-white/80 text-sm transition-colors"
+                disabled={isLoading}
+              >
                 Forgot your password?
               </button>
             </div>
