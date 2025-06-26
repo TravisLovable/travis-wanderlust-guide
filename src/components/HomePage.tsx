@@ -17,8 +17,6 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import AuthPage from '@/components/AuthPage';
-import SignInButton from '@/components/SignInButton';
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
@@ -35,7 +33,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
-  const [showAuthPage, setShowAuthPage] = useState(false);
 
   // Use Mapbox for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
@@ -384,11 +381,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     setShowSuggestions(false);
   };
 
-  // Show AuthPage instead of homepage when sign-in is clicked
-  if (showAuthPage) {
-    return <AuthPage onBack={() => setShowAuthPage(false)} />;
-  }
-
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Ambient Background Animation */}
@@ -408,7 +400,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         ))}
       </div>
 
-      {/* Header with Sign In button */}
+      {/* Header */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
@@ -442,9 +434,60 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             >
               {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
-
-            {/* Sign In Button - Updated to show AuthPage */}
-            <SignInButton onClick={() => setShowAuthPage(true)} />
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon" className="rounded-full">
+                  <div className="w-8 h-8 bg-cover bg-center rounded-full object-cover" style={{
+                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
+                    backgroundPosition: 'center center'
+                  }} />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-80 bg-card border-border p-6 profile-dropdown-glow">
+                <div className="flex items-center space-x-4 mb-4">
+                  <div className="w-16 h-16 bg-cover bg-center rounded-full object-cover" style={{
+                    backgroundImage: 'url(/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png)',
+                    backgroundPosition: 'center center'
+                  }} />
+                  <div>
+                    <div className="flex flex-col space-y-1">
+                      <h3 className="font-semibold text-foreground">Brittany J.</h3>
+                      <span className="text-sm font-medium text-emerald-400">Premium Member</span>
+                    </div>
+                  </div>
+                </div>
+                
+                <div className="space-y-3 mb-4">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Preferred Airline</span>
+                    <span className="text-sm font-semibold text-foreground">Delta Airlines</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Travel Type</span>
+                    <span className="text-sm font-semibold text-foreground">Luxury</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Frequent Flyer #</span>
+                    <span className="text-sm font-medium text-foreground">DL89472156</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Nationality</span>
+                    <span className="text-sm font-medium text-foreground">American</span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm text-muted-foreground">Country</span>
+                    <span className="text-sm font-medium text-foreground">United States</span>
+                  </div>
+                </div>
+                
+                <DropdownMenuSeparator className="my-4" />
+                
+                <DropdownMenuItem>{t.profileSettings}</DropdownMenuItem>
+                <DropdownMenuItem>{t.savedDestinations}</DropdownMenuItem>
+                <DropdownMenuItem>{t.travelPreferences}</DropdownMenuItem>
+                <DropdownMenuItem>{t.signOut}</DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </header>
@@ -472,7 +515,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Interactive Search Bar */}
+          {/* Interactive Search Bar - removed fade-in animation */}
           <div className="mb-8 max-w-5xl mx-auto">
             <div 
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
@@ -575,14 +618,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0 bg-card border-border" 
-                      align="start"
-                      side="bottom"
-                      sideOffset={8}
-                      avoidCollisions={false}
-                      sticky="always"
-                    >
+                    <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
                       <CalendarComponent
                         mode="single"
                         selected={checkinDate}
@@ -591,9 +627,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                           setCheckinOpen(false);
                         }}
                         initialFocus
-                        className="pointer-events-auto w-[280px]"
+                        className="pointer-events-auto w-full"
                         disabled={(date) => date < new Date()}
-                        fixedWeeks
                       />
                     </PopoverContent>
                   </Popover>
@@ -609,14 +644,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                         <Calendar className="w-4 h-4 text-white/70 ml-2" />
                       </Button>
                     </PopoverTrigger>
-                    <PopoverContent 
-                      className="w-auto p-0 bg-card border-border" 
-                      align="start"
-                      side="bottom"
-                      sideOffset={8}
-                      avoidCollisions={false}
-                      sticky="always"
-                    >
+                    <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
                       <CalendarComponent
                         mode="single"
                         selected={checkoutDate}
@@ -625,9 +653,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                           setCheckoutOpen(false);
                         }}
                         initialFocus
-                        className="pointer-events-auto w-[280px]"
+                        className="pointer-events-auto w-full"
                         disabled={(date) => date < (checkinDate || new Date())}
-                        fixedWeeks
                       />
                     </PopoverContent>
                   </Popover>
