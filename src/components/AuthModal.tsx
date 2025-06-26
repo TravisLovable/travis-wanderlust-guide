@@ -26,16 +26,12 @@ interface FormData {
   travelType: string;
   nationality: string;
   country: string;
-  email: string;
-  password: string;
   profilePhoto: File | null;
 }
 
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [accountCreated, setAccountCreated] = useState(false);
-  const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     preferredAirline: '',
@@ -43,8 +39,6 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     travelType: '',
     nationality: '',
     country: '',
-    email: '',
-    password: '',
     profilePhoto: null,
   });
 
@@ -103,47 +97,70 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
-  const createUserProfile = async (userId: string, profilePhotoUrl?: string) => {
+  const createUserProfile = async () => {
     try {
-      console.log('Creating user profile with data:', {
-        auth_id: userId,
+      // Get current user
+      const { data: { user }, error: userError } = await supabase.auth.getUser();
+      
+      if (userError || !user) {
+        console.error('User not authenticated:', userError);
+        toast.error('Authentication error. Please sign in again.');
+        return false;
+      }
+
+      console.log('Creating user profile for authenticated user:', user.id);
+
+      // Upload profile photo if provided
+      let profilePhotoUrl = null;
+      if (formData.profilePhoto) {
+        profilePhotoUrl = await uploadProfilePhoto(user.id, formData.profilePhoto);
+        if (!profilePhotoUrl) {
+          toast.error('Failed to upload profile photo, but continuing...');
+        }
+      }
+
+      // Create user profile with authenticated user's data
+      const profileData = {
+        auth_id: user.id,
         full_name: formData.fullName,
-        email: formData.email,
+        email: user.email,
         preferred_airline: formData.preferredAirline,
         frequent_flyer_number: formData.frequentFlyerNumber || null,
         travel_type: formData.travelType,
         nationality: formData.nationality,
         country: formData.country,
-        profile_photo_url: profilePhotoUrl || null,
+        profile_photo_url: profilePhotoUrl,
         onboarding_completed: true
-      });
+      };
+
+      console.log('Inserting profile data:', profileData);
 
       const { data, error } = await supabase
         .from('users')
-        .insert({
-          auth_id: userId,
-          full_name: formData.fullName,
-          email: formData.email,
-          preferred_airline: formData.preferredAirline,
-          frequent_flyer_number: formData.frequentFlyerNumber || null,
-          travel_type: formData.travelType,
-          nationality: formData.nationality,
-          country: formData.country,
-          profile_photo_url: profilePhotoUrl || null,
-          onboarding_completed: true
-        })
+        .insert(profileData)
         .select();
 
       if (error) {
         console.error('Error creating user profile:', error);
-        throw error;
+        
+        if (error.code === '23505') {
+          toast.error('Profile already exists for this user.');
+        } else if (error.message?.includes('row-level security')) {
+          toast.error('Authentication issue. Please try signing out and back in.');
+        } else {
+          toast.error('Failed to create profile. Please try again.');
+        }
+        return false;
       }
 
       console.log('User profile created successfully:', data);
-      return data;
+      toast.success('Profile created successfully!');
+      return true;
+      
     } catch (error) {
       console.error('Error in createUserProfile:', error);
-      throw error;
+      toast.error('An unexpected error occurred. Please try again.');
+      return false;
     }
   };
 
@@ -159,118 +176,32 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
-  const handleCreateAccount = async () => {
+  const handleFinish = async () => {
     if (isLoading) return;
     
     setIsLoading(true);
     
     try {
       // Validate required fields
-      if (!formData.email || !formData.password || !formData.fullName) {
+      if (!formData.fullName || !formData.preferredAirline || !formData.travelType || 
+          !formData.nationality || !formData.country) {
         toast.error('Please fill in all required fields');
         setIsLoading(false);
         return;
       }
 
-      if (formData.password.length < 6) {
-        toast.error('Password must be at least 6 characters long');
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('Starting account creation process...');
-
-      // Create auth account
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: formData.fullName,
-          }
-        }
-      });
-
-      if (authError) {
-        console.error('Auth error:', authError);
-        if (authError.message.includes('already registered')) {
-          toast.error('An account with this email already exists. Please sign in instead.');
-        } else {
-          toast.error(authError.message || 'Failed to create account');
-        }
-        setIsLoading(false);
-        return;
-      }
-
-      if (!authData.user) {
-        toast.error('Failed to create account. Please try again.');
-        setIsLoading(false);
-        return;
-      }
-
-      console.log('Auth account created successfully. User ID:', authData.user.id);
-
-      // Wait a moment for the auth state to settle
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Create user profile
-      try {
-        await createUserProfile(authData.user.id);
-        console.log('Profile created successfully');
-        setAccountCreated(true);
-        setUserId(authData.user.id);
-        
-        // Show step 6 (photo upload) as optional
-        setCurrentStep(6);
-        toast.success('Account created successfully! Please check your email to verify your account.');
-      } catch (profileError) {
-        console.error('Profile creation failed:', profileError);
-        toast.error('Account created but failed to save profile data. Please try refreshing and logging in.');
+      const success = await createUserProfile();
+      
+      if (success) {
+        // Close modal and let parent component know we're done
+        onClose();
       }
       
     } catch (error) {
-      console.error('Unexpected error:', error);
+      console.error('Unexpected error during profile creation:', error);
       toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
-    }
-  };
-
-  const handleUploadPhoto = async () => {
-    if (!userId || !formData.profilePhoto) {
-      // Skip photo upload
-      onClose();
-      return;
-    }
-
-    setIsLoading(true);
-    
-    try {
-      const profilePhotoUrl = await uploadProfilePhoto(userId, formData.profilePhoto);
-      
-      if (profilePhotoUrl) {
-        // Update user profile with photo URL
-        const { error } = await supabase
-          .from('users')
-          .update({ profile_photo_url: profilePhotoUrl })
-          .eq('auth_id', userId);
-          
-        if (error) {
-          console.error('Error updating profile photo:', error);
-          toast.error('Failed to save profile photo');
-        } else {
-          toast.success('Profile photo uploaded successfully!');
-        }
-      } else {
-        toast.error('Failed to upload profile photo');
-      }
-    } catch (error) {
-      console.error('Photo upload error:', error);
-      toast.error('Failed to upload profile photo');
-    } finally {
-      setIsLoading(false);
-      onClose();
     }
   };
 
@@ -285,7 +216,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       case 4:
         return formData.nationality.length > 0 && formData.country.length > 0;
       case 5:
-        return formData.email.length > 0 && formData.password.length >= 6;
+        return true; // Step 5 is just for final review/confirmation
       case 6:
         return true; // Profile photo is optional
       default:
@@ -434,32 +365,16 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         return (
           <div className="space-y-4">
             <div className="text-center mb-6">
-              <Mail className="w-12 h-12 mx-auto mb-2 text-blue-400" />
-              <h3 className="text-xl font-semibold text-white">Create your account</h3>
-              <p className="text-white/70 text-sm">We'll use this to sign you in</p>
+              <User className="w-12 h-12 mx-auto mb-2 text-blue-400" />
+              <h3 className="text-xl font-semibold text-white">Review your profile</h3>
+              <p className="text-white/70 text-sm">Make sure everything looks correct</p>
             </div>
-            <div>
-              <Label htmlFor="email" className="text-white/90">Email Address</Label>
-              <Input
-                id="email"
-                type="email"
-                value={formData.email}
-                onChange={(e) => handleInputChange('email', e.target.value)}
-                placeholder="Enter your email"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-              />
-            </div>
-            <div>
-              <Label htmlFor="password" className="text-white/90">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                value={formData.password}
-                onChange={(e) => handleInputChange('password', e.target.value)}
-                placeholder="Create a password (min. 6 characters)"
-                className="bg-white/10 border-white/20 text-white placeholder:text-white/50"
-              />
-              <p className="text-xs text-white/50 mt-1">Password must be at least 6 characters long</p>
+            <div className="space-y-3 bg-white/5 rounded-lg p-4">
+              <div><span className="text-white/70">Name:</span> <span className="text-white">{formData.fullName}</span></div>
+              <div><span className="text-white/70">Preferred Airline:</span> <span className="text-white">{formData.preferredAirline}</span></div>
+              <div><span className="text-white/70">Travel Type:</span> <span className="text-white">{travelTypes.find(t => t.value === formData.travelType)?.label}</span></div>
+              <div><span className="text-white/70">Nationality:</span> <span className="text-white">{formData.nationality}</span></div>
+              <div><span className="text-white/70">Country:</span> <span className="text-white">{formData.country}</span></div>
             </div>
           </div>
         );
@@ -565,28 +480,29 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
             {currentStep === 5 ? (
               <Button
-                onClick={handleCreateAccount}
+                onClick={handleNext}
                 disabled={!isStepValid() || isLoading}
                 className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
               >
-                {isLoading ? 'Creating Account...' : 'Create Account'}
+                Continue
+                <ArrowRight className="w-4 h-4 ml-2" />
               </Button>
             ) : currentStep === 6 ? (
               <div className="flex space-x-2">
                 <Button
-                  onClick={() => onClose()}
+                  onClick={handleFinish}
                   variant="ghost"
                   className="text-white/70 hover:text-white hover:bg-white/10"
                   disabled={isLoading}
                 >
-                  Skip
+                  Skip Photo
                 </Button>
                 <Button
-                  onClick={handleUploadPhoto}
+                  onClick={handleFinish}
                   disabled={isLoading}
                   className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
                 >
-                  {isLoading ? 'Uploading...' : formData.profilePhoto ? 'Upload Photo' : 'Finish'}
+                  {isLoading ? 'Creating Profile...' : 'Finish'}
                 </Button>
               </div>
             ) : (

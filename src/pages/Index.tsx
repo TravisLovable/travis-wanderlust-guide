@@ -6,6 +6,7 @@ import ResultsPage from '@/components/ResultsPage';
 import AuthModal from '@/components/AuthModal';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
+import { toast } from 'sonner';
 
 interface SearchData {
   destination: string;
@@ -42,9 +43,14 @@ const Index = () => {
     setShowLoading(false);
   };
 
-  const checkUserProfile = async (userId: string) => {
+  const checkUserProfile = async (userId: string, retryCount = 0) => {
     try {
       console.log('Checking if user profile exists for:', userId);
+      
+      // Wait a moment to ensure session is fully established
+      if (retryCount === 0) {
+        await new Promise(resolve => setTimeout(resolve, 1000));
+      }
       
       const { data: profile, error } = await supabase
         .from('users')
@@ -52,20 +58,56 @@ const Index = () => {
         .eq('auth_id', userId)
         .single();
 
-      if (error && error.code !== 'PGRST116') {
-        console.error('Error checking user profile:', error);
-        return;
-      }
-
-      if (!profile) {
-        console.log('No profile found - showing onboarding modal');
-        setShowOnboarding(true);
-      } else {
+      if (error) {
+        if (error.code === 'PGRST116') {
+          // No profile found - this is expected for new users
+          console.log('No profile found - showing onboarding modal');
+          setShowOnboarding(true);
+        } else {
+          console.error('Error checking user profile:', error);
+          
+          // If it's an auth error and we haven't retried much, try again
+          if (error.message?.includes('JWT') && retryCount < 3) {
+            console.log('JWT issue, retrying profile check...');
+            setTimeout(() => {
+              checkUserProfile(userId, retryCount + 1);
+            }, 2000);
+            return;
+          }
+          
+          toast.error('Error checking your profile. Please try refreshing the page.');
+        }
+      } else if (profile) {
         console.log('Profile exists:', profile);
+        // Profile exists, user is fully set up
       }
     } catch (error) {
       console.error('Error in checkUserProfile:', error);
+      
+      // Retry logic for network issues
+      if (retryCount < 2) {
+        console.log('Retrying profile check due to error...');
+        setTimeout(() => {
+          checkUserProfile(userId, retryCount + 1);
+        }, 2000);
+        return;
+      }
+      
+      toast.error('Failed to load your profile. Please try refreshing the page.');
     } finally {
+      if (retryCount >= 2) {
+        setCheckingProfile(false);
+      }
+    }
+  };
+
+  const handleOnboardingClose = async () => {
+    setShowOnboarding(false);
+    
+    // Refresh to ensure we pick up the new profile
+    if (user) {
+      setCheckingProfile(true);
+      await checkUserProfile(user.id);
       setCheckingProfile(false);
     }
   };
@@ -79,10 +121,13 @@ const Index = () => {
         if (session?.user) {
           setUser(session.user);
           
-          // If user just signed in and we haven't checked their profile yet
+          // Check profile for any authenticated user, but especially new sign-ins
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             setCheckingProfile(true);
-            await checkUserProfile(session.user.id);
+            // Give a moment for everything to settle, especially after email verification
+            setTimeout(() => {
+              checkUserProfile(session.user.id);
+            }, 1500);
           }
         } else {
           setUser(null);
@@ -127,17 +172,13 @@ const Index = () => {
   }, []);
 
   // Show onboarding modal for verified users without profiles
-  if (showOnboarding) {
+  if (showOnboarding && user) {
     return (
       <>
         <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />
         <AuthModal 
           isOpen={showOnboarding} 
-          onClose={() => {
-            setShowOnboarding(false);
-            // Optionally refresh the page or update state after profile creation
-            window.location.reload();
-          }} 
+          onClose={handleOnboardingClose}
         />
       </>
     );
