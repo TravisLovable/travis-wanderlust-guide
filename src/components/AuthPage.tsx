@@ -58,6 +58,38 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
     return true;
   };
 
+  const createUserProfile = async (userId: string) => {
+    try {
+      console.log('Creating user profile with data:', {
+        auth_id: userId,
+        full_name: formData.name,
+        email: formData.email,
+        onboarding_completed: false // They can complete onboarding later via the modal
+      });
+
+      const { data, error } = await supabase
+        .from('users')
+        .insert({
+          auth_id: userId,
+          full_name: formData.name,
+          email: formData.email,
+          onboarding_completed: false
+        })
+        .select();
+
+      if (error) {
+        console.error('Error creating user profile:', error);
+        throw error;
+      }
+
+      console.log('User profile created successfully:', data);
+      return data;
+    } catch (error) {
+      console.error('Error in createUserProfile:', error);
+      throw error;
+    }
+  };
+
   const handleSignIn = async () => {
     console.log('Attempting sign in with:', formData.email);
     
@@ -91,8 +123,71 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
   };
 
   const handleSignUp = async () => {
-    console.log('Sign up not implemented in AuthPage - redirecting to onboarding modal');
-    setError('Please use the "Sign In / Create Account" button on the homepage for full account creation with travel preferences.');
+    console.log('Starting account creation process...');
+
+    try {
+      // Create auth account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.name,
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('Auth error:', authError);
+        if (authError.message.includes('already registered')) {
+          setError('An account with this email already exists. Please sign in instead.');
+        } else {
+          setError(authError.message || 'Failed to create account');
+        }
+        return;
+      }
+
+      if (!authData.user) {
+        setError('Failed to create account. Please try again.');
+        return;
+      }
+
+      console.log('Auth account created successfully. User ID:', authData.user.id);
+
+      // Wait a moment for the auth state to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
+      // Create user profile
+      try {
+        await createUserProfile(authData.user.id);
+        console.log('Profile created successfully');
+        
+        setSuccess('Account created successfully! Please check your email to verify your account before signing in.');
+        
+        // Clear the form
+        setFormData({
+          name: '',
+          email: '',
+          password: '',
+          confirmPassword: ''
+        });
+        
+        // Switch to sign in mode after successful signup
+        setTimeout(() => {
+          setIsSignUp(false);
+          setSuccess('');
+        }, 3000);
+        
+      } catch (profileError) {
+        console.error('Profile creation failed:', profileError);
+        setError('Account created but failed to save profile data. You can still sign in once you verify your email.');
+      }
+      
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      setError('An unexpected error occurred. Please try again.');
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -316,7 +411,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
             </p>
             {isSignUp && (
               <p className="text-white/50 text-xs mt-2">
-                For full account setup with travel preferences, use the main sign-up flow on the homepage.
+                You can complete your travel preferences later through the onboarding process.
               </p>
             )}
           </div>
