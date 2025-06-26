@@ -17,6 +17,8 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import AuthModal from '@/components/AuthModal';
+import SignInButton from '@/components/SignInButton';
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
@@ -33,6 +35,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Use Mapbox for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
@@ -400,7 +403,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         ))}
       </div>
 
-      {/* Header - ONLY removing profile dropdown */}
+      {/* Header with Sign In button */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
@@ -434,6 +437,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             >
               {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
+
+            {/* Sign In Button */}
+            <SignInButton onClick={() => setIsAuthModalOpen(true)} />
           </div>
         </div>
       </header>
@@ -650,6 +656,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           </div>
         </div>
       </footer>
+
+      {/* Auth Modal */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)} 
+      />
     </div>
   );
 };
