@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, CalendarDays, Plug, Wifi, Zap, Shield } from 'lucide-react';
+import { Car, CalendarDays, Plug, Wifi, Zap, Shield, CreditCard, Thermometer, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { format } from 'date-fns';
@@ -15,6 +15,7 @@ import CulturalInsights from './CulturalInsights';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 import { supabase } from '@/integrations/supabase/client';
+import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
 
 interface ResultsPageProps {
   destination: string;
@@ -94,6 +95,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [isLoadingWorldClock, setIsLoadingWorldClock] = useState(false);
   const [holidayData, setHolidayData] = useState<HolidayData | null>(null);
   const [isLoadingHolidays, setIsLoadingHolidays] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
 
   // Use Mapbox geocoding for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
