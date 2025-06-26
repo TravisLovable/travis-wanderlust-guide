@@ -704,7 +704,12 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <PhotoSlideshow />
         </div>
 
-        {/* Intelligence Dashboard - Moved to top */}
+        {/* Cultural Insights - Moved to top */}
+        <div className="mb-6">
+          <CulturalInsights mockData={mockData} />
+        </div>
+
+        {/* Intelligence Dashboard - Moved below Cultural Insights */}
         <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 mb-6">
           <CardHeader className="pb-3">
             <CardTitle className="flex items-center text-xl font-semibold">
@@ -753,7 +758,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </CardContent>
         </Card>
 
-        {/* Widgets Grid - Now without the Intelligence Dashboard */}
+        {/* Widgets Grid */}
         <WidgetsGrid
           worldClockData={worldClockData}
           isLoadingWorldClock={isLoadingWorldClock}
@@ -995,7 +1000,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         </div>
 
         {/* Row 5: Cultural Insights */}
-        <CulturalInsights mockData={mockData} />
+        {/* Removed because Cultural Insights moved to top */}
+
       </main>
 
       {/* Travis Chatbot */}
