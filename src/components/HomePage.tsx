@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -401,7 +400,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         ))}
       </div>
 
-      {/* Header with placeholder profile container */}
+      {/* Header - ONLY removing profile dropdown */}
       <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm relative z-10">
         <div className="max-w-7xl mx-auto flex items-center justify-between">
           <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
@@ -435,11 +434,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             >
               {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
-
-            {/* Profile container placeholder - reserved space for login/profile dropdown */}
-            <div id="profile-container" className="min-w-[40px]">
-              {/* Placeholder for future profile/login button */}
-            </div>
           </div>
         </div>
       </header>
