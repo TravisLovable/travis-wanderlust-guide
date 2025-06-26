@@ -72,12 +72,26 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   const uploadProfilePhoto = async (userId: string, file: File): Promise<string | null> => {
     try {
+      console.log('Starting profile photo upload for user:', userId);
+      
       const fileExt = file.name.split('.').pop();
       const fileName = `${userId}/profile.${fileExt}`;
+      
+      console.log('Uploading file to:', fileName);
+      
+      // First, try to delete any existing profile photo
+      const { error: deleteError } = await supabase.storage
+        .from('avatars')
+        .remove([fileName]);
+      
+      if (deleteError) {
+        console.log('No existing file to delete (this is fine):', deleteError);
+      }
       
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, file, {
+          cacheControl: '3600',
           upsert: true
         });
 
@@ -90,6 +104,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         .from('avatars')
         .getPublicUrl(fileName);
 
+      console.log('Upload successful, public URL:', publicUrl);
       return publicUrl;
     } catch (error) {
       console.error('Error uploading photo:', error);
@@ -99,6 +114,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   const createOrUpdateUserProfile = async () => {
     try {
+      console.log('Starting profile creation/update process');
+      
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
@@ -108,25 +125,33 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       }
 
       console.log('Processing user profile for authenticated user:', user.id);
+      console.log('User email confirmed:', user.email_confirmed_at);
 
       // Check if profile already exists
       const { data: existingProfile, error: checkError } = await supabase
         .from('users')
         .select('*')
         .eq('auth_id', user.id)
-        .single();
+        .maybeSingle();
 
-      if (checkError && checkError.code !== 'PGRST116') {
+      if (checkError) {
         console.error('Error checking existing profile:', checkError);
         toast.error('Error checking profile. Please try again.');
         return false;
       }
 
+      console.log('Existing profile check result:', existingProfile);
+
       // Upload profile photo if provided
-      let profilePhotoUrl = null;
+      let profilePhotoUrl = existingProfile?.profile_photo_url || null;
       if (formData.profilePhoto) {
-        profilePhotoUrl = await uploadProfilePhoto(user.id, formData.profilePhoto);
-        if (!profilePhotoUrl) {
+        console.log('Uploading profile photo...');
+        const uploadedUrl = await uploadProfilePhoto(user.id, formData.profilePhoto);
+        if (uploadedUrl) {
+          profilePhotoUrl = uploadedUrl;
+          console.log('Profile photo uploaded successfully');
+        } else {
+          console.log('Profile photo upload failed, continuing without it');
           toast.error('Failed to upload profile photo, but continuing...');
         }
       }
@@ -169,13 +194,21 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
       if (error) {
         console.error('Error saving user profile:', error);
+        console.error('Error details:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
         
         if (error.code === '23505') {
           toast.error('Profile already exists for this user.');
         } else if (error.message?.includes('row-level security')) {
-          toast.error('Authentication issue. Please try signing out and back in.');
+          toast.error('Permission denied. Please try signing out and back in.');
+        } else if (error.code === '42501') {
+          toast.error('Permission denied. Please check your authentication.');
         } else {
-          toast.error('Failed to save profile. Please try again.');
+          toast.error(`Failed to save profile: ${error.message}`);
         }
         return false;
       }
