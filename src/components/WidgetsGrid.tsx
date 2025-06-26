@@ -209,6 +209,97 @@ const WidgetsGrid = ({
           </CardContent>
         </Card>
       </div>
+
+      {/* Row 2: Secondary Widgets including Holidays */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+        {/* Local Holidays Widget - Enhanced with horizontal wrapping */}
+        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+          <CardHeader className="pb-2">
+            <CardTitle className="flex items-center text-lg font-semibold">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
+                <CalendarDays className="w-4 h-4 text-white" />
+              </div>
+              Holidays
+              <CalendarDays className="w-3 h-3 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-2">
+            {isLoadingHolidays ? (
+              <div className="flex justify-center items-center p-4">
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-400"></div>
+              </div>
+            ) : (
+              <>
+                {holidayData && holidayData.upcomingHolidays.length > 0 ? (
+                  <>
+                    <div className="text-xs text-purple-300 mb-2 font-medium">
+                      During your trip to {destination}:
+                    </div>
+                    {holidayData.upcomingHolidays.length > 6 ? (
+                      // Horizontal wrap layout for more than 6 holidays
+                      <div className="flex flex-wrap gap-1">
+                        {holidayData.upcomingHolidays.map((holiday, idx) => (
+                          <div key={idx} className="inline-flex items-center p-1 bg-purple-500/10 border border-purple-500/20 rounded-lg text-xs">
+                            <span className="font-medium text-purple-300 mr-1">{holiday.name}</span>
+                            <span className="text-muted-foreground">
+                              {new Date(holiday.date).toLocaleDateString('en-US', { 
+                                month: 'short', 
+                                day: 'numeric'
+                              })}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      // Vertical layout for 6 or fewer holidays
+                      <>
+                        {holidayData.upcomingHolidays.map((holiday, idx) => (
+                          <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+                            <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
+                            <div className="text-xs text-muted-foreground flex justify-between">
+                              <span>
+                                {new Date(holiday.date).toLocaleDateString('en-US', { 
+                                  month: 'long', 
+                                  day: 'numeric',
+                                  year: 'numeric'
+                                })}
+                              </span>
+                              {holiday.region && holiday.region !== 'National' && (
+                                <span className="text-purple-400">
+                                  {holiday.region}
+                                </span>
+                              )}
+                            </div>
+                            {holiday.type && (
+                              <div className="text-xs text-purple-400 mt-1">
+                                {holiday.type === 'national' ? 'National' : holiday.type}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                      </>
+                    )}
+                    {holidayData.source && (
+                      <div className="text-xs text-muted-foreground mt-2">
+                        Source: {holidayData.source === 'timeanddate' ? 'Time and Date API' : holidayData.source === 'multi-year-fetch' ? 'Multi-year Holiday API' : 'Public Holidays API'}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
+                    <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
+                    <div className="text-xs text-muted-foreground">
+                      {new Date(dates.checkin).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })} - {new Date(dates.checkout).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  </div>
+                )}
+              </>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Other widgets would go here */}
+      </div>
     </>
   );
 };
