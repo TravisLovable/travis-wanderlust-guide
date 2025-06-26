@@ -8,14 +8,6 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
@@ -729,59 +721,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </div>
             <div className="flex items-center space-x-4">
-              <span className="text-xl font-medium text-foreground">Welcome back, B!</span>
-
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full profile-dropdown-glow">
-                    <Avatar className="h-10 w-10">
-                      <AvatarImage src="/lovable-uploads/50d1238b-b62f-4cea-a3cb-8e7f0834fe41.png" alt="Profile" />
-                      <AvatarFallback>BJ</AvatarFallback>
-                    </Avatar>
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-80 bg-card border-border shadow-lg profile-dropdown-glow" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal">
-                    <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">Brittany J.</p>
-                      <p className="text-xs leading-none premium-glow font-medium">Premium Member</p>
-                    </div>
-                  </DropdownMenuLabel>
-                  <DropdownMenuSeparator />
-                  <div className="p-2 space-y-2">
-                    <div className="text-xs">
-                      <strong>Preferred Airline:</strong> Delta Airlines
-                    </div>
-                    <div className="text-xs">
-                      <strong>Travel Type:</strong> Luxury
-                    </div>
-                    <div className="text-xs">
-                      <strong>Frequent Flyer #:</strong> DL89472156
-                    </div>
-                    <div className="text-xs">
-                      <strong>Passport:</strong> United States
-                    </div>
-                    <div className="flex items-center justify-between pt-2">
-                      <span className="text-xs text-muted-foreground">Dark Mode</span>
-                      <Switch
-                        checked={isDarkMode}
-                        onCheckedChange={toggleTheme}
-                        className="scale-75"
-                      />
-                    </div>
-                  </div>
-                  <DropdownMenuSeparator />
-                  <DropdownMenuItem>
-                    Edit Profile
-                  </DropdownMenuItem>
-                  <DropdownMenuItem>
-                    Settings
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={handleSignOut}>
-                    Sign out
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <span className="text-xl font-medium text-foreground">Welcome back!</span>
             </div>
           </div>
 
