@@ -34,6 +34,8 @@ interface FormData {
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
+  const [accountCreated, setAccountCreated] = useState(false);
+  const [userId, setUserId] = useState<string | null>(null);
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     preferredAirline: '',
@@ -140,7 +142,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
-  const handleSubmit = async () => {
+  const handleCreateAccount = async () => {
     if (isLoading) return;
     
     setIsLoading(true);
@@ -188,40 +190,62 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         return;
       }
 
-      let profilePhotoUrl: string | null = null;
-
-      // Upload profile photo if provided
-      if (formData.profilePhoto) {
-        try {
-          profilePhotoUrl = await uploadProfilePhoto(authData.user.id, formData.profilePhoto);
-          if (!profilePhotoUrl) {
-            toast.error('Failed to upload profile photo, but account was created successfully');
-          }
-        } catch (error) {
-          console.error('Photo upload failed:', error);
-          toast.error('Failed to upload profile photo, but account was created successfully');
-        }
-      }
-
       // Create user profile
       try {
-        await createUserProfile(authData.user.id, profilePhotoUrl);
+        await createUserProfile(authData.user.id);
+        setAccountCreated(true);
+        setUserId(authData.user.id);
+        
+        // Show step 6 (photo upload) as optional
+        setCurrentStep(6);
+        toast.success('Account created successfully! Please check your email to verify your account.');
       } catch (error) {
         console.error('Profile creation failed:', error);
         toast.error('Account created but failed to save profile data');
       }
-
-      // Show success message
-      toast.success('Account created successfully! Please check your email to verify your account.');
-      
-      // Close modal
-      onClose();
       
     } catch (error) {
       console.error('Unexpected error:', error);
       toast.error('An unexpected error occurred. Please try again.');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleUploadPhoto = async () => {
+    if (!userId || !formData.profilePhoto) {
+      // Skip photo upload
+      onClose();
+      return;
+    }
+
+    setIsLoading(true);
+    
+    try {
+      const profilePhotoUrl = await uploadProfilePhoto(userId, formData.profilePhoto);
+      
+      if (profilePhotoUrl) {
+        // Update user profile with photo URL
+        const { error } = await supabase
+          .from('users')
+          .update({ profile_photo_url: profilePhotoUrl })
+          .eq('auth_id', userId);
+          
+        if (error) {
+          console.error('Error updating profile photo:', error);
+          toast.error('Failed to save profile photo');
+        } else {
+          toast.success('Profile photo uploaded successfully!');
+        }
+      } else {
+        toast.error('Failed to upload profile photo');
+      }
+    } catch (error) {
+      console.error('Photo upload error:', error);
+      toast.error('Failed to upload profile photo');
+    } finally {
+      setIsLoading(false);
+      onClose();
     }
   };
 
@@ -424,7 +448,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               <p className="text-white/70 text-sm">Optional - you can skip this step</p>
             </div>
             <div className="space-y-4">
-              <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center">
+              <div className="border-2 border-dashed border-white/30 rounded-lg p-6 text-center relative">
                 {formData.profilePhoto ? (
                   <div className="space-y-2">
                     <img
@@ -514,14 +538,32 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               Back
             </Button>
 
-            {currentStep === totalSteps ? (
+            {currentStep === 5 ? (
               <Button
-                onClick={handleSubmit}
-                disabled={isLoading}
+                onClick={handleCreateAccount}
+                disabled={!isStepValid() || isLoading}
                 className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
               >
                 {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
+            ) : currentStep === 6 ? (
+              <div className="flex space-x-2">
+                <Button
+                  onClick={() => onClose()}
+                  variant="ghost"
+                  className="text-white/70 hover:text-white hover:bg-white/10"
+                  disabled={isLoading}
+                >
+                  Skip
+                </Button>
+                <Button
+                  onClick={handleUploadPhoto}
+                  disabled={isLoading}
+                  className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
+                >
+                  {isLoading ? 'Uploading...' : formData.profilePhoto ? 'Upload Photo' : 'Finish'}
+                </Button>
+              </div>
             ) : (
               <Button
                 onClick={handleNext}
