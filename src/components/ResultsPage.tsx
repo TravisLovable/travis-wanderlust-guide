@@ -417,17 +417,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     fetchHolidayData();
   }, [destination, dates.checkin, dates.checkout]);
 
-  // Profile data
-  const profileData = {
-    name: "Brittany J.",
-    preferredAirline: "Delta Airlines",
-    travelType: "Luxury",
-    frequentFlyerNumber: "DL89472156",
-    nationality: "American",
-    country: "United States",
-    status: "Premium Member"
-  };
-
   // Dynamic flag mapping based on destination
   const getCountryFlag = (dest: string) => {
     const lowerDest = dest.toLowerCase();
