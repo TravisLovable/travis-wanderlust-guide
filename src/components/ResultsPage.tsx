@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import WeatherWidget from '@/components/WeatherWidget';
-import AccommodationHeatMap from '@/components/AccommodationHeatMap';
+import AccommodationMap from '@/components/AccommodationMap';
+import CurrencyConverter from '@/components/CurrencyConverter';
+import ChatWidget from '@/components/ChatWidget';
 import PhotoSlideshow from '@/components/PhotoSlideshow';
 import { Input } from '@/components/ui/input';
 
@@ -34,8 +35,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [accommodationData, setAccommodationData] = useState<any>(null);
   const [accommodationLoading, setAccommodationLoading] = useState(true);
   const [accommodationError, setAccommodationError] = useState<string | null>(null);
-  const [newDestination, setNewDestination] = useState(destination);
-  const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
+    const [newDestination, setNewDestination] = useState(destination);
+    const [isSearchBarVisible, setIsSearchBarVisible] = useState(false);
 
   useEffect(() => {
     const fetchWeatherData = async () => {
@@ -94,11 +95,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     fetchAccommodationData();
   }, [destination, dates.checkin]);
 
-  const handleNewSearch = (e?: React.FormEvent) => {
-    e?.preventDefault();
-    onNewSearch(newDestination, dates, true);
-    setIsSearchBarVisible(false);
-  };
+    const handleNewSearch = (e?: React.FormEvent) => {
+        e?.preventDefault();
+        onNewSearch(newDestination, dates, true);
+        setIsSearchBarVisible(false);
+    };
 
   return (
     <div className="min-h-screen bg-background">
@@ -117,37 +118,42 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       <main className="px-6 py-8">
         <div className="max-w-7xl mx-auto space-y-8">
           {/* Search Bar */}
-          <div className="relative">
-            <Button
-              variant="outline"
-              className="w-full justify-start pl-10"
-              onClick={() => setIsSearchBarVisible(!isSearchBarVisible)}
-            >
-              Edit Search
-            </Button>
+            <div className="relative">
+                <Button
+                    variant="outline"
+                    className="w-full justify-start pl-10"
+                    onClick={() => setIsSearchBarVisible(!isSearchBarVisible)}
+                >
+                    Edit Search
+                </Button>
 
-            {isSearchBarVisible && (
-              <div className="absolute top-0 left-0 w-full mt-12">
-                <div className="flex items-center space-x-2">
-                  <Input
-                    type="text"
-                    placeholder="New destination"
-                    value={newDestination}
-                    onChange={(e) => setNewDestination(e.target.value)}
-                    className="flex-1"
-                  />
-                  <Button onClick={handleNewSearch}>Search</Button>
-                </div>
-              </div>
-            )}
-          </div>
+                {isSearchBarVisible && (
+                    <div className="absolute top-0 left-0 w-full mt-12">
+                        <div className="flex items-center space-x-2">
+                            <Input
+                                type="text"
+                                placeholder="New destination"
+                                value={newDestination}
+                                onChange={(e) => setNewDestination(e.target.value)}
+                                className="flex-1"
+                            />
+                            <Button onClick={handleNewSearch}>Search</Button>
+                        </div>
+                    </div>
+                )}
+            </div>
 
           {/* Main Content Grid */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Weather & Holidays */}
             <div className="space-y-6">
               {/* Weather Widget */}
-              <WeatherWidget destination={destination} />
+              <WeatherWidget
+                destination={destination}
+                data={weatherData}
+                loading={weatherLoading}
+                error={weatherError}
+              />
 
               {/* Holiday Calendar */}
               <Card className="p-6">
@@ -168,7 +174,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       <p className="text-sm text-red-500">Unable to load holidays</p>
                     </div>
                   ) : holidays && holidays.length > 0 ? (
-                    <div className={`grid gap-3 ${holidays.length > 6 ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 xl:grid-cols-2' : 'grid-cols-1'}`}>
+                    <div className={`grid gap-3 ${holidays.length > 6 ? 'grid-cols-1 sm:grid-cols-2' : 'grid-cols-1'}`}>
                       {holidays.map((holiday, index) => (
                         <div key={index} className="p-3 bg-muted/30 rounded-lg border border-border/50">
                           <div className="flex items-start justify-between">
@@ -202,27 +208,18 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </Card>
             </div>
 
-            {/* Middle Column - Accommodation Heat Map */}
-            <AccommodationHeatMap />
+            {/* Middle Column - Accommodation Map */}
+            <AccommodationMap
+              destination={destination}
+              data={accommodationData}
+              loading={accommodationLoading}
+              error={accommodationError}
+            />
 
-            {/* Right Column - Placeholder for future components */}
+            {/* Right Column - Currency & Chat */}
             <div className="space-y-6">
-              {/* Currency Converter - Commented out until component is available */}
-              {/* <CurrencyConverter /> */}
-              
-              {/* Chat Widget - Commented out until component is available */}
-              {/* <ChatWidget /> */}
-              
-              <Card className="p-6">
-                <CardHeader className="pb-4">
-                  <CardTitle>Additional Services</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground">
-                    Currency converter and chat features will be available soon.
-                  </p>
-                </CardContent>
-              </Card>
+              <CurrencyConverter />
+              <ChatWidget />
             </div>
           </div>
 
