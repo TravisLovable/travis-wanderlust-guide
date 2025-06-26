@@ -17,7 +17,7 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import AuthModal from '@/components/AuthModal';
+import AuthPage from '@/components/AuthPage';
 import SignInButton from '@/components/SignInButton';
 
 interface HomePageProps {
@@ -35,7 +35,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [showAuthPage, setShowAuthPage] = useState(false);
 
   // Use Mapbox for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
@@ -384,6 +384,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     setShowSuggestions(false);
   };
 
+  // Show AuthPage instead of homepage when sign-in is clicked
+  if (showAuthPage) {
+    return <AuthPage onBack={() => setShowAuthPage(false)} />;
+  }
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Ambient Background Animation */}
@@ -438,8 +443,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
 
-            {/* Sign In Button */}
-            <SignInButton onClick={() => setIsAuthModalOpen(true)} />
+            {/* Sign In Button - Updated to show AuthPage */}
+            <SignInButton onClick={() => setShowAuthPage(true)} />
           </div>
         </div>
       </header>
@@ -656,12 +661,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           </div>
         </div>
       </footer>
-
-      {/* Auth Modal */}
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)} 
-      />
     </div>
   );
 };
