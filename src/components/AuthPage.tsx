@@ -6,7 +6,6 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate } from 'react-router-dom';
 
 interface AuthPageProps {
   onBack?: () => void;
@@ -25,8 +24,6 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
     password: '',
     confirmPassword: ''
   });
-
-  const navigate = useNavigate();
 
   const handleInputChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
@@ -80,9 +77,11 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
       console.log('Sign in successful:', data.user.id);
       setSuccess('Sign in successful! Redirecting...');
       
-      // Wait a moment for the success message to show, then redirect
+      // Wait a moment for the success message to show, then redirect back to homepage
       setTimeout(() => {
-        navigate('/');
+        if (onBack) {
+          onBack();
+        }
       }, 1500);
     }
   };
