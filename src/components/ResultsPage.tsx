@@ -754,23 +754,23 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <DropdownMenuContent className="w-80 bg-card border-border shadow-lg profile-dropdown-glow" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
-                      <p className="text-sm font-medium leading-none">{profileData.name}</p>
-                      <p className="text-xs leading-none premium-glow font-medium">{profileData.status}</p>
+                      <p className="text-sm font-medium leading-none">Brittany J.</p>
+                      <p className="text-xs leading-none premium-glow font-medium">Premium Member</p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className="p-2 space-y-2">
                     <div className="text-xs">
-                      <strong>Preferred Airline:</strong> {profileData.preferredAirline}
+                      <strong>Preferred Airline:</strong> Delta Airlines
                     </div>
                     <div className="text-xs">
-                      <strong>Travel Type:</strong> {profileData.travelType}
+                      <strong>Travel Type:</strong> Luxury
                     </div>
                     <div className="text-xs">
-                      <strong>Frequent Flyer #:</strong> {profileData.frequentFlyerNumber}
+                      <strong>Frequent Flyer #:</strong> DL89472156
                     </div>
                     <div className="text-xs">
-                      <strong>Passport:</strong> {profileData.country}
+                      <strong>Passport:</strong> United States
                     </div>
                     <div className="flex items-center justify-between pt-2">
                       <span className="text-xs text-muted-foreground">Dark Mode</span>
