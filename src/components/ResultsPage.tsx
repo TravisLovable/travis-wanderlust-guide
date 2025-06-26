@@ -13,7 +13,6 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { Switch } from '@/components/ui/switch';
 import PhotoSlideshow from './PhotoSlideshow';
-import TravisChatbot from './TravisChatbot';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 import WeatherWidget from './WeatherWidget';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
@@ -1381,9 +1380,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </CardContent>
         </Card>
       </main>
-
-      {/* Travis Chatbot */}
-      <TravisChatbot />
     </div>
   );
 };
