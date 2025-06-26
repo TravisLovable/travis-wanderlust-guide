@@ -1,9 +1,9 @@
-
 import React, { useState, useEffect } from 'react';
 import HomePage from '@/components/HomePage';
 import LoadingIntelligence from '@/components/LoadingIntelligence';
 import ResultsPage from '@/components/ResultsPage';
 import AuthModal from '@/components/AuthModal';
+import HeaderWithAuth from '@/components/HeaderWithAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { User } from '@supabase/supabase-js';
 import { toast } from 'sonner';
@@ -26,7 +26,6 @@ const Index = () => {
   const handleSearch = (destination: string, dates: { checkin: string; checkout: string }, skipTransition = false) => {
     setSearchData({ destination, dates });
     
-    // Skip loading transition if requested (for searches from results page)
     if (skipTransition) {
       setShowLoading(false);
     } else {
@@ -47,7 +46,6 @@ const Index = () => {
     try {
       console.log('Checking if user profile exists for:', userId);
       
-      // Wait a moment to ensure session is fully established
       if (retryCount === 0) {
         await new Promise(resolve => setTimeout(resolve, 1000));
       }
@@ -60,13 +58,11 @@ const Index = () => {
 
       if (error) {
         if (error.code === 'PGRST116') {
-          // No profile found - this is expected for new users
           console.log('No profile found - showing onboarding modal');
           setShowOnboarding(true);
         } else {
           console.error('Error checking user profile:', error);
           
-          // If it's an auth error and we haven't retried much, try again
           if (error.message?.includes('JWT') && retryCount < 3) {
             console.log('JWT issue, retrying profile check...');
             setTimeout(() => {
@@ -80,7 +76,6 @@ const Index = () => {
       } else if (profile) {
         console.log('Profile exists:', profile);
         
-        // Check if onboarding is completed
         if (!profile.onboarding_completed) {
           console.log('Profile exists but onboarding not completed - showing onboarding modal');
           setShowOnboarding(true);
@@ -92,7 +87,6 @@ const Index = () => {
     } catch (error) {
       console.error('Error in checkUserProfile:', error);
       
-      // Retry logic for network issues
       if (retryCount < 2) {
         console.log('Retrying profile check due to error...');
         setTimeout(() => {
@@ -112,7 +106,6 @@ const Index = () => {
   const handleOnboardingClose = async () => {
     setShowOnboarding(false);
     
-    // Refresh to ensure we pick up the new profile
     if (user) {
       setCheckingProfile(true);
       await checkUserProfile(user.id);
@@ -121,7 +114,6 @@ const Index = () => {
   };
 
   useEffect(() => {
-    // Set up auth state listener
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         console.log('Auth state changed:', event, session?.user?.id);
@@ -129,10 +121,8 @@ const Index = () => {
         if (session?.user) {
           setUser(session.user);
           
-          // Check profile for any authenticated user, but especially new sign-ins
           if (event === 'SIGNED_IN' || event === 'TOKEN_REFRESHED') {
             setCheckingProfile(true);
-            // Give a moment for everything to settle, especially after email verification
             setTimeout(() => {
               checkUserProfile(session.user.id);
             }, 1500);
@@ -145,7 +135,6 @@ const Index = () => {
       }
     );
 
-    // Check for existing session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user) {
         setUser(session.user);
@@ -155,7 +144,6 @@ const Index = () => {
       }
     });
 
-    // Map /api/mapbox-geocoding to Supabase edge function
     const originalFetch = window.fetch;
     window.fetch = async (input, init) => {
       if (typeof input === 'string' && input.startsWith('/api/mapbox-geocoding')) {
@@ -179,19 +167,6 @@ const Index = () => {
     };
   }, []);
 
-  // Show onboarding modal for users who need to complete onboarding
-  if (showOnboarding && user) {
-    return (
-      <>
-        <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />
-        <AuthModal 
-          isOpen={showOnboarding} 
-          onClose={handleOnboardingClose}
-        />
-      </>
-    );
-  }
-
   if (showLoading && searchData) {
     return (
       <LoadingIntelligence
@@ -203,16 +178,30 @@ const Index = () => {
 
   if (searchData && !showLoading) {
     return (
-      <ResultsPage
-        destination={searchData.destination}
-        dates={searchData.dates}
-        onBack={handleBack}
-        onNewSearch={handleSearch}
-      />
+      <>
+        <HeaderWithAuth user={user} />
+        <ResultsPage
+          destination={searchData.destination}
+          dates={searchData.dates}
+          onBack={handleBack}
+          onNewSearch={handleSearch}
+        />
+      </>
     );
   }
 
-  return <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />;
+  return (
+    <>
+      <HeaderWithAuth user={user} />
+      <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />
+      {showOnboarding && user && (
+        <AuthModal 
+          isOpen={showOnboarding} 
+          onClose={handleOnboardingClose}
+        />
+      )}
+    </>
+  );
 };
 
 export default Index;

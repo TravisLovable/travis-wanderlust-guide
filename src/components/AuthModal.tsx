@@ -76,7 +76,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       const fileName = `${userId}/profile.${fileExt}`;
       
       const { error: uploadError } = await supabase.storage
-        .from('profile-photos')
+        .from('avatars')
         .upload(fileName, file, {
           upsert: true
         });
@@ -87,7 +87,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       }
 
       const { data: { publicUrl } } = supabase.storage
-        .from('profile-photos')
+        .from('avatars')
         .getPublicUrl(fileName);
 
       return publicUrl;
@@ -99,7 +99,6 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   const createOrUpdateUserProfile = async () => {
     try {
-      // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
       
       if (userError || !user) {
@@ -221,7 +220,6 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       const success = await createOrUpdateUserProfile();
       
       if (success) {
-        // Close modal and let parent component know we're done
         onClose();
       }
       
@@ -244,9 +242,9 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       case 4:
         return formData.nationality.length > 0 && formData.country.length > 0;
       case 5:
-        return true; // Step 5 is just for final review/confirmation
+        return true;
       case 6:
-        return true; // Profile photo is optional
+        return true;
       default:
         return false;
     }
@@ -474,7 +472,6 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           <DialogTitle>Complete Your Profile</DialogTitle>
         </DialogHeader>
         <div className="relative">
-          {/* Progress bar section with close button positioned to avoid overlap */}
           <div className="p-6 pb-0">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-white/70">Step {currentStep} of {totalSteps}</span>
@@ -492,12 +489,10 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             <Progress value={progressPercentage} className="h-2 bg-white/10" />
           </div>
 
-          {/* Form content */}
           <div className="p-6">
             {renderStep()}
           </div>
 
-          {/* Navigation buttons */}
           <div className="p-6 pt-0 flex justify-between">
             <Button
               onClick={handleBack}
