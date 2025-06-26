@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, ArrowLeft, ArrowRight, User, Plane, Globe, Mail, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -338,19 +337,19 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md mx-auto bg-black/40 backdrop-blur-xl border-white/20 text-white p-0 overflow-hidden">
         <div className="relative">
-          {/* Close button */}
-          <button
-            onClick={onClose}
-            className="absolute right-4 top-4 z-10 p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-          >
-            <X className="w-4 h-4" />
-          </button>
-
-          {/* Progress bar */}
+          {/* Progress bar section with close button positioned to avoid overlap */}
           <div className="p-6 pb-0">
             <div className="flex items-center justify-between mb-2">
               <span className="text-sm text-white/70">Step {currentStep} of {totalSteps}</span>
-              <span className="text-sm text-white/70">{Math.round(progressPercentage)}%</span>
+              <div className="flex items-center space-x-3">
+                <span className="text-sm text-white/70">{Math.round(progressPercentage)}%</span>
+                <button
+                  onClick={onClose}
+                  className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
             </div>
             <Progress value={progressPercentage} className="h-2 bg-white/10" />
           </div>
