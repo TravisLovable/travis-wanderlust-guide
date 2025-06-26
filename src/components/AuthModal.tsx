@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { X, ArrowLeft, ArrowRight, User, Plane, Globe, Mail, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -335,7 +336,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md mx-auto bg-black/40 backdrop-blur-xl border-white/20 text-white p-0 overflow-hidden">
+      <DialogContent className="max-w-md mx-auto bg-black/40 backdrop-blur-xl border-white/20 text-white p-0 overflow-hidden [&>button]:hidden">
         <div className="relative">
           {/* Progress bar section with close button positioned to avoid overlap */}
           <div className="p-6 pb-0">
