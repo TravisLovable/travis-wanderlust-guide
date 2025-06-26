@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { X, ArrowLeft, ArrowRight, User, Plane, Globe, Mail, Camera, Upload } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -12,6 +11,8 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
+import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -32,6 +33,7 @@ interface FormData {
 
 const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [currentStep, setCurrentStep] = useState(1);
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
     preferredAirline: '',
@@ -72,6 +74,60 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  const uploadProfilePhoto = async (userId: string, file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${userId}/profile.${fileExt}`;
+      
+      const { error: uploadError } = await supabase.storage
+        .from('profile-photos')
+        .upload(fileName, file, {
+          upsert: true
+        });
+
+      if (uploadError) {
+        console.error('Upload error:', uploadError);
+        throw uploadError;
+      }
+
+      const { data: { publicUrl } } = supabase.storage
+        .from('profile-photos')
+        .getPublicUrl(fileName);
+
+      return publicUrl;
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      return null;
+    }
+  };
+
+  const createUserProfile = async (userId: string, profilePhotoUrl?: string) => {
+    try {
+      const { error } = await supabase
+        .from('users')
+        .insert({
+          auth_id: userId,
+          full_name: formData.fullName,
+          email: formData.email,
+          preferred_airline: formData.preferredAirline,
+          frequent_flyer_number: formData.frequentFlyerNumber || null,
+          travel_type: formData.travelType,
+          nationality: formData.nationality,
+          country: formData.country,
+          profile_photo_url: profilePhotoUrl || null,
+          onboarding_completed: true
+        });
+
+      if (error) {
+        console.error('Error creating user profile:', error);
+        throw error;
+      }
+    } catch (error) {
+      console.error('Error creating user profile:', error);
+      throw error;
+    }
+  };
+
   const handleNext = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
@@ -84,10 +140,89 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
-  const handleSubmit = () => {
-    console.log('Form submitted:', formData);
-    // This will be connected to Supabase in the next step
-    onClose();
+  const handleSubmit = async () => {
+    if (isLoading) return;
+    
+    setIsLoading(true);
+    
+    try {
+      // Validate required fields
+      if (!formData.email || !formData.password || !formData.fullName) {
+        toast.error('Please fill in all required fields');
+        setIsLoading(false);
+        return;
+      }
+
+      if (formData.password.length < 6) {
+        toast.error('Password must be at least 6 characters long');
+        setIsLoading(false);
+        return;
+      }
+
+      // Create auth account
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: formData.fullName,
+          }
+        }
+      });
+
+      if (authError) {
+        console.error('Auth error:', authError);
+        if (authError.message.includes('already registered')) {
+          toast.error('An account with this email already exists. Please sign in instead.');
+        } else {
+          toast.error(authError.message || 'Failed to create account');
+        }
+        setIsLoading(false);
+        return;
+      }
+
+      if (!authData.user) {
+        toast.error('Failed to create account. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      let profilePhotoUrl: string | null = null;
+
+      // Upload profile photo if provided
+      if (formData.profilePhoto) {
+        try {
+          profilePhotoUrl = await uploadProfilePhoto(authData.user.id, formData.profilePhoto);
+          if (!profilePhotoUrl) {
+            toast.error('Failed to upload profile photo, but account was created successfully');
+          }
+        } catch (error) {
+          console.error('Photo upload failed:', error);
+          toast.error('Failed to upload profile photo, but account was created successfully');
+        }
+      }
+
+      // Create user profile
+      try {
+        await createUserProfile(authData.user.id, profilePhotoUrl);
+      } catch (error) {
+        console.error('Profile creation failed:', error);
+        toast.error('Account created but failed to save profile data');
+      }
+
+      // Show success message
+      toast.success('Account created successfully! Please check your email to verify your account.');
+      
+      // Close modal
+      onClose();
+      
+    } catch (error) {
+      console.error('Unexpected error:', error);
+      toast.error('An unexpected error occurred. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const isStepValid = () => {
@@ -320,7 +455,13 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   accept="image/*"
                   onChange={(e) => {
                     const file = e.target.files?.[0];
-                    if (file) handleInputChange('profilePhoto', file);
+                    if (file) {
+                      if (file.size > 10 * 1024 * 1024) {
+                        toast.error('File size must be less than 10MB');
+                        return;
+                      }
+                      handleInputChange('profilePhoto', file);
+                    }
                   }}
                   className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
                 />
@@ -347,6 +488,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                 <button
                   onClick={onClose}
                   className="p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                  disabled={isLoading}
                 >
                   <X className="w-4 h-4" />
                 </button>
@@ -364,7 +506,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           <div className="p-6 pt-0 flex justify-between">
             <Button
               onClick={handleBack}
-              disabled={currentStep === 1}
+              disabled={currentStep === 1 || isLoading}
               variant="ghost"
               className="text-white/70 hover:text-white hover:bg-white/10 disabled:opacity-50"
             >
@@ -375,14 +517,15 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             {currentStep === totalSteps ? (
               <Button
                 onClick={handleSubmit}
-                className="bg-blue-500 hover:bg-blue-600 text-white"
+                disabled={isLoading}
+                className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
               >
-                Create Account
+                {isLoading ? 'Creating Account...' : 'Create Account'}
               </Button>
             ) : (
               <Button
                 onClick={handleNext}
-                disabled={!isStepValid()}
+                disabled={!isStepValid() || isLoading}
                 className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
               >
                 Next
