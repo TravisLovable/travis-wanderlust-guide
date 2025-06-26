@@ -720,9 +720,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </Popover>
               </div>
             </div>
-            <div className="flex items-center space-x-4">
-              <span className="text-xl font-medium text-foreground">Welcome back!</span>
-            </div>
           </div>
 
           {/* Pinned Destinations - More transparent */}
