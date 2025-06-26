@@ -709,55 +709,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <CulturalInsights mockData={mockData} />
         </div>
 
-        {/* Intelligence Dashboard - Moved below Cultural Insights */}
-        <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-xl font-semibold">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
-                <Shield className="w-4 h-4 text-white" />
-              </div>
-              Intelligence Dashboard
-              <Shield className="w-4 h-4 ml-auto text-purple-400" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground text-sm">Configure your travel intelligence dashboard:</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {widgetOptions.map((widget) => {
-                const Icon = widget.icon;
-                const isSelected = selectedWidgets.includes(widget.id);
-                return (
-                  <button
-                    key={widget.id}
-                    onClick={() => {
-                      if (isSelected) {
-                        setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
-                      } else {
-                        setSelectedWidgets([...selectedWidgets, widget.id]);
-                      }
-                    }}
-                    className={`p-3 rounded-xl border transition-all duration-300 travis-interactive ${
-                      isSelected
-                        ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
-                        : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
-                    }`}
-                  >
-                    <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-1`}>
-                      <Icon className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="text-xs font-medium">{widget.name}</div>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-              <p className="text-purple-300 font-medium text-sm">
-                {selectedWidgets.length} modules selected for your travel intelligence dashboard
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
         {/* Widgets Grid */}
         <WidgetsGrid
           worldClockData={worldClockData}
@@ -999,8 +950,54 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <SaoPauloAccommodationMap />
         </div>
 
-        {/* Row 5: Cultural Insights */}
-        {/* Removed because Cultural Insights moved to top */}
+        {/* Intelligence Dashboard - Moved to bottom */}
+        <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 mb-6">
+          <CardHeader className="pb-3">
+            <CardTitle className="flex items-center text-xl font-semibold">
+              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
+                <Shield className="w-4 h-4 text-white" />
+              </div>
+              Intelligence Dashboard
+              <Shield className="w-4 h-4 ml-auto text-purple-400" />
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            <p className="text-muted-foreground text-sm">Configure your travel intelligence dashboard:</p>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {widgetOptions.map((widget) => {
+                const Icon = widget.icon;
+                const isSelected = selectedWidgets.includes(widget.id);
+                return (
+                  <button
+                    key={widget.id}
+                    onClick={() => {
+                      if (isSelected) {
+                        setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
+                      } else {
+                        setSelectedWidgets([...selectedWidgets, widget.id]);
+                      }
+                    }}
+                    className={`p-3 rounded-xl border transition-all duration-300 travis-interactive ${
+                      isSelected
+                        ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+                        : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
+                    }`}
+                  >
+                    <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-1`}>
+                      <Icon className="w-3 h-3 text-white" />
+                    </div>
+                    <div className="text-xs font-medium">{widget.name}</div>
+                  </button>
+                );
+              })}
+            </div>
+            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
+              <p className="text-purple-300 font-medium text-sm">
+                {selectedWidgets.length} modules selected for your travel intelligence dashboard
+              </p>
+            </div>
+          </CardContent>
+        </Card>
 
       </main>
 
