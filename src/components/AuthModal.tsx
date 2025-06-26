@@ -48,7 +48,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const airlines = [
     'American Airlines', 'Delta Air Lines', 'United Airlines', 'Southwest Airlines',
     'JetBlue Airways', 'Alaska Airlines', 'British Airways', 'Lufthansa',
-    'Air France', 'KLM', 'Emirates', 'Qatar Airways', 'Singapore Airlines',
+    'Air France', 'KLM', 'Emirates', 'Qatar Airways', 'Singapore Airlines',  
     'Cathay Pacific', 'Turkish Airlines', 'Ethiopian Airlines'
   ];
 
@@ -97,7 +97,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
     }
   };
 
-  const createUserProfile = async () => {
+  const createOrUpdateUserProfile = async () => {
     try {
       // Get current user
       const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -108,7 +108,20 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         return false;
       }
 
-      console.log('Creating user profile for authenticated user:', user.id);
+      console.log('Processing user profile for authenticated user:', user.id);
+
+      // Check if profile already exists
+      const { data: existingProfile, error: checkError } = await supabase
+        .from('users')
+        .select('*')
+        .eq('auth_id', user.id)
+        .single();
+
+      if (checkError && checkError.code !== 'PGRST116') {
+        console.error('Error checking existing profile:', checkError);
+        toast.error('Error checking profile. Please try again.');
+        return false;
+      }
 
       // Upload profile photo if provided
       let profilePhotoUrl = null;
@@ -119,7 +132,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         }
       }
 
-      // Create user profile with authenticated user's data
+      // Prepare profile data
       const profileData = {
         auth_id: user.id,
         full_name: formData.fullName,
@@ -133,32 +146,47 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         onboarding_completed: true
       };
 
-      console.log('Inserting profile data:', profileData);
+      console.log('Profile data to save:', profileData);
 
-      const { data, error } = await supabase
-        .from('users')
-        .insert(profileData)
-        .select();
+      let result;
+      if (existingProfile) {
+        // Update existing profile
+        console.log('Updating existing profile');
+        result = await supabase
+          .from('users')
+          .update(profileData)
+          .eq('auth_id', user.id)
+          .select();
+      } else {
+        // Create new profile
+        console.log('Creating new profile');
+        result = await supabase
+          .from('users')
+          .insert(profileData)
+          .select();
+      }
+
+      const { data, error } = result;
 
       if (error) {
-        console.error('Error creating user profile:', error);
+        console.error('Error saving user profile:', error);
         
         if (error.code === '23505') {
           toast.error('Profile already exists for this user.');
         } else if (error.message?.includes('row-level security')) {
           toast.error('Authentication issue. Please try signing out and back in.');
         } else {
-          toast.error('Failed to create profile. Please try again.');
+          toast.error('Failed to save profile. Please try again.');
         }
         return false;
       }
 
-      console.log('User profile created successfully:', data);
-      toast.success('Profile created successfully!');
+      console.log('User profile saved successfully:', data);
+      toast.success('Profile saved successfully!');
       return true;
       
     } catch (error) {
-      console.error('Error in createUserProfile:', error);
+      console.error('Error in createOrUpdateUserProfile:', error);
       toast.error('An unexpected error occurred. Please try again.');
       return false;
     }
@@ -190,7 +218,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         return;
       }
 
-      const success = await createUserProfile();
+      const success = await createOrUpdateUserProfile();
       
       if (success) {
         // Close modal and let parent component know we're done
@@ -442,6 +470,9 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="max-w-md mx-auto bg-black/40 backdrop-blur-xl border-white/20 text-white p-0 overflow-hidden [&>button]:hidden">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Complete Your Profile</DialogTitle>
+        </DialogHeader>
         <div className="relative">
           {/* Progress bar section with close button positioned to avoid overlap */}
           <div className="p-6 pb-0">
@@ -502,7 +533,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
                   disabled={isLoading}
                   className="bg-blue-500 hover:bg-blue-600 text-white disabled:opacity-50"
                 >
-                  {isLoading ? 'Creating Profile...' : 'Finish'}
+                  {isLoading ? 'Saving Profile...' : 'Finish'}
                 </Button>
               </div>
             ) : (
