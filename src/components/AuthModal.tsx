@@ -105,7 +105,20 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   const createUserProfile = async (userId: string, profilePhotoUrl?: string) => {
     try {
-      const { error } = await supabase
+      console.log('Creating user profile with data:', {
+        auth_id: userId,
+        full_name: formData.fullName,
+        email: formData.email,
+        preferred_airline: formData.preferredAirline,
+        frequent_flyer_number: formData.frequentFlyerNumber || null,
+        travel_type: formData.travelType,
+        nationality: formData.nationality,
+        country: formData.country,
+        profile_photo_url: profilePhotoUrl || null,
+        onboarding_completed: true
+      });
+
+      const { data, error } = await supabase
         .from('users')
         .insert({
           auth_id: userId,
@@ -118,14 +131,18 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
           country: formData.country,
           profile_photo_url: profilePhotoUrl || null,
           onboarding_completed: true
-        });
+        })
+        .select();
 
       if (error) {
         console.error('Error creating user profile:', error);
         throw error;
       }
+
+      console.log('User profile created successfully:', data);
+      return data;
     } catch (error) {
-      console.error('Error creating user profile:', error);
+      console.error('Error in createUserProfile:', error);
       throw error;
     }
   };
@@ -161,6 +178,8 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         return;
       }
 
+      console.log('Starting account creation process...');
+
       // Create auth account
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -190,18 +209,24 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         return;
       }
 
+      console.log('Auth account created successfully. User ID:', authData.user.id);
+
+      // Wait a moment for the auth state to settle
+      await new Promise(resolve => setTimeout(resolve, 1000));
+
       // Create user profile
       try {
         await createUserProfile(authData.user.id);
+        console.log('Profile created successfully');
         setAccountCreated(true);
         setUserId(authData.user.id);
         
         // Show step 6 (photo upload) as optional
         setCurrentStep(6);
         toast.success('Account created successfully! Please check your email to verify your account.');
-      } catch (error) {
-        console.error('Profile creation failed:', error);
-        toast.error('Account created but failed to save profile data');
+      } catch (profileError) {
+        console.error('Profile creation failed:', profileError);
+        toast.error('Account created but failed to save profile data. Please try refreshing and logging in.');
       }
       
     } catch (error) {
