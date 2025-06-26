@@ -58,38 +58,6 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
     return true;
   };
 
-  const createUserProfile = async (userId: string) => {
-    try {
-      console.log('Creating user profile with data:', {
-        auth_id: userId,
-        full_name: formData.name,
-        email: formData.email,
-        onboarding_completed: false // They can complete onboarding later via the modal
-      });
-
-      const { data, error } = await supabase
-        .from('users')
-        .insert({
-          auth_id: userId,
-          full_name: formData.name,
-          email: formData.email,
-          onboarding_completed: false
-        })
-        .select();
-
-      if (error) {
-        console.error('Error creating user profile:', error);
-        throw error;
-      }
-
-      console.log('User profile created successfully:', data);
-      return data;
-    } catch (error) {
-      console.error('Error in createUserProfile:', error);
-      throw error;
-    }
-  };
-
   const handleSignIn = async () => {
     console.log('Attempting sign in with:', formData.email);
     
@@ -126,7 +94,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
     console.log('Starting account creation process...');
 
     try {
-      // Create auth account
+      // Create auth account only - profile creation happens after email verification
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
         password: formData.password,
@@ -154,35 +122,22 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
       }
 
       console.log('Auth account created successfully. User ID:', authData.user.id);
-
-      // Wait a moment for the auth state to settle
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      // Create user profile
-      try {
-        await createUserProfile(authData.user.id);
-        console.log('Profile created successfully');
         
-        setSuccess('Account created successfully! Please check your email to verify your account before signing in.');
-        
-        // Clear the form
-        setFormData({
-          name: '',
-          email: '',
-          password: '',
-          confirmPassword: ''
-        });
-        
-        // Switch to sign in mode after successful signup
-        setTimeout(() => {
-          setIsSignUp(false);
-          setSuccess('');
-        }, 3000);
-        
-      } catch (profileError) {
-        console.error('Profile creation failed:', profileError);
-        setError('Account created but failed to save profile data. You can still sign in once you verify your email.');
-      }
+      setSuccess('Account created successfully! Please check your email and click the verification link to complete your account setup.');
+      
+      // Clear the form
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        confirmPassword: ''
+      });
+      
+      // Switch to sign in mode after successful signup
+      setTimeout(() => {
+        setIsSignUp(false);
+        setSuccess('');
+      }, 4000);
       
     } catch (error) {
       console.error('Unexpected error:', error);
@@ -411,7 +366,7 @@ const AuthPage = ({ onBack }: AuthPageProps) => {
             </p>
             {isSignUp && (
               <p className="text-white/50 text-xs mt-2">
-                You can complete your travel preferences later through the onboarding process.
+                After email verification, you'll complete your travel preferences during onboarding.
               </p>
             )}
           </div>
