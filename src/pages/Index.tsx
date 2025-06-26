@@ -79,7 +79,15 @@ const Index = () => {
         }
       } else if (profile) {
         console.log('Profile exists:', profile);
-        // Profile exists, user is fully set up
+        
+        // Check if onboarding is completed
+        if (!profile.onboarding_completed) {
+          console.log('Profile exists but onboarding not completed - showing onboarding modal');
+          setShowOnboarding(true);
+        } else {
+          console.log('Profile exists and onboarding completed');
+          setShowOnboarding(false);
+        }
       }
     } catch (error) {
       console.error('Error in checkUserProfile:', error);
@@ -171,7 +179,7 @@ const Index = () => {
     };
   }, []);
 
-  // Show onboarding modal for verified users without profiles
+  // Show onboarding modal for users who need to complete onboarding
   if (showOnboarding && user) {
     return (
       <>
