@@ -59,21 +59,51 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
   const handleComplete = async () => {
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      // First check if user already exists
+      const { data: existingUser, error: fetchError } = await supabase
         .from('users')
-        .upsert({
-          auth_id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || '',
-          preferred_airline: onboardingData.preferredAirline,
-          frequent_flyer_number: onboardingData.frequentFlyerNumber,
-          travel_type: onboardingData.travelType,
-          nationality: onboardingData.nationality,
-          profile_photo_url: onboardingData.profilePhotoUrl,
-          onboarding_completed: true
-        });
+        .select('id')
+        .eq('auth_id', user.id)
+        .single();
 
-      if (error) throw error;
+      if (fetchError && fetchError.code !== 'PGRST116') {
+        // PGRST116 is "not found" error, which is expected for new users
+        throw fetchError;
+      }
+
+      if (existingUser) {
+        // User exists, update their record
+        const { error: updateError } = await supabase
+          .from('users')
+          .update({
+            preferred_airline: onboardingData.preferredAirline,
+            frequent_flyer_number: onboardingData.frequentFlyerNumber,
+            travel_type: onboardingData.travelType,
+            nationality: onboardingData.nationality,
+            profile_photo_url: onboardingData.profilePhotoUrl,
+            onboarding_completed: true
+          })
+          .eq('auth_id', user.id);
+
+        if (updateError) throw updateError;
+      } else {
+        // User doesn't exist, create new record
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({
+            auth_id: user.id,
+            email: user.email,
+            full_name: user.user_metadata?.full_name || '',
+            preferred_airline: onboardingData.preferredAirline,
+            frequent_flyer_number: onboardingData.frequentFlyerNumber,
+            travel_type: onboardingData.travelType,
+            nationality: onboardingData.nationality,
+            profile_photo_url: onboardingData.profilePhotoUrl,
+            onboarding_completed: true
+          });
+
+        if (insertError) throw insertError;
+      }
 
       toast({
         title: "Welcome to Travis!",
@@ -82,9 +112,10 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
       
       onClose();
     } catch (error: any) {
+      console.error('Onboarding error:', error);
       toast({
         title: "Setup failed",
-        description: error.message,
+        description: error.message || "An unexpected error occurred. Please try again.",
         variant: "destructive"
       });
     }
