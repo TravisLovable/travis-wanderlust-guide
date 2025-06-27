@@ -17,6 +17,11 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { supabase } from '@/integrations/supabase/client';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import AuthModal from './AuthModal';
+import OnboardingModal from './OnboardingModal';
+import UserProfileDropdown from './UserProfileDropdown';
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
@@ -33,6 +38,13 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
+  
+  // Authentication state
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   // Use Mapbox for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
@@ -48,6 +60,45 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       setWordIndex((prev) => (prev + 1) % swapWords.length);
     }, 3000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Authentication setup
+  useEffect(() => {
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        
+        if (session?.user) {
+          // Fetch user profile
+          setTimeout(async () => {
+            const { data: profile } = await supabase
+              .from('users')
+              .select('*')
+              .eq('auth_id', session.user.id)
+              .single();
+            
+            setUserProfile(profile);
+            
+            // Show onboarding modal if profile doesn't exist or onboarding not completed
+            if (!profile || !profile.onboarding_completed) {
+              setIsOnboardingModalOpen(true);
+            }
+          }, 0);
+        } else {
+          setUserProfile(null);
+        }
+      }
+    );
+
+    // Check for existing session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setUser(session?.user ?? null);
+    });
+
+    return () => subscription.unsubscribe();
   }, []);
 
   const languages = [
@@ -381,6 +432,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     setShowSuggestions(false);
   };
 
+  const handleSignInSuccess = () => {
+    // This will be handled by the auth state change listener
+  };
+
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
       {/* Ambient Background Animation */}
@@ -434,6 +489,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             >
               {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
             </Button>
+
+            {/* User Authentication */}
+            {user ? (
+              <UserProfileDropdown user={user} userProfile={userProfile} />
+            ) : (
+              <Button onClick={() => setIsAuthModalOpen(true)} variant="outline">
+                Log In / Sign Up
+              </Button>
+            )}
           </div>
         </div>
       </header>
@@ -634,6 +698,19 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           </div>
         </div>
       </footer>
+
+      {/* Modals */}
+      <AuthModal 
+        isOpen={isAuthModalOpen} 
+        onClose={() => setIsAuthModalOpen(false)}
+        onSignInSuccess={handleSignInSuccess}
+      />
+      
+      <OnboardingModal 
+        isOpen={isOnboardingModalOpen} 
+        onClose={() => setIsOnboardingModalOpen(false)}
+        user={user}
+      />
     </div>
   );
 };
