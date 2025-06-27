@@ -509,21 +509,199 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return null;
   };
 
+  // Check if destination has accommodation map support
+  const getSupportedAccommodationDestinations = () => {
+    return ['são paulo', 'sao paulo', 'brazil'];
+  };
+
+  const hasAccommodationMapSupport = (dest: string) => {
+    const lowerDest = dest.toLowerCase();
+    return getSupportedAccommodationDestinations().some(supported => 
+      lowerDest.includes(supported)
+    );
+  };
+
+  // Dynamic airport data based on destination
+  const getAirportData = (dest: string) => {
+    const lowerDest = dest.toLowerCase();
+    
+    if (lowerDest.includes('lima') || lowerDest.includes('peru')) {
+      return {
+        code: 'LIM',
+        name: 'Jorge Chávez International Airport',
+        address: 'Lima, Peru',
+        distance: '11 km',
+        travelTime: '30-60 min',
+        options: 'Bus, Taxi, Uber'
+      };
+    }
+    
+    if (lowerDest.includes('são paulo') || lowerDest.includes('sao paulo') || lowerDest.includes('brazil')) {
+      return {
+        code: 'GRU',
+        name: 'São Paulo/Guarulhos International Airport',
+        address: 'Guarulhos, São Paulo',
+        distance: '25 km',
+        travelTime: '45-90 min',
+        options: 'Metro, Bus, Taxi'
+      };
+    }
+
+    if (lowerDest.includes('london') || lowerDest.includes('uk') || lowerDest.includes('united kingdom')) {
+      return {
+        code: 'LHR',
+        name: 'London Heathrow Airport',
+        address: 'London, United Kingdom',
+        distance: '24 km',
+        travelTime: '45-75 min',
+        options: 'Tube, Bus, Taxi'
+      };
+    }
+
+    if (lowerDest.includes('paris') || lowerDest.includes('france')) {
+      return {
+        code: 'CDG',
+        name: 'Charles de Gaulle Airport',
+        address: 'Paris, France',
+        distance: '25 km',
+        travelTime: '45-75 min',
+        options: 'RER, Bus, Taxi'
+      };
+    }
+
+    if (lowerDest.includes('tokyo') || lowerDest.includes('japan')) {
+      return {
+        code: 'NRT',
+        name: 'Narita International Airport',
+        address: 'Tokyo, Japan',
+        distance: '60 km',
+        travelTime: '60-90 min',
+        options: 'Train, Bus, Taxi'
+      };
+    }
+
+    // Generic fallback
+    return {
+      code: 'N/A',
+      name: 'Primary Airport',
+      address: `${dest}`,
+      distance: 'Variable',
+      travelTime: 'Variable',
+      options: 'Multiple options available'
+    };
+  };
+
+  // Dynamic power adapter data based on destination
+  const getPowerAdapterData = (dest: string) => {
+    const lowerDest = dest.toLowerCase();
+    
+    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
+      return { type: 'Type C & N', voltage: '220V', frequency: '60Hz' };
+    }
+    
+    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+      return { type: 'Type A & C', voltage: '220V', frequency: '60Hz' };
+    }
+    
+    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
+      return { type: 'Type G', voltage: '230V', frequency: '50Hz' };
+    }
+    
+    if (lowerDest.includes('france') || lowerDest.includes('paris')) {
+      return { type: 'Type C & E', voltage: '230V', frequency: '50Hz' };
+    }
+    
+    if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
+      return { type: 'Type A & B', voltage: '100V', frequency: '50Hz/60Hz' };
+    }
+    
+    // Default fallback
+    return { type: 'Various', voltage: 'Check locally', frequency: 'Check locally' };
+  };
+
+  // Dynamic emergency numbers based on destination
+  const getEmergencyNumbers = (dest: string) => {
+    const lowerDest = dest.toLowerCase();
+    
+    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
+      return { police: '190', fire: '193', medical: '192' };
+    }
+    
+    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+      return { police: '105', fire: '116', medical: '117' };
+    }
+    
+    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
+      return { police: '999', fire: '999', medical: '999' };
+    }
+    
+    if (lowerDest.includes('france') || lowerDest.includes('paris')) {
+      return { police: '17', fire: '18', medical: '15' };
+    }
+    
+    if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
+      return { police: '110', fire: '119', medical: '119' };
+    }
+    
+    // Default fallback
+    return { police: '911', fire: '911', medical: '911' };
+  };
+
+  // Dynamic transport data based on destination
+  const getTransportData = (dest: string) => {
+    const lowerDest = dest.toLowerCase();
+    
+    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
+      return {
+        primary: 'Metro',
+        secondary: 'Uber/99',
+        metroPass: 'R$12.00',
+        busFare: 'R$4.40',
+        card: 'Bilhete Único'
+      };
+    }
+    
+    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+      return {
+        primary: 'Metropolitano',
+        secondary: 'Taxi/Uber',
+        metroPass: 'S/2.50',
+        busFare: 'S/1.20',
+        card: 'Tarjeta Lima'
+      };
+    }
+    
+    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
+      return {
+        primary: 'Tube',
+        secondary: 'Bus/Uber',
+        metroPass: '£2.80',
+        busFare: '£1.75',
+        card: 'Oyster Card'
+      };
+    }
+    
+    // Generic fallback
+    return {
+      primary: 'Public Transit',
+      secondary: 'Taxi/Ride-share',
+      metroPass: 'Variable',
+      busFare: 'Variable',
+      card: 'Local transit card'
+    };
+  };
+
+  // Get dynamic data based on destination
+  const airportData = getAirportData(destination);
+  const powerData = getPowerAdapterData(destination);
+  const emergencyData = getEmergencyNumbers(destination);
+  const transportData = getTransportData(destination);
+
   // Dynamic mock data based on destination (removed hardcoded Brazil references)
   const mockData = {
     time: { current: '14:42', offset: '-3', dst: false },
-    airport: { 
-      code: destination.toLowerCase().includes('lima') ? 'LIM' : 'GRU', 
-      name: destination.toLowerCase().includes('lima') ? 'Jorge Chávez International Airport' : 'São Paulo/Guarulhos International Airport', 
-      address: destination.toLowerCase().includes('lima') ? 'Lima, Peru' : 'Guarulhos, São Paulo' 
-    },
     altitude: { elevation: destination.toLowerCase().includes('lima') ? '113m above sea level' : '760m above sea level' },
-    emergency: { police: '190', fire: '193', medical: '192' },
-    holidays: [
-      { name: 'Carnival', date: 'February 12-13, 2024' },
-      { name: 'Independence Day', date: 'September 7, 2024' },
-      { name: 'Christmas Day', date: 'December 25, 2024' }
-    ],
+    holidays: holidayData?.upcomingHolidays || [],
     culture: {
       language: { 
         primary: destination.toLowerCase().includes('lima') ? 'Spanish' : 'Portuguese', 
@@ -984,7 +1162,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardContent>
           </Card>
 
-          {/* Airport Info - Third position */}
+          {/* Airport Info - Third position - Now Dynamic */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -997,14 +1175,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </CardHeader>
             <CardContent className="space-y-3">
               <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <div className="font-bold text-lg text-purple-700">{mockData.airport.code}</div>
-                <div className="text-sm font-medium">{mockData.airport.name}</div>
-                <div className="text-xs text-muted-foreground">{mockData.airport.address}</div>
+                <div className="font-bold text-lg text-purple-700">{airportData.code}</div>
+                <div className="text-sm font-medium">{airportData.name}</div>
+                <div className="text-xs text-muted-foreground">{airportData.address}</div>
               </div>
               <div className="text-xs space-y-1">
-                <p><span className="font-medium">Distance:</span> 25 km</p>
-                <p><span className="font-medium">Travel time:</span> 45-90 min</p>
-                <p><span className="font-medium">Options:</span> Metro, Bus, Taxi</p>
+                <p><span className="font-medium">Distance:</span> {airportData.distance}</p>
+                <p><span className="font-medium">Travel time:</span> {airportData.travelTime}</p>
+                <p><span className="font-medium">Options:</span> {airportData.options}</p>
               </div>
             </CardContent>
           </Card>
@@ -1048,7 +1226,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             />
           </div>
 
-          {/* Transportation */}
+          {/* Transportation - Now Dynamic */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -1062,18 +1240,18 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700 text-sm">Metro</div>
+                  <div className="font-medium text-indigo-700 text-sm">{transportData.primary}</div>
                   <div className="text-xs text-muted-foreground">Network</div>
                 </div>
                 <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700 text-sm">Uber/99</div>
+                  <div className="font-medium text-indigo-700 text-sm">{transportData.secondary}</div>
                   <div className="text-xs text-muted-foreground">Available</div>
                 </div>
               </div>
               <div className="text-xs space-y-1">
-                <p><span className="font-medium">Metro pass:</span> R$12.00</p>
-                <p><span className="font-medium">Bus fare:</span> R$4.40</p>
-                <p><span className="font-medium">Card:</span> Bilhete Único</p>
+                <p><span className="font-medium">Transit pass:</span> {transportData.metroPass}</p>
+                <p><span className="font-medium">Bus fare:</span> {transportData.busFare}</p>
+                <p><span className="font-medium">Card:</span> {transportData.card}</p>
               </div>
             </CardContent>
           </Card>
@@ -1147,7 +1325,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         {/* Row 3: Secondary Widgets */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-          {/* Power Adapters */}
+          {/* Power Adapters - Now Dynamic */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -1183,17 +1361,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <div className="w-1 h-6 bg-gray-700 rounded-full shadow-md mt-1"></div>
                   </div>
                 </div>
-                <div className="font-bold text-sm text-yellow-400">Type C & N</div>
-                <div className="text-xs text-muted-foreground">220V • 60Hz</div>
+                <div className="font-bold text-sm text-yellow-400">{powerData.type}</div>
+                <div className="text-xs text-muted-foreground">{powerData.voltage} • {powerData.frequency}</div>
               </div>
               <div className="text-xs space-y-1 mt-2">
-                <p><span className="font-medium">Voltage:</span> 220V</p>
-                <p><span className="font-medium">Frequency:</span> 60Hz</p>
+                <p><span className="font-medium">Voltage:</span> {powerData.voltage}</p>
+                <p><span className="font-medium">Frequency:</span> {powerData.frequency}</p>
               </div>
             </CardContent>
           </Card>
 
-          {/* Emergency Info */}
+          {/* Emergency Info - Now Dynamic */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
               <CardTitle className="flex items-center text-lg font-semibold">
@@ -1207,17 +1385,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             <CardContent className="space-y-3">
               <div className="grid grid-cols-2 gap-2">
                 <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.police}</div>
+                  <div className="font-bold text-red-700 text-sm">{emergencyData.police}</div>
                   <div className="text-xs text-muted-foreground">Police</div>
                 </div>
                 <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700 text-sm">{mockData.emergency.medical}</div>
+                  <div className="font-bold text-red-700 text-sm">{emergencyData.medical}</div>
                   <div className="text-xs text-muted-foreground">Medical</div>
                 </div>
               </div>
               <div className="text-xs space-y-1">
-                <p><span className="font-medium">US Consulate:</span> +55 11 5186-7000</p>
-                <p><span className="font-medium">Tourist Police:</span> +55 11 3120-4417</p>
+                <p><span className="font-medium">Fire:</span> {emergencyData.fire}</p>
+                <p><span className="font-medium">Tourist Info:</span> Check locally</p>
               </div>
             </CardContent>
           </Card>
@@ -1253,9 +1431,36 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <div className="hidden xl:block"></div>
         </div>
 
-        {/* Row 4: Map - Full Width */}
+        {/* Row 4: Conditional Accommodation Map */}
         <div className="mb-6">
-          <SaoPauloAccommodationMap />
+          {hasAccommodationMapSupport(destination) ? (
+            <SaoPauloAccommodationMap />
+          ) : (
+            <Card className="travis-card travis-interactive group xl:col-span-2">
+              <CardHeader className="pb-4">
+                <CardTitle className="flex items-center justify-between text-xl font-semibold">
+                  <div className="flex items-center">
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mr-3">
+                      <MapPin className="w-5 h-5 text-white" />
+                    </div>
+                    Accommodation Map
+                  </div>
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className="text-center py-12">
+                  <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
+                    <MapPin className="w-8 h-8 text-white" />
+                  </div>
+                  <h3 className="text-lg font-semibold mb-2">Accommodation data is currently unavailable for this region.</h3>
+                  <p className="text-muted-foreground">
+                    We're working to expand our accommodation mapping to more destinations. 
+                    Check back soon for detailed accommodation options for {destination}.
+                  </p>
+                </div>
+              </CardContent>
+            </Card>
+          )}
         </div>
 
         {/* Row 5: Intelligence Dashboard - Full Width */}
