@@ -492,7 +492,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
             {/* User Authentication */}
             {user ? (
-              <UserProfileDropdown user={user} userProfile={userProfile} />
+              <UserProfileDropdown 
+                user={user} 
+                userProfile={userProfile}
+                currentLanguage={currentLanguage}
+                setCurrentLanguage={setCurrentLanguage}
+                isDarkMode={isDarkMode}
+                toggleTheme={toggleTheme}
+                languages={languages}
+              />
             ) : (
               <Button onClick={() => setIsAuthModalOpen(true)} variant="outline">
                 Log In / Sign Up
