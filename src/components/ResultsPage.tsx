@@ -17,6 +17,8 @@ interface ResultsPageProps {
 }
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
+  console.log('ResultsPage rendered with props:', { destination, dates });
+  
   const navigate = useNavigate();
   const { setDates } = useAppContext();
   const [countryFlag, setCountryFlag] = useState<string | null>(null);
