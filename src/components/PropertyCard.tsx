@@ -7,7 +7,7 @@ const PropertyCard = () => {
   return (
     <Card className="overflow-hidden hover:shadow-lg transition-shadow">
       <div className="aspect-video bg-gradient-to-br from-blue-100 to-purple-100 flex items-center justify-center">
-        <div className="text-gray-500">Property Image</div>
+        <div className="text-gray-500">Sample Property Content</div>
       </div>
       <CardHeader className="pb-2">
         <CardTitle className="text-lg font-semibold line-clamp-2">
