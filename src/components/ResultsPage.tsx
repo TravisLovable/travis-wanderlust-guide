@@ -306,7 +306,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           
           {/* Accommodation Heat Map */}
           <div>
-            <AccommodationHeatMap destination={destination} />
+            <AccommodationHeatMap />
           </div>
         </div>
 
