@@ -66,7 +66,7 @@ const UserProfileDropdown = ({
         <div className="flex items-center space-x-2 p-3">
           <Avatar className="h-8 w-8">
             <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
-            <AvatarFallback>{getInitials()}</AvatarN>
+            <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium">{getDisplayName()}</p>
