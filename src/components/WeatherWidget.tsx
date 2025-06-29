@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Thermometer, MapPin } from 'lucide-react';
@@ -10,11 +9,12 @@ import { useWeatherData } from '@/hooks/useWeatherData';
 interface WeatherWidgetProps {
   destination: string;
   currentLocation?: string;
+  searchDate?: string;
   tempUnit: 'C' | 'F';
   onTempUnitToggle: () => void;
 }
 
-const WeatherWidget = ({ destination, currentLocation = 'Current Location', tempUnit, onTempUnitToggle }: WeatherWidgetProps) => {
+const WeatherWidget = ({ destination, currentLocation = 'Current Location', searchDate, tempUnit, onTempUnitToggle }: WeatherWidgetProps) => {
   const { weatherData: destinationWeather, isLoading: destinationLoading, error: destinationError } = useWeatherData(destination);
   const { weatherData: currentWeather, isLoading: currentLoading, error: currentError } = useWeatherData(currentLocation);
 

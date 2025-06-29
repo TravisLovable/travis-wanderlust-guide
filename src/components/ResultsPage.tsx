@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -180,6 +179,7 @@ const ResultsPage = ({ destination: propDestination, dates, onBack, onNewSearch 
           <div className="lg:col-span-1">
             <WeatherWidget 
               destination={destination}
+              searchDate={searchDate}
               tempUnit={tempUnit}
               onTempUnitToggle={() => setTempUnit(prev => prev === 'C' ? 'F' : 'C')}
             />
