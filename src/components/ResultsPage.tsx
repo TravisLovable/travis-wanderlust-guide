@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -16,18 +17,28 @@ interface WeatherData {
 }
 
 interface GeocodingResult {
-  name: string;
-  country_code: string;
+  place_name: string;
+  center: [number, number]; // [longitude, latitude]
 }
 
-const ResultsPage = () => {
+interface ResultsPageProps {
+  destination?: string;
+  dates?: {
+    checkin: string;
+    checkout: string;
+  };
+  onBack?: () => void;
+  onNewSearch?: (destination: string, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
+}
+
+const ResultsPage = ({ destination: propDestination, dates, onBack, onNewSearch }: ResultsPageProps) => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
 
   const searchParams = new URLSearchParams(location.search);
-  const destination = searchParams.get('destination') || 'Unknown Destination';
-  const searchDate = searchParams.get('date') || '';
+  const destination = propDestination || searchParams.get('destination') || 'Unknown Destination';
+  const searchDate = dates?.checkin || searchParams.get('date') || '';
 
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [countryFlag, setCountryFlag] = useState<string | null>(null);
@@ -47,7 +58,7 @@ const ResultsPage = () => {
         const geocodingData: GeocodingResult[] = await geocodingResponse.json();
 
         if (geocodingData && geocodingData.length > 0) {
-          const { lat, lon } = geocodingData[0];
+          const [lon, lat] = geocodingData[0].center;
 
           // Fetch weather data using latitude and longitude
           const weatherUrl = `https://api.openweathermap.org/data/2.5/weather?lat=${lat}&lon=${lon}&appid=${apiKey}&units=metric`;
@@ -110,6 +121,14 @@ const ResultsPage = () => {
     fetchCountryFlag();
   }, [destination]);
 
+  const handleBack = () => {
+    if (onBack) {
+      onBack();
+    } else {
+      navigate('/');
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
@@ -119,7 +138,7 @@ const ResultsPage = () => {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => navigate('/')}
+                onClick={handleBack}
                 className="flex items-center space-x-2 hover:bg-white/50"
               >
                 <ArrowLeft className="h-4 w-4" />
@@ -161,7 +180,6 @@ const ResultsPage = () => {
           <div className="lg:col-span-1">
             <WeatherWidget 
               destination={destination}
-              searchDate={searchDate}
               tempUnit={tempUnit}
               onTempUnitToggle={() => setTempUnit(prev => prev === 'C' ? 'F' : 'C')}
             />
