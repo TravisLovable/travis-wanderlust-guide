@@ -49,7 +49,7 @@ const UserProfileDropdown = ({
   };
 
   const getDisplayName = () => {
-    return user?.user_metadata?.full_name || userProfile?.full_name || user?.email || 'User';
+    return user?.user_metadata?.full_name || userProfile?.full_name || 'User';
   };
 
   return (
@@ -66,11 +66,10 @@ const UserProfileDropdown = ({
         <div className="flex items-center space-x-2 p-3">
           <Avatar className="h-8 w-8">
             <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
-            <AvatarFallback>{getInitials()}</AvatarFallback>
+            <AvatarFallback>{getInitials()}</AvatarN>
           </Avatar>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium">{getDisplayName()}</p>
-            <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
         </div>
         <DropdownMenuSeparator />
