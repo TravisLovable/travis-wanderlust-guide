@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
@@ -10,20 +11,20 @@ import PropertyCard from './PropertyCard';
 
 interface ResultsPageProps {
   destination: string;
-  dates: { from: Date | undefined; to: Date | undefined } | null;
+  dates: { checkin: string; checkout: string };
   onBack: () => void;
   onNewSearch: () => void;
 }
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
-  const router = useRouter();
+  const navigate = useNavigate();
   const { setDates } = useAppContext();
   const [countryFlag, setCountryFlag] = useState<string | null>(null);
   const [searchDate, setSearchDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (dates && dates.from) {
-      setSearchDate(dates.from);
+    if (dates && dates.checkin) {
+      setSearchDate(new Date(dates.checkin));
     }
   }, [dates]);
 
@@ -38,7 +39,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   const handleBack = () => {
     setDates(null);
-    router.push('/');
+    navigate('/');
   };
 
   return (

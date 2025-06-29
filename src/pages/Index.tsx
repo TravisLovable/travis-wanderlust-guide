@@ -16,15 +16,9 @@ const Index = () => {
   const [searchData, setSearchData] = useState<SearchData | null>(null);
   const [showLoading, setShowLoading] = useState(false);
 
-  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }, skipTransition = false) => {
+  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }) => {
     setSearchData({ destination, dates });
-    
-    // Skip loading transition if requested (for searches from results page)
-    if (skipTransition) {
-      setShowLoading(false);
-    } else {
-      setShowLoading(true);
-    }
+    setShowLoading(true);
   };
 
   const handleLoadingComplete = () => {
