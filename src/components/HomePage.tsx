@@ -495,6 +495,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               <UserProfileDropdown 
                 user={user} 
                 userProfile={userProfile}
+                currentLanguage={currentLanguage}
+                setCurrentLanguage={setCurrentLanguage}
+                isDarkMode={isDarkMode}
+                toggleTheme={toggleTheme}
+                languages={languages}
               />
             ) : (
               <Button onClick={() => setIsAuthModalOpen(true)} variant="outline">

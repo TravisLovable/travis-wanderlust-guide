@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -171,6 +172,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <UserProfileDropdown 
                 user={user} 
                 userProfile={userProfile}
+                currentLanguage={currentLanguage}
+                setCurrentLanguage={setCurrentLanguage}
+                isDarkMode={isDarkMode}
+                toggleTheme={toggleTheme}
+                languages={languages}
               />
             ) : (
               <Button onClick={() => setIsAuthModalOpen(true)} variant="outline">

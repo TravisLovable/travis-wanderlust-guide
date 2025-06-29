@@ -9,18 +9,28 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, Globe, Sun, Moon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserProfileDropdownProps {
   user: any;
   userProfile: any;
+  currentLanguage?: string;
+  setCurrentLanguage?: (lang: string) => void;
+  isDarkMode?: boolean;
+  toggleTheme?: () => void;
+  languages?: Array<{ code: string; name: string; flag: string }>;
 }
 
 const UserProfileDropdown = ({ 
   user, 
-  userProfile
+  userProfile, 
+  currentLanguage, 
+  setCurrentLanguage, 
+  isDarkMode, 
+  toggleTheme, 
+  languages 
 }: UserProfileDropdownProps) => {
   const { toast } = useToast();
 
@@ -82,6 +92,36 @@ const UserProfileDropdown = ({
               <div>Travel: {userProfile.travel_type || 'Not set'}</div>
               <div>Country: {userProfile.nationality || 'Not set'}</div>
             </div>
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {/* Language Selection */}
+        {languages && setCurrentLanguage && (
+          <>
+            <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Language</div>
+            {languages.map((lang) => (
+              <DropdownMenuItem
+                key={lang.code}
+                onClick={() => setCurrentLanguage(lang.code)}
+                className="flex items-center space-x-3"
+              >
+                <span className="text-sm">{lang.flag}</span>
+                <span className="text-sm">{lang.name}</span>
+                {currentLanguage === lang.code && <span className="ml-auto text-xs">✓</span>}
+              </DropdownMenuItem>
+            ))}
+            <DropdownMenuSeparator />
+          </>
+        )}
+
+        {/* Theme Toggle */}
+        {toggleTheme && (
+          <>
+            <DropdownMenuItem onClick={toggleTheme}>
+              {isDarkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
+              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
+            </DropdownMenuItem>
             <DropdownMenuSeparator />
           </>
         )}
