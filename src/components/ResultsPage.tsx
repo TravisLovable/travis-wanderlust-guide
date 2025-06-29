@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, Calendar, MapPin } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -7,7 +8,6 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import WeatherWidget from './WeatherWidget';
 import AccommodationHeatMap from './AccommodationHeatMap';
 import { useToast } from "@/hooks/use-toast";
-import HeaderSection from './HeaderSection';
 
 interface WeatherData {
   temperature: number;
@@ -131,47 +131,48 @@ const ResultsPage = ({ destination: propDestination, dates, onBack, onNewSearch 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 p-4">
       <div className="max-w-7xl mx-auto">
-        <HeaderSection 
-          leftContent={
-            <>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleBack}
-                className="flex items-center space-x-2 hover:bg-white/50"
-              >
-                <ArrowLeft className="h-4 w-4" />
-                <span>Back to Search</span>
-              </Button>
-              
-              <div className="flex items-center space-x-3">
-                <MapPin className="h-5 w-5 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-800">{destination}</h1>
-                {countryFlag && (
-                  <img 
-                    src={countryFlag} 
-                    alt={`${destination} flag`} 
-                    className="w-8 h-6 object-cover rounded shadow-sm"
-                  />
-                )}
-              </div>
-              
-              {searchDate && (
-                <div className="flex items-center space-x-2 text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  <span className="text-sm">
-                    {new Date(searchDate).toLocaleDateString('en-US', {
-                      weekday: 'long',
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric'
-                    })}
-                  </span>
-                </div>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-6">
+            {/* Back Button */}
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleBack}
+              className="flex items-center space-x-2 hover:bg-white/50"
+            >
+              <ArrowLeft className="h-4 w-4" />
+              <span>Back to Search</span>
+            </Button>
+
+            {/* Destination Info */}
+            <div className="flex items-center space-x-3">
+              <MapPin className="h-5 w-5 text-blue-600" />
+              <h1 className="text-2xl font-bold text-gray-800">{destination}</h1>
+              {countryFlag && (
+                <img
+                  src={countryFlag}
+                  alt={`${destination} flag`}
+                  className="w-8 h-6 object-cover rounded shadow-sm"
+                />
               )}
-            </>
-          }
-        />
+            </div>
+
+            {/* Travel Date */}
+            {searchDate && (
+              <div className="flex items-center space-x-2 text-gray-600">
+                <Calendar className="h-4 w-4" />
+                <span className="text-sm">
+                  {new Date(searchDate).toLocaleDateString('en-US', {
+                    weekday: 'long',
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                  })}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
 
         {/* Main Content Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
