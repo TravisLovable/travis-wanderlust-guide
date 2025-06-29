@@ -8,6 +8,9 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
+  DropdownMenuSub,
+  DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, Settings, LogOut, Globe, Sun, Moon } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
@@ -16,23 +19,32 @@ import { useToast } from '@/hooks/use-toast';
 interface UserProfileDropdownProps {
   user: any;
   userProfile: any;
-  currentLanguage?: string;
-  setCurrentLanguage?: (lang: string) => void;
-  isDarkMode?: boolean;
-  toggleTheme?: () => void;
-  languages?: Array<{ code: string; name: string; flag: string }>;
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+  currentLanguage: string;
+  setCurrentLanguage: (lang: string) => void;
 }
 
 const UserProfileDropdown = ({ 
   user, 
   userProfile, 
-  currentLanguage, 
-  setCurrentLanguage, 
   isDarkMode, 
   toggleTheme, 
-  languages 
+  currentLanguage, 
+  setCurrentLanguage 
 }: UserProfileDropdownProps) => {
   const { toast } = useToast();
+
+  const languages = [
+    { code: 'en', name: 'English', flag: '🇺🇸' },
+    { code: 'zh', name: 'Mandarin', flag: '🇨🇳' },
+    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
+    { code: 'it', name: 'Italian', flag: '🇮🇹' },
+    { code: 'es', name: 'Spanish', flag: '🇪🇸' },
+    { code: 'fr', name: 'French', flag: '🇫🇷' },
+    { code: 'xh', name: 'Xhosa', flag: '🇿🇦' },
+    { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
+  ];
 
   const handleSignOut = async () => {
     try {
@@ -72,8 +84,8 @@ const UserProfileDropdown = ({
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-64" align="end" forceMount>
-        <div className="flex items-center space-x-2 p-2">
+      <DropdownMenuContent className="w-80" align="end" forceMount>
+        <div className="flex items-center space-x-2 p-3">
           <Avatar className="h-8 w-8">
             <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
@@ -85,47 +97,69 @@ const UserProfileDropdown = ({
         </div>
         <DropdownMenuSeparator />
         
+        {/* Accessibility Controls */}
+        <div className="px-2 py-2">
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs font-medium text-muted-foreground">ACCESSIBILITY</span>
+          </div>
+          
+          {/* Language Selector */}
+          <DropdownMenuSub>
+            <DropdownMenuSubTrigger className="flex items-center w-full px-2 py-2 text-sm">
+              <Globe className="mr-2 h-4 w-4" />
+              <span>Language</span>
+              <span className="ml-auto text-xs text-muted-foreground">
+                {languages.find(lang => lang.code === currentLanguage)?.flag}
+              </span>
+            </DropdownMenuSubTrigger>
+            <DropdownMenuSubContent className="w-48">
+              {languages.map((lang) => (
+                <DropdownMenuItem
+                  key={lang.code}
+                  onClick={() => setCurrentLanguage(lang.code)}
+                  className="flex items-center space-x-3"
+                >
+                  <span className="text-lg">{lang.flag}</span>
+                  <span>{lang.name}</span>
+                  {currentLanguage === lang.code && (
+                    <span className="ml-auto text-xs">✓</span>
+                  )}
+                </DropdownMenuItem>
+              ))}
+            </DropdownMenuSubContent>
+          </DropdownMenuSub>
+          
+          {/* Theme Toggle */}
+          <DropdownMenuItem onClick={toggleTheme} className="flex items-center px-2 py-2">
+            {isDarkMode ? (
+              <>
+                <Sun className="mr-2 h-4 w-4" />
+                <span>Light Mode</span>
+              </>
+            ) : (
+              <>
+                <Moon className="mr-2 h-4 w-4" />
+                <span>Dark Mode</span>
+              </>
+            )}
+          </DropdownMenuItem>
+        </div>
+        
+        <DropdownMenuSeparator />
+        
+        {/* Profile Information */}
         {userProfile && (
           <>
-            <div className="px-2 py-1 text-xs text-muted-foreground">
-              <div>Airline: {userProfile.preferred_airline || 'Not set'}</div>
-              <div>Travel: {userProfile.travel_type || 'Not set'}</div>
+            <div className="px-3 py-2 text-xs text-muted-foreground">
+              <div className="mb-1">Airline: {userProfile.preferred_airline || 'Not set'}</div>
+              <div className="mb-1">Travel: {userProfile.travel_type || 'Not set'}</div>
               <div>Country: {userProfile.nationality || 'Not set'}</div>
             </div>
             <DropdownMenuSeparator />
           </>
         )}
-
-        {/* Language Selection */}
-        {languages && setCurrentLanguage && (
-          <>
-            <div className="px-2 py-1 text-xs font-medium text-muted-foreground">Language</div>
-            {languages.map((lang) => (
-              <DropdownMenuItem
-                key={lang.code}
-                onClick={() => setCurrentLanguage(lang.code)}
-                className="flex items-center space-x-3"
-              >
-                <span className="text-sm">{lang.flag}</span>
-                <span className="text-sm">{lang.name}</span>
-                {currentLanguage === lang.code && <span className="ml-auto text-xs">✓</span>}
-              </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-          </>
-        )}
-
-        {/* Theme Toggle */}
-        {toggleTheme && (
-          <>
-            <DropdownMenuItem onClick={toggleTheme}>
-              {isDarkMode ? <Sun className="mr-2 h-4 w-4" /> : <Moon className="mr-2 h-4 w-4" />}
-              {isDarkMode ? 'Light Mode' : 'Dark Mode'}
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
-          </>
-        )}
-
+        
+        {/* Menu Items */}
         <DropdownMenuItem>
           <User className="mr-2 h-4 w-4" />
           Profile Settings
