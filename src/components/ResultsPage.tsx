@@ -26,7 +26,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [userProfile, setUserProfile] = useState<any>(null);
-  const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
   const { toast } = useToast();
 
   // Authentication state management
@@ -75,10 +74,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     } catch (error) {
       console.error('Error fetching user profile:', error);
     }
-  };
-
-  const handleTempUnitToggle = () => {
-    setTempUnit(prev => prev === 'C' ? 'F' : 'C');
   };
 
   const fetchWorldClock = async (destination: string) => {
@@ -260,11 +255,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           {/* Weather Widget */}
           <div>
-            <WeatherWidget 
-              destination={destination} 
-              tempUnit={tempUnit}
-              onTempUnitToggle={handleTempUnitToggle}
-            />
+            <WeatherWidget destination={destination} />
           </div>
           
           {/* Time & Holidays Widget */}
@@ -306,7 +297,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           
           {/* Accommodation Heat Map */}
           <div>
-            <AccommodationHeatMap />
+            <AccommodationHeatMap destination={destination} />
           </div>
         </div>
 
