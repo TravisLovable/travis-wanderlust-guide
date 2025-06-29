@@ -8,43 +8,21 @@ import {
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Settings, LogOut, Globe, Sun, Moon } from 'lucide-react';
+import { User, Settings, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 
 interface UserProfileDropdownProps {
   user: any;
   userProfile: any;
-  isDarkMode: boolean;
-  toggleTheme: () => void;
-  currentLanguage: string;
-  setCurrentLanguage: (lang: string) => void;
 }
 
 const UserProfileDropdown = ({ 
   user, 
-  userProfile, 
-  isDarkMode, 
-  toggleTheme, 
-  currentLanguage, 
-  setCurrentLanguage 
+  userProfile
 }: UserProfileDropdownProps) => {
   const { toast } = useToast();
-
-  const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'zh', name: 'Mandarin', flag: '🇨🇳' },
-    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
-    { code: 'it', name: 'Italian', flag: '🇮🇹' },
-    { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-    { code: 'fr', name: 'French', flag: '🇫🇷' },
-    { code: 'xh', name: 'Xhosa', flag: '🇿🇦' },
-    { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
-  ];
 
   const handleSignOut = async () => {
     try {
@@ -95,56 +73,6 @@ const UserProfileDropdown = ({
             <p className="text-xs text-muted-foreground">{user?.email}</p>
           </div>
         </div>
-        <DropdownMenuSeparator />
-        
-        {/* Accessibility Controls */}
-        <div className="px-2 py-2">
-          <div className="flex items-center justify-between mb-2">
-            <span className="text-xs font-medium text-muted-foreground">ACCESSIBILITY</span>
-          </div>
-          
-          {/* Language Selector */}
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger className="flex items-center w-full px-2 py-2 text-sm">
-              <Globe className="mr-2 h-4 w-4" />
-              <span>Language</span>
-              <span className="ml-auto text-xs text-muted-foreground">
-                {languages.find(lang => lang.code === currentLanguage)?.flag}
-              </span>
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent className="w-48">
-              {languages.map((lang) => (
-                <DropdownMenuItem
-                  key={lang.code}
-                  onClick={() => setCurrentLanguage(lang.code)}
-                  className="flex items-center space-x-3"
-                >
-                  <span className="text-lg">{lang.flag}</span>
-                  <span>{lang.name}</span>
-                  {currentLanguage === lang.code && (
-                    <span className="ml-auto text-xs">✓</span>
-                  )}
-                </DropdownMenuItem>
-              ))}
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
-          
-          {/* Theme Toggle */}
-          <DropdownMenuItem onClick={toggleTheme} className="flex items-center px-2 py-2">
-            {isDarkMode ? (
-              <>
-                <Sun className="mr-2 h-4 w-4" />
-                <span>Light Mode</span>
-              </>
-            ) : (
-              <>
-                <Moon className="mr-2 h-4 w-4" />
-                <span>Dark Mode</span>
-              </>
-            )}
-          </DropdownMenuItem>
-        </div>
-        
         <DropdownMenuSeparator />
         
         {/* Profile Information */}
