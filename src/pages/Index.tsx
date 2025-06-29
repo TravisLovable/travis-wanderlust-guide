@@ -36,6 +36,11 @@ const Index = () => {
     setShowLoading(false);
   };
 
+  const handleNewSearch = () => {
+    setSearchData(null);
+    setShowLoading(false);
+  };
+
   useEffect(() => {
     // Map /api/mapbox-geocoding to Supabase edge function
     const originalFetch = window.fetch;
@@ -75,12 +80,12 @@ const Index = () => {
         destination={searchData.destination}
         dates={searchData.dates}
         onBack={handleBack}
-        onNewSearch={handleSearch}
+        onNewSearch={handleNewSearch}
       />
     );
   }
 
-  return <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />;
+  return <HomePage onSearch={handleSearch} />;
 };
 
 export default Index;

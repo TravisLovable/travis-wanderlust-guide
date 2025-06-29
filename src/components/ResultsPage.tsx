@@ -1,44 +1,29 @@
-import React, { useState, useEffect } from 'react';
-import { useRouter } from 'next/router';
-import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
 
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { useAppContext } from '@/context/AppContext';
-import { fetchCountryFlag } from '@/lib/utils';
-import PropertyCard from './PropertyCard';
 
 interface ResultsPageProps {
   destination: string;
-  dates: { from: Date | undefined; to: Date | undefined } | null;
+  dates: { checkin: string; checkout: string };
   onBack: () => void;
   onNewSearch: () => void;
 }
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
-  const router = useRouter();
-  const { setDates } = useAppContext();
-  const [countryFlag, setCountryFlag] = useState<string | null>(null);
+  const navigate = useNavigate();
   const [searchDate, setSearchDate] = useState<Date | null>(null);
 
   useEffect(() => {
-    if (dates && dates.from) {
-      setSearchDate(dates.from);
+    if (dates && dates.checkin) {
+      setSearchDate(new Date(dates.checkin));
     }
   }, [dates]);
 
-  useEffect(() => {
-    const getFlag = async () => {
-      const flag = await fetchCountryFlag(destination);
-      setCountryFlag(flag);
-    };
-
-    getFlag();
-  }, [destination]);
-
   const handleBack = () => {
-    setDates(null);
-    router.push('/');
+    navigate('/');
+    onBack();
   };
 
   return (
@@ -60,20 +45,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             <div className="flex items-center space-x-3">
               <MapPin className="h-5 w-5" />
               <h1 className="text-2xl font-bold text-gray-800">{destination}</h1>
-              {countryFlag && (
-                <img
-                  src={countryFlag}
-                  alt={`${destination} flag`}
-                  className="w-8 h-6 object-cover rounded shadow-sm"
-                />
-              )}
             </div>
 
             {searchDate && (
               <div className="flex items-center space-x-2 text-gray-600">
                 <Calendar className="h-4 w-4" />
                 <span className="text-sm">
-                  {new Date(searchDate).toLocaleDateString('en-US', {
+                  {searchDate.toLocaleDateString('en-US', {
                     weekday: 'long',
                     year: 'numeric',
                     month: 'long',
@@ -92,14 +70,22 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         {/* Main content grid */}
         <div className="grid lg:grid-cols-4 gap-6">
-          <PropertyCard />
-          <PropertyCard />
-          <PropertyCard />
-          <PropertyCard />
-          <PropertyCard />
-          <PropertyCard />
-          <PropertyCard />
-          <PropertyCard />
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="font-semibold mb-2">Property 1</h3>
+            <p className="text-gray-600">Sample property content</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="font-semibold mb-2">Property 2</h3>
+            <p className="text-gray-600">Sample property content</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="font-semibold mb-2">Property 3</h3>
+            <p className="text-gray-600">Sample property content</p>
+          </div>
+          <div className="bg-white rounded-lg shadow-md p-4">
+            <h3 className="font-semibold mb-2">Property 4</h3>
+            <p className="text-gray-600">Sample property content</p>
+          </div>
         </div>
       </div>
     </div>
