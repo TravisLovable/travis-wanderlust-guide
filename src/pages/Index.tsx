@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import HomePage from '@/components/HomePage';
 import LoadingIntelligence from '@/components/LoadingIntelligence';
@@ -16,25 +15,31 @@ const Index = () => {
   const [searchData, setSearchData] = useState<SearchData | null>(null);
   const [showLoading, setShowLoading] = useState(false);
 
-  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }, skipTransition = false) => {
+  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }) => {
+    console.log('Search triggered with:', { destination, dates });
     setSearchData({ destination, dates });
-    
-    // Skip loading transition if requested (for searches from results page)
-    if (skipTransition) {
-      setShowLoading(false);
-    } else {
-      setShowLoading(true);
-    }
+    setShowLoading(true);
   };
 
   const handleLoadingComplete = () => {
+    console.log('Loading complete, showing results page');
     setShowLoading(false);
   };
 
   const handleBack = () => {
+    console.log('Going back to home page');
     setSearchData(null);
     setShowLoading(false);
   };
+
+  const handleNewSearch = () => {
+    console.log('Starting new search');
+    setSearchData(null);
+    setShowLoading(false);
+  };
+
+  // Debug current state
+  console.log('Current state:', { searchData, showLoading });
 
   useEffect(() => {
     // Map /api/mapbox-geocoding to Supabase edge function
@@ -61,6 +66,7 @@ const Index = () => {
   }, []);
 
   if (showLoading && searchData) {
+    console.log('Rendering LoadingIntelligence component');
     return (
       <LoadingIntelligence
         destination={searchData.destination}
@@ -70,17 +76,19 @@ const Index = () => {
   }
 
   if (searchData && !showLoading) {
+    console.log('Rendering ResultsPage component');
     return (
       <ResultsPage
         destination={searchData.destination}
         dates={searchData.dates}
         onBack={handleBack}
-        onNewSearch={handleSearch}
+        onNewSearch={handleNewSearch}
       />
     );
   }
 
-  return <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />;
+  console.log('Rendering HomePage component');
+  return <HomePage onSearch={handleSearch} />;
 };
 
 export default Index;
