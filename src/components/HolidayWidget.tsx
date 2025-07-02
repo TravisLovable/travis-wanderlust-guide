@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Calendar, MapPin } from 'lucide-react';
@@ -22,37 +21,66 @@ interface Holiday {
 }
 
 const HolidayWidget = ({ destination, dates }: HolidayWidgetProps) => {
-  // Extract country from destination (simplified approach)
+  // Extract country from destination (improved approach)
   const getCountryCode = (dest: string) => {
     const countryMappings: { [key: string]: string } = {
+      // South Africa variations
+      'south africa': 'ZA',
+      'cape town': 'ZA',
+      'johannesburg': 'ZA',
+      'durban': 'ZA',
+      'pretoria': 'ZA',
+      // Handle "SA" abbreviation carefully - could be South Africa or Saudi Arabia
+      'cape town, sa': 'ZA',
+      'johannesburg, sa': 'ZA',
+      ', sa': 'ZA', // If it ends with ", sa" it's likely South Africa
+      // Other countries
       'brazil': 'BR',
       'usa': 'US',
       'united states': 'US',
       'uk': 'GB',
       'united kingdom': 'GB',
+      'england': 'GB',
       'france': 'FR',
       'germany': 'DE',
       'italy': 'IT',
       'spain': 'ES',
       'japan': 'JP',
+      'canada': 'CA',
+      'australia': 'AU',
+      'new zealand': 'NZ',
+      'india': 'IN',
+      'china': 'CN',
+      'mexico': 'MX',
+      'argentina': 'AR',
+      'chile': 'CL',
+      'peru': 'PE',
+      'colombia': 'CO',
+      'venezuela': 'VE',
       // Add more mappings as needed
     };
     
     const lowerDest = dest.toLowerCase();
+    
+    // Check for exact matches first (more specific)
     for (const [country, code] of Object.entries(countryMappings)) {
-      if (lowerDest.includes(country)) {
+      if (lowerDest === country || lowerDest.includes(country)) {
         return code;
       }
     }
+    
     return 'US'; // Default fallback
   };
 
   const countryCode = getCountryCode(destination);
   const year = new Date(dates.checkin).getFullYear();
 
+  console.log('Holiday Widget - Destination:', destination, 'Detected Country Code:', countryCode);
+
   const { data: holidays, isLoading, error } = useQuery({
     queryKey: ['holidays', countryCode, year],
     queryFn: async () => {
+      console.log('Fetching holidays for:', countryCode, year);
       const response = await fetch('https://sioicdmsphfigulrufim.supabase.co/functions/v1/get-holidays', {
         method: 'POST',
         headers: {
@@ -66,26 +94,28 @@ const HolidayWidget = ({ destination, dates }: HolidayWidgetProps) => {
         throw new Error('Failed to fetch holidays');
       }
       
-      return response.json();
+      const data = await response.json();
+      console.log('Holiday API Response:', data);
+      return data;
     },
     enabled: !!countryCode
   });
 
   // Clean up holiday data - remove state abbreviations and regional details
   const cleanHolidayName = (name: string, region?: string) => {
-    // Remove state abbreviations pattern (US-XX, US-YY, etc.)
-    let cleanName = name.replace(/\s*\([^)]*US-[A-Z]{2}[^)]*\)/g, '');
+    // Remove everything after the first occurrence of "US-"
+    let cleanName = name.split('US-')[0];
     
-    // Remove trailing state abbreviation lists
-    cleanName = cleanName.replace(/\s*US-[A-Z]{2}(,\s*US-[A-Z]{2})*/g, '');
-    
-    // Remove "October 12, 2025" date patterns that might be mixed in
-    cleanName = cleanName.replace(/\s*(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}/g, '');
-    
-    // Clean up any remaining comma artifacts
+    // Remove trailing comma and spaces
     cleanName = cleanName.replace(/,\s*$/, '').trim();
     
-    return cleanName;
+    // Remove date patterns that might be mixed in
+    cleanName = cleanName.replace(/\s*(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}/g, '');
+    
+    // Remove any remaining trailing punctuation
+    cleanName = cleanName.replace(/[,\s]+$/, '').trim();
+    
+    return cleanName || name; // Fallback to original name if cleaning results in empty string
   };
 
   // Filter holidays during travel period
