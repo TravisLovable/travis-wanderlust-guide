@@ -23,52 +23,45 @@ interface Holiday {
 const HolidayWidget = ({ destination, dates }: HolidayWidgetProps) => {
   // Extract country from destination (improved approach)
   const getCountryCode = (dest: string) => {
-    const countryMappings: { [key: string]: string } = {
-      // South Africa variations
-      'south africa': 'ZA',
-      'cape town': 'ZA',
-      'johannesburg': 'ZA',
-      'durban': 'ZA',
-      'pretoria': 'ZA',
-      // Handle "SA" abbreviation carefully - could be South Africa or Saudi Arabia
-      'cape town, sa': 'ZA',
-      'johannesburg, sa': 'ZA',
-      ', sa': 'ZA', // If it ends with ", sa" it's likely South Africa
-      // Other countries
-      'brazil': 'BR',
-      'usa': 'US',
-      'united states': 'US',
-      'uk': 'GB',
-      'united kingdom': 'GB',
-      'england': 'GB',
-      'france': 'FR',
-      'germany': 'DE',
-      'italy': 'IT',
-      'spain': 'ES',
-      'japan': 'JP',
-      'canada': 'CA',
-      'australia': 'AU',
-      'new zealand': 'NZ',
-      'india': 'IN',
-      'china': 'CN',
-      'mexico': 'MX',
-      'argentina': 'AR',
-      'chile': 'CL',
-      'peru': 'PE',
-      'colombia': 'CO',
-      'venezuela': 'VE',
-      // Add more mappings as needed
-    };
-    
     const lowerDest = dest.toLowerCase();
     
-    // Check for exact matches first (more specific)
-    for (const [country, code] of Object.entries(countryMappings)) {
-      if (lowerDest === country || lowerDest.includes(country)) {
-        return code;
-      }
+    console.log('Analyzing destination:', dest, 'lowercase:', lowerDest);
+    
+    // Check for South Africa first (most specific patterns)
+    if (lowerDest.includes('south africa') || 
+        lowerDest.includes('cape town') || 
+        lowerDest.includes('johannesburg') || 
+        lowerDest.includes('durban') || 
+        lowerDest.includes('pretoria') ||
+        lowerDest.includes('western cape') ||
+        lowerDest.includes('gauteng') ||
+        lowerDest.includes('kwazulu-natal')) {
+      console.log('Detected South Africa from destination');
+      return 'ZA';
     }
     
+    // Other country mappings
+    if (lowerDest.includes('brazil')) return 'BR';
+    if (lowerDest.includes('usa') || lowerDest.includes('united states')) return 'US';
+    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('england')) return 'GB';
+    if (lowerDest.includes('france')) return 'FR';
+    if (lowerDest.includes('germany')) return 'DE';
+    if (lowerDest.includes('italy')) return 'IT';
+    if (lowerDest.includes('spain')) return 'ES';
+    if (lowerDest.includes('japan')) return 'JP';
+    if (lowerDest.includes('canada')) return 'CA';
+    if (lowerDest.includes('australia')) return 'AU';
+    if (lowerDest.includes('new zealand')) return 'NZ';
+    if (lowerDest.includes('india')) return 'IN';
+    if (lowerDest.includes('china')) return 'CN';
+    if (lowerDest.includes('mexico')) return 'MX';
+    if (lowerDest.includes('argentina')) return 'AR';
+    if (lowerDest.includes('chile')) return 'CL';
+    if (lowerDest.includes('peru')) return 'PE';
+    if (lowerDest.includes('colombia')) return 'CO';
+    if (lowerDest.includes('venezuela')) return 'VE';
+    
+    console.log('No country match found, defaulting to US');
     return 'US'; // Default fallback
   };
 
