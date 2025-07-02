@@ -35,7 +35,13 @@ const HolidayWidget = ({ destination, dates }: HolidayWidgetProps) => {
         lowerDest.includes('pretoria') ||
         lowerDest.includes('western cape') ||
         lowerDest.includes('gauteng') ||
-        lowerDest.includes('kwazulu-natal')) {
+        lowerDest.includes('kwazulu-natal') ||
+        lowerDest.includes('eastern cape') ||
+        lowerDest.includes('free state') ||
+        lowerDest.includes('limpopo') ||
+        lowerDest.includes('mpumalanga') ||
+        lowerDest.includes('northern cape') ||
+        lowerDest.includes('north west')) {
       console.log('Detected South Africa from destination');
       return 'ZA';
     }
@@ -68,12 +74,12 @@ const HolidayWidget = ({ destination, dates }: HolidayWidgetProps) => {
   const countryCode = getCountryCode(destination);
   const year = new Date(dates.checkin).getFullYear();
 
-  console.log('Holiday Widget - Destination:', destination, 'Detected Country Code:', countryCode);
+  console.log('Holiday Widget - Destination:', destination, 'Detected Country Code:', countryCode, 'Year:', year);
 
   const { data: holidays, isLoading, error } = useQuery({
     queryKey: ['holidays', countryCode, year],
     queryFn: async () => {
-      console.log('Fetching holidays for:', countryCode, year);
+      console.log('Fetching holidays for country:', countryCode, 'year:', year);
       const response = await fetch('https://sioicdmsphfigulrufim.supabase.co/functions/v1/get-holidays', {
         method: 'POST',
         headers: {
@@ -84,44 +90,58 @@ const HolidayWidget = ({ destination, dates }: HolidayWidgetProps) => {
       });
       
       if (!response.ok) {
+        console.error('Holiday API error:', response.status, response.statusText);
         throw new Error('Failed to fetch holidays');
       }
       
       const data = await response.json();
       console.log('Holiday API Response:', data);
+      console.log('API returned country:', data.country, 'Expected:', countryCode);
       return data;
     },
     enabled: !!countryCode
   });
 
-  // Clean up holiday data - remove state abbreviations and regional details
+  // Clean up holiday data - remove all regional/state information
   const cleanHolidayName = (name: string, region?: string) => {
-    // Remove everything after the first occurrence of "US-"
-    let cleanName = name.split('US-')[0];
+    // Remove everything after US- patterns (for US holidays that might leak through)
+    let cleanName = name.split(/US-[A-Z]{2}/)[0];
     
-    // Remove trailing comma and spaces
-    cleanName = cleanName.replace(/,\s*$/, '').trim();
+    // Remove common regional patterns
+    cleanName = cleanName.replace(/,?\s*(US-[A-Z]{2}[,\s]*)+/g, '');
+    
+    // Remove trailing commas, spaces, and other punctuation
+    cleanName = cleanName.replace(/[,\s]+$/, '').trim();
     
     // Remove date patterns that might be mixed in
     cleanName = cleanName.replace(/\s*(January|February|March|April|May|June|July|August|September|October|November|December)\s+\d{1,2},?\s+\d{4}/g, '');
     
     // Remove any remaining trailing punctuation
-    cleanName = cleanName.replace(/[,\s]+$/, '').trim();
+    cleanName = cleanName.replace(/[,\s\-]+$/, '').trim();
     
-    return cleanName || name; // Fallback to original name if cleaning results in empty string
+    return cleanName || (name.includes('US-') ? name.split('US-')[0].trim() : name);
   };
 
   // Filter holidays during travel period
   const getRelevantHolidays = (holidayData: any) => {
-    if (!holidayData?.allHolidays) return [];
+    if (!holidayData?.allHolidays) {
+      console.log('No holiday data found in response');
+      return [];
+    }
     
     const checkinDate = new Date(dates.checkin);
     const checkoutDate = new Date(dates.checkout);
     
-    return holidayData.allHolidays
+    console.log('Filtering holidays between:', checkinDate.toDateString(), 'and', checkoutDate.toDateString());
+    
+    const filtered = holidayData.allHolidays
       .filter((holiday: Holiday) => {
         const holidayDate = new Date(holiday.date);
-        return holidayDate >= checkinDate && holidayDate <= checkoutDate;
+        const isInRange = holidayDate >= checkinDate && holidayDate <= checkoutDate;
+        if (isInRange) {
+          console.log('Holiday in range:', holiday.name, 'on', holiday.date);
+        }
+        return isInRange;
       })
       .map((holiday: Holiday) => ({
         ...holiday,
@@ -133,6 +153,9 @@ const HolidayWidget = ({ destination, dates }: HolidayWidgetProps) => {
         })
       }))
       .slice(0, 5); // Limit to 5 most relevant holidays
+      
+    console.log('Filtered holidays:', filtered);
+    return filtered;
   };
 
   const relevantHolidays = holidays ? getRelevantHolidays(holidays) : [];
