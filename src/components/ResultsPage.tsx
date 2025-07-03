@@ -5,7 +5,6 @@ import { ArrowLeft, MapPin, Calendar } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { useAppContext } from '@/context/AppContext';
 import { fetchCountryFlag } from '@/lib/utils';
 import PropertyCard from './PropertyCard';
 
@@ -20,7 +19,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   console.log('ResultsPage rendered with props:', { destination, dates });
   
   const navigate = useNavigate();
-  const { setDates } = useAppContext();
   const [countryFlag, setCountryFlag] = useState<string | null>(null);
   const [searchDate, setSearchDate] = useState<Date | null>(null);
 
@@ -40,7 +38,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   }, [destination]);
 
   const handleBack = () => {
-    setDates(null);
     navigate('/');
   };
 
