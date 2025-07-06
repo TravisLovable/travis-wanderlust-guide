@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import PhotoSlideshow from '@/components/PhotoSlideshow';
 import VisaEntryWidget from '@/components/VisaEntryWidget';
@@ -8,7 +9,7 @@ import CurrencyExchangeWidget from '@/components/CurrencyExchangeWidget';
 import WorldClockWidget from '@/components/WorldClockWidget';
 import { Button } from '@/components/ui/button';
 import { Calendar } from "@/components/ui/calendar"
-import { CalendarIcon } from "@radix-ui/react-icons"
+import { Calendar as CalendarIcon } from "lucide-react"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { cn } from "@/lib/utils"
 import { format } from "date-fns"
@@ -93,7 +94,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   mode="range"
                   defaultMonth={date?.from}
                   selected={date}
-                  onSelect={setDate}
+                  onSelect={(selectedDate) => {
+                    if (selectedDate) {
+                      setDate(selectedDate);
+                    }
+                  }}
                   numberOfMonths={2}
                 />
               </PopoverContent>
