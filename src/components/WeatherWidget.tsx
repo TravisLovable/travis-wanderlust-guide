@@ -36,7 +36,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
   const WeatherCard = ({ weather, location, isLoading, error }: any) => {
     if (isLoading) {
       return (
-        <div className="flex-1 p-3 bg-card border border-border rounded-xl transition-all duration-300">
+        <div className="flex-1 p-3 bg-black border border-border rounded-xl">
           <div className="flex items-center gap-2 mb-2">
             <MapPin className="w-3 h-3 text-muted-foreground" />
             <span className="text-xs font-medium text-muted-foreground">{location}</span>
@@ -50,7 +50,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
     if (error || !weather) {
       return (
-        <div className="flex-1 p-3 bg-card border border-border rounded-xl transition-all duration-300">
+        <div className="flex-1 p-3 bg-black border border-border rounded-xl">
           <div className="flex items-center gap-2 mb-2">
             <MapPin className="w-3 h-3 text-muted-foreground" />
             <span className="text-xs font-medium text-muted-foreground">{location}</span>
@@ -63,7 +63,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
     }
 
     return (
-      <div className="flex-1 p-3 bg-card border border-border rounded-xl transition-all duration-300 hover:bg-muted/50">
+      <div className="flex-1 p-3 bg-black border border-border rounded-xl">
         <div className="flex items-center gap-2 mb-2">
           <MapPin className="w-3 h-3 text-muted-foreground" />
           <span className="text-xs font-semibold text-foreground">{location}</span>
@@ -86,7 +86,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   if (destinationLoading && currentLoading) {
     return (
-      <Card className="travis-card travis-interactive group bg-card border-border shadow-xl w-full col-span-full rounded-2xl backdrop-blur-sm max-w-4xl mx-auto">
+      <Card className="bg-black border-border shadow-xl w-full col-span-full rounded-2xl max-w-4xl mx-auto">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg font-semibold">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mr-3 shadow-lg">
@@ -104,7 +104,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   return (
     <TooltipProvider>
-      <Card className="travis-card travis-interactive group bg-card border-border shadow-xl w-full col-span-full rounded-2xl backdrop-blur-sm transition-all duration-300 hover:shadow-2xl max-w-4xl mx-auto">
+      <Card className="bg-black border-border shadow-xl w-full col-span-full rounded-2xl max-w-4xl mx-auto">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center text-lg font-semibold">
             <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mr-3 shadow-lg">
@@ -157,7 +157,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
                 {destinationWeather.forecast.slice(0, 7).map((forecast, idx) => (
                   <Tooltip key={idx}>
                     <TooltipTrigger asChild>
-                      <div className="text-center p-3 bg-card border border-border rounded-xl hover:bg-muted/50 transition-all duration-300 hover:scale-105 hover:shadow-md cursor-pointer backdrop-blur-sm">
+                      <div className="text-center p-3 bg-black border border-border rounded-xl cursor-pointer">
                         <div className="font-bold text-xs text-foreground mb-2 truncate">
                           {forecast.day}
                         </div>
