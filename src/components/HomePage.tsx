@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -456,11 +455,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         ))}
       </div>
 
-      {/* Header */}
-      <header className="px-6 py-6 border-b border-border/30 backdrop-blur-sm relative z-10">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
+      {/* Header with reduced padding */}
+      <header className="px-3 py-3 border-b border-border/30 backdrop-blur-sm relative z-10">
+        <div className="max-w-none mx-auto flex items-center justify-between">
           <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2">
             {/* User Authentication */}
             {user ? (
               <>
@@ -540,8 +539,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         </div>
       </header>
 
-      {/* Main Content */}
-      <main className="flex-1 flex items-center justify-center px-6 py-12 relative z-10">
+      {/* Main Content with reduced padding */}
+      <main className="flex-1 flex items-center justify-center px-3 py-6 relative z-10">
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section without glow animation */}
           <div className="mb-10">
@@ -725,9 +724,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         </div>
       </main>
 
-      {/* Footer */}
-      <footer className="px-6 py-8 border-t border-border/30 relative z-10">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
+      {/* Footer with reduced padding */}
+      <footer className="px-3 py-4 border-t border-border/30 relative z-10">
+        <div className="max-w-none mx-auto flex justify-between items-center">
           <div></div>
           <div className="flex items-center space-x-6 text-sm text-muted-foreground">
             <button className="hover:text-foreground transition-colors">{t.privacy}</button>
