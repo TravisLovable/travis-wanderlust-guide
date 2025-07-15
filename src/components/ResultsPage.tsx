@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Calendar, Users, Plane, Clock, DollarSign, Shield, Thermometer, Car, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
@@ -211,109 +212,108 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
       <div className="absolute bottom-10 right-10 w-96 h-96 bg-purple-400/20 rounded-full blur-3xl"></div>
       <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[600px] bg-gradient-radial from-blue-400/10 to-transparent rounded-full blur-3xl"></div>
 
-      {/* Auth and Theme Controls - positioned absolutely in top right */}
-      <div className="absolute top-4 right-4 flex items-center space-x-2 z-50">
-        {user ? (
-          <>
-            {/* Language Selector */}
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru' | 'ja' | 'ko' | 'zh')}
-              className="px-3 py-2 text-sm bg-white/10 border border-border/30 rounded-lg backdrop-blur-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="en">🇺🇸 EN</option>
-              <option value="es">🇪🇸 ES</option>
-              <option value="fr">🇫🇷 FR</option>
-              <option value="de">🇩🇪 DE</option>
-              <option value="it">🇮🇹 IT</option>
-              <option value="pt">🇵🇹 PT</option>
-              <option value="ru">🇷🇺 RU</option>
-              <option value="ja">🇯🇵 JP</option>
-              <option value="ko">🇰🇷 KR</option>
-              <option value="zh">🇨🇳 ZH</option>
-            </select>
-
-            {/* Theme Toggle */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="bg-white/10 border border-border/30 backdrop-blur-sm hover:bg-white/20 text-foreground"
-            >
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </Button>
-
-            {/* User Profile Dropdown */}
-            <UserProfileDropdown user={user} userProfile={null} />
-          </>
-        ) : (
-          <>
-            {/* Language Selector for non-authenticated users */}
-            <select
-              value={language}
-              onChange={(e) => setLanguage(e.target.value as 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru' | 'ja' | 'ko' | 'zh')}
-              className="px-3 py-2 text-sm bg-white/10 border border-border/30 rounded-lg backdrop-blur-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
-            >
-              <option value="en">🇺🇸 EN</option>
-              <option value="es">🇪🇸 ES</option>
-              <option value="fr">🇫🇷 FR</option>
-              <option value="de">🇩🇪 DE</option>
-              <option value="it">🇮🇹 IT</option>
-              <option value="pt">🇵🇹 PT</option>
-              <option value="ru">🇷🇺 RU</option>
-              <option value="ja">🇯🇵 JP</option>
-              <option value="ko">🇰🇷 KR</option>
-              <option value="zh">🇨🇳 ZH</option>
-            </select>
-
-            {/* Theme Toggle for non-authenticated users */}
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
-              className="bg-white/10 border border-border/30 backdrop-blur-sm hover:bg-white/20 text-foreground"
-            >
-              {theme === 'dark' ? '☀️' : '🌙'}
-            </Button>
-          </>
-        )}
-      </div>
-
-      {/* Main Content - increased padding and full width usage */}
-      <div className="px-6 py-8 relative z-10">
-        <div className="max-w-none mx-auto">
-          {/* Back Button and Destination Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div className="flex items-center space-x-4">
-              <Button
-                variant="ghost"
-                onClick={onBack}
-                className="flex items-center space-x-2 bg-white/10 border border-border/30 backdrop-blur-sm hover:bg-white/20 text-foreground"
-              >
-                <ArrowLeft className="w-4 h-4" />
-                <span>{t.back}</span>
-              </Button>
-              
-              <div className="flex items-center space-x-3">
-                <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
-                <div>
-                  <h1 className="text-3xl font-bold text-foreground">{destination}</h1>
-                  <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
-                    <span className="flex items-center space-x-1">
-                      <Calendar className="w-4 h-4" />
-                      <span>{dates.checkin} - {dates.checkout}</span>
-                    </span>
-                    <span className="flex items-center space-x-1">
-                      <Users className="w-4 h-4" />
-                      <span>1 {t.traveler}</span>
-                    </span>
-                  </div>
-                </div>
+      {/* Header with Controls */}
+      <header className="px-8 py-6 flex items-center justify-between border-b border-border/30 backdrop-blur-sm relative z-10">
+        <div className="flex items-center space-x-4">
+          <Button
+            variant="ghost"
+            onClick={onBack}
+            className="flex items-center space-x-2 bg-white/10 border border-border/30 backdrop-blur-sm hover:bg-white/20 text-foreground"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>{t.back}</span>
+          </Button>
+          
+          <div className="flex items-center space-x-3">
+            <MapPin className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+            <div>
+              <h1 className="text-3xl font-bold text-foreground">{destination}</h1>
+              <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
+                <span className="flex items-center space-x-1">
+                  <Calendar className="w-4 h-4" />
+                  <span>{dates.checkin} - {dates.checkout}</span>
+                </span>
+                <span className="flex items-center space-x-1">
+                  <Users className="w-4 h-4" />
+                  <span>1 {t.traveler}</span>
+                </span>
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Information Widgets Grid - full width with better spacing */}
+        <div className="flex items-center space-x-2">
+          {user ? (
+            <>
+              {/* Language Selector */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru' | 'ja' | 'ko' | 'zh')}
+                className="px-3 py-2 text-sm bg-white/10 border border-border/30 rounded-lg backdrop-blur-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="en">🇺🇸 EN</option>
+                <option value="es">🇪🇸 ES</option>
+                <option value="fr">🇫🇷 FR</option>
+                <option value="de">🇩🇪 DE</option>
+                <option value="it">🇮🇹 IT</option>
+                <option value="pt">🇵🇹 PT</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="ja">🇯🇵 JP</option>
+                <option value="ko">🇰🇷 KR</option>
+                <option value="zh">🇨🇳 ZH</option>
+              </select>
+
+              {/* Theme Toggle */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="bg-white/10 border border-border/30 backdrop-blur-sm hover:bg-white/20 text-foreground"
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </Button>
+
+              {/* User Profile Dropdown */}
+              <UserProfileDropdown user={user} userProfile={null} />
+            </>
+          ) : (
+            <>
+              {/* Language Selector for non-authenticated users */}
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'en' | 'es' | 'fr' | 'de' | 'it' | 'pt' | 'ru' | 'ja' | 'ko' | 'zh')}
+                className="px-3 py-2 text-sm bg-white/10 border border-border/30 rounded-lg backdrop-blur-sm text-foreground focus:outline-none focus:ring-2 focus:ring-blue-500"
+              >
+                <option value="en">🇺🇸 EN</option>
+                <option value="es">🇪🇸 ES</option>
+                <option value="fr">🇫🇷 FR</option>
+                <option value="de">🇩🇪 DE</option>
+                <option value="it">🇮🇹 IT</option>
+                <option value="pt">🇵🇹 PT</option>
+                <option value="ru">🇷🇺 RU</option>
+                <option value="ja">🇯🇵 JP</option>
+                <option value="ko">🇰🇷 KR</option>
+                <option value="zh">🇨🇳 ZH</option>
+              </select>
+
+              {/* Theme Toggle for non-authenticated users */}
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="bg-white/10 border border-border/30 backdrop-blur-sm hover:bg-white/20 text-foreground"
+              >
+                {theme === 'dark' ? '☀️' : '🌙'}
+              </Button>
+            </>
+          )}
+        </div>
+      </header>
+
+      {/* Main Content - increased padding for better spacing */}
+      <div className="px-12 py-8 relative z-10">
+        <div className="max-w-7xl mx-auto">
+          {/* Information Widgets Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
             {/* Time Zone Widget */}
             <Card className="bg-white/10 border border-border/30 backdrop-blur-sm">
@@ -453,7 +453,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             </Card>
           </div>
 
-          {/* Second Row of Widgets - full width */}
+          {/* Second Row of Widgets */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
             {/* Weather Widget */}
             <Card className="bg-white/10 border border-border/30 backdrop-blur-sm">
@@ -544,7 +544,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
             </Card>
           </div>
 
-          {/* Accommodation Map Section - full width */}
+          {/* Accommodation Map Section */}
           <div className="mb-8">
             <Card className="bg-white/10 border border-border/30 backdrop-blur-sm">
               <CardContent className="p-6">
