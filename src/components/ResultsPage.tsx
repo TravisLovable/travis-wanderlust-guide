@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
-import { WeatherWidget } from './WeatherWidget';
-import { AccommodationHeatMap } from './AccommodationHeatMap';
-import { SaoPauloAccommodationMap } from './SaoPauloAccommodationMap';
-import { UserProfileDropdown } from './UserProfileDropdown';
+import WeatherWidget from './WeatherWidget';
+import AccommodationHeatMap from './AccommodationHeatMap';
+import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
+import UserProfileDropdown from './UserProfileDropdown';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useTheme } from 'next-themes';
 import { supabase } from '@/integrations/supabase/client';
@@ -28,10 +28,12 @@ interface AirportData {
 
 interface ResultsPageProps {
   destination: string;
-  departureDate: string;
-  returnDate: string;
-  travelers: number;
+  dates: {
+    checkin: string;
+    checkout: string;
+  };
   onBack: () => void;
+  onNewSearch: (destination: string, dates: { checkin: string; checkout: string }, skipTransition: boolean) => void;
 }
 
 const fetchExchangeRate = async (destination: string) => {
@@ -76,12 +78,11 @@ const fetchHolidays = async (destination: string) => {
   }
 };
 
-export const ResultsPage: React.FC<ResultsPageProps> = ({
+const ResultsPage: React.FC<ResultsPageProps> = ({
   destination,
-  departureDate,
-  returnDate,
-  travelers,
-  onBack
+  dates,
+  onBack,
+  onNewSearch
 }) => {
   const [yourTime, setYourTime] = useState(new Date().toLocaleTimeString());
   const [destinationTime, setDestinationTime] = useState('');
@@ -243,7 +244,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
             </Button>
 
             {/* User Profile Dropdown */}
-            <UserProfileDropdown />
+            <UserProfileDropdown user={user} userProfile={null} />
           </>
         ) : (
           <>
@@ -300,11 +301,11 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                   <div className="flex items-center space-x-4 text-sm text-muted-foreground mt-1">
                     <span className="flex items-center space-x-1">
                       <Calendar className="w-4 h-4" />
-                      <span>{departureDate} - {returnDate}</span>
+                      <span>{dates.checkin} - {dates.checkout}</span>
                     </span>
                     <span className="flex items-center space-x-1">
                       <Users className="w-4 h-4" />
-                      <span>{travelers} {travelers === 1 ? t.traveler : t.travelers}</span>
+                      <span>1 {t.traveler}</span>
                     </span>
                   </div>
                 </div>
@@ -464,7 +465,7 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
                   </div>
                   <div className="text-sm font-mono text-muted-foreground">°C ↔ °F</div>
                 </div>
-                <WeatherWidget destination={destination} />
+                <WeatherWidget destination={destination} currentLocation="Current Location" tempUnit="C" onTempUnitToggle={() => {}} />
               </CardContent>
             </Card>
 
@@ -564,3 +565,5 @@ export const ResultsPage: React.FC<ResultsPageProps> = ({
     </div>
   );
 };
+
+export default ResultsPage;
