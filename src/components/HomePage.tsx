@@ -455,12 +455,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         ))}
       </div>
 
-      {/* Header with reduced padding */}
-      <header className="px-3 py-3 border-b border-border/30 backdrop-blur-sm relative z-10">
-        <div className="max-w-none mx-auto flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
-          <div className="flex items-center space-x-2">
-            {/* User Authentication */}
+      {/* Main Content with increased padding */}
+      <main className="flex-1 flex items-center justify-center px-3 py-12 relative z-10">
+        <div className="max-w-6xl w-full text-center">
+          {/* Auth and Theme Controls - positioned absolutely in top right */}
+          <div className="absolute top-0 right-0 flex items-center space-x-2">
             {user ? (
               <>
                 {/* Language Selector */}
@@ -536,13 +535,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
               </>
             )}
           </div>
-        </div>
-      </header>
 
-      {/* Main Content with reduced padding */}
-      <main className="flex-1 flex items-center justify-center px-3 py-6 relative z-10">
-        <div className="max-w-6xl w-full text-center">
-          {/* Hero Section without glow animation */}
+          {/* Hero Section */}
           <div className="mb-10">
             <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
               {t.title}
@@ -562,7 +556,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Interactive Search Bar - removed fade-in animation */}
+          {/* Interactive Search Bar */}
           <div className="mb-8 max-w-5xl mx-auto">
             <div 
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
