@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { ArrowLeft, MapPin, Calendar, Users, Plane, Clock, DollarSign, Shield, Thermometer, Car, Calendar as CalendarIcon } from 'lucide-react';
 import { Button } from "@/components/ui/button";
