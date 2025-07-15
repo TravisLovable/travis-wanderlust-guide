@@ -554,7 +554,7 @@ const ResultsPage: React.FC<ResultsPageProps> = ({
                 {destination.toLowerCase().includes('são paulo') || destination.toLowerCase().includes('sao paulo') ? (
                   <SaoPauloAccommodationMap />
                 ) : (
-                  <AccommodationHeatMap destination={destination} />
+                  <AccommodationHeatMap />
                 )}
               </CardContent>
             </Card>
