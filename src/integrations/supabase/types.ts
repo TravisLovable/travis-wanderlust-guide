@@ -10,58 +10,11 @@ export type Database = {
   // Allows to automatically instanciate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "12.2.3 (519615d)"
+    PostgrestVersion: "13.0.4"
   }
   public: {
     Tables: {
-      users: {
-        Row: {
-          auth_id: string
-          country: string | null
-          created_at: string
-          email: string | null
-          frequent_flyer_number: string | null
-          full_name: string | null
-          id: string
-          nationality: string | null
-          onboarding_completed: boolean
-          preferred_airline: string | null
-          profile_photo_url: string | null
-          travel_type: string | null
-          updated_at: string
-        }
-        Insert: {
-          auth_id: string
-          country?: string | null
-          created_at?: string
-          email?: string | null
-          frequent_flyer_number?: string | null
-          full_name?: string | null
-          id?: string
-          nationality?: string | null
-          onboarding_completed?: boolean
-          preferred_airline?: string | null
-          profile_photo_url?: string | null
-          travel_type?: string | null
-          updated_at?: string
-        }
-        Update: {
-          auth_id?: string
-          country?: string | null
-          created_at?: string
-          email?: string | null
-          frequent_flyer_number?: string | null
-          full_name?: string | null
-          id?: string
-          nationality?: string | null
-          onboarding_completed?: boolean
-          preferred_airline?: string | null
-          profile_photo_url?: string | null
-          travel_type?: string | null
-          updated_at?: string
-        }
-        Relationships: []
-      }
+      [_ in never]: never
     }
     Views: {
       [_ in never]: never
