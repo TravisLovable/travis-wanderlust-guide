@@ -8,10 +8,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { Switch } from '@/components/ui/switch';
 import PhotoSlideshow from './PhotoSlideshow';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 import WeatherWidget from './WeatherWidget';

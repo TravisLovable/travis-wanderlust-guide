@@ -6,7 +6,6 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import {
@@ -22,6 +21,7 @@ import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import AuthModal from './AuthModal';
 import OnboardingModal from './OnboardingModal';
 import UserProfileDropdown from './UserProfileDropdown';
+import Header from './Header';
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
@@ -38,7 +38,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
-  
+
   // Authentication state
   const [user, setUser] = useState<SupabaseUser | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -54,7 +54,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
   // Word swap animation - only the last word
   const swapWords = ["explorer", "nomad", "analyst", "visionary"];
-  
+
   useEffect(() => {
     const interval = setInterval(() => {
       setWordIndex((prev) => (prev + 1) % swapWords.length);
@@ -62,44 +62,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     return () => clearInterval(interval);
   }, []);
 
-  // Authentication setup
-  useEffect(() => {
-    // Set up auth state listener
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        setSession(session);
-        setUser(session?.user ?? null);
-        
-        if (session?.user) {
-          // Fetch user profile
-          setTimeout(async () => {
-            const { data: profile } = await supabase
-              .from('users')
-              .select('*')
-              .eq('auth_id', session.user.id)
-              .single();
-            
-            setUserProfile(profile);
-            
-            // Show onboarding modal if profile doesn't exist or onboarding not completed
-            if (!profile || !profile.onboarding_completed) {
-              setIsOnboardingModalOpen(true);
-            }
-          }, 0);
-        } else {
-          setUserProfile(null);
-        }
-      }
-    );
 
-    // Check for existing session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
 
-    return () => subscription.unsubscribe();
-  }, []);
+
+
+
 
   const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -374,7 +341,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   ];
 
   // Use Mapbox suggestions if available, otherwise fall back to static list
-  const staticSuggestions = globalDestinations.filter(city => 
+  const staticSuggestions = globalDestinations.filter(city =>
     city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
   );
 
@@ -384,9 +351,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (destination && checkinDate && checkoutDate) {
-      onSearch(destination, { 
-        checkin: format(checkinDate, 'yyyy-MM-dd'), 
-        checkout: format(checkoutDate, 'yyyy-MM-dd') 
+      onSearch(destination, {
+        checkin: format(checkinDate, 'yyyy-MM-dd'),
+        checkout: format(checkoutDate, 'yyyy-MM-dd')
       }, selectedPlace || undefined);
     }
   };
@@ -432,9 +399,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     setShowSuggestions(false);
   };
 
-  const handleSignInSuccess = () => {
-    // This will be handled by the auth state change listener
-  };
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
@@ -456,88 +420,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       </div>
 
       {/* Header with reduced padding */}
-      <header className="px-3 py-3 border-b border-border/30 backdrop-blur-sm relative z-10">
-        <div className="max-w-none mx-auto flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
-          <div className="flex items-center space-x-2">
-            {/* User Authentication */}
-            {user ? (
-              <>
-                {/* Language Selector */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                      <Globe className="w-5 h-5" strokeWidth={1.5} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    {languages.map((lang) => (
-                      <DropdownMenuItem
-                        key={lang.code}
-                        onClick={() => setCurrentLanguage(lang.code)}
-                        className="flex items-center space-x-3"
-                      >
-                        <span className="text-lg">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleTheme}
-                  className="rounded-full"
-                >
-                  {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
-                </Button>
-
-                <UserProfileDropdown 
-                  user={user} 
-                  userProfile={userProfile}
-                />
-              </>
-            ) : (
-              <>
-                {/* Language Selector */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="rounded-full">
-                      <Globe className="w-5 h-5" strokeWidth={1.5} />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    {languages.map((lang) => (
-                      <DropdownMenuItem
-                        key={lang.code}
-                        onClick={() => setCurrentLanguage(lang.code)}
-                        className="flex items-center space-x-3"
-                      >
-                        <span className="text-lg">{lang.flag}</span>
-                        <span>{lang.name}</span>
-                      </DropdownMenuItem>
-                    ))}
-                  </DropdownMenuContent>
-                </DropdownMenu>
-
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={toggleTheme}
-                  className="rounded-full"
-                >
-                  {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
-                </Button>
-
-                <Button onClick={() => setIsAuthModalOpen(true)} variant="outline">
-                  Log In / Sign Up
-                </Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+     
+     
 
       {/* Main Content with reduced padding */}
       <main className="flex-1 flex items-center justify-center px-3 py-6 relative z-10">
@@ -550,7 +434,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="mb-6">
               <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
                 <span>Data-driven Intelligence for the modern </span>
-                <span 
+                <span
                   key={wordIndex}
                   className="inline-block animate-fadeIn min-w-[120px] text-left"
                 >
@@ -564,7 +448,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
           {/* Interactive Search Bar - removed fade-in animation */}
           <div className="mb-8 max-w-5xl mx-auto">
-            <div 
+            <div
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
               onClick={handleBarClick}
               onKeyDown={handleKeyPress}
@@ -651,7 +535,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     </div>
                   )}
                 </div>
-                
+
                 {/* Date Inputs with Calendar Icons */}
                 <div className="flex gap-1">
                   <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
@@ -679,7 +563,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                       />
                     </PopoverContent>
                   </Popover>
-                  
+
                   <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                     <PopoverTrigger asChild>
                       <Button
@@ -736,15 +620,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         </div>
       </footer>
 
-      {/* Modals */}
-      <AuthModal 
-        isOpen={isAuthModalOpen} 
-        onClose={() => setIsAuthModalOpen(false)}
-        onSignInSuccess={handleSignInSuccess}
-      />
-      
-      <OnboardingModal 
-        isOpen={isOnboardingModalOpen} 
+
+      <OnboardingModal
+        isOpen={isOnboardingModalOpen}
         onClose={() => setIsOnboardingModalOpen(false)}
         user={user}
       />
