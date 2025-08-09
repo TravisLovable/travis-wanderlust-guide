@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Mountain, Wifi, TrendingUp, Users, Zap, Pin, PinOff, CalendarDays, Plug, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Wifi, TrendingUp, Users, Zap, Pin, PinOff, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -13,6 +13,13 @@ import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 import WeatherWidget from './WeatherWidget';
+import {
+  HolidayWidget,
+  TransportWidget,
+  PowerAdapterWidget,
+  EmergencyWidget,
+  ConnectivityWidget
+} from './widgets';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 import { supabase } from '@/integrations/supabase/client';
@@ -43,7 +50,7 @@ interface WorldClockData {
     time: string;
     time12: string;
     date: string;
-    fullDateTime: string; 
+    fullDateTime: string;
     isDst: boolean;
     abbreviation: string;
   };
@@ -125,68 +132,68 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       setIsLoadingWorldClock(true);
       try {
         console.log('Fetching world clock data for:', destination);
-        
+
         // Get timezone for destination - improved mapping with more destinations
         const getTimezoneForDestination = (dest: string) => {
           const lowerDest = dest.toLowerCase();
-          
+
           // Peru
           if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
             return 'America/Lima';
           }
-          
+
           // South America
           if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
             return 'America/Sao_Paulo';
           }
-          
+
           if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires')) {
             return 'America/Argentina/Buenos_Aires';
           }
-          
+
           if (lowerDest.includes('chile') || lowerDest.includes('santiago')) {
             return 'America/Santiago';
           }
-          
+
           if (lowerDest.includes('colombia') || lowerDest.includes('bogota')) {
             return 'America/Bogota';
           }
-          
+
           // North America
           if (lowerDest.includes('chicago')) {
             return 'America/Chicago';
           }
-          
+
           if (lowerDest.includes('new york')) {
             return 'America/New_York';
           }
-          
+
           if (lowerDest.includes('los angeles')) {
             return 'America/Los_Angeles';
           }
-          
+
           if (lowerDest.includes('mexico')) {
             return 'America/Mexico_City';
           }
-          
+
           // Europe
           if (lowerDest.includes('london')) {
             return 'Europe/London';
           }
-          
+
           if (lowerDest.includes('paris')) {
             return 'Europe/Paris';
           }
-          
+
           // Asia
           if (lowerDest.includes('bali') || lowerDest.includes('indonesia')) {
             return 'Asia/Makassar';
           }
-          
+
           if (lowerDest.includes('tokyo')) {
             return 'Asia/Tokyo';
           }
-          
+
           // Default fallback
           return 'UTC';
         };
@@ -227,11 +234,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       setIsLoadingHolidays(true);
       try {
         console.log('Fetching holiday data for:', destination);
-        
+
         // Get country code for destination - improved mapping
         const getCountryCodeForDestination = (dest: string) => {
           const lowerDest = dest.toLowerCase();
-          
+
           // Map destinations to ISO country codes
           if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro') || lowerDest.includes('salvador') || lowerDest.includes('brasília')) {
             return 'BR';
@@ -278,7 +285,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           if (lowerDest.includes('colombia') || lowerDest.includes('bogota') || lowerDest.includes('medellin') || lowerDest.includes('cartagena')) {
             return 'CO';
           }
-          
+
           // Default fallback - try to extract country code from destination string
           const parts = dest.split(',');
           if (parts.length > 1) {
@@ -305,7 +312,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             };
             return countryMap[lastPart] || 'US'; // Default to US if no match
           }
-          
+
           return 'US'; // Final fallback
         };
 
@@ -353,21 +360,21 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         }
 
         console.log(`Total holidays fetched across all years: ${allHolidaysData.length}`);
-        
+
         // Filter holidays to show ONLY holidays that fall within the travel period
         if (allHolidaysData.length > 0) {
-          console.log('Travel dates:', { 
-            checkin: checkinDate.toISOString().split('T')[0], 
-            checkout: checkoutDate.toISOString().split('T')[0] 
+          console.log('Travel dates:', {
+            checkin: checkinDate.toISOString().split('T')[0],
+            checkout: checkoutDate.toISOString().split('T')[0]
           });
-          
+
           // Filter to show ONLY holidays that fall within the exact travel dates
           const relevantHolidays = allHolidaysData.filter((holiday: any) => {
             const holidayDate = new Date(holiday.date);
             const isWithinTravelDates = holidayDate >= checkinDate && holidayDate <= checkoutDate;
-            
+
             console.log(`Holiday ${holiday.name} (${holiday.date}): ${isWithinTravelDates ? 'WITHIN TRAVEL DATES' : 'OUTSIDE TRAVEL DATES'}`);
-            
+
             return isWithinTravelDates;
           });
 
@@ -382,7 +389,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             allHolidays: relevantHolidays,
             source: 'multi-year-fetch'
           };
-          
+
           setHolidayData(updatedData);
         } else {
           // No holidays found
@@ -409,7 +416,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Dynamic flag mapping based on destination
   const getCountryFlag = (dest: string) => {
     const lowerDest = dest.toLowerCase();
-    
+
     // African countries
     if (lowerDest.includes('south africa') || lowerDest.includes('cape town') || lowerDest.includes('johannesburg') || lowerDest.includes('durban')) {
       return 'https://flagcdn.com/w40/za.png';
@@ -471,7 +478,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     if (lowerDest.includes('angola') || lowerDest.includes('luanda')) {
       return 'https://flagcdn.com/w40/ao.png';
     }
-    
+
     // Existing non-African countries
     if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
       return 'https://flagcdn.com/w40/br.png';
@@ -514,7 +521,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   const hasAccommodationMapSupport = (dest: string) => {
     const lowerDest = dest.toLowerCase();
-    return getSupportedAccommodationDestinations().some(supported => 
+    return getSupportedAccommodationDestinations().some(supported =>
       lowerDest.includes(supported)
     );
   };
@@ -522,7 +529,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Dynamic airport data based on destination
   const getAirportData = (dest: string) => {
     const lowerDest = dest.toLowerCase();
-    
+
     if (lowerDest.includes('lima') || lowerDest.includes('peru')) {
       return {
         code: 'LIM',
@@ -533,7 +540,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         options: 'Bus, Taxi, Uber'
       };
     }
-    
+
     if (lowerDest.includes('são paulo') || lowerDest.includes('sao paulo') || lowerDest.includes('brazil')) {
       return {
         code: 'GRU',
@@ -592,27 +599,27 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Dynamic power adapter data based on destination
   const getPowerAdapterData = (dest: string) => {
     const lowerDest = dest.toLowerCase();
-    
+
     if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
       return { type: 'Type C & N', voltage: '220V', frequency: '60Hz' };
     }
-    
+
     if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
       return { type: 'Type A & C', voltage: '220V', frequency: '60Hz' };
     }
-    
+
     if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
       return { type: 'Type G', voltage: '230V', frequency: '50Hz' };
     }
-    
+
     if (lowerDest.includes('france') || lowerDest.includes('paris')) {
       return { type: 'Type C & E', voltage: '230V', frequency: '50Hz' };
     }
-    
+
     if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
       return { type: 'Type A & B', voltage: '100V', frequency: '50Hz/60Hz' };
     }
-    
+
     // Default fallback
     return { type: 'Various', voltage: 'Check locally', frequency: 'Check locally' };
   };
@@ -620,27 +627,27 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Dynamic emergency numbers based on destination
   const getEmergencyNumbers = (dest: string) => {
     const lowerDest = dest.toLowerCase();
-    
+
     if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
       return { police: '190', fire: '193', medical: '192' };
     }
-    
+
     if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
       return { police: '105', fire: '116', medical: '117' };
     }
-    
+
     if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
       return { police: '999', fire: '999', medical: '999' };
     }
-    
+
     if (lowerDest.includes('france') || lowerDest.includes('paris')) {
       return { police: '17', fire: '18', medical: '15' };
     }
-    
+
     if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
       return { police: '110', fire: '119', medical: '119' };
     }
-    
+
     // Default fallback
     return { police: '911', fire: '911', medical: '911' };
   };
@@ -648,7 +655,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Dynamic transport data based on destination
   const getTransportData = (dest: string) => {
     const lowerDest = dest.toLowerCase();
-    
+
     if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
       return {
         primary: 'Metro',
@@ -658,7 +665,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         card: 'Bilhete Único'
       };
     }
-    
+
     if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
       return {
         primary: 'Metropolitano',
@@ -668,7 +675,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         card: 'Tarjeta Lima'
       };
     }
-    
+
     if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
       return {
         primary: 'Tube',
@@ -678,7 +685,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         card: 'Oyster Card'
       };
     }
-    
+
     // Generic fallback
     return {
       primary: 'Public Transit',
@@ -701,13 +708,13 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     altitude: { elevation: destination.toLowerCase().includes('lima') ? '113m above sea level' : '760m above sea level' },
     holidays: holidayData?.upcomingHolidays || [],
     culture: {
-      language: { 
-        primary: destination.toLowerCase().includes('lima') ? 'Spanish' : 'Portuguese', 
-        secondary: 'English (limited in tourist areas)' 
+      language: {
+        primary: destination.toLowerCase().includes('lima') ? 'Spanish' : 'Portuguese',
+        secondary: 'English (limited in tourist areas)'
       },
-      religion: { 
-        primary: destination.toLowerCase().includes('lima') ? 'Roman Catholic (76%)' : 'Roman Catholic (64.6%)', 
-        secondary: destination.toLowerCase().includes('lima') ? 'Protestant (14%), Other (10%)' : 'Protestant (22.2%), Other (13.2%)' 
+      religion: {
+        primary: destination.toLowerCase().includes('lima') ? 'Roman Catholic (76%)' : 'Roman Catholic (64.6%)',
+        secondary: destination.toLowerCase().includes('lima') ? 'Protestant (14%), Other (10%)' : 'Protestant (22.2%), Other (13.2%)'
       },
       etiquette: [
         'Warm greetings with hugs and kisses on cheek',
@@ -770,9 +777,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     e?.preventDefault();
     if (newDestination && newCheckinDate && newCheckoutDate) {
       // Pass skipTransition as true to avoid loading screen
-      onNewSearch(newDestination, { 
-        checkin: format(newCheckinDate, 'yyyy-MM-dd'), 
-        checkout: format(newCheckoutDate, 'yyyy-MM-dd') 
+      onNewSearch(newDestination, {
+        checkin: format(newCheckinDate, 'yyyy-MM-dd'),
+        checkout: format(newCheckoutDate, 'yyyy-MM-dd')
       }, true);
       setShowSuggestions(false); // Hide suggestions after search
     }
@@ -796,7 +803,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   };
 
   const convertTemp = (temp: number) => {
-    return tempUnit === 'F' ? Math.round((temp * 9/5) + 32) : temp;
+    return tempUnit === 'F' ? Math.round((temp * 9 / 5) + 32) : temp;
   };
 
   const handleAdapterClick = () => {
@@ -822,17 +829,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   // Dynamic cultural data based on destination
   const getCulturalData = (dest: string) => {
     const lowerDest = dest.toLowerCase();
-    
+
     // Peru cultural data
     if (lowerDest.includes('peru') || lowerDest.includes('lima') || lowerDest.includes('cusco') || lowerDest.includes('arequipa')) {
       return {
-        language: { 
-          primary: 'Spanish (84%)', 
-          secondary: 'Quechua (13%), English (limited in tourist areas)' 
+        language: {
+          primary: 'Spanish (84%)',
+          secondary: 'Quechua (13%), English (limited in tourist areas)'
         },
-        religion: { 
-          primary: 'Roman Catholic (76%)', 
-          secondary: 'Protestant (14%), Other (10%)' 
+        religion: {
+          primary: 'Roman Catholic (76%)',
+          secondary: 'Protestant (14%), Other (10%)'
         },
         etiquette: [
           'Warm greetings with handshakes or cheek kisses',
@@ -850,17 +857,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         ]
       };
     }
-    
+
     // Brazil cultural data
     if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo') || lowerDest.includes('rio de janeiro') || lowerDest.includes('salvador')) {
       return {
-        language: { 
-          primary: 'Portuguese (98%)', 
-          secondary: 'English (limited in tourist areas), Spanish (some understanding)' 
+        language: {
+          primary: 'Portuguese (98%)',
+          secondary: 'English (limited in tourist areas), Spanish (some understanding)'
         },
-        religion: { 
-          primary: 'Roman Catholic (64.6%)', 
-          secondary: 'Protestant (22.2%), Spiritism (2%), Other (11.2%)' 
+        religion: {
+          primary: 'Roman Catholic (64.6%)',
+          secondary: 'Protestant (22.2%), Spiritism (2%), Other (11.2%)'
         },
         etiquette: [
           'Warm greetings with hugs and kisses on cheek',
@@ -878,17 +885,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         ]
       };
     }
-    
+
     // United Kingdom cultural data
     if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london') || lowerDest.includes('england') || lowerDest.includes('scotland')) {
       return {
-        language: { 
-          primary: 'English (95%)', 
-          secondary: 'Welsh (1%), Scottish Gaelic (<1%), Various immigrant languages' 
+        language: {
+          primary: 'English (95%)',
+          secondary: 'Welsh (1%), Scottish Gaelic (<1%), Various immigrant languages'
         },
-        religion: { 
-          primary: 'Christianity (46%)', 
-          secondary: 'No religion (37%), Islam (6%), Other (11%)' 
+        religion: {
+          primary: 'Christianity (46%)',
+          secondary: 'No religion (37%), Islam (6%), Other (11%)'
         },
         etiquette: [
           'Polite greetings with firm handshakes',
@@ -906,17 +913,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         ]
       };
     }
-    
+
     // France cultural data
     if (lowerDest.includes('france') || lowerDest.includes('paris') || lowerDest.includes('lyon') || lowerDest.includes('marseille')) {
       return {
-        language: { 
-          primary: 'French (88%)', 
-          secondary: 'Regional languages (Breton, Occitan), English (moderate in tourist areas)' 
+        language: {
+          primary: 'French (88%)',
+          secondary: 'Regional languages (Breton, Occitan), English (moderate in tourist areas)'
         },
-        religion: { 
-          primary: 'Roman Catholic (51%)', 
-          secondary: 'No religion (40%), Islam (5%), Other (4%)' 
+        religion: {
+          primary: 'Roman Catholic (51%)',
+          secondary: 'No religion (40%), Islam (5%), Other (4%)'
         },
         etiquette: [
           'Formal greetings with "Bonjour/Bonsoir"',
@@ -934,17 +941,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         ]
       };
     }
-    
+
     // Japan cultural data
     if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka') || lowerDest.includes('kyoto')) {
       return {
-        language: { 
-          primary: 'Japanese (99%)', 
-          secondary: 'English (limited but improving in tourist areas)' 
+        language: {
+          primary: 'Japanese (99%)',
+          secondary: 'English (limited but improving in tourist areas)'
         },
-        religion: { 
-          primary: 'Shinto (70%)', 
-          secondary: 'Buddhism (69%), Christianity (1.5%) - Many practice both Shinto and Buddhism' 
+        religion: {
+          primary: 'Shinto (70%)',
+          secondary: 'Buddhism (69%), Christianity (1.5%) - Many practice both Shinto and Buddhism'
         },
         etiquette: [
           'Bow when greeting, deeper bow shows more respect',
@@ -962,17 +969,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         ]
       };
     }
-    
+
     // Germany cultural data
     if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich') || lowerDest.includes('hamburg')) {
       return {
-        language: { 
-          primary: 'German (95%)', 
-          secondary: 'English (good in business/tourist areas), Turkish (2%)' 
+        language: {
+          primary: 'German (95%)',
+          secondary: 'English (good in business/tourist areas), Turkish (2%)'
         },
-        religion: { 
-          primary: 'Christianity (54%)', 
-          secondary: 'No religion (38%), Islam (5%), Other (3%)' 
+        religion: {
+          primary: 'Christianity (54%)',
+          secondary: 'No religion (38%), Islam (5%), Other (3%)'
         },
         etiquette: [
           'Firm handshakes with direct eye contact',
@@ -990,7 +997,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         ]
       };
     }
-    
+
     // Return null if no cultural data available for destination
     return null;
   };
@@ -1017,9 +1024,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
                     {destination}
                     {getCountryFlag(destination) ? (
-                      <img 
-                        src={getCountryFlag(destination)!} 
-                        alt="Country Flag" 
+                      <img
+                        src={getCountryFlag(destination)!}
+                        alt="Country Flag"
                         className="w-8 h-6 ml-3 mr-2 rounded shadow-sm"
                       />
                     ) : (
@@ -1161,7 +1168,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   </div>
                 )}
               </div>
-              
+
               {/* Date Inputs */}
               <div className="flex gap-1">
                 <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
@@ -1186,7 +1193,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     />
                   </PopoverContent>
                 </Popover>
-                
+
                 <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                   <PopoverTrigger asChild>
                     <Button
@@ -1231,7 +1238,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
         {/* Optimized Widget Grid Layout */}
         <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-6">
-          
+
           {/* Row 1: Primary Info Widgets - Reordered as requested */}
           {/* Time Zone - First position */}
           <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
@@ -1403,206 +1410,32 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             />
           </div>
 
-          {/* Transportation - Now Dynamic */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center mr-2">
-                  <Car className="w-4 h-4 text-white" />
-                </div>
-                Transport
-                <Car className="w-3 h-3 ml-auto text-indigo-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700 text-sm">{transportData.primary}</div>
-                  <div className="text-xs text-muted-foreground">Network</div>
-                </div>
-                <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
-                  <div className="font-medium text-indigo-700 text-sm">{transportData.secondary}</div>
-                  <div className="text-xs text-muted-foreground">Available</div>
-                </div>
-              </div>
-              <div className="text-xs space-y-1">
-                <p><span className="font-medium">Transit pass:</span> {transportData.metroPass}</p>
-                <p><span className="font-medium">Bus fare:</span> {transportData.busFare}</p>
-                <p><span className="font-medium">Card:</span> {transportData.card}</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Transportation Widget */}
+          <TransportWidget transportData={transportData} />
 
-          {/* Local Holidays - Enhanced with Time and Date API */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
-                  <CalendarDays className="w-4 h-4 text-white" />
-                </div>
-                Holidays
-                <Mountain className="w-3 h-3 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {isLoadingHolidays ? (
-                <div className="flex justify-center items-center p-4">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-purple-400"></div>
-                </div>
-              ) : (
-                <>
-                  {holidayData && holidayData.upcomingHolidays.length > 0 ? (
-                    <>
-                      <div className="text-xs text-purple-300 mb-2 font-medium">
-                        During your trip to {destination}:
-                      </div>
-                      {holidayData.upcomingHolidays.map((holiday, idx) => (
-                        <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                          <div className="font-medium text-purple-300 text-sm">{holiday.name}</div>
-                          <div className="text-xs text-muted-foreground flex justify-between">
-                            <span>
-                              {new Date(holiday.date).toLocaleDateString('en-US', { 
-                                month: 'long', 
-                                day: 'numeric',
-                                year: 'numeric'
-                              })}
-                            </span>
-                            {holiday.region && holiday.region !== 'National' && (
-                              <span className="text-purple-400">
-                                {holiday.region}
-                              </span>
-                            )}
-                          </div>
-                          {holiday.type && (
-                            <div className="text-xs text-purple-400 mt-1">
-                              {holiday.type === 'national' ? 'National' : holiday.type}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {holidayData.source && (
-                        <div className="text-xs text-muted-foreground mt-2">
-                          Source: {holidayData.source === 'timeanddate' ? 'Time and Date API' : holidayData.source === 'multi-year-fetch' ? 'Multi-year Holiday API' : 'Public Holidays API'}
-                        </div>
-                      )}
-                    </>
-                  ) : (
-                    <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
-                      <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
-                      <div className="text-xs text-muted-foreground">
-                        {format(new Date(dates.checkin), 'MMM dd, yyyy')} - {format(new Date(dates.checkout), 'MMM dd, yyyy')}
-                      </div>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+          {/* Holiday Widget */}
+          <HolidayWidget
+            holidayData={holidayData}
+            isLoadingHolidays={isLoadingHolidays}
+            destination={destination}
+            dates={dates}
+          />
         </div>
 
         {/* Row 3: Secondary Widgets */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-          {/* Power Adapters - Now Dynamic */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-2">
-                  <Plug className="w-4 h-4 text-white" />
-                </div>
-                Power
-                <Zap className="w-3 h-3 ml-auto text-yellow-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div 
-                className="text-center p-3 bg-yellow-500/10 border border-yellow-500/20 rounded-xl cursor-pointer perspective-1000"
-                onClick={handleAdapterClick}
-              >
-                <div 
-                  className={`w-12 h-16 mx-auto mb-2 relative transition-all duration-1000 transform-gpu ${
-                    isAdapterSpinning ? 'animate-spin rotate-y-180' : 'hover:rotate-y-12 hover:-translate-y-2'
-                  }`}
-                  style={{
-                    background: 'linear-gradient(135deg, #f3f4f6 0%, #d1d5db 50%, #9ca3af 100%)',
-                    boxShadow: `
-                      0 15px 20px -5px rgba(0, 0, 0, 0.1),
-                      0 8px 8px -5px rgba(0, 0, 0, 0.04),
-                      inset 0 1px 0 rgba(255, 255, 255, 0.1)
-                    `,
-                    borderRadius: '6px',
-                    transformStyle: 'preserve-3d',
-                  }}
-                >
-                  <div className="absolute top-2 left-1/2 transform -translate-x-1/2 z-10">
-                    <div className="w-1 h-6 bg-gray-700 rounded-full shadow-md"></div>
-                    <div className="w-1 h-6 bg-gray-700 rounded-full shadow-md mt-1"></div>
-                  </div>
-                </div>
-                <div className="font-bold text-sm text-yellow-400">{powerData.type}</div>
-                <div className="text-xs text-muted-foreground">{powerData.voltage} • {powerData.frequency}</div>
-              </div>
-              <div className="text-xs space-y-1 mt-2">
-                <p><span className="font-medium">Voltage:</span> {powerData.voltage}</p>
-                <p><span className="font-medium">Frequency:</span> {powerData.frequency}</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Power Adapter Widget */}
+          <PowerAdapterWidget
+            powerData={powerData}
+            isAdapterSpinning={isAdapterSpinning}
+            onAdapterClick={handleAdapterClick}
+          />
 
-          {/* Emergency Info - Now Dynamic */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
-                  <Shield className="w-4 h-4 text-white" />
-                </div>
-                Emergency
-                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="grid grid-cols-2 gap-2">
-                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700 text-sm">{emergencyData.police}</div>
-                  <div className="text-xs text-muted-foreground">Police</div>
-                </div>
-                <div className="text-center p-2 bg-red-500/10 border border-red-500/20 rounded-xl">
-                  <div className="font-bold text-red-700 text-sm">{emergencyData.medical}</div>
-                  <div className="text-xs text-muted-foreground">Medical</div>
-                </div>
-              </div>
-              <div className="text-xs space-y-1">
-                <p><span className="font-medium">Fire:</span> {emergencyData.fire}</p>
-                <p><span className="font-medium">Tourist Info:</span> Check locally</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Emergency Widget */}
+          <EmergencyWidget emergencyData={emergencyData} />
 
-          {/* Connectivity */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-teal-500 to-cyan-600 flex items-center justify-center mr-2">
-                  <Wifi className="w-4 h-4 text-white" />
-                </div>
-                Connectivity
-                <Wifi className="w-3 h-3 ml-auto text-teal-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-2 bg-cyan-500/10 border border-cyan-500/20 rounded-lg">
-                <h4 className="font-medium text-cyan-700 mb-1 text-sm">Free Wi-Fi Spots</h4>
-                <ul className="text-xs text-muted-foreground space-y-1">
-                  <li>• Shopping malls</li>
-                  <li>• Starbucks, McDonald's</li>
-                  <li>• Metro stations (WiFi Livre SP)</li>
-                </ul>
-              </div>
-              <div className="text-xs">
-                <p className="font-medium mb-1">ATM Locations:</p>
-                <p className="text-muted-foreground">Banco do Brasil, Bradesco, Itaú branches. International cards accepted.</p>
-              </div>
-            </CardContent>
-          </Card>
+          {/* Connectivity Widget */}
+          <ConnectivityWidget />
 
           {/* Placeholder for future widget */}
           <div className="hidden xl:block"></div>
@@ -1631,7 +1464,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   </div>
                   <h3 className="text-lg font-semibold mb-2">Accommodation data is currently unavailable for this region.</h3>
                   <p className="text-muted-foreground">
-                    We're working to expand our accommodation mapping to more destinations. 
+                    We're working to expand our accommodation mapping to more destinations.
                     Check back soon for detailed accommodation options for {destination}.
                   </p>
                 </div>
@@ -1667,11 +1500,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                         setSelectedWidgets([...selectedWidgets, widget.id]);
                       }
                     }}
-                    className={`p-3 rounded-xl border transition-all duration-300 travis-interactive ${
-                      isSelected
+                    className={`p-3 rounded-xl border transition-all duration-300 travis-interactive ${isSelected
                         ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
                         : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
-                    }`}
+                      }`}
                   >
                     <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-1`}>
                       <Icon className="w-3 h-3 text-white" />
@@ -1779,7 +1611,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </div>
                 <h3 className="text-lg font-semibold mb-2">Cultural insights are currently unavailable for this destination.</h3>
                 <p className="text-muted-foreground">
-                  We're working to expand our cultural database to include more destinations. 
+                  We're working to expand our cultural database to include more destinations.
                   Check back soon for detailed cultural insights for {destination}.
                 </p>
               </div>
