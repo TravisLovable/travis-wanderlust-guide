@@ -58,7 +58,7 @@ const Index = () => {
     );
   }, []);
 
-  
+
   const handleSearch = (destination: string, dates: { checkin: string; checkout: string }, skipTransition = false) => {
     setSearchData({ destination, dates });
 
@@ -68,6 +68,10 @@ const Index = () => {
     } else {
       setShowLoading(true);
     }
+  };
+  const toggleTheme = () => {
+    setIsDarkMode(!isDarkMode);
+    document.documentElement.classList.toggle('dark');
   };
 
   const handleLoadingComplete = () => {
@@ -131,11 +135,11 @@ const Index = () => {
   // Always wrap the rendered page in the same parent container
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
-      <Header user={user} userProfile={userProfile} isDarkMode={isDarkMode} toggleTheme={() => {}} setIsAuthModalOpen={setIsAuthModalOpen} setCurrentLanguage={setCurrentLanguage} currentLanguage={currentLanguage} />
+      <Header user={user} userProfile={userProfile} isDarkMode={isDarkMode} toggleTheme={toggleTheme} setIsAuthModalOpen={setIsAuthModalOpen} setCurrentLanguage={setCurrentLanguage} currentLanguage={currentLanguage} />
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-        onSignInSuccess={() => {}}
+        onSignInSuccess={() => { }}
       />
       <OnboardingModal
         isOpen={isOnboardingModalOpen}

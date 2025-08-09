@@ -373,10 +373,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     handleSearch();
   };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
+  
 
   const handleDestinationSelect = async (suggestion: any) => {
     // Handle both Mapbox suggestions and static suggestions

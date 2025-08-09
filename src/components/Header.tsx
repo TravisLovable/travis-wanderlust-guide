@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import { Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
@@ -47,10 +46,8 @@ export default function Header({
             <div className="max-w-none mx-auto flex items-center justify-between">
                 <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
                 <div className="flex items-center space-x-2">
-                    {/* User Authentication */}
                     {user ? (
                         <>
-                            {/* Language Selector */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
                                     <Button variant="ghost" size="icon" className="rounded-full">
