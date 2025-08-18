@@ -174,9 +174,9 @@
 .travis-glow-white:hover,
 .travis-glow-white:focus-within {
   box-shadow: 
-    0 0 30px rgba(255, 255, 255, 0.6),
-    0 0 60px rgba(255, 255, 255, 0.4),
-    0 0 90px rgba(255, 255, 255, 0.2),
+    0 0 30px rgba(255, 255, 255, 0.3),
+    0 0 60px rgba(255, 255, 255, 0.2),
+    0 0 90px rgba(255, 255, 255, 0.1)
     0 12px 40px rgba(0, 0, 0, 0.4);
   border-color: rgba(255, 255, 255, 0.6);
 }

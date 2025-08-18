@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 
 interface MapboxFeature {
   id: string;
@@ -47,42 +48,35 @@ export const useMapboxGeocoding = (query: string, enabled: boolean = true) => {
         setIsLoading(true);
         setError(null);
 
-        const encodedQuery = encodeURIComponent(query);
-        const response = await fetch(
-          `/api/mapbox-geocoding?input=${encodedQuery}`
-        );
+        const { data: mapboxData, error: functionError } = await supabase.functions.invoke('mapbox-geocoding', {
+          body: { input: query }
+        });
 
-        if (response.status === 403 || response.status === 401) {
-          console.warn('Mapbox API access denied. Please check your API key.');
-          setHasApiAccess(false);
-          setError('Mapbox API access denied');
-          setSuggestions([]);
-          return;
+        if (functionError) {
+          throw new Error(functionError.message || 'Failed to fetch suggestions');
         }
 
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+        if (!mapboxData) {
+          throw new Error('No data received from Mapbox geocoding function');
         }
 
-        const data: MapboxResponse = await response.json();
-        
         // Filter out very specific addresses and POIs, keep geographic places
-        const filteredSuggestions = data.features.filter(feature => {
+        const filteredSuggestions = mapboxData.features.filter(feature => {
           const placeTypes = feature.place_type;
-          
+
           // Keep geographic places: countries, regions, places (cities/towns), districts, localities
           // Exclude: addresses, POIs, postcode
-          const hasGeoType = placeTypes.some(type => 
+          const hasGeoType = placeTypes.some(type =>
             ['country', 'region', 'place', 'district', 'locality'].includes(type)
           );
-          
-          const hasUnwantedType = placeTypes.some(type => 
+
+          const hasUnwantedType = placeTypes.some(type =>
             ['address', 'poi', 'postcode'].includes(type)
           );
-          
+
           return hasGeoType && !hasUnwantedType;
         });
-        
+
         setSuggestions(filteredSuggestions || []);
       } catch (err) {
         console.error('Mapbox geocoding error:', err);
@@ -99,10 +93,10 @@ export const useMapboxGeocoding = (query: string, enabled: boolean = true) => {
   const getPlaceDetails = async (feature: MapboxFeature): Promise<SelectedPlace | null> => {
     try {
       // Extract country and region from context
-      const countryContext = feature.context?.find(ctx => 
+      const countryContext = feature.context?.find(ctx =>
         ctx.id.startsWith('country.')
       );
-      const regionContext = feature.context?.find(ctx => 
+      const regionContext = feature.context?.find(ctx =>
         ctx.id.startsWith('region.')
       );
 

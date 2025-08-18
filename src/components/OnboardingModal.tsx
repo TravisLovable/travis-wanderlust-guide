@@ -1,5 +1,5 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,6 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCountryData, CountryData } from '@/hooks/useCountryData';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -23,10 +24,11 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
     preferredAirline: '',
     frequentFlyerNumber: '',
     travelType: '',
-    nationality: '',
+    countryData: null as CountryData | null, // New comprehensive country data
     profilePhotoUrl: ''
   });
   const { toast } = useToast();
+  const { countries, isLoading: countriesLoading, error: countriesError } = useCountryData();
 
   const airlines = [
     'American Airlines', 'Delta Air Lines', 'United Airlines', 'Southwest Airlines',
@@ -38,11 +40,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
     'Business', 'Leisure', 'Mixed (Business & Leisure)', 'Adventure', 'Luxury'
   ];
 
-  const countries = [
-    'United States', 'United Kingdom', 'Canada', 'Australia', 'Germany',
-    'France', 'Japan', 'South Korea', 'Brazil', 'Mexico', 'India', 'China',
-    'Netherlands', 'Sweden', 'Norway', 'Denmark', 'Switzerland', 'Other'
-  ];
+  // Countries are now fetched dynamically from the REST Countries API
 
   const handleNext = () => {
     if (step < 5) {
@@ -68,7 +66,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
           preferred_airline: onboardingData.preferredAirline,
           frequent_flyer_number: onboardingData.frequentFlyerNumber,
           travel_type: onboardingData.travelType,
-          nationality: onboardingData.nationality,
+          country_data: onboardingData.countryData, // New comprehensive field
           profile_photo_url: onboardingData.profilePhotoUrl,
           onboarding_completed: true
         });
@@ -79,7 +77,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
         title: "Welcome to Travis!",
         description: "Your profile has been set up successfully.",
       });
-      
+
       onClose();
     } catch (error: any) {
       toast({
@@ -110,7 +108,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
       case 3:
         return onboardingData.travelType !== '';
       case 4:
-        return onboardingData.nationality !== '';
+        return onboardingData.countryData !== null && !countriesLoading;
       case 5:
         return true; // Optional field
       default:
@@ -124,7 +122,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
         return (
           <div>
             <Label>Preferred Airline</Label>
-            <Select value={onboardingData.preferredAirline} onValueChange={(value) => 
+            <Select value={onboardingData.preferredAirline} onValueChange={(value) =>
               setOnboardingData(prev => ({ ...prev, preferredAirline: value }))
             }>
               <SelectTrigger>
@@ -154,7 +152,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
         return (
           <div>
             <Label>Travel Type</Label>
-            <Select value={onboardingData.travelType} onValueChange={(value) => 
+            <Select value={onboardingData.travelType} onValueChange={(value) =>
               setOnboardingData(prev => ({ ...prev, travelType: value }))
             }>
               <SelectTrigger>
@@ -172,16 +170,32 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
         return (
           <div>
             <Label>Passport Country</Label>
-            <Select value={onboardingData.nationality} onValueChange={(value) => 
-              setOnboardingData(prev => ({ ...prev, nationality: value }))
-            }>
+            <Select value={onboardingData.countryData?.code || ''} onValueChange={(value) => {
+              // Find the full country data for the selected code
+              const selectedCountry = countries.find(country => country.code === value);
+              setOnboardingData(prev => ({
+                ...prev,
+                countryData: selectedCountry || null // Store full country data
+              }));
+            }}>
               <SelectTrigger>
                 <SelectValue placeholder="Select your passport country" />
               </SelectTrigger>
               <SelectContent>
-                {countries.map(country => (
-                  <SelectItem key={country} value={country}>{country}</SelectItem>
-                ))}
+                {countriesLoading ? (
+                  <SelectItem value="" disabled>Loading countries...</SelectItem>
+                ) : countriesError ? (
+                  <SelectItem value="" disabled>Error loading countries</SelectItem>
+                ) : (
+                  countries.map(country => (
+                    <SelectItem key={country.code} value={country.code}>
+                      <div className="flex items-center space-x-2">
+                        <img src={country.flag} alt={country.name} className="w-4 h-4" />
+                        <span>{country.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -228,14 +242,14 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
         <DialogHeader>
           <DialogTitle>Complete Your Profile</DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6">
           <div className="text-sm text-muted-foreground">
             Step {step} of 5
           </div>
-          
+
           {renderStep()}
-          
+
           <div className="flex space-x-2">
             {step > 1 && (
               <Button variant="outline" onClick={handleBack} className="flex-1">
@@ -243,16 +257,16 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
               </Button>
             )}
             {step < 5 ? (
-              <Button 
-                onClick={handleNext} 
+              <Button
+                onClick={handleNext}
                 className="flex-1"
                 disabled={!canProceed()}
               >
                 Next
               </Button>
             ) : (
-              <Button 
-                onClick={handleComplete} 
+              <Button
+                onClick={handleComplete}
                 className="flex-1"
                 disabled={isLoading}
               >

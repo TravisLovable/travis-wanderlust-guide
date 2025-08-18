@@ -1,4 +1,10 @@
-export { default as HolidayWidget } from './HolidayWidget';
+export { default as WeatherContainer } from './containers/WeatherContainer';
+export { default as HolidayContainer } from './containers/HolidayContainer';
+export { default as TimeZoneContainer } from './containers/TimeZoneContainer';
+export { default as CurrencyContainer } from './containers/CurrencyContainer';
+export { default as AirportContainer } from './containers/AirportContainer';
+export { default as VisaContainer } from './containers/VisaContainer';
+export { default as CulturalContainer } from './containers/CulturalContainer';
 export { default as TransportWidget } from './TransportWidget';
 export { default as PowerAdapterWidget } from './PowerAdapterWidget';
 export { default as EmergencyWidget } from './EmergencyWidget';

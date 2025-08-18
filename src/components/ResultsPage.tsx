@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Plane, Car, Shield, Wifi, TrendingUp, Users, Zap, Pin, PinOff, Palette, Church, Globe, Heart, Utensils, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Car, Shield, Wifi, TrendingUp, Users, Zap, Pin, PinOff, Palette, Globe, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -12,17 +12,20 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
 import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
-import WeatherWidget from './WeatherWidget';
 import {
-  HolidayWidget,
+  WeatherContainer,
+  HolidayContainer,
+  TimeZoneContainer,
+  CurrencyContainer,
+  AirportContainer,
+  VisaContainer,
+  CulturalContainer,
   TransportWidget,
   PowerAdapterWidget,
   EmergencyWidget,
   ConnectivityWidget
 } from './widgets';
-import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
-import { supabase } from '@/integrations/supabase/client';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
 
 interface ResultsPageProps {
@@ -35,60 +38,10 @@ interface ResultsPageProps {
   onNewSearch: (destination: string, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
 }
 
-interface WorldClockData {
-  origin: {
-    timeZone: string;
-    time: string;
-    time12: string;
-    date: string;
-    fullDateTime: string;
-    isDst: boolean;
-    abbreviation: string;
-  };
-  destination: {
-    timeZone: string;
-    time: string;
-    time12: string;
-    date: string;
-    fullDateTime: string;
-    isDst: boolean;
-    abbreviation: string;
-  };
-  timeDifferenceHours: number;
-  timeDifferenceText: string;
-}
 
-interface HolidayData {
-  country: string;
-  year: number;
-  totalHolidays: number;
-  upcomingHolidays: Array<{
-    date: string;
-    name: string;
-    localName: string;
-    countryCode: string;
-    fixed: boolean;
-    global: boolean;
-    counties: string[] | null;
-    type: string;
-    region?: string;
-  }>;
-  allHolidays: Array<{
-    date: string;
-    name: string;
-    localName: string;
-    countryCode: string;
-    fixed: boolean;
-    global: boolean;
-    counties: string[] | null;
-    type: string;
-    region?: string;
-  }>;
-  source?: string;
-}
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
-  const [currencyAmount, setCurrencyAmount] = useState(100);
+
   const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
   const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
   const [newDestination, setNewDestination] = useState(destination);
@@ -96,14 +49,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
+
   const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(true);
-  const [worldClockData, setWorldClockData] = useState<WorldClockData | null>(null);
-  const [isLoadingWorldClock, setIsLoadingWorldClock] = useState(false);
-  const [holidayData, setHolidayData] = useState<HolidayData | null>(null);
-  const [isLoadingHolidays, setIsLoadingHolidays] = useState(false);
+
 
   // Use Mapbox geocoding for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
@@ -111,8 +61,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     showSuggestions && newDestination.length >= 2
   );
 
-  // Use real currency exchange data with destination-based currency
-  const { currencyData, isLoading: currencyLoading, error: currencyError } = useCurrencyExchange('USD', destination);
+
 
   // Update pinned destinations when destination changes
   useEffect(() => {
@@ -126,292 +75,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     setNewDestination(destination);
   }, [destination]);
 
-  // Fetch world clock data
-  useEffect(() => {
-    const fetchWorldClockData = async () => {
-      setIsLoadingWorldClock(true);
-      try {
-        console.log('Fetching world clock data for:', destination);
 
-        // Get timezone for destination - improved mapping with more destinations
-        const getTimezoneForDestination = (dest: string) => {
-          const lowerDest = dest.toLowerCase();
 
-          // Peru
-          if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-            return 'America/Lima';
-          }
 
-          // South America
-          if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
-            return 'America/Sao_Paulo';
-          }
-
-          if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires')) {
-            return 'America/Argentina/Buenos_Aires';
-          }
-
-          if (lowerDest.includes('chile') || lowerDest.includes('santiago')) {
-            return 'America/Santiago';
-          }
-
-          if (lowerDest.includes('colombia') || lowerDest.includes('bogota')) {
-            return 'America/Bogota';
-          }
-
-          // North America
-          if (lowerDest.includes('chicago')) {
-            return 'America/Chicago';
-          }
-
-          if (lowerDest.includes('new york')) {
-            return 'America/New_York';
-          }
-
-          if (lowerDest.includes('los angeles')) {
-            return 'America/Los_Angeles';
-          }
-
-          if (lowerDest.includes('mexico')) {
-            return 'America/Mexico_City';
-          }
-
-          // Europe
-          if (lowerDest.includes('london')) {
-            return 'Europe/London';
-          }
-
-          if (lowerDest.includes('paris')) {
-            return 'Europe/Paris';
-          }
-
-          // Asia
-          if (lowerDest.includes('bali') || lowerDest.includes('indonesia')) {
-            return 'Asia/Makassar';
-          }
-
-          if (lowerDest.includes('tokyo')) {
-            return 'Asia/Tokyo';
-          }
-
-          // Default fallback
-          return 'UTC';
-        };
-
-        const destinationTimezone = getTimezoneForDestination(destination);
-        const originTimezone = 'America/Chicago'; // User's timezone (CST)
-
-        console.log(`Using timezones: origin=${originTimezone}, destination=${destinationTimezone}`);
-
-        const { data, error } = await supabase.functions.invoke('get-world-clock', {
-          body: {
-            originTimeZone: originTimezone,
-            destinationTimeZone: destinationTimezone
-          }
-        });
-
-        if (error) {
-          console.error('Error fetching world clock data:', error);
-          throw error;
-        }
-
-        console.log('World clock data received:', data);
-        setWorldClockData(data);
-      } catch (error) {
-        console.error('Failed to fetch world clock data:', error);
-        // Keep existing mock data as fallback
-      } finally {
-        setIsLoadingWorldClock(false);
-      }
-    };
-
-    fetchWorldClockData();
-  }, [destination]);
-
-  // Fetch holiday data - Updated to handle multiple years
-  useEffect(() => {
-    const fetchHolidayData = async () => {
-      setIsLoadingHolidays(true);
-      try {
-        console.log('Fetching holiday data for:', destination);
-
-        // Get country code for destination - improved mapping
-        const getCountryCodeForDestination = (dest: string) => {
-          const lowerDest = dest.toLowerCase();
-
-          // Map destinations to ISO country codes
-          if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro') || lowerDest.includes('salvador') || lowerDest.includes('brasília')) {
-            return 'BR';
-          }
-          if (lowerDest.includes('peru') || lowerDest.includes('lima') || lowerDest.includes('cusco') || lowerDest.includes('arequipa') || lowerDest.includes('trujillo')) {
-            return 'PE';
-          }
-          if (lowerDest.includes('united states') || lowerDest.includes('usa') || lowerDest.includes('chicago') || lowerDest.includes('new york') || lowerDest.includes('los angeles') || lowerDest.includes('miami')) {
-            return 'US';
-          }
-          if (lowerDest.includes('united kingdom') || lowerDest.includes('uk') || lowerDest.includes('london') || lowerDest.includes('manchester') || lowerDest.includes('edinburgh')) {
-            return 'GB';
-          }
-          if (lowerDest.includes('france') || lowerDest.includes('paris') || lowerDest.includes('lyon') || lowerDest.includes('marseille')) {
-            return 'FR';
-          }
-          if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich') || lowerDest.includes('hamburg')) {
-            return 'DE';
-          }
-          if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka') || lowerDest.includes('kyoto')) {
-            return 'JP';
-          }
-          if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan') || lowerDest.includes('florence')) {
-            return 'IT';
-          }
-          if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona') || lowerDest.includes('seville')) {
-            return 'ES';
-          }
-          if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver') || lowerDest.includes('montreal')) {
-            return 'CA';
-          }
-          if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne') || lowerDest.includes('brisbane')) {
-            return 'AU';
-          }
-          if (lowerDest.includes('mexico') || lowerDest.includes('mexico city') || lowerDest.includes('cancun') || lowerDest.includes('guadalajara')) {
-            return 'MX';
-          }
-          if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires') || lowerDest.includes('cordoba') || lowerDest.includes('mendoza')) {
-            return 'AR';
-          }
-          if (lowerDest.includes('chile') || lowerDest.includes('santiago') || lowerDest.includes('valparaiso')) {
-            return 'CL';
-          }
-          if (lowerDest.includes('colombia') || lowerDest.includes('bogota') || lowerDest.includes('medellin') || lowerDest.includes('cartagena')) {
-            return 'CO';
-          }
-
-          // Default fallback - try to extract country code from destination string
-          const parts = dest.split(',');
-          if (parts.length > 1) {
-            const lastPart = parts[parts.length - 1].trim();
-            // Simple country name to code mapping
-            const countryMap: { [key: string]: string } = {
-              'Brazil': 'BR',
-              'Peru': 'PE',
-              'United States': 'US',
-              'USA': 'US',
-              'United Kingdom': 'GB',
-              'UK': 'GB',
-              'France': 'FR',
-              'Germany': 'DE',
-              'Japan': 'JP',
-              'Italy': 'IT',
-              'Spain': 'ES',
-              'Canada': 'CA',
-              'Australia': 'AU',
-              'Mexico': 'MX',
-              'Argentina': 'AR',
-              'Chile': 'CL',
-              'Colombia': 'CO'
-            };
-            return countryMap[lastPart] || 'US'; // Default to US if no match
-          }
-
-          return 'US'; // Final fallback
-        };
-
-        const countryCode = getCountryCodeForDestination(destination);
-        const checkinDate = new Date(dates.checkin);
-        const checkoutDate = new Date(dates.checkout);
-        const startYear = checkinDate.getFullYear();
-        const endYear = checkoutDate.getFullYear();
-
-        console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destination}`);
-        console.log(`Travel dates span from ${startYear} to ${endYear}`);
-
-        // Fetch holidays for all years in the travel date range
-        const years = [];
-        for (let year = startYear; year <= endYear; year++) {
-          years.push(year);
-        }
-
-        console.log('Years to fetch:', years);
-
-        // Fetch holidays for each year
-        const allHolidaysData = [];
-        for (const year of years) {
-          try {
-            console.log(`Fetching holidays for year ${year}`);
-            const { data, error } = await supabase.functions.invoke('get-holidays', {
-              body: {
-                country: countryCode,
-                year: year
-              }
-            });
-
-            if (error) {
-              console.error(`Error fetching holiday data for ${year}:`, error);
-              continue;
-            }
-
-            if (data && data.allHolidays) {
-              console.log(`Got ${data.allHolidays.length} holidays for ${year}`);
-              allHolidaysData.push(...data.allHolidays);
-            }
-          } catch (yearError) {
-            console.error(`Failed to fetch holidays for year ${year}:`, yearError);
-          }
-        }
-
-        console.log(`Total holidays fetched across all years: ${allHolidaysData.length}`);
-
-        // Filter holidays to show ONLY holidays that fall within the travel period
-        if (allHolidaysData.length > 0) {
-          console.log('Travel dates:', {
-            checkin: checkinDate.toISOString().split('T')[0],
-            checkout: checkoutDate.toISOString().split('T')[0]
-          });
-
-          // Filter to show ONLY holidays that fall within the exact travel dates
-          const relevantHolidays = allHolidaysData.filter((holiday: any) => {
-            const holidayDate = new Date(holiday.date);
-            const isWithinTravelDates = holidayDate >= checkinDate && holidayDate <= checkoutDate;
-
-            console.log(`Holiday ${holiday.name} (${holiday.date}): ${isWithinTravelDates ? 'WITHIN TRAVEL DATES' : 'OUTSIDE TRAVEL DATES'}`);
-
-            return isWithinTravelDates;
-          });
-
-          console.log('Holidays within travel dates:', relevantHolidays);
-
-          // Update the data with filtered holidays
-          const updatedData = {
-            country: countryCode,
-            year: startYear, // Use start year as primary
-            totalHolidays: relevantHolidays.length,
-            upcomingHolidays: relevantHolidays.slice(0, 10), // Show up to 10 holidays within travel dates
-            allHolidays: relevantHolidays,
-            source: 'multi-year-fetch'
-          };
-
-          setHolidayData(updatedData);
-        } else {
-          // No holidays found
-          setHolidayData({
-            country: countryCode,
-            year: startYear,
-            totalHolidays: 0,
-            upcomingHolidays: [],
-            allHolidays: [],
-            source: 'multi-year-fetch'
-          });
-        }
-      } catch (error) {
-        console.error('Failed to fetch holiday data:', error);
-        // Keep existing fallback data if API fails
-      } finally {
-        setIsLoadingHolidays(false);
-      }
-    };
-
-    fetchHolidayData();
-  }, [destination, dates.checkin, dates.checkout]);
 
   // Dynamic flag mapping based on destination
   const getCountryFlag = (dest: string) => {
@@ -702,52 +368,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const emergencyData = getEmergencyNumbers(destination);
   const transportData = getTransportData(destination);
 
-  // Dynamic mock data based on destination (removed hardcoded Brazil references)
-  const mockData = {
-    time: { current: '14:42', offset: '-3', dst: false },
-    altitude: { elevation: destination.toLowerCase().includes('lima') ? '113m above sea level' : '760m above sea level' },
-    holidays: holidayData?.upcomingHolidays || [],
-    culture: {
-      language: {
-        primary: destination.toLowerCase().includes('lima') ? 'Spanish' : 'Portuguese',
-        secondary: 'English (limited in tourist areas)'
-      },
-      religion: {
-        primary: destination.toLowerCase().includes('lima') ? 'Roman Catholic (76%)' : 'Roman Catholic (64.6%)',
-        secondary: destination.toLowerCase().includes('lima') ? 'Protestant (14%), Other (10%)' : 'Protestant (22.2%), Other (13.2%)'
-      },
-      etiquette: [
-        'Warm greetings with hugs and kisses on cheek',
-        'Dress well, appearance matters',
-        'Avoid discussing politics initially',
-        destination.toLowerCase().includes('lima') ? 'Always say "gracias" (thank you)' : 'Always say "obrigado/obrigada" (thank you)',
-        'Family values are very important'
-      ],
-      customs: [
-        'Late dining (8-10 PM is normal)',
-        'Strong coffee culture throughout day',
-        destination.toLowerCase().includes('lima') ? 'Food culture is central to identity' : 'Soccer (futebol) is a national passion',
-        'Music and dance are central to culture'
-      ]
-    }
-  };
 
-  const fourteenDayForecast = [
-    { day: 'Today', temp: 24, condition: 'Partly Cloudy' },
-    { day: 'Tomorrow', temp: 26, condition: 'Sunny' },
-    { day: 'Wed', temp: 22, condition: 'Rainy' },
-    { day: 'Thu', temp: 28, condition: 'Sunny' },
-    { day: 'Fri', temp: 25, condition: 'Cloudy' },
-    { day: 'Sat', temp: 27, condition: 'Sunny' },
-    { day: 'Sun', temp: 23, condition: 'Rainy' },
-    { day: 'Mon', temp: 29, condition: 'Sunny' },
-    { day: 'Tue', temp: 24, condition: 'Partly Cloudy' },
-    { day: 'Wed', temp: 26, condition: 'Sunny' },
-    { day: 'Thu', temp: 25, condition: 'Cloudy' },
-    { day: 'Fri', temp: 30, condition: 'Sunny' },
-    { day: 'Sat', temp: 23, condition: 'Rainy' },
-    { day: 'Sun', temp: 27, condition: 'Partly Cloudy' }
-  ];
+
+
 
   const widgetOptions = [
     { id: 'currency', name: 'Currency', icon: CreditCard, color: 'from-green-500 to-emerald-600' },
@@ -802,9 +425,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     setPinnedDestinations(pinnedDestinations.filter(d => d !== dest));
   };
 
-  const convertTemp = (temp: number) => {
-    return tempUnit === 'F' ? Math.round((temp * 9 / 5) + 32) : temp;
-  };
+
 
   const handleAdapterClick = () => {
     setIsAdapterSpinning(!isAdapterSpinning);
@@ -826,184 +447,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     window.location.href = '/auth';
   };
 
-  // Dynamic cultural data based on destination
-  const getCulturalData = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
 
-    // Peru cultural data
-    if (lowerDest.includes('peru') || lowerDest.includes('lima') || lowerDest.includes('cusco') || lowerDest.includes('arequipa')) {
-      return {
-        language: {
-          primary: 'Spanish (84%)',
-          secondary: 'Quechua (13%), English (limited in tourist areas)'
-        },
-        religion: {
-          primary: 'Roman Catholic (76%)',
-          secondary: 'Protestant (14%), Other (10%)'
-        },
-        etiquette: [
-          'Warm greetings with handshakes or cheek kisses',
-          'Dress modestly, especially in religious sites',
-          'Always say "gracias" and "por favor"',
-          'Respect indigenous customs and traditions',
-          'Family and community values are very important'
-        ],
-        customs: [
-          'Late dining (8-10 PM is common)',
-          'Strong coffee culture and chicha consumption',
-          'Food culture is central to Peruvian identity',
-          'Music and dance vary by region (marinera, huayno)',
-          'Pachamama (Mother Earth) reverence in Andean areas'
-        ]
-      };
-    }
-
-    // Brazil cultural data
-    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo') || lowerDest.includes('rio de janeiro') || lowerDest.includes('salvador')) {
-      return {
-        language: {
-          primary: 'Portuguese (98%)',
-          secondary: 'English (limited in tourist areas), Spanish (some understanding)'
-        },
-        religion: {
-          primary: 'Roman Catholic (64.6%)',
-          secondary: 'Protestant (22.2%), Spiritism (2%), Other (11.2%)'
-        },
-        etiquette: [
-          'Warm greetings with hugs and kisses on cheek',
-          'Dress well, appearance matters culturally',
-          'Always say "obrigado/obrigada" (thank you)',
-          'Avoid discussing politics initially',
-          'Personal space is smaller than North American norm'
-        ],
-        customs: [
-          'Late dining (8-10 PM is normal)',
-          'Strong coffee culture throughout day',
-          'Soccer (futebol) is a national passion',
-          'Carnival and festa culture year-round',
-          'Music and dance are central to social life'
-        ]
-      };
-    }
-
-    // United Kingdom cultural data
-    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london') || lowerDest.includes('england') || lowerDest.includes('scotland')) {
-      return {
-        language: {
-          primary: 'English (95%)',
-          secondary: 'Welsh (1%), Scottish Gaelic (<1%), Various immigrant languages'
-        },
-        religion: {
-          primary: 'Christianity (46%)',
-          secondary: 'No religion (37%), Islam (6%), Other (11%)'
-        },
-        etiquette: [
-          'Polite greetings with firm handshakes',
-          'Queueing (waiting in line) is very important',
-          'Always say "please," "thank you," and "sorry"',
-          'Avoid discussing personal income or politics',
-          'Punctuality is highly valued'
-        ],
-        customs: [
-          'Tea culture and afternoon tea traditions',
-          'Pub culture for socializing',
-          'Weather is a common conversation topic',
-          'Royal family and traditions are respected',
-          'Dry humor and understatement are common'
-        ]
-      };
-    }
-
-    // France cultural data
-    if (lowerDest.includes('france') || lowerDest.includes('paris') || lowerDest.includes('lyon') || lowerDest.includes('marseille')) {
-      return {
-        language: {
-          primary: 'French (88%)',
-          secondary: 'Regional languages (Breton, Occitan), English (moderate in tourist areas)'
-        },
-        religion: {
-          primary: 'Roman Catholic (51%)',
-          secondary: 'No religion (40%), Islam (5%), Other (4%)'
-        },
-        etiquette: [
-          'Formal greetings with "Bonjour/Bonsoir"',
-          'Dress elegantly, style is important',
-          'Always greet shopkeepers when entering',
-          'Use formal "vous" until invited to use "tu"',
-          'Food and meal times are sacred'
-        ],
-        customs: [
-          'Long lunch breaks and late dinners',
-          'Wine culture and appreciation',
-          'Café culture for socializing',
-          'Art, literature, and philosophy valued',
-          'Strikes and protests are common forms of expression'
-        ]
-      };
-    }
-
-    // Japan cultural data
-    if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka') || lowerDest.includes('kyoto')) {
-      return {
-        language: {
-          primary: 'Japanese (99%)',
-          secondary: 'English (limited but improving in tourist areas)'
-        },
-        religion: {
-          primary: 'Shinto (70%)',
-          secondary: 'Buddhism (69%), Christianity (1.5%) - Many practice both Shinto and Buddhism'
-        },
-        etiquette: [
-          'Bow when greeting, deeper bow shows more respect',
-          'Remove shoes when entering homes and some establishments',
-          'Quiet behavior on public transportation',
-          'Gift-giving is important with proper wrapping',
-          'Punctuality is extremely important'
-        ],
-        customs: [
-          'Group harmony (wa) over individual expression',
-          'Tea ceremony and traditional arts valued',
-          'Seasonal awareness and appreciation',
-          'Work-life balance changing but long hours common',
-          'Technology integration in daily life'
-        ]
-      };
-    }
-
-    // Germany cultural data
-    if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich') || lowerDest.includes('hamburg')) {
-      return {
-        language: {
-          primary: 'German (95%)',
-          secondary: 'English (good in business/tourist areas), Turkish (2%)'
-        },
-        religion: {
-          primary: 'Christianity (54%)',
-          secondary: 'No religion (38%), Islam (5%), Other (3%)'
-        },
-        etiquette: [
-          'Firm handshakes with direct eye contact',
-          'Punctuality is extremely important',
-          'Direct communication style, honest feedback',
-          'Use titles and formal address initially',
-          'Quiet hours (Ruhezeit) respected in residential areas'
-        ],
-        customs: [
-          'Beer culture and beer gardens',
-          'Bread and pretzel traditions',
-          'Environmental consciousness and recycling',
-          'Work-life balance and vacation time valued',
-          'Christmas markets and seasonal celebrations'
-        ]
-      };
-    }
-
-    // Return null if no cultural data available for destination
-    return null;
-  };
-
-  // Get cultural data for current destination
-  const culturalData = getCulturalData(destination);
 
   return (
     <div className="min-h-screen bg-gray-400 dark:bg-black">
@@ -1241,172 +685,24 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
           {/* Row 1: Primary Info Widgets - Reordered as requested */}
           {/* Time Zone - First position */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-2">
-                  <Clock className="w-4 h-4 text-white" />
-                </div>
-                Time Zone
-                <Zap className="w-3 h-3 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              {isLoadingWorldClock ? (
-                <div className="flex justify-center items-center p-4">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="grid grid-cols-2 gap-2">
-                    <div className="text-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                      <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
-                      <div className="text-lg font-bold text-blue-400">
-                        {worldClockData?.origin.time12 || '4:50 PM'}
-                      </div>
-                      <div className="text-xs text-muted-foreground opacity-75">
-                        {worldClockData?.origin.time || '16:50'}
-                      </div>
-                      <div className="text-xs text-muted-foreground font-mono mt-1">
-                        {worldClockData?.origin.abbreviation || 'CST'}
-                      </div>
-                    </div>
-                    <div className="text-center p-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                      <div className="text-xs text-muted-foreground mb-1 font-medium uppercase">
-                        {destination.split(',')[0]}
-                      </div>
-                      <div className="text-lg font-bold text-blue-300">
-                        {worldClockData?.destination.time12 || '4:50 PM'}
-                      </div>
-                      <div className="text-xs text-muted-foreground opacity-75">
-                        {worldClockData?.destination.time || '16:50'}
-                      </div>
-                      <div className="text-xs text-muted-foreground font-mono mt-1">
-                        {worldClockData?.destination.abbreviation || 'PET'}
-                      </div>
-                    </div>
-                  </div>
-                  {worldClockData && (
-                    <div className="flex items-center justify-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                      <Clock className="w-3 h-3 mr-1 text-blue-400" />
-                      <span className="text-xs text-blue-400 font-medium">
-                        {worldClockData.timeDifferenceText}
-                      </span>
-                    </div>
-                  )}
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <TimeZoneContainer destination={destination} />
 
           {/* Currency - Second position */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-2">
-                  <CreditCard className="w-4 h-4 text-white" />
-                </div>
-                Currency
-                <TrendingUp className="w-3 h-3 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-2">
-              {currencyLoading ? (
-                <div className="flex justify-center items-center p-4">
-                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-400"></div>
-                </div>
-              ) : (
-                <>
-                  <div className="flex justify-between items-center p-2 bg-green-500/10 border border-green-500/20 rounded-xl">
-                    <span className="font-semibold text-sm">1 USD</span>
-                    <span className="text-green-400 font-bold text-sm">
-                      {currencyData?.rate.toFixed(2)} {currencyData?.symbol}
-                    </span>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <Input
-                      type="number"
-                      value={currencyAmount}
-                      onChange={(e) => setCurrencyAmount(Number(e.target.value))}
-                      className="flex-1 bg-secondary/30 border-border/50 focus:border-green-400 rounded-xl h-8 text-sm"
-                    />
-                    <span className="text-green-400 font-semibold text-sm">
-                      = {currencyData?.symbol}{currencyData ? (currencyAmount * currencyData.rate).toFixed(2) : '-.--'}
-                    </span>
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    {currencyError ? (
-                      <span className="text-orange-400">API Error - Using fallback</span>
-                    ) : (
-                      `Live rate • ${currencyData?.lastUpdated}`
-                    )}
-                  </div>
-                </>
-              )}
-            </CardContent>
-          </Card>
+          <CurrencyContainer destination={destination} />
 
           {/* Airport Info - Third position - Now Dynamic */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
-                  <Plane className="w-4 h-4 text-white" />
-                </div>
-                Airport
-                <Plane className="w-3 h-3 ml-auto text-purple-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-                <div className="font-bold text-lg text-purple-700">{airportData.code}</div>
-                <div className="text-sm font-medium">{airportData.name}</div>
-                <div className="text-xs text-muted-foreground">{airportData.address}</div>
-              </div>
-              <div className="text-xs space-y-1">
-                <p><span className="font-medium">Distance:</span> {airportData.distance}</p>
-                <p><span className="font-medium">Travel time:</span> {airportData.travelTime}</p>
-                <p><span className="font-medium">Options:</span> {airportData.options}</p>
-              </div>
-            </CardContent>
-          </Card>
+          <AirportContainer destination={destination} />
 
           {/* Visa & Entry - Fourth position */}
-          <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center text-lg font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
-                  <Shield className="w-4 h-4 text-white" />
-                </div>
-                Visa & Entry
-                <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-3">
-              <div className="p-2 bg-green-500/10 border border-green-500/20 rounded-lg">
-                <div className="text-green-700 font-medium text-sm">✓ Visa-free entry</div>
-                <div className="text-xs text-muted-foreground">For US passport holders</div>
-              </div>
-              <div className="text-xs space-y-1">
-                <p><span className="font-medium">Max stay:</span> 90 days</p>
-                <p><span className="font-medium">Passport validity:</span> 6 months minimum</p>
-                <p><span className="font-medium">Yellow fever:</span> Vaccination recommended</p>
-              </div>
-              <Button variant="outline" size="sm" className="w-full text-xs">
-                View Requirements
-              </Button>
-            </CardContent>
-          </Card>
+          <VisaContainer destination={destination} />
         </div>
 
         {/* Row 2: Weather Widget - Integrated into grid */}
         <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
           {/* Weather Widget - Takes 2 columns on larger screens */}
           <div className="lg:col-span-2 xl:col-span-2">
-            <WeatherWidget
+            <WeatherContainer
               destination={destination}
-              tempUnit={tempUnit}
-              onTempUnitToggle={() => setTempUnit(tempUnit === 'C' ? 'F' : 'C')}
             />
           </div>
 
@@ -1414,9 +710,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           <TransportWidget transportData={transportData} />
 
           {/* Holiday Widget */}
-          <HolidayWidget
-            holidayData={holidayData}
-            isLoadingHolidays={isLoadingHolidays}
+          <HolidayContainer
             destination={destination}
             dates={dates}
           />
@@ -1501,8 +795,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       }
                     }}
                     className={`p-3 rounded-xl border transition-all duration-300 travis-interactive ${isSelected
-                        ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
-                        : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
+                      ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
+                      : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
                       }`}
                   >
                     <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-1`}>
@@ -1522,102 +816,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         </Card>
 
         {/* Cultural Insights Section - Now fully dynamic */}
-        {culturalData ? (
-          <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-2">
-                  <Globe className="w-4 h-4 text-white" />
-                </div>
-                Cultural Insights
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                {/* Language */}
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
-                      <Globe className="w-3 h-3 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-sm text-blue-700">Language</h3>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs"><span className="font-medium">Primary:</span> {culturalData.language.primary}</p>
-                    <p className="text-xs"><span className="font-medium">Secondary:</span> {culturalData.language.secondary}</p>
-                  </div>
-                </div>
-
-                {/* Religion */}
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
-                      <Church className="w-3 h-3 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-sm text-purple-700">Religion</h3>
-                  </div>
-                  <div className="space-y-1">
-                    <p className="text-xs"><span className="font-medium">Primary:</span> {culturalData.religion.primary}</p>
-                    <p className="text-xs"><span className="font-medium">Other:</span> {culturalData.religion.secondary}</p>
-                  </div>
-                </div>
-
-                {/* Cultural Etiquette */}
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                      <Heart className="w-3 h-3 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-sm text-green-700">Etiquette</h3>
-                  </div>
-                  <div className="space-y-1">
-                    {culturalData.etiquette.slice(0, 3).map((rule, idx) => (
-                      <p key={idx} className="text-xs text-muted-foreground">• {rule}</p>
-                    ))}
-                  </div>
-                </div>
-
-                {/* Local Customs */}
-                <div className="space-y-2">
-                  <div className="flex items-center space-x-2">
-                    <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                      <Utensils className="w-3 h-3 text-white" />
-                    </div>
-                    <h3 className="font-semibold text-sm text-orange-700">Customs</h3>
-                  </div>
-                  <div className="space-y-1">
-                    {culturalData.customs.slice(0, 3).map((custom, idx) => (
-                      <p key={idx} className="text-xs text-muted-foreground">• {custom}</p>
-                    ))}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ) : (
-          <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-3">
-              <CardTitle className="flex items-center text-xl font-semibold">
-                <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mr-2">
-                  <Globe className="w-4 h-4 text-white" />
-                </div>
-                Cultural Insights
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="text-center py-8">
-                <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
-                  <Globe className="w-6 h-6 text-white" />
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Cultural insights are currently unavailable for this destination.</h3>
-                <p className="text-muted-foreground">
-                  We're working to expand our cultural database to include more destinations.
-                  Check back soon for detailed cultural insights for {destination}.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+        <CulturalContainer destination={destination} />
       </main>
     </div>
   );

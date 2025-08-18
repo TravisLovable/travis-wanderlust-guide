@@ -13,24 +13,37 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url)
-    const input = url.searchParams.get('input')
-    
+    let input = url.searchParams.get('input')
+
+    // Also support POST with JSON body: { input: "..." }
+    if (!input && req.method !== 'GET') {
+      try {
+        const body = await req.json()
+        input = body?.input
+      } catch (_) {
+        // ignore JSON parse error; will fall through to 400 below
+      }
+    }
+
     if (!input) {
       return new Response(
         JSON.stringify({ error: 'Input parameter is required' }),
-        { 
-          status: 400, 
+        {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
     }
 
     const apiKey = Deno.env.get('MAPBOX_API_KEY')
+    console.log('API Key length:', apiKey ? apiKey.length : 'undefined')
+    console.log('API Key starts with:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined')
+
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'Mapbox API key not configured' }),
-        { 
-          status: 500, 
+        {
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -50,7 +63,7 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(data),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
@@ -58,8 +71,8 @@ serve(async (req) => {
     console.error('Mapbox geocoding error:', error)
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
+      {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )

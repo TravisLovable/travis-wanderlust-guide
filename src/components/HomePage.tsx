@@ -3,12 +3,6 @@ import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-rea
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import {
   Popover,
   PopoverContent,
   PopoverTrigger,
@@ -16,12 +10,11 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { supabase } from '@/integrations/supabase/client';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
-import AuthModal from './AuthModal';
 import OnboardingModal from './OnboardingModal';
-import UserProfileDropdown from './UserProfileDropdown';
-import Header from './Header';
+import { useToast } from '@/hooks/use-toast';
+import CountryTest from './CountryTest';
+
 
 interface HomePageProps {
   onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
@@ -46,6 +39,16 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
+  const [isSearchDisabled, setIsSearchDisabled] = useState(true);
+  useEffect(() => {
+    if (destination && checkinDate && checkoutDate) {
+      setIsSearchDisabled(false);
+    } else {
+      setIsSearchDisabled(true);
+    }
+  }, [destination, checkinDate, checkoutDate]);
+
+
   // Use Mapbox for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
     destination,
@@ -68,16 +71,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
 
 
-  const languages = [
-    { code: 'en', name: 'English', flag: '🇺🇸' },
-    { code: 'zh', name: 'Mandarin', flag: '🇨🇳' },
-    { code: 'ja', name: 'Japanese', flag: '🇯🇵' },
-    { code: 'it', name: 'Italian', flag: '🇮🇹' },
-    { code: 'es', name: 'Spanish', flag: '🇪🇸' },
-    { code: 'fr', name: 'French', flag: '🇫🇷' },
-    { code: 'xh', name: 'Xhosa', flag: '🇿🇦' },
-    { code: 'af', name: 'Afrikaans', flag: '🇿🇦' }
-  ];
+
 
   // Language translations
   const translations = {
@@ -347,6 +341,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
   const suggestions = hasApiAccess && mapboxSuggestions.length > 0 ? mapboxSuggestions : [];
   const fallbackSuggestions = !hasApiAccess || mapboxSuggestions.length === 0 ? staticSuggestions : [];
+  const { toast } = useToast();
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -355,6 +350,14 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         checkin: format(checkinDate, 'yyyy-MM-dd'),
         checkout: format(checkoutDate, 'yyyy-MM-dd')
       }, selectedPlace || undefined);
+    } else {
+      toast({
+        title: 'Please fill in all fields',
+        description: 'Location and Departure Date are required',
+        variant: 'destructive',
+        className: 'bg-black text-white'
+      });
+
     }
   };
 
@@ -373,7 +376,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     handleSearch();
   };
 
-  
+
 
   const handleDestinationSelect = async (suggestion: any) => {
     // Handle both Mapbox suggestions and static suggestions
@@ -417,8 +420,8 @@ const HomePage = ({ onSearch }: HomePageProps) => {
       </div>
 
       {/* Header with reduced padding */}
-     
-     
+
+
 
       {/* Main Content with reduced padding */}
       <main className="flex-1 flex items-center justify-center px-3 py-6 relative z-10">
@@ -446,7 +449,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           {/* Interactive Search Bar - removed fade-in animation */}
           <div className="mb-8 max-w-5xl mx-auto">
             <div
-              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:dark:shadow-white/20 hover:dark:shadow-2xl transition-all duration-300 cursor-pointer group"
+              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:shadow-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group"
               onClick={handleBarClick}
               onKeyDown={handleKeyPress}
               tabIndex={0}
@@ -589,9 +592,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 </div>
 
                 {/* Right Arrow Icon */}
-                <div className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300">
+                <button
+                  className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={isSearchDisabled} onClick={handleSearch}>
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
-                </div>
+                </button>
               </div>
             </div>
           </div>
@@ -604,6 +609,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
           </div>
         </div>
       </main>
+
+
+
+      {/* <CountryTest /> */}
 
       {/* Footer with reduced padding */}
       <footer className="px-3 py-4 border-t border-border/30 relative z-10">
