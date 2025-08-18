@@ -9,6 +9,17 @@ interface WeatherData {
     location: string;
     isLoading: boolean;
     error: string | null;
+    userCountry?: any;
+    homeWeather?: {
+        country: string;
+        region: string;
+        timezone: string;
+        insights?: {
+            isWarmer: boolean;
+            isColder: boolean;
+            seasonalContext: string;
+        };
+    } | null;
 }
 
 interface WeatherPresenterProps {
@@ -22,7 +33,7 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
     tempUnit,
     onTempUnitToggle
 }) => {
-    const { current, forecast, location, isLoading, error } = data;
+    const { current, forecast, location, isLoading, error, userCountry, homeWeather } = data;
 
     const getWeatherIcon = (condition: string) => {
         const lowerCondition = condition.toLowerCase();
@@ -74,7 +85,7 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
     }
 
     return (
-        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
+        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 h-full flex flex-col">
             <CardHeader className="pb-2">
                 <CardTitle className="flex items-center justify-between text-lg font-semibold">
                     <div className="flex items-center">
@@ -93,7 +104,24 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
                     </Button>
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 flex-1">
+                {/* User's Home Country Context */}
+                {homeWeather && (
+                    <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
+                        <div className="text-xs text-blue-400 font-medium mb-1">
+                            🌍 Your Home: {homeWeather.country}
+                        </div>
+                        <div className="text-xs text-muted-foreground">
+                            {homeWeather.region} • {homeWeather.timezone}
+                        </div>
+                        {homeWeather.insights && (
+                            <div className="text-xs text-blue-300 mt-1">
+                                💡 {homeWeather.insights.seasonalContext}
+                            </div>
+                        )}
+                    </div>
+                )}
+
                 {/* Current Weather */}
                 {current && (
                     <div className="text-center p-3 bg-orange-500/10 border border-orange-500/20 rounded-xl">
@@ -102,6 +130,17 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
                         </div>
                         <div className="text-sm text-muted-foreground">{current.condition}</div>
                         <div className="text-xs text-muted-foreground mt-1">{location}</div>
+
+                        {/* Temperature comparison with user's home */}
+                        {homeWeather && homeWeather.insights && (
+                            <div className="mt-2 pt-2 border-t border-orange-500/20">
+                                <div className="text-xs text-orange-300">
+                                    {homeWeather.insights.isWarmer ? '🔥 Warmer than your home' :
+                                        homeWeather.insights.isColder ? '❄️ Colder than your home' :
+                                            '🌡️ Similar to your home'}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 

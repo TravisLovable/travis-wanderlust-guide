@@ -21,7 +21,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = ({ data }) => {
     const isVisaFree = typeof visaRequired === 'boolean' && !visaRequired;
 
     return (
-        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2">
+        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 h-full flex flex-col">
             <CardHeader className="pb-3">
                 <CardTitle className="flex items-center text-lg font-semibold">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
@@ -31,7 +31,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = ({ data }) => {
                     <Shield className="w-3 h-3 ml-auto text-red-400 group-hover:scale-110 transition-transform" />
                 </CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3">
+            <CardContent className="space-y-3 flex-1">
                 <div className={`p-2 ${isVisaFree ? 'bg-green-500/10 border-green-500/20' : 'bg-orange-500/10 border-orange-500/20'} border rounded-lg`}>
                     <div className={`font-medium text-sm ${isVisaFree ? 'text-green-700' : 'text-orange-700'}`}>
                         {isVisaFree ? '✓ Visa-free entry' : '⚠ Check visa requirements'}

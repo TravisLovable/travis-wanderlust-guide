@@ -13,7 +13,7 @@ import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import OnboardingModal from './OnboardingModal';
 import { useToast } from '@/hooks/use-toast';
-import CountryTest from './CountryTest';
+// import CountryTest from './CountryTest';
 
 
 interface HomePageProps {

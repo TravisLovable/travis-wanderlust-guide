@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Car, Shield, Wifi, TrendingUp, Users, Zap, Pin, PinOff, Palette, Globe, User, ChevronDown, Search, Sun, Moon, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Car, Wifi, TrendingUp, Pin, PinOff, Globe, User, ChevronDown, Search, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,7 +11,7 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
-import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
+// import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 import {
   WeatherContainer,
   HolidayContainer,
@@ -19,10 +19,10 @@ import {
   CurrencyContainer,
   AirportContainer,
   VisaContainer,
-  CulturalContainer,
+  // CulturalContainer,
   TransportWidget,
-  PowerAdapterWidget,
-  EmergencyWidget,
+  // PowerAdapterWidget,
+  // EmergencyWidget,
   ConnectivityWidget
 } from './widgets';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
@@ -42,7 +42,7 @@ interface ResultsPageProps {
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
 
-  const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
+  // const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
   const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
   const [newDestination, setNewDestination] = useState(destination);
   const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
@@ -50,9 +50,78 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
+  // const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  // const [isDarkMode, setIsDarkMode] = useState(true);
+
+  // Header scroll state
+  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
+  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Scroll handler for header minimization with improved hysteresis
+  useEffect(() => {
+    let ticking = false;
+    let lastScrollY = window.scrollY;
+    let transitionTimeout: NodeJS.Timeout;
+
+    const handleScroll = () => {
+      if (!ticking && !isTransitioning) {
+        requestAnimationFrame(() => {
+          const currentScrollY = window.scrollY;
+          const scrollDelta = currentScrollY - lastScrollY;
+          
+          // Determine scroll direction
+          const direction = scrollDelta > 0 ? 'down' : scrollDelta < 0 ? 'up' : null;
+          
+          // Only update if direction actually changed
+          if (direction && direction !== scrollDirection) {
+            setScrollDirection(direction);
+          }
+          
+          // Collapse header when scrolling down more than 100px
+          if (currentScrollY > 100) {
+            if (direction === 'down' && scrollDelta > 20 && !isHeaderCollapsed) {
+              // Scrolling down significantly - collapse header
+              setIsTransitioning(true);
+              setIsHeaderCollapsed(true);
+              
+              // Prevent rapid state changes for 300ms
+              clearTimeout(transitionTimeout);
+              transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
+            } else if (direction === 'up' && scrollDelta < -20 && isHeaderCollapsed) {
+              // Scrolling up significantly - expand header
+              setIsTransitioning(true);
+              setIsHeaderCollapsed(false);
+              
+              // Prevent rapid state changes for 300ms
+              clearTimeout(transitionTimeout);
+              transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
+            }
+          } else {
+            // Always show full header when near top
+            if (isHeaderCollapsed) {
+              setIsTransitioning(true);
+              setIsHeaderCollapsed(false);
+              clearTimeout(transitionTimeout);
+              transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
+            }
+          }
+          
+          lastScrollY = currentScrollY;
+          ticking = false;
+        });
+        
+        ticking = true;
+      }
+    };
+
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      clearTimeout(transitionTimeout);
+    };
+  }, [isHeaderCollapsed, scrollDirection, isTransitioning]);
 
 
   // Use Mapbox geocoding for destination suggestions
@@ -180,17 +249,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return null;
   };
 
-  // Check if destination has accommodation map support
-  const getSupportedAccommodationDestinations = () => {
-    return ['são paulo', 'sao paulo', 'brazil'];
-  };
+  // Check if destination has accommodation map support - COMMENTED OUT: Not in Phase 1 scope
+  // const getSupportedAccommodationDestinations = () => {
+  //   return ['são paulo', 'sao paulo', 'brazil'];
+  // };
 
-  const hasAccommodationMapSupport = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
-    return getSupportedAccommodationDestinations().some(supported =>
-      lowerDest.includes(supported)
-    );
-  };
+  // const hasAccommodationMapSupport = (dest: string) => {
+  //   const lowerDest = dest.toLowerCase();
+  //   return getSupportedAccommodationDestinations().some(supported =>
+  //     lowerDest.includes(supported)
+  //   );
+  // };
 
   // Dynamic airport data based on destination
   const getAirportData = (dest: string) => {
@@ -262,61 +331,61 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     };
   };
 
-  // Dynamic power adapter data based on destination
-  const getPowerAdapterData = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
+  // COMMENTED OUT: Not in Phase 1 scope - Power adapter data
+  // const getPowerAdapterData = (dest: string) => {
+  //   const lowerDest = dest.toLowerCase();
 
-    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-      return { type: 'Type C & N', voltage: '220V', frequency: '60Hz' };
-    }
+  //   if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
+  //     return { type: 'Type C & N', voltage: '220V', frequency: '60Hz' };
+  //   }
 
-    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-      return { type: 'Type A & C', voltage: '220V', frequency: '60Hz' };
-    }
+  //   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+  //     return { type: 'Type A & C', voltage: '220V', frequency: '60Hz' };
+  //   }
 
-    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-      return { type: 'Type G', voltage: '230V', frequency: '50Hz' };
-    }
+  //   if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
+  //     return { type: 'Type G', voltage: '230V', frequency: '50Hz' };
+  //   }
 
-    if (lowerDest.includes('france') || lowerDest.includes('paris')) {
-      return { type: 'Type C & E', voltage: '230V', frequency: '50Hz' };
-    }
+  //   if (lowerDest.includes('france') || lowerDest.includes('paris')) {
+  //     return { type: 'Type C & E', voltage: '230V', frequency: '50Hz' };
+  //   }
 
-    if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
-      return { type: 'Type A & B', voltage: '100V', frequency: '50Hz/60Hz' };
-    }
+  //   if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
+  //     return { type: 'Type A & B', voltage: '100V', frequency: '50Hz/60Hz' };
+  //   }
 
-    // Default fallback
-    return { type: 'Various', voltage: 'Check locally', frequency: 'Check locally' };
-  };
+  //   // Default fallback
+  //   return { type: 'Various', voltage: 'Check locally', frequency: 'Check locally' };
+  // };
 
-  // Dynamic emergency numbers based on destination
-  const getEmergencyNumbers = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
+  // COMMENTED OUT: Not in Phase 1 scope - Emergency numbers
+  // const getEmergencyNumbers = (dest: string) => {
+  //   const lowerDest = dest.toLowerCase();
 
-    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-      return { police: '190', fire: '193', medical: '192' };
-    }
+  //   if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
+  //     return { police: '190', fire: '193', medical: '192' };
+  //   }
 
-    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-      return { police: '105', fire: '116', medical: '117' };
-    }
+  //   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
+  //     return { police: '105', fire: '116', medical: '117' };
+  //   }
 
-    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-      return { police: '999', fire: '999', medical: '999' };
-    }
+  //   if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
+  //     return { police: '999', fire: '999', medical: '999' };
+  //   }
 
-    if (lowerDest.includes('france') || lowerDest.includes('paris')) {
-      return { police: '17', fire: '18', medical: '15' };
-    }
+  //   if (lowerDest.includes('france') || lowerDest.includes('paris')) {
+  //     return { police: '17', fire: '18', medical: '15' };
+  //   }
 
-    if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
-      return { police: '110', fire: '119', medical: '119' };
-    }
+  //   if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
+  //     return { police: '110', fire: '119', medical: '119' };
+  //   }
 
-    // Default fallback
-    return { police: '911', fire: '911', medical: '911' };
-  };
+  //   // Default fallback
+  //   return { police: '911', fire: '911', medical: '911' };
+  // };
 
   // Dynamic transport data based on destination
   const getTransportData = (dest: string) => {
@@ -364,22 +433,23 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   // Get dynamic data based on destination
   const airportData = getAirportData(destination);
-  const powerData = getPowerAdapterData(destination);
-  const emergencyData = getEmergencyNumbers(destination);
+  // const powerData = getPowerAdapterData(destination);
+  // const emergencyData = getEmergencyNumbers(destination);
   const transportData = getTransportData(destination);
 
 
 
 
 
-  const widgetOptions = [
-    { id: 'currency', name: 'Currency', icon: CreditCard, color: 'from-green-500 to-emerald-600' },
-    { id: 'weather', name: 'Weather', icon: Thermometer, color: 'from-orange-500 to-red-600' },
-    { id: 'time', name: 'Time', icon: Clock, color: 'from-blue-500 to-cyan-600' },
-    { id: 'transport', name: 'Transport', icon: Car, color: 'from-purple-500 to-violet-600' },
-    { id: 'emergency', name: 'Emergency', icon: Shield, color: 'from-red-500 to-pink-600' },
-    { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
-  ];
+  // COMMENTED OUT: Not in Phase 1 scope - Intelligence Dashboard widget options
+  // const widgetOptions = [
+  //   { id: 'currency', name: 'Currency', icon: CreditCard, color: 'from-green-500 to-emerald-600' },
+  //   { id: 'weather', name: 'Weather', icon: Thermometer, color: 'from-orange-500 to-red-600' },
+  //   { id: 'time', name: 'Time', icon: Clock, color: 'from-blue-500 to-cyan-600' },
+  //   { id: 'transport', name: 'Transport', icon: Car, color: 'from-purple-500 to-violet-600' },
+  //   { id: 'emergency', name: 'Emergency', icon: Shield, color: 'from-red-500 to-pink-600' },
+  //   { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
+  // ];
 
   // Dynamic destination suggestions based on the current destination region
   const getRegionalDestinations = (currentDest: string) => {
@@ -427,14 +497,16 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
 
 
-  const handleAdapterClick = () => {
-    setIsAdapterSpinning(!isAdapterSpinning);
-  };
+  // COMMENTED OUT: Not in Phase 1 scope - Power adapter functionality
+  // const handleAdapterClick = () => {
+  //   setIsAdapterSpinning(!isAdapterSpinning);
+  // };
 
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
-  };
+  // COMMENTED OUT: Not used in ResultsPage
+  // const toggleTheme = () => {
+  //   setIsDarkMode(!isDarkMode);
+  //   document.documentElement.classList.toggle('dark');
+  // };
 
   const formatDateRange = (checkin: Date, checkout: Date) => {
     const departFormatted = format(checkin, 'EEEE MMMM do');
@@ -442,20 +514,29 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return `Depart: ${departFormatted} • Return: ${returnFormatted}`;
   };
 
-  const handleSignOut = () => {
-    // Navigate to sign out/sign in page
-    window.location.href = '/auth';
-  };
+  // COMMENTED OUT: Not used in ResultsPage
+  // const handleSignOut = () => {
+  //   // Navigate to sign out/sign in page
+  //   window.location.href = '/auth';
+  // };
 
 
 
   return (
-    <div className="min-h-screen bg-gray-400 dark:bg-black">
-      {/* Header - More transparent */}
-      <header className="bg-black/5 dark:bg-black/5 backdrop-blur-sm border-b border-white/5 shadow-lg shadow-white/5 sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
-          <div className="flex items-center justify-between mb-4">
-            <div className="flex items-center space-x-4">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-black dark:to-gray-900">
+      {/* Header - Clean and Mobile-First with Scroll-Based Minimization */}
+      <header className={`bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm sticky top-0 z-40 transition-all duration-300 ease-in-out ${isHeaderCollapsed ? 'py-2 shadow-lg' : 'py-3 sm:py-4'
+        }`}>
+        <div className="max-w-7xl mx-auto px-4 sm:px-6">
+
+          {/* Scroll Indicator - Subtle visual feedback */}
+          <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300 ${isHeaderCollapsed ? 'opacity-100' : 'opacity-0'
+            }`} />
+
+          {/* Main Header Row - Collapsible */}
+          <div className={`flex items-center justify-between transition-all duration-300 ${isHeaderCollapsed ? 'mb-2' : 'mb-3 sm:mb-4'
+            }`}>
+            <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
                 variant="ghost"
                 onClick={onBack}
@@ -463,96 +544,110 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
-              <div>
-                <div className="flex items-center space-x-3">
-                  <h1 className="text-3xl font-bold text-foreground flex items-center tracking-tight">
+
+              <div className="min-w-0">
+                <div className="flex items-center space-x-2 sm:space-x-3">
+                  <h1 className={`font-bold text-foreground flex items-center tracking-tight truncate transition-all duration-300 ${isHeaderCollapsed ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl md:text-3xl'
+                    }`}>
                     {destination}
                     {getCountryFlag(destination) ? (
                       <img
                         src={getCountryFlag(destination)!}
                         alt="Country Flag"
-                        className="w-8 h-6 ml-3 mr-2 rounded shadow-sm"
+                        className={`rounded shadow-sm flex-shrink-0 transition-all duration-300 ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
+                          }`}
                       />
                     ) : (
-                      <Globe className="w-8 h-6 ml-3 mr-2 text-blue-400" />
+                      <Globe className={`text-blue-400 flex-shrink-0 transition-all duration-300 ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
+                        }`} />
                     )}
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handlePinDestination(destination)}
-                      className="text-blue-400 hover:text-blue-300"
+                      className="text-blue-400 hover:text-blue-300 ml-1 sm:ml-2"
                     >
-                      <Pin className="w-5 h-5" />
+                      <Pin className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                   </h1>
                 </div>
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="text-muted-foreground flex items-center font-light p-0 h-auto hover:text-foreground transition-colors"
-                    >
-                      <Calendar className="w-4 h-4 mr-2" />
-                      {formatDateRange(newCheckinDate, newCheckoutDate)}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                    <div className="p-4 space-y-4">
-                      <div>
-                        <p className="text-sm font-medium mb-2">Depart Date</p>
-                        <CalendarComponent
-                          mode="single"
-                          selected={newCheckinDate}
-                          onSelect={(date) => {
-                            if (date) setNewCheckinDate(date);
-                          }}
-                          className="pointer-events-auto"
-                        />
+
+                {/* Date Range - Collapsible */}
+                <div className={`transition-all duration-300 ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto'
+                  }`}>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="ghost"
+                        className="text-xs sm:text-sm text-muted-foreground flex items-center font-light p-0 h-auto hover:text-foreground transition-colors mt-1"
+                      >
+                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+                        <span className="truncate">
+                          {formatDateRange(newCheckinDate, newCheckoutDate)}
+                        </span>
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                      <div className="p-4 space-y-4">
+                        <div>
+                          <p className="text-sm font-medium mb-2">Depart Date</p>
+                          <CalendarComponent
+                            mode="single"
+                            selected={newCheckinDate}
+                            onSelect={(date) => {
+                              if (date) setNewCheckinDate(date);
+                            }}
+                            className="pointer-events-auto"
+                          />
+                        </div>
+                        <div>
+                          <p className="text-sm font-medium mb-2">Return Date</p>
+                          <CalendarComponent
+                            mode="single"
+                            selected={newCheckoutDate}
+                            onSelect={(date) => {
+                              if (date) setNewCheckoutDate(date);
+                            }}
+                            className="pointer-events-auto"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <p className="text-sm font-medium mb-2">Return Date</p>
-                        <CalendarComponent
-                          mode="single"
-                          selected={newCheckoutDate}
-                          onSelect={(date) => {
-                            if (date) setNewCheckoutDate(date);
-                          }}
-                          className="pointer-events-auto"
-                        />
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
+                    </PopoverContent>
+                  </Popover>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Pinned Destinations - More transparent */}
-          {pinnedDestinations.length > 0 && (
-            <div className="mb-4">
-              <div className="flex items-center space-x-3">
-                <span className="text-sm text-muted-foreground font-medium">PINNED:</span>
-                <div className="flex space-x-2 flex-wrap">
+          {/* Pinned Destinations - Collapsible */}
+          <div className={`transition-all duration-300 ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden mb-0' : 'opacity-100 h-auto mb-3 sm:mb-4'
+            }`}>
+            {pinnedDestinations.length > 0 && (
+              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
+                <span className="text-xs sm:text-sm text-muted-foreground font-medium">PINNED:</span>
+                <div className="flex flex-wrap gap-2">
                   {pinnedDestinations.map((dest) => (
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-sm text-white hover:bg-blue-700/40 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-2 sm:px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-xs sm:text-sm text-white hover:bg-blue-700/40 transition-colors shadow-sm"
                     >
-                      <span>{dest}</span>
+                      <span className="truncate max-w-[120px] sm:max-w-[150px]">{dest}</span>
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
                           removePinnedDestination(dest);
                         }}
-                        className="w-4 h-4 rounded-full bg-white/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity"
+                        className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
                       >
                         ×
                       </button>
                     </button>
                   ))}
                 </div>
-                <div className="flex space-x-2">
+
+                {/* Regional Suggestions - Compact on mobile */}
+                <div className="flex flex-wrap gap-1 sm:gap-2">
                   {getRegionalDestinations(destination).map((city) => (
                     <button
                       key={city}
@@ -565,14 +660,16 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   ))}
                 </div>
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
-          {/* Search Bar with Mapbox Auto-suggestions */}
-          <form onSubmit={handleSearch} className="bg-white/10 backdrop-blur-sm border border-border/20 rounded-full p-2 shadow-lg relative travis-glow-white">
-            <div className="flex items-center gap-2">
+          {/* Search Bar - Always Visible but Compact when Collapsed */}
+          <form onSubmit={handleSearch} className={`bg-white/10 backdrop-blur-sm border border-border/20 rounded-full shadow-lg relative travis-glow-white transition-all duration-300 ${isHeaderCollapsed ? 'p-1' : 'p-1.5 sm:p-2'
+            }`}>
+            <div className="flex items-center gap-1 sm:gap-2">
               <div className="flex-1 relative">
-                <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 z-10" />
+                <MapPin className={`absolute text-muted-foreground z-10 transition-all duration-300 ${isHeaderCollapsed ? 'left-2.5 w-4 h-4' : 'left-3 sm:left-4 w-4 h-4 sm:w-5 sm:h-5'
+                  } top-1/2 transform -translate-y-1/2`} />
                 <Input
                   type="text"
                   placeholder="Search any destination worldwide..."
@@ -581,7 +678,8 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   onKeyPress={handleKeyPress}
                   onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="pl-12 h-12 bg-transparent border-0 focus:ring-0 text-base placeholder:text-muted-foreground/70 rounded-l-full"
+                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-300 ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
+                    }`}
                 />
                 {showSuggestions && mapboxSuggestions.length > 0 && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -594,9 +692,9 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       <button
                         key={index}
                         onClick={() => handleDestinationSelect(suggestion)}
-                        className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
                       >
-                        <div className="flex items-center space-x-3">
+                        <div className="flex items-center space-x-2 sm:space-x-3">
                           <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-foreground truncate">
@@ -613,13 +711,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 )}
               </div>
 
-              {/* Date Inputs */}
-              <div className="flex gap-1">
+              {/* Date Inputs - Collapsible */}
+              <div className={`flex gap-1 transition-all duration-300 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'
+                }`}>
                 <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
                     >
                       {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Depart'}
                     </Button>
@@ -642,7 +741,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   <PopoverTrigger asChild>
                     <Button
                       variant="ghost"
-                      className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-start font-normal border-l border-border/30"
+                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
                     >
                       {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Return'}
                     </Button>
@@ -653,7 +752,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       selected={newCheckoutDate}
                       onSelect={(date) => {
                         if (date) setNewCheckoutDate(date);
-                        setCheckoutOpen(false);
+                        setCheckinOpen(false);
                       }}
                       initialFocus
                       className="pointer-events-auto"
@@ -664,9 +763,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
               <Button
                 type="submit"
-                className="h-12 px-4 bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow"
+                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-300 ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
+                  }`}
               >
-                <Search className="w-5 h-5" />
+                <Search className={`transition-all duration-300 ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
+                  }`} />
               </Button>
             </div>
           </form>
@@ -674,149 +775,104 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       </header>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-6 py-6">
-        {/* Photo Slideshow */}
-        <div className="mb-6">
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
+        {/* Hero Section with Photo Slideshow */}
+        <div className="mb-6 sm:mb-8">
           <PhotoSlideshow />
         </div>
 
-        {/* Optimized Widget Grid Layout */}
-        <div className="grid grid-cols-1 lg:grid-cols-6 xl:grid-cols-8 gap-4 mb-6">
+        {/* Essential Travel Information - Mobile First Grid with Equal Heights */}
+        <div className="space-y-6 sm:space-y-8">
 
-          {/* Row 1: Primary Info Widgets - Reordered as requested */}
-          {/* Time Zone - First position */}
-          <TimeZoneContainer destination={destination} />
+          {/* Row 1: Core Travel Essentials - Full Width on Mobile, 2 Columns on Tablet+ */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+            {/* Currency Converter - Essential for travel planning */}
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <CurrencyContainer destination={destination} />
+              </div>
+            </div>
 
-          {/* Currency - Second position */}
-          <CurrencyContainer destination={destination} />
-
-          {/* Airport Info - Third position - Now Dynamic */}
-          <AirportContainer destination={destination} />
-
-          {/* Visa & Entry - Fourth position */}
-          <VisaContainer destination={destination} />
-        </div>
-
-        {/* Row 2: Weather Widget - Integrated into grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-          {/* Weather Widget - Takes 2 columns on larger screens */}
-          <div className="lg:col-span-2 xl:col-span-2">
-            <WeatherContainer
-              destination={destination}
-            />
+            {/* Time Zone - Critical for scheduling */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <TimeZoneContainer destination={destination} />
+              </div>
+            </div>
           </div>
 
-          {/* Transportation Widget */}
-          <TransportWidget transportData={transportData} />
-
-          {/* Holiday Widget */}
-          <HolidayContainer
-            destination={destination}
-            dates={dates}
-          />
-        </div>
-
-        {/* Row 3: Secondary Widgets */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
-          {/* Power Adapter Widget */}
-          <PowerAdapterWidget
-            powerData={powerData}
-            isAdapterSpinning={isAdapterSpinning}
-            onAdapterClick={handleAdapterClick}
-          />
-
-          {/* Emergency Widget */}
-          <EmergencyWidget emergencyData={emergencyData} />
-
-          {/* Connectivity Widget */}
-          <ConnectivityWidget />
-
-          {/* Placeholder for future widget */}
-          <div className="hidden xl:block"></div>
-        </div>
-
-        {/* Row 4: Conditional Accommodation Map */}
-        <div className="mb-6">
-          {hasAccommodationMapSupport(destination) ? (
-            <SaoPauloAccommodationMap />
-          ) : (
-            <Card className="travis-card travis-interactive group xl:col-span-2">
-              <CardHeader className="pb-4">
-                <CardTitle className="flex items-center justify-between text-xl font-semibold">
-                  <div className="flex items-center">
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center mr-3">
-                      <MapPin className="w-5 h-5 text-white" />
-                    </div>
-                    Accommodation Map
-                  </div>
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <div className="text-center py-12">
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
-                    <MapPin className="w-8 h-8 text-white" />
-                  </div>
-                  <h3 className="text-lg font-semibold mb-2">Accommodation data is currently unavailable for this region.</h3>
-                  <p className="text-muted-foreground">
-                    We're working to expand our accommodation mapping to more destinations.
-                    Check back soon for detailed accommodation options for {destination}.
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          )}
-        </div>
-
-        {/* Row 5: Intelligence Dashboard - Full Width */}
-        <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 mb-6">
-          <CardHeader className="pb-3">
-            <CardTitle className="flex items-center text-xl font-semibold">
-              <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center mr-2">
-                <Palette className="w-4 h-4 text-white" />
+          {/* Row 2: Weather & Transportation - Stack on Mobile, Side by Side on Larger */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
+            {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
+            <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <WeatherContainer destination={destination} />
               </div>
-              Intelligence Dashboard
-              <Users className="w-4 h-4 ml-auto text-purple-400" />
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-muted-foreground text-sm">Configure your travel intelligence dashboard:</p>
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {widgetOptions.map((widget) => {
-                const Icon = widget.icon;
-                const isSelected = selectedWidgets.includes(widget.id);
-                return (
-                  <button
-                    key={widget.id}
-                    onClick={() => {
-                      if (isSelected) {
-                        setSelectedWidgets(selectedWidgets.filter(id => id !== widget.id));
-                      } else {
-                        setSelectedWidgets([...selectedWidgets, widget.id]);
-                      }
-                    }}
-                    className={`p-3 rounded-xl border transition-all duration-300 travis-interactive ${isSelected
-                      ? 'bg-purple-500/20 border-purple-400/50 text-purple-300'
-                      : 'bg-secondary/30 border-border/50 text-muted-foreground hover:bg-secondary/50 hover:border-border'
-                      }`}
-                  >
-                    <div className={`w-6 h-6 rounded-lg bg-gradient-to-br ${widget.color} flex items-center justify-center mx-auto mb-1`}>
-                      <Icon className="w-3 h-3 text-white" />
-                    </div>
-                    <div className="text-xs font-medium">{widget.name}</div>
-                  </button>
-                );
-              })}
             </div>
-            <div className="p-3 bg-purple-500/10 border border-purple-500/20 rounded-xl">
-              <p className="text-purple-300 font-medium text-sm">
-                {selectedWidgets.length} modules selected for your travel intelligence dashboard
-              </p>
-            </div>
-          </CardContent>
-        </Card>
 
-        {/* Cultural Insights Section - Now fully dynamic */}
-        <CulturalContainer destination={destination} />
+            {/* Transportation Info - Compact but informative */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <TransportWidget transportData={transportData} />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 3: Local Information & Holidays */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+            {/* Local Holidays - Important for trip planning */}
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <HolidayContainer destination={destination} dates={dates} />
+              </div>
+            </div>
+
+            {/* Airport Information - Essential for arrival planning */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <AirportContainer destination={destination} />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 4: Entry Requirements & Connectivity */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+            {/* Visa Requirements - Critical for entry */}
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <VisaContainer destination={destination} />
+              </div>
+            </div>
+
+            {/* Connectivity Info - Important for modern travelers */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <ConnectivityWidget />
+              </div>
+            </div>
+          </div>
+
+          {/* Row 5: Future Features Placeholder - Subtle indication of what's coming */}
+          <div className="text-center py-8 sm:py-12">
+            <div className="inline-flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl">
+              <div className="flex items-center space-x-2">
+                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                <span className="text-sm sm:text-base text-blue-600 dark:text-blue-300 font-medium">
+                  More travel intelligence features coming soon
+                </span>
+              </div>
+              <div className="flex items-center space-x-1 text-xs text-blue-500/70 dark:text-blue-400/70">
+                <span>•</span>
+                <span>Emergency contacts</span>
+                <span>•</span>
+                <span>Accommodation maps</span>
+                <span>•</span>
+                <span>Power adapters</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </main>
     </div>
   );

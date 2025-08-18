@@ -10,6 +10,7 @@ import { Upload } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useCountryData, CountryData } from '@/hooks/useCountryData';
+import type { Database } from '@/integrations/supabase/types';
 
 interface OnboardingModalProps {
   isOpen: boolean;
@@ -57,19 +58,22 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
   const handleComplete = async () => {
     setIsLoading(true);
     try {
+      const upsertData: Database['public']['Tables']['users']['Insert'] = {
+        auth_id: user.id,
+        email: user.email,
+        full_name: user.user_metadata?.full_name || '',
+        preferred_airline: onboardingData.preferredAirline,
+        frequent_flyer_number: onboardingData.frequentFlyerNumber,
+        travel_type: onboardingData.travelType,
+        nationality: onboardingData.countryData?.code || '',
+        country_data: onboardingData.countryData,
+        profile_photo_url: onboardingData.profilePhotoUrl,
+        onboarding_completed: true
+      };
+
       const { error } = await supabase
         .from('users')
-        .upsert({
-          auth_id: user.id,
-          email: user.email,
-          full_name: user.user_metadata?.full_name || '',
-          preferred_airline: onboardingData.preferredAirline,
-          frequent_flyer_number: onboardingData.frequentFlyerNumber,
-          travel_type: onboardingData.travelType,
-          country_data: onboardingData.countryData, // New comprehensive field
-          profile_photo_url: onboardingData.profilePhotoUrl,
-          onboarding_completed: true
-        });
+        .upsert(upsertData);
 
       if (error) throw error;
 
@@ -175,6 +179,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
               const selectedCountry = countries.find(country => country.code === value);
               setOnboardingData(prev => ({
                 ...prev,
+                nationality: value, // Keep legacy field for backward compatibility
                 countryData: selectedCountry || null // Store full country data
               }));
             }}>

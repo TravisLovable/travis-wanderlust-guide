@@ -2,6 +2,36 @@ import React, { useState, useEffect } from 'react';
 import HolidayPresenter from '../presenters/HolidayPresenter';
 import { supabase } from '@/integrations/supabase/client';
 
+// Helper function to get region from country code
+const getRegionFromCountryCode = (countryCode: string): string => {
+    const regionMap: { [key: string]: string } = {
+        'US': 'Americas', 'CA': 'Americas', 'MX': 'Americas', 'BR': 'Americas', 'AR': 'Americas', 'CL': 'Americas', 'CO': 'Americas', 'PE': 'Americas',
+        'GB': 'Europe', 'FR': 'Europe', 'DE': 'Europe', 'IT': 'Europe', 'ES': 'Europe', 'NL': 'Europe', 'SE': 'Europe', 'NO': 'Europe', 'DK': 'Europe', 'FI': 'Europe',
+        'JP': 'Asia', 'KR': 'Asia', 'CN': 'Asia', 'IN': 'Asia', 'TH': 'Asia', 'SG': 'Asia', 'MY': 'Asia', 'ID': 'Asia', 'VN': 'Asia',
+        'AU': 'Oceania', 'NZ': 'Oceania', 'FJ': 'Oceania', 'PG': 'Oceania'
+    };
+    return regionMap[countryCode] || 'Unknown';
+};
+
+// Helper function to get travel advice based on user context
+const getTravelAdvice = (userCountry: any, destinationCountry: string, holidayCount: number): string => {
+    if (userCountry.code === destinationCountry) {
+        return 'You\'re traveling within your home country!';
+    }
+
+    if (userCountry.region === getRegionFromCountryCode(destinationCountry)) {
+        return `You\'re traveling within ${userCountry.region} - similar cultural context`;
+    }
+
+    if (holidayCount > 5) {
+        return 'Many holidays during your trip - plan accordingly!';
+    } else if (holidayCount > 0) {
+        return 'Some holidays during your trip - check local schedules';
+    } else {
+        return 'No major holidays during your trip';
+    }
+};
+
 interface HolidayData {
     country: string;
     year: number;
@@ -29,6 +59,16 @@ interface HolidayData {
         region?: string;
     }>;
     source?: string;
+    userContext?: {
+        homeCountry: string;
+        homeRegion: string;
+        homeCurrency: string;
+        insights: {
+            isHomeCountry: boolean;
+            regionSimilarity: boolean;
+            travelAdvice: string;
+        };
+    } | null;
 }
 
 interface HolidayContainerProps {
@@ -45,96 +85,110 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
 }) => {
     const [holidayData, setHolidayData] = useState<HolidayData | null>(null);
     const [isLoadingHolidays, setIsLoadingHolidays] = useState(false);
+    const [userCountry, setUserCountry] = useState<any>(null);
+    const [userLoading, setUserLoading] = useState(true);
 
-    // Fetch holiday data - Updated to handle multiple years
+    // Fetch user's country data for holiday preferences
+    useEffect(() => {
+        const fetchUserCountry = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    setUserLoading(false);
+
+                    // Fetch user's country data
+                    const { data: userCountry, error } = await supabase
+                        .from('users')
+                        .select('country_data')
+                        .eq('auth_id', user.id);
+
+                    if (userCountry && userCountry[0]?.country_data) {
+                        console.log('🌍 User country data for holidays:', userCountry[0].country_data);
+                        setUserCountry(userCountry[0].country_data);
+                    } else {
+                        console.log('❌ No user country data found for holidays');
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user country for holidays:', error);
+            }
+        };
+
+        fetchUserCountry();
+    }, []);
+
+    // Fetch holiday data - Updated to handle multiple years and use user country context
     useEffect(() => {
         const fetchHolidayData = async () => {
             setIsLoadingHolidays(true);
             try {
                 console.log('Fetching holiday data for:', destination);
 
-                // Get country code for destination - improved mapping
-                const getCountryCodeForDestination = (dest: string) => {
+                // Get country code for destination using user country context and smart parsing
+                const getCountryCodeForDestination = (dest: string, userCountryData?: any): string => {
+                    console.log('🔍 Determining country code for destination:', dest);
+                    console.log('👤 User country context:', userCountryData);
+
+                    // First, try to extract country from destination string
+                    const parts = dest.split(',').map(part => part.trim());
+                    const lastPart = parts[parts.length - 1];
+
+                    // Check if destination contains common country indicators
                     const lowerDest = dest.toLowerCase();
 
-                    // Map destinations to ISO country codes
-                    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro') || lowerDest.includes('salvador') || lowerDest.includes('brasília')) {
-                        return 'BR';
-                    }
-                    if (lowerDest.includes('peru') || lowerDest.includes('lima') || lowerDest.includes('cusco') || lowerDest.includes('arequipa') || lowerDest.includes('trujillo')) {
-                        return 'PE';
-                    }
-                    if (lowerDest.includes('united states') || lowerDest.includes('usa') || lowerDest.includes('chicago') || lowerDest.includes('new york') || lowerDest.includes('los angeles') || lowerDest.includes('miami')) {
-                        return 'US';
-                    }
-                    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london') || lowerDest.includes('manchester') || lowerDest.includes('edinburgh')) {
-                        return 'GB';
-                    }
-                    if (lowerDest.includes('france') || lowerDest.includes('paris') || lowerDest.includes('lyon') || lowerDest.includes('marseille')) {
-                        return 'FR';
-                    }
-                    if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich') || lowerDest.includes('hamburg')) {
-                        return 'DE';
-                    }
-                    if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka') || lowerDest.includes('kyoto')) {
-                        return 'JP';
-                    }
-                    if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan') || lowerDest.includes('florence')) {
-                        return 'IT';
-                    }
-                    if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona') || lowerDest.includes('seville')) {
-                        return 'ES';
-                    }
-                    if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver') || lowerDest.includes('montreal')) {
-                        return 'CA';
-                    }
-                    if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne') || lowerDest.includes('brisbane')) {
-                        return 'AU';
-                    }
-                    if (lowerDest.includes('mexico') || lowerDest.includes('mexico city') || lowerDest.includes('cancun') || lowerDest.includes('guadalajara')) {
-                        return 'MX';
-                    }
-                    if (lowerDest.includes('argentina') || lowerDest.includes('buenos aires') || lowerDest.includes('cordoba') || lowerDest.includes('mendoza')) {
-                        return 'AR';
-                    }
-                    if (lowerDest.includes('chile') || lowerDest.includes('santiago') || lowerDest.includes('valparaiso')) {
-                        return 'CL';
-                    }
-                    if (lowerDest.includes('colombia') || lowerDest.includes('bogota') || lowerDest.includes('medellin') || lowerDest.includes('cartagena')) {
-                        return 'CO';
+                    // Priority 1: Direct country matches
+                    const countryMatches: { [key: string]: string } = {
+                        'brazil': 'BR', 'peru': 'PE', 'united states': 'US', 'usa': 'US',
+                        'united kingdom': 'GB', 'uk': 'GB', 'france': 'FR', 'germany': 'DE',
+                        'japan': 'JP', 'italy': 'IT', 'spain': 'ES', 'canada': 'CA',
+                        'australia': 'AU', 'mexico': 'MX', 'argentina': 'AR', 'chile': 'CL',
+                        'colombia': 'CO', 'netherlands': 'NL', 'sweden': 'SE', 'norway': 'NO',
+                        'denmark': 'DK', 'finland': 'FI', 'switzerland': 'CH', 'austria': 'AT',
+                        'belgium': 'BE', 'portugal': 'PT', 'greece': 'GR', 'poland': 'PL',
+                        'czech republic': 'CZ', 'hungary': 'HU', 'romania': 'RO', 'bulgaria': 'BG',
+                        'croatia': 'HR', 'slovenia': 'SI', 'slovakia': 'SK', 'lithuania': 'LT',
+                        'latvia': 'LV', 'estonia': 'EE', 'iceland': 'IS', 'ireland': 'IE'
+                    };
+
+                    for (const [countryName, countryCode] of Object.entries(countryMatches)) {
+                        if (lowerDest.includes(countryName)) {
+                            console.log(`✅ Found country match: ${countryName} -> ${countryCode}`);
+                            return countryCode;
+                        }
                     }
 
-                    // Default fallback - try to extract country code from destination string
-                    const parts = dest.split(',');
-                    if (parts.length > 1) {
-                        const lastPart = parts[parts.length - 1].trim();
-                        // Simple country name to code mapping
-                        const countryMap: { [key: string]: string } = {
-                            'Brazil': 'BR',
-                            'Peru': 'PE',
-                            'United States': 'US',
-                            'USA': 'US',
-                            'United Kingdom': 'GB',
-                            'UK': 'GB',
-                            'France': 'FR',
-                            'Germany': 'DE',
-                            'Japan': 'JP',
-                            'Italy': 'IT',
-                            'Spain': 'ES',
-                            'Canada': 'CA',
-                            'Australia': 'AU',
-                            'Mexico': 'MX',
-                            'Argentina': 'AR',
-                            'Chile': 'CL',
-                            'Colombia': 'CO'
+                    // Priority 2: Check if last part of destination is a country
+                    if (countryMatches[lastPart.toLowerCase()]) {
+                        console.log(`✅ Found country in last part: ${lastPart} -> ${countryMatches[lastPart.toLowerCase()]}`);
+                        return countryMatches[lastPart.toLowerCase()];
+                    }
+
+                    // Priority 3: Use user's home country as context for similar regions
+                    if (userCountryData?.code) {
+                        console.log(`🌍 Using user's home country as context: ${userCountryData.code}`);
+
+                        // If user is from a specific region, suggest similar countries
+                        const regionSuggestions: { [key: string]: string[] } = {
+                            'Americas': ['US', 'CA', 'MX', 'BR', 'AR', 'CL', 'CO', 'PE'],
+                            'Europe': ['GB', 'FR', 'DE', 'IT', 'ES', 'NL', 'SE', 'NO', 'DK', 'FI'],
+                            'Asia': ['JP', 'KR', 'CN', 'IN', 'TH', 'SG', 'MY', 'ID', 'VN'],
+                            'Oceania': ['AU', 'NZ', 'FJ', 'PG']
                         };
-                        return countryMap[lastPart] || 'US'; // Default to US if no match
+
+                        const userRegion = userCountryData.region;
+                        if (regionSuggestions[userRegion]) {
+                            console.log(`🌍 User is from ${userRegion}, suggesting similar countries`);
+                            // For now, return user's country as fallback
+                            return userCountryData.code;
+                        }
                     }
 
-                    return 'US'; // Final fallback
+                    // Priority 4: Default to US if no match found
+                    console.log('⚠️ No country match found, defaulting to US');
+                    return 'US';
                 };
 
-                const countryCode = getCountryCodeForDestination(destination);
+                const countryCode = getCountryCodeForDestination(destination, userCountry);
                 const checkinDate = new Date(dates.checkin);
                 const checkoutDate = new Date(dates.checkout);
                 const startYear = checkinDate.getFullYear();
@@ -198,14 +252,24 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
 
                     console.log('Holidays within travel dates:', relevantHolidays);
 
-                    // Update the data with filtered holidays
+                    // Update the data with filtered holidays and user context
                     const updatedData = {
                         country: countryCode,
                         year: startYear, // Use start year as primary
                         totalHolidays: relevantHolidays.length,
                         upcomingHolidays: relevantHolidays.slice(0, 10), // Show up to 10 holidays within travel dates
                         allHolidays: relevantHolidays,
-                        source: 'multi-year-fetch'
+                        source: 'multi-year-fetch',
+                        userContext: userCountry ? {
+                            homeCountry: userCountry.code,
+                            homeRegion: userCountry.region,
+                            homeCurrency: userCountry.currency,
+                            insights: {
+                                isHomeCountry: userCountry.code === countryCode,
+                                regionSimilarity: userCountry.region === getRegionFromCountryCode(countryCode),
+                                travelAdvice: getTravelAdvice(userCountry, countryCode, relevantHolidays.length)
+                            }
+                        } : null
                     };
 
                     setHolidayData(updatedData);
@@ -231,13 +295,22 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
         fetchHolidayData();
     }, [destination, dates.checkin, dates.checkout]);
 
+    // Debug logging
+    console.log('🎉 HolidayContainer Debug:', {
+        destination,
+        userCountry,
+        holidayData,
+        userLoading
+    });
+
     // Data transformation logic
     const transformedData = {
         holidays: holidayData?.upcomingHolidays || [],
         totalHolidays: holidayData?.totalHolidays || 0,
         country: holidayData?.country || 'Unknown',
         isLoading: isLoadingHolidays,
-        hasData: !!holidayData && holidayData.totalHolidays > 0
+        hasData: !!holidayData && holidayData.totalHolidays > 0,
+        userContext: holidayData?.userContext || null
     };
 
     return (
