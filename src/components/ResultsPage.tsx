@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Car, Wifi, TrendingUp, Pin, PinOff, Globe, User, ChevronDown, Search, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -59,6 +59,30 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
+  // Search input ref for focusing
+  const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Function to handle search bar click - scroll to top and expand header
+  const handleSearchBarClick = () => {
+    // Scroll to top smoothly
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    // Expand header if collapsed
+    if (isHeaderCollapsed) {
+      setIsTransitioning(true);
+      setIsHeaderCollapsed(false);
+
+      // Focus on search input after header expansion
+      setTimeout(() => {
+        searchInputRef.current?.focus();
+        setIsTransitioning(false);
+      }, 300); // Wait for header expansion animation
+    } else {
+      // If header is already expanded, just focus on input
+      searchInputRef.current?.focus();
+    }
+  };
+
   // Scroll handler for header minimization with improved hysteresis
   useEffect(() => {
     let ticking = false;
@@ -70,22 +94,22 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
         requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           const scrollDelta = currentScrollY - lastScrollY;
-          
+
           // Determine scroll direction
           const direction = scrollDelta > 0 ? 'down' : scrollDelta < 0 ? 'up' : null;
-          
+
           // Only update if direction actually changed
           if (direction && direction !== scrollDirection) {
             setScrollDirection(direction);
           }
-          
+
           // Collapse header when scrolling down more than 100px
           if (currentScrollY > 100) {
             if (direction === 'down' && scrollDelta > 20 && !isHeaderCollapsed) {
               // Scrolling down significantly - collapse header
               setIsTransitioning(true);
               setIsHeaderCollapsed(true);
-              
+
               // Prevent rapid state changes for 300ms
               clearTimeout(transitionTimeout);
               transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
@@ -93,7 +117,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               // Scrolling up significantly - expand header
               setIsTransitioning(true);
               setIsHeaderCollapsed(false);
-              
+
               // Prevent rapid state changes for 300ms
               clearTimeout(transitionTimeout);
               transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
@@ -107,11 +131,11 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
             }
           }
-          
+
           lastScrollY = currentScrollY;
           ticking = false;
         });
-        
+
         ticking = true;
       }
     };
@@ -525,16 +549,16 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-black dark:to-gray-900">
       {/* Header - Clean and Mobile-First with Scroll-Based Minimization */}
-      <header className={`bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm sticky top-0 z-40 transition-all duration-300 ease-in-out ${isHeaderCollapsed ? 'py-2 shadow-lg' : 'py-3 sm:py-4'
-        }`}>
+      <header className={`bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm sticky top-0 z-40 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'py-2 shadow-lg' : 'py-3 sm:py-4'
+        } ${isTransitioning ? 'pointer-events-none' : ''}`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Scroll Indicator - Subtle visual feedback */}
-          <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-300 ${isHeaderCollapsed ? 'opacity-100' : 'opacity-0'
+          <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-100' : 'opacity-0'
             }`} />
 
           {/* Main Header Row - Collapsible */}
-          <div className={`flex items-center justify-between transition-all duration-300 ${isHeaderCollapsed ? 'mb-2' : 'mb-3 sm:mb-4'
+          <div className={`flex items-center justify-between transition-all duration-500 ease-out ${isHeaderCollapsed ? 'mb-2' : 'mb-3 sm:mb-4'
             }`}>
             <div className="flex items-center space-x-2 sm:space-x-4">
               <Button
@@ -547,18 +571,18 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
               <div className="min-w-0">
                 <div className="flex items-center space-x-2 sm:space-x-3">
-                  <h1 className={`font-bold text-foreground flex items-center tracking-tight truncate transition-all duration-300 ${isHeaderCollapsed ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl md:text-3xl'
+                  <h1 className={`font-bold text-foreground flex items-center tracking-tight truncate transition-all duration-500 ease-out ${isHeaderCollapsed ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl md:text-3xl'
                     }`}>
                     {destination}
                     {getCountryFlag(destination) ? (
                       <img
                         src={getCountryFlag(destination)!}
                         alt="Country Flag"
-                        className={`rounded shadow-sm flex-shrink-0 transition-all duration-300 ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
+                        className={`rounded shadow-sm flex-shrink-0 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
                           }`}
                       />
                     ) : (
-                      <Globe className={`text-blue-400 flex-shrink-0 transition-all duration-300 ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
+                      <Globe className={`text-blue-400 flex-shrink-0 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
                         }`} />
                     )}
                     <Button
@@ -573,7 +597,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 </div>
 
                 {/* Date Range - Collapsible */}
-                <div className={`transition-all duration-300 ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto'
+                <div className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto'
                   }`}>
                   <Popover>
                     <PopoverTrigger asChild>
@@ -620,7 +644,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </div>
 
           {/* Pinned Destinations - Collapsible */}
-          <div className={`transition-all duration-300 ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden mb-0' : 'opacity-100 h-auto mb-3 sm:mb-4'
+          <div className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden mb-0' : 'opacity-100 h-auto mb-3 sm:mb-4'
             }`}>
             {pinnedDestinations.length > 0 && (
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
@@ -664,13 +688,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
           </div>
 
           {/* Search Bar - Always Visible but Compact when Collapsed */}
-          <form onSubmit={handleSearch} className={`bg-white/10 backdrop-blur-sm border border-border/20 rounded-full shadow-lg relative travis-glow-white transition-all duration-300 ${isHeaderCollapsed ? 'p-1' : 'p-1.5 sm:p-2'
+          <form onSubmit={handleSearch} className={`bg-white/10 backdrop-blur-sm border border-border/20 rounded-full shadow-lg relative travis-glow-white transition-all duration-500 ease-out ${isHeaderCollapsed ? 'p-1' : 'p-1.5 sm:p-2'
             }`}>
             <div className="flex items-center gap-1 sm:gap-2">
               <div className="flex-1 relative">
-                <MapPin className={`absolute text-muted-foreground z-10 transition-all duration-300 ${isHeaderCollapsed ? 'left-2.5 w-4 h-4' : 'left-3 sm:left-4 w-4 h-4 sm:w-5 sm:h-5'
+                <MapPin className={`absolute text-muted-foreground z-10 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'left-2.5 w-4 h-4' : 'left-3 sm:left-4 w-4 h-4 sm:w-5 sm:h-5'
                   } top-1/2 transform -translate-y-1/2`} />
                 <Input
+                  ref={searchInputRef}
                   type="text"
                   placeholder="Search any destination worldwide..."
                   value={newDestination}
@@ -678,7 +703,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   onKeyPress={handleKeyPress}
                   onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-300 ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
+                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-500 ease-out ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
                     }`}
                 />
                 {showSuggestions && mapboxSuggestions.length > 0 && (
@@ -712,7 +737,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
 
               {/* Date Inputs - Collapsible */}
-              <div className={`flex gap-1 transition-all duration-300 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'
+              <div className={`flex gap-1 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'
                 }`}>
                 <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                   <PopoverTrigger asChild>
@@ -743,7 +768,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                       variant="ghost"
                       className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
                     >
-                      {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Return'}
+                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Return'}
                     </Button>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
@@ -763,10 +788,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
               <Button
                 type="submit"
-                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-300 ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
+                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
                   }`}
               >
-                <Search className={`transition-all duration-300 ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
+                <Search className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
                   }`} />
               </Button>
             </div>
