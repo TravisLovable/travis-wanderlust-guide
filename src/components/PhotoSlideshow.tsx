@@ -1,51 +1,197 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { ChevronLeft, ChevronRight, Camera } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { supabase } from '@/integrations/supabase/client';
 
 interface PhotoSlideshowProps {
   destination?: string;
 }
 
+interface UnsplashPhoto {
+  id: string;
+  urls: {
+    small: string;
+    regular: string;
+  };
+  alt_description: string;
+  user: {
+    name: string;
+    username: string;
+  };
+  description: string;
+}
+
 const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
-  const [videoError, setVideoError] = useState(false);
+  const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleVideoError = (e: React.SyntheticEvent<HTMLVideoElement, Event>) => {
-    console.error('Video failed to load, showing fallback image');
-    setVideoError(true);
+  useEffect(() => {
+    const fetchPhotos = async () => {
+      if (!destination) {
+        setIsLoading(false);
+        return;
+      }
+
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        console.log(`🖼️ Fetching photos for: ${destination}`);
+
+        const { data, error: functionError } = await supabase.functions.invoke('unsplash-photos', {
+          body: {
+            query: destination,
+            perPage: 8
+          }
+        });
+
+        if (functionError) {
+          console.error('Unsplash function error:', functionError);
+          throw functionError;
+        }
+
+        if (data?.results && Array.isArray(data.results)) {
+          setPhotos(data.results);
+          console.log(`✅ Loaded ${data.results.length} photos for ${destination}`);
+        } else {
+          throw new Error('Invalid response format');
+        }
+
+      } catch (error) {
+        console.error('Error fetching photos:', error);
+        setError(error instanceof Error ? error.message : 'Failed to load photos');
+        
+        // Set fallback photos
+        setPhotos([
+          {
+            id: 'fallback-1',
+            urls: {
+              small: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
+              regular: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'
+            },
+            alt_description: `Beautiful view of ${destination}`,
+            user: { name: 'Unsplash', username: 'unsplash' },
+            description: `Discover the beauty of ${destination || 'this amazing destination'}`
+          }
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchPhotos();
+  }, [destination]);
+
+  const nextPhoto = () => {
+    setCurrentIndex((prev) => (prev + 1) % photos.length);
   };
 
-  const handleVideoLoad = () => {
-    console.log('Video loaded successfully');
+  const prevPhoto = () => {
+    setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
   };
 
-  return (
-    <div className="relative w-full h-80 rounded-2xl overflow-hidden">
-      {/* Video Container */}
-      <div className="relative w-full h-full">
-        {!videoError ? (
-          <video
-            src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4"
-            className="w-full h-full object-cover"
-            autoPlay
-            loop
-            muted
-            playsInline
-            onError={handleVideoError}
-            onLoadedData={handleVideoLoad}
-          />
-        ) : (
-          <div 
-            className="w-full h-full bg-cover bg-center bg-no-repeat"
-            style={{
-              backgroundImage: `url('https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80')`,
-            }}
-          />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-        <div className="absolute bottom-4 left-4 right-4">
-          <p className="text-white font-light text-lg tracking-wide drop-shadow-lg">
+  if (isLoading) {
+    return (
+      <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center">
+        <div className="text-center text-white">
+          <Camera className="w-8 h-8 mx-auto mb-2 animate-pulse" />
+          <p className="text-sm">Loading beautiful photos...</p>
+        </div>
+      </div>
+    );
+  }
+
+  if (photos.length === 0) {
+    return (
+      <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
+        <div className="text-center text-white">
+          <Camera className="w-8 h-8 mx-auto mb-2" />
+          <p className="text-lg font-light">
             {destination ? `Discover the beauty of ${destination}` : 'Discover beautiful destinations around the world'}
           </p>
         </div>
+      </div>
+    );
+  }
+
+  const currentPhoto = photos[currentIndex];
+
+  return (
+    <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
+      {/* Main Photo */}
+      <div className="relative w-full h-full">
+        <img
+          src={currentPhoto.urls.regular}
+          alt={currentPhoto.alt_description}
+          className="w-full h-full object-cover transition-opacity duration-500"
+          onError={(e) => {
+            // Fallback to small image if regular fails
+            const target = e.target as HTMLImageElement;
+            if (target.src !== currentPhoto.urls.small) {
+              target.src = currentPhoto.urls.small;
+            }
+          }}
+        />
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        
+        {/* Navigation Controls */}
+        {photos.length > 1 && (
+          <>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={prevPhoto}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+            >
+              <ChevronLeft className="w-5 h-5" />
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={nextPhoto}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+            >
+              <ChevronRight className="w-5 h-5" />
+            </Button>
+          </>
+        )}
+
+        {/* Photo Indicators */}
+        {photos.length > 1 && (
+          <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex space-x-2">
+            {photos.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentIndex(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex 
+                    ? 'bg-white' 
+                    : 'bg-white/40 hover:bg-white/60'
+                }`}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Content Overlay */}
+        <div className="absolute bottom-4 left-4 right-4">
+          <p className="text-white font-light text-lg tracking-wide drop-shadow-lg mb-1">
+            {currentPhoto.description || (destination ? `Discover the beauty of ${destination}` : 'Discover beautiful destinations around the world')}
+          </p>
+          <p className="text-white/80 text-xs">
+            Photo by {currentPhoto.user.name} on Unsplash
+          </p>
+        </div>
+
+        {/* Photo Counter */}
+        {photos.length > 1 && (
+          <div className="absolute top-4 right-4 bg-black/30 backdrop-blur-sm rounded-full px-3 py-1 text-white text-sm font-medium">
+            {currentIndex + 1} / {photos.length}
+          </div>
+        )}
       </div>
     </div>
   );
