@@ -23,7 +23,8 @@ import {
   TransportWidget,
   // PowerAdapterWidget,
   // EmergencyWidget,
-  ConnectivityWidget
+  ConnectivityWidget,
+  UberAvailabilityWidget
 } from './widgets';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
@@ -803,7 +804,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Hero Section with Photo Slideshow */}
         <div className="mb-6 sm:mb-8">
-          <PhotoSlideshow />
+          <PhotoSlideshow destination={destination} />
         </div>
 
         {/* Essential Travel Information - Mobile First Grid with Equal Heights */}
@@ -860,7 +861,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           </div>
 
-          {/* Row 4: Entry Requirements & Connectivity */}
+          {/* Row 4: Entry Requirements & Ride Sharing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
             {/* Visa Requirements - Critical for entry */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
@@ -869,15 +870,33 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </div>
 
-            {/* Connectivity Info - Important for modern travelers */}
+            {/* Uber Availability - Important for ground transportation */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <ConnectivityWidget />
+                <UberAvailabilityWidget destination={destination} />
               </div>
             </div>
           </div>
 
-          {/* Row 5: Future Features Placeholder - Subtle indication of what's coming */}
+          {/* Row 5: Connectivity & Additional Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+            {/* Connectivity Info - Important for modern travelers */}
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <ConnectivityWidget />
+              </div>
+            </div>
+
+            {/* Future expansion slot */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                {/* This space reserved for future widgets */}
+                <div className="h-full"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 6: Future Features Placeholder - Subtle indication of what's coming */}
           <div className="text-center py-8 sm:py-12">
             <div className="inline-flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl">
               <div className="flex items-center space-x-2">
