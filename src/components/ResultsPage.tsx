@@ -27,23 +27,32 @@ import {
 } from './widgets';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
+import { Destination } from '@/types/destination';
+import { useDestination } from '@/hooks/useDestination';
 
 interface ResultsPageProps {
-  destination: string;
+  destination: Destination | string;
   dates: {
     checkin: string;
     checkout: string;
   };
   onBack: () => void;
-  onNewSearch: (destination: string, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
+  onNewSearch: (destination: Destination | string, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
 }
 
 
 
 const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
 
+  // Use destination hook for structured destination handling
+  const { setDestination: setDestinationObject, getDisplayName } = useDestination();
+  
+  // Convert prop to consistent format
+  const destinationString = typeof destination === 'string' ? destination : destination.displayName || destination.name;
+  const destinationObject = typeof destination === 'string' ? null : destination;
+
   // const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
-  const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
+  const [pinnedDestinations, setPinnedDestinations] = useState([destinationString]);
   const [newDestination, setNewDestination] = useState(destination);
   const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
   const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
@@ -158,15 +167,15 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
   // Update pinned destinations when destination changes
   useEffect(() => {
-    if (!pinnedDestinations.includes(destination)) {
-      setPinnedDestinations(prev => [destination, ...prev.slice(0, 4)]); // Keep max 5 pinned destinations
+    if (!pinnedDestinations.includes(destinationString)) {
+      setPinnedDestinations(prev => [destinationString, ...prev.slice(0, 4)]); // Keep max 5 pinned destinations
     }
-  }, [destination]);
+  }, [destinationString]);
 
   // Update newDestination when destination prop changes
   useEffect(() => {
-    setNewDestination(destination);
-  }, [destination]);
+    setNewDestination(destinationString);
+  }, [destinationString]);
 
 
 
@@ -456,10 +465,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   };
 
   // Get dynamic data based on destination
-  const airportData = getAirportData(destination);
+  const airportData = getAirportData(destinationString);
   // const powerData = getPowerAdapterData(destination);
   // const emergencyData = getEmergencyNumbers(destination);
-  const transportData = getTransportData(destination);
+  const transportData = getTransportData(destinationString);
 
 
 
@@ -573,10 +582,10 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                 <div className="flex items-center space-x-2 sm:space-x-3">
                   <h1 className={`font-bold text-foreground flex items-center tracking-tight truncate transition-all duration-500 ease-out ${isHeaderCollapsed ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl md:text-3xl'
                     }`}>
-                    {destination}
-                    {getCountryFlag(destination) ? (
+                    {destinationString}
+                    {getCountryFlag(destinationString) ? (
                       <img
-                        src={getCountryFlag(destination)!}
+                        src={getCountryFlag(destinationString)!}
                         alt="Country Flag"
                         className={`rounded shadow-sm flex-shrink-0 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
                           }`}
@@ -588,7 +597,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handlePinDestination(destination)}
+                      onClick={() => handlePinDestination(destinationString)}
                       className="text-blue-400 hover:text-blue-300 ml-1 sm:ml-2"
                     >
                       <Pin className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -672,7 +681,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
                 {/* Regional Suggestions - Compact on mobile */}
                 <div className="flex flex-wrap gap-1 sm:gap-2">
-                  {getRegionalDestinations(destination).map((city) => (
+                  {getRegionalDestinations(destinationString).map((city) => (
                     <button
                       key={city}
                       onClick={() => handlePinDestination(city)}
@@ -803,7 +812,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Hero Section with Photo Slideshow */}
         <div className="mb-6 sm:mb-8">
-          <PhotoSlideshow />
+          <PhotoSlideshow destination={destinationString} />
         </div>
 
         {/* Essential Travel Information - Mobile First Grid with Equal Heights */}
@@ -814,14 +823,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Currency Converter - Essential for travel planning */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <CurrencyContainer destination={destination} />
+                <CurrencyContainer destination={destinationString} />
               </div>
             </div>
 
             {/* Time Zone - Critical for scheduling */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <TimeZoneContainer destination={destination} />
+                <TimeZoneContainer destination={destinationString} />
               </div>
             </div>
           </div>
@@ -831,7 +840,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
             <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <WeatherContainer destination={destination} />
+                <WeatherContainer destination={destinationString} />
               </div>
             </div>
 
@@ -848,14 +857,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Local Holidays - Important for trip planning */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <HolidayContainer destination={destination} dates={dates} />
+                <HolidayContainer destination={destinationString} dates={dates} />
               </div>
             </div>
 
             {/* Airport Information - Essential for arrival planning */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <AirportContainer destination={destination} />
+                <AirportContainer destination={destinationString} />
               </div>
             </div>
           </div>
@@ -865,7 +874,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Visa Requirements - Critical for entry */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <VisaContainer destination={destination} />
+                <VisaContainer destination={destinationString} />
               </div>
             </div>
 

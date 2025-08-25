@@ -22,7 +22,7 @@ interface HomePageProps {
 }
 
 const HomePage = ({ onSearch }: HomePageProps) => {
-  const { destinationString, setDestination, getDisplayName } = useDestination();
+  const { destination, setDestination, getDisplayName } = useDestination();
   const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
   const [checkinDate, setCheckinDate] = useState<Date>();
   const [checkoutDate, setCheckoutDate] = useState<Date>();
@@ -47,14 +47,13 @@ const HomePage = ({ onSearch }: HomePageProps) => {
     } else {
       setIsSearchDisabled(true);
     }
-  }, [destinationString, checkinDate, checkoutDate]);
+  }, [destination, checkinDate, checkoutDate]);
 
 
-  const destinationString = getDisplayName();
   // Use Mapbox for destination suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
-    destinationString,
-    showSuggestions && destinationString.length >= 2
+    destination,
+    showSuggestions && destination.length >= 2
   );
 
   // Word swap animation - only the last word
@@ -338,7 +337,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
   // Use Mapbox suggestions if available, otherwise fall back to static list
   const staticSuggestions = globalDestinations.filter(city =>
-    city.toLowerCase().includes(destinationString.toLowerCase()) && destinationString.length > 0
+    city.toLowerCase().includes(destination.toLowerCase()) && destination.length > 0
   );
 
   const suggestions = hasApiAccess && mapboxSuggestions.length > 0 ? mapboxSuggestions : [];
@@ -348,7 +347,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (destination && checkinDate && checkoutDate) {
-      onSearch(destinationString, {
+      onSearch(destination, {
         checkin: format(checkinDate, 'yyyy-MM-dd'),
         checkout: format(checkoutDate, 'yyyy-MM-dd')
       }, selectedPlace || undefined);
@@ -383,10 +382,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const handleDestinationSelect = async (suggestion: any) => {
     // Handle both Mapbox suggestions and static suggestions
     if (suggestion.id && suggestion.place_name) {
-      // Mapbox suggestion - pass the full suggestion object to the hook
+      // Mapbox suggestion
       const placeDetails = await getPlaceDetails(suggestion);
       if (placeDetails) {
-        setDestination(suggestion); // Pass the Mapbox place object
+        setDestination(placeDetails.formatted_address);
         setSelectedPlace(placeDetails);
         console.log('Selected place details:', placeDetails);
       } else {
@@ -465,7 +464,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   <Input
                     type="text"
                     placeholder={t.searchPlaceholder}
-                    value={destinationString}
+                    value={destination}
                     onChange={(e) => {
                       setDestination(e.target.value);
                       setSelectedPlace(null);
@@ -479,7 +478,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                   />
                   {showSuggestions && (suggestions.length > 0 || fallbackSuggestions.length > 0) && (
                     <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
-                      {!hasApiAccess && destinationString.length >= 2 && (
+                      {!hasApiAccess && destination.length >= 2 && (
                         <div className="p-2 text-xs text-yellow-500 bg-yellow-500/10 rounded-t-xl border-b border-border/30">
                           ⚠️ Using offline search. Connect Mapbox API for better results.
                         </div>

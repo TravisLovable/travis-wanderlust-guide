@@ -8,6 +8,10 @@ import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import AuthModal from '@/components/AuthModal';
 import OnboardingModal from '@/components/OnboardingModal';
+import { Destination } from "@/types/destination";
+import { Destination } from "@/types/destination";
+import { Destination } from '@/types/destination';
+import { Destination } from '@/types/destination';
 
 interface SearchData {
   destination: string;
@@ -27,6 +31,7 @@ const Index = () => {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
+import { Destination } from "@/types/destination";
   // Authentication setup
   useEffect((): any => {
     // Set up auth state listener
@@ -49,6 +54,7 @@ const Index = () => {
             // Show onboarding modal if profile doesn't exist or onboarding not completed
             if (!profile || !profile.onboarding_completed) {
               setIsOnboardingModalOpen(true);
+import { Destination } from "@/types/destination";
             }
           }, 0);
         } else {
@@ -118,8 +124,11 @@ const Index = () => {
         onSignInSuccess={() => { }}
       />
       <OnboardingModal
+import { Destination } from "@/types/destination";
         isOpen={isOnboardingModalOpen}
+import { Destination } from "@/types/destination";
         onClose={() => setIsOnboardingModalOpen(false)}
+import { Destination } from "@/types/destination";
         user={user}
       />
       {content}
