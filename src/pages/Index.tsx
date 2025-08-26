@@ -8,9 +8,10 @@ import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
 import AuthModal from '@/components/AuthModal';
 import OnboardingModal from '@/components/OnboardingModal';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface SearchData {
-  destination: string;
+  placeDetails: SelectedPlace | null;
   dates: {
     checkin: string;
     checkout: string;
@@ -59,8 +60,8 @@ const Index = () => {
   }, []);
 
 
-  const handleSearch = (destination: string, dates: { checkin: string; checkout: string }, skipTransition = false) => {
-    setSearchData({ destination, dates });
+  const handleSearch = (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }, skipTransition = false) => {
+    setSearchData({ placeDetails, dates });
 
     // Skip loading transition if requested (for searches from results page)
     if (skipTransition) {
@@ -89,14 +90,14 @@ const Index = () => {
   if (showLoading && searchData) {
     content = (
       <LoadingIntelligence
-        destination={searchData.destination}
+        placeDetails={searchData.placeDetails}
         onComplete={handleLoadingComplete}
       />
     );
   } else if (searchData && !showLoading) {
     content = (
       <ResultsPage
-        destination={searchData.destination}
+        placeDetails={searchData.placeDetails}
         dates={searchData.dates}
         onBack={handleBack}
         onNewSearch={handleSearch}
@@ -104,7 +105,7 @@ const Index = () => {
     );
   } else {
     content = (
-      <HomePage onSearch={(destination, dates) => handleSearch(destination, dates, false)} />
+      <HomePage onSearch={(placeDetails, dates) => handleSearch(placeDetails, dates, false)} />
     );
   }
 

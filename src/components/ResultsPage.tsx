@@ -26,22 +26,45 @@ import {
   ConnectivityWidget,
   UberAvailabilityWidget
 } from './widgets';
-import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
+import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
 
 interface ResultsPageProps {
-  destination: string;
+  placeDetails: SelectedPlace | null;
   dates: {
     checkin: string;
     checkout: string;
   };
   onBack: () => void;
-  onNewSearch: (destination: string, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
+  onNewSearch: (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
 }
 
 
 
-const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
+const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPageProps) => {
+  // Extract destination string for backwards compatibility
+  const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
+  
+  // Convert placeDetails to Destination type for widgets
+  const destinationObj: any = placeDetails ? {
+    id: placeDetails.place_id,
+    displayName: placeDetails.formatted_address || placeDetails.name,
+    shortName: placeDetails.name,
+    fullName: placeDetails.formatted_address || placeDetails.name,
+    coordinates: {
+      latitude: placeDetails.latitude,
+      longitude: placeDetails.longitude
+    },
+    addressComponents: {
+      country: placeDetails.country_code,
+      region: placeDetails.region
+    },
+    source: {
+      type: 'mapbox' as const,
+      id: placeDetails.place_id
+    },
+    createdAt: new Date()
+  } : null;
 
   // const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
   const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
@@ -157,17 +180,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
 
 
-  // Update pinned destinations when destination changes
+  // Update pinned destinations when placeDetails changes
   useEffect(() => {
     if (!pinnedDestinations.includes(destination)) {
       setPinnedDestinations(prev => [destination, ...prev.slice(0, 4)]); // Keep max 5 pinned destinations
     }
-  }, [destination]);
+  }, [placeDetails, destination]);
 
-  // Update newDestination when destination prop changes
+  // Update newDestination when placeDetails prop changes
   useEffect(() => {
     setNewDestination(destination);
-  }, [destination]);
+  }, [placeDetails, destination]);
 
 
 
@@ -292,8 +315,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (newDestination && newCheckinDate && newCheckoutDate) {
+      // Create a basic placeDetails object if we don't have the full details
+      const newPlaceDetails: SelectedPlace = {
+        name: newDestination,
+        formatted_address: newDestination,
+        latitude: 0,
+        longitude: 0,
+        place_id: `search_${Date.now()}`
+      };
+      
       // Pass skipTransition as true to avoid loading screen
-      onNewSearch(newDestination, {
+      onNewSearch(newPlaceDetails, {
         checkin: format(newCheckinDate, 'yyyy-MM-dd'),
         checkout: format(newCheckoutDate, 'yyyy-MM-dd')
       }, true);
@@ -613,14 +645,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Currency Converter - Essential for travel planning */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <CurrencyContainer destination={destination} />
+                <CurrencyContainer destination={destinationObj} />
               </div>
             </div>
 
             {/* Time Zone - Critical for scheduling */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <TimeZoneContainer destination={destination} />
+                <TimeZoneContainer destination={destinationObj} />
               </div>
             </div>
           </div>
@@ -630,7 +662,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
             <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <WeatherContainer destination={destination} />
+                <WeatherContainer destination={destinationObj} />
               </div>
             </div>
 

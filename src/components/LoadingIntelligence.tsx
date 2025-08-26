@@ -1,13 +1,14 @@
 
 import React, { useEffect, useState } from 'react';
 import { Brain, Zap } from 'lucide-react';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface LoadingIntelligenceProps {
-  destination: string;
+  placeDetails: SelectedPlace | null;
   onComplete: () => void;
 }
 
-const LoadingIntelligence = ({ destination, onComplete }: LoadingIntelligenceProps) => {
+const LoadingIntelligence = ({ placeDetails, onComplete }: LoadingIntelligenceProps) => {
   const [progress, setProgress] = useState(0);
   const [currentStep, setCurrentStep] = useState(0);
 
@@ -68,7 +69,7 @@ const LoadingIntelligence = ({ destination, onComplete }: LoadingIntelligencePro
 
         {/* Destination */}
         <h1 className="text-4xl font-light text-foreground mb-2 tracking-wide">
-          {destination}
+          {placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination'}
         </h1>
         
         {/* Current step */}

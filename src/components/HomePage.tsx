@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Calendar, MapPin } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,6 +10,8 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import OnboardingModal from './OnboardingModal';
 import { useToast } from '@/hooks/use-toast';
 
 
@@ -25,7 +27,16 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
+
+  // Authentication state
+  const [user, setUser] = useState<SupabaseUser | null>(null);
+  const [session, setSession] = useState<Session | null>(null);
+  const [userProfile, setUserProfile] = useState<any>(null);
+  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   const [isSearchDisabled, setIsSearchDisabled] = useState(true);
   useEffect(() => {
