@@ -2,14 +2,14 @@ import React, { useState, useEffect } from 'react';
 import WeatherPresenter from '../presenters/WeatherPresenter';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { supabase } from '@/integrations/supabase/client';
-import { Destination } from '@/types/destination';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface WeatherContainerProps {
-    destination: Destination;
+    placeDetails: SelectedPlace | null;
 }
 
 const WeatherContainer: React.FC<WeatherContainerProps> = ({
-    destination
+    placeDetails
 }) => {
     const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
 
@@ -56,22 +56,17 @@ const WeatherContainer: React.FC<WeatherContainerProps> = ({
         fetchUserCountry();
     }, []);
 
-    // Debug logging
-    console.log('🌤️ WeatherContainer Debug:', {
-        destination: destination.displayName,
-        userCountry,
-        tempUnit,
-        userLoading
-    });
+
 
     // Data fetching logic - now with user country context
-    const { weatherData, isLoading, error } = useWeatherData(destination.displayName, userCountry);
+    const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
+    const { weatherData, isLoading, error } = useWeatherData(destinationName, userCountry);
 
     // Data transformation logic
     const transformedData = {
         current: weatherData?.current || null,
         forecast: weatherData?.forecast || [],
-        location: weatherData?.location || destination.displayName,
+        location: weatherData?.location || destinationName,
         isLoading,
         error
     };

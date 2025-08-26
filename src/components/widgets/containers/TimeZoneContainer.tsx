@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import TimeZonePresenter from '../presenters/TimeZonePresenter';
 import { supabase } from '@/integrations/supabase/client';
-import { Destination } from '@/types/destination';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface TimeZoneContainerProps {
-  destination: Destination;
+  placeDetails: SelectedPlace | null;
 }
 
 interface WorldClockData {
@@ -30,7 +30,7 @@ interface WorldClockData {
   timeDifferenceText: string;
 }
 
-const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) => {
+const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) => {
   const [worldClockData, setWorldClockData] = useState<WorldClockData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -39,7 +39,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) =>
     const fetchWorldClockData = async () => {
       setIsLoading(true);
       try {
-        console.log('Fetching world clock data for:', destination.displayName);
+        const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
 
         // Get timezone for destination - improved mapping with more destinations
         const getTimezoneForDestination = (dest: string) => {
@@ -106,10 +106,10 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) =>
           return 'UTC';
         };
 
-        const destinationTimezone = getTimezoneForDestination(destination.displayName);
+        const destinationTimezone = getTimezoneForDestination(destinationName);
         const originTimezone = 'America/Chicago'; // User's timezone (CST)
 
-        console.log(`Using timezones: origin=${originTimezone}, destination=${destinationTimezone}`);
+
 
         const { data, error } = await supabase.functions.invoke('get-world-clock', {
           body: {
@@ -134,7 +134,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) =>
     };
 
     fetchWorldClockData();
-  }, [destination]);
+  }, [placeDetails]);
 
   // Data transformation logic
   const transformedData = {
@@ -150,7 +150,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) =>
     },
     timeDifferenceText: worldClockData?.timeDifferenceText || 'Same time',
     isLoading,
-    destinationName: destination.displayName
+    destinationName: placeDetails?.formatted_address || placeDetails?.name || 'Unknown'
   };
 
   return (

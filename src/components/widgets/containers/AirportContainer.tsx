@@ -1,12 +1,12 @@
 import React from 'react';
 import AirportPresenter from '../presenters/AirportPresenter';
-import { Destination } from '@/types/destination';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface AirportContainerProps {
-    destination: Destination;
+    placeDetails: SelectedPlace | null;
 }
 
-const AirportContainer: React.FC<AirportContainerProps> = ({ destination }) => {
+const AirportContainer: React.FC<AirportContainerProps> = ({ placeDetails }) => {
     // Dynamic airport data based on destination
     const getAirportData = (dest: string) => {
         const lowerDest = dest.toLowerCase();
@@ -77,7 +77,8 @@ const AirportContainer: React.FC<AirportContainerProps> = ({ destination }) => {
         };
     };
 
-    const airportData = getAirportData(destination.displayName);
+    const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
+    const airportData = getAirportData(destinationName);
 
     return (
         <AirportPresenter data={airportData} />

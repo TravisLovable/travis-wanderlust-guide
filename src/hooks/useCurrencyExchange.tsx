@@ -43,13 +43,11 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: 
   const targetCurrencyInfo = destination ? getCurrencyFromDestination(destination) : { code: 'USD', symbol: '$', name: 'US Dollar' };
   const targetCurrency = targetCurrencyInfo.code;
 
-  console.log("baseCurrency", baseCurrency);
-  console.log("targetCurrency", targetCurrency);
+
 
   useEffect(() => {
     const fetchExchangeRates = async () => {
-      console.log('🔄 Starting currency exchange fetch...');
-      console.log('📊 Input params:', { baseCurrency, targetCurrency, targetCurrencyInfo });
+
 
       try {
         setIsLoading(true);
@@ -105,7 +103,7 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: 
             lastUpdated: new Date(data.time_last_update_utc).toLocaleTimeString()
           }
         };
-        console.log('🔄 Multi-currency data updated:', newMultiCurrencyData);
+
         setMultiCurrencyData(newMultiCurrencyData);
 
       } catch (err) {
@@ -120,17 +118,14 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: 
         setError(err instanceof Error ? err.message : 'Failed to fetch exchange rates');
 
         // Fallback to mock data if API fails
-        console.log('🔄 Setting fallback data...');
         const fallbackData = {
           rate: targetCurrency === 'BRL' ? 5.15 : 1.0,
           symbol: targetCurrencyInfo.symbol,
           name: targetCurrencyInfo.name,
           lastUpdated: 'API Error - Using fallback'
         };
-        console.log('📊 Fallback data:', fallbackData);
         setCurrencyData(fallbackData);
       } finally {
-        console.log('🏁 Currency exchange fetch completed');
         setIsLoading(false);
       }
     };

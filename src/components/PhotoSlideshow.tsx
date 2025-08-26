@@ -4,9 +4,10 @@ import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { getSearchableDestination, normalizeDestination } from '@/utils/destinationHelpers';
 import type { Destination } from '@/types/destination';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface PhotoSlideshowProps {
-  destination?: string | Destination;
+  placeDetails: SelectedPlace | null;
 }
 
 interface UnsplashPhoto {
@@ -23,24 +24,20 @@ interface UnsplashPhoto {
   description: string;
 }
 
-const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
+const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
   const [photos, setPhotos] = useState<UnsplashPhoto[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const processDestination = (destination: string | Destination): string => {
-    if (typeof destination === 'string') {
-      const normalized = normalizeDestination(destination);
-      return getSearchableDestination(normalized);
-    }
-    return getSearchableDestination(destination);
+  const processDestination = (placeDetails: SelectedPlace | null): string => {
+    if (!placeDetails) return '';
+    return placeDetails.name || placeDetails.formatted_address || '';
   }
 
   useEffect(() => {
     const fetchPhotos = async () => {
-      if (!destination) {
-        console.log('No destination provided');
+      if (!placeDetails) {
         setIsLoading(false);
         return;
       }
@@ -49,8 +46,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
         setIsLoading(true);
         setError(null);
 
-        const processedDestination = processDestination(destination);
-        console.log(`🔍 Using processed destination for photos: "${processedDestination}" (from "${typeof destination === 'string' ? destination : destination.displayName}")`);
+        const processedDestination = processDestination(placeDetails);
 
         const { data, error: functionError } = await supabase.functions.invoke('unsplash-photos', {
           body: {
@@ -66,7 +62,6 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
 
         if (data?.results && Array.isArray(data.results)) {
           setPhotos(data.results);
-          console.log(`✅ Loaded ${data.results.length} photos for ${destination}`);
         } else {
           throw new Error('Invalid response format');
         }
@@ -83,9 +78,9 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
               small: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80',
               regular: 'https://images.unsplash.com/photo-1469474968028-56623f02e42e?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80'
             },
-            alt_description: `Beautiful view of ${typeof destination === 'string' ? destination : destination.displayName}`,
+            alt_description: `Beautiful view of ${placeDetails?.formatted_address || placeDetails?.name || 'this destination'}`,
             user: { name: 'Unsplash', username: 'unsplash' },
-            description: `Discover the beauty of ${destination ? (typeof destination === 'string' ? destination : destination.displayName) : 'this amazing destination'}`
+            description: `Discover the beauty of ${placeDetails?.formatted_address || placeDetails?.name || 'this amazing destination'}`
           }
         ]);
       } finally {
@@ -94,7 +89,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
     };
 
     fetchPhotos();
-  }, [destination]);
+  }, [placeDetails]);
 
   const nextPhoto = () => {
     setCurrentIndex((prev) => (prev + 1) % photos.length);
@@ -121,7 +116,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
         <div className="text-center text-white">
           <Camera className="w-8 h-8 mx-auto mb-2" />
           <p className="text-lg font-light">
-            {destination ? `Discover the beauty of ${typeof destination === 'string' ? destination : destination.displayName}` : 'Discover beautiful destinations around the world'}
+            {placeDetails ? `Discover the beauty of ${placeDetails.formatted_address || placeDetails.name}` : 'Discover beautiful destinations around the world'}
           </p>
         </div>
       </div>
@@ -189,7 +184,7 @@ const PhotoSlideshow = ({ destination }: PhotoSlideshowProps) => {
         {/* Content Overlay */}
         <div className="absolute bottom-4 left-4 right-4">
           <p className="text-white font-light text-lg tracking-wide drop-shadow-lg mb-1">
-            {currentPhoto.description || (destination ? `Discover the beauty of ${typeof destination === 'string' ? destination : destination.displayName}` : 'Discover beautiful destinations around the world')}
+            {currentPhoto.description || (placeDetails ? `Discover the beauty of ${placeDetails.formatted_address || placeDetails.name}` : 'Discover beautiful destinations around the world')}
           </p>
           <p className="text-white/80 text-xs">
             Photo by {currentPhoto.user.name} on Unsplash

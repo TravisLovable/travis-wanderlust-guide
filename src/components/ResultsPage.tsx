@@ -42,29 +42,8 @@ interface ResultsPageProps {
 
 
 const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPageProps) => {
-  // Extract destination string for backwards compatibility
+  // Extract destination string for backwards compatibility (display purposes)
   const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
-  
-  // Convert placeDetails to Destination type for widgets
-  const destinationObj: any = placeDetails ? {
-    id: placeDetails.place_id,
-    displayName: placeDetails.formatted_address || placeDetails.name,
-    shortName: placeDetails.name,
-    fullName: placeDetails.formatted_address || placeDetails.name,
-    coordinates: {
-      latitude: placeDetails.latitude,
-      longitude: placeDetails.longitude
-    },
-    addressComponents: {
-      country: placeDetails.country_code,
-      region: placeDetails.region
-    },
-    source: {
-      type: 'mapbox' as const,
-      id: placeDetails.place_id
-    },
-    createdAt: new Date()
-  } : null;
 
   // const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
   const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
@@ -634,7 +613,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Hero Section with Photo Slideshow */}
         <div className="mb-6 sm:mb-8">
-          <PhotoSlideshow destination={destination} />
+          <PhotoSlideshow placeDetails={placeDetails} />
         </div>
 
         {/* Essential Travel Information - Mobile First Grid with Equal Heights */}
@@ -645,14 +624,14 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             {/* Currency Converter - Essential for travel planning */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <CurrencyContainer destination={destinationObj} />
+                <CurrencyContainer placeDetails={placeDetails} />
               </div>
             </div>
 
             {/* Time Zone - Critical for scheduling */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <TimeZoneContainer destination={destinationObj} />
+                <TimeZoneContainer placeDetails={placeDetails} />
               </div>
             </div>
           </div>
@@ -662,7 +641,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
             <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <WeatherContainer destination={destinationObj} />
+                <WeatherContainer placeDetails={placeDetails} />
               </div>
             </div>
 
@@ -673,14 +652,14 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             {/* Local Holidays - Important for trip planning */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <HolidayContainer destination={destination} dates={dates} />
+                <HolidayContainer placeDetails={placeDetails} dates={dates} />
               </div>
             </div>
 
             {/* Airport Information - Essential for arrival planning */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <AirportContainer destination={destination} />
+                <AirportContainer placeDetails={placeDetails} />
               </div>
             </div>
           </div>
@@ -690,14 +669,14 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             {/* Visa Requirements - Critical for entry */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <VisaContainer destination={destination} />
+                <VisaContainer placeDetails={placeDetails} />
               </div>
             </div>
 
             {/* Uber Availability - Important for ground transportation */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <UberAvailabilityWidget destination={destination} />
+                <UberAvailabilityWidget placeDetails={placeDetails} />
               </div>
             </div>
           </div>

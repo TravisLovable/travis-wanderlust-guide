@@ -3,10 +3,10 @@ import { Car, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
-import { Destination } from '@/types/destination';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface UberAvailabilityWidgetProps {
-  destination: Destination;
+  placeDetails: SelectedPlace | null;
 }
 
 interface UberData {
@@ -22,14 +22,14 @@ interface UberData {
   notes?: string;
 }
 
-const UberAvailabilityWidget = ({ destination }: UberAvailabilityWidgetProps) => {
+const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) => {
   const [uberData, setUberData] = useState<UberData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     const checkUberAvailability = async () => {
-      if (!destination) {
+      if (!placeDetails) {
         setIsLoading(false);
         return;
       }
@@ -38,11 +38,11 @@ const UberAvailabilityWidget = ({ destination }: UberAvailabilityWidgetProps) =>
         setIsLoading(true);
         setError(null);
 
-        console.log(`🚗 Checking Uber availability for: ${destination.displayName}`);
+        const destinationName = placeDetails.formatted_address || placeDetails.name;
 
         const { data, error: functionError } = await supabase.functions.invoke('uber-availability', {
           body: {
-            destination: destination.displayName
+            destination: destinationName
           }
         });
 
@@ -52,7 +52,6 @@ const UberAvailabilityWidget = ({ destination }: UberAvailabilityWidgetProps) =>
         }
 
         setUberData(data);
-        console.log(`✅ Uber availability data loaded for ${destination.displayName}:`, data);
 
       } catch (error) {
         console.error('Error checking Uber availability:', error);
@@ -70,7 +69,7 @@ const UberAvailabilityWidget = ({ destination }: UberAvailabilityWidgetProps) =>
     };
 
     checkUberAvailability();
-  }, [destination]);
+  }, [placeDetails]);
 
   if (isLoading) {
     return (

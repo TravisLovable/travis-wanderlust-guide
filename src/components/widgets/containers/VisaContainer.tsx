@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import VisaPresenter from '../presenters/VisaPresenter';
 import { supabase } from '@/integrations/supabase/client';
-import { Destination } from '@/types/destination';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface VisaContainerProps {
-    destination: Destination;
+    placeDetails: SelectedPlace | null;
     userNationality?: string;
 }
 
@@ -24,22 +24,22 @@ interface VisaData {
     error?: string;
 }
 
-const VisaContainer: React.FC<VisaContainerProps> = ({ destination, userNationality = 'US' }) => {
+const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails, userNationality = 'US' }) => {
     const [visaData, setVisaData] = useState<VisaData>({ visaRequired: 'unknown', isLoading: true });
 
     useEffect(() => {
         const fetchVisaRequirements = async () => {
-            if (!destination) {
+            if (!placeDetails) {
                 setVisaData({ visaRequired: 'unknown', isLoading: false, error: 'No destination provided' });
                 return;
             }
 
             try {
-                console.log(`🛂 Fetching visa requirements for: ${destination.displayName} (${userNationality} passport)`);
+                const destinationName = placeDetails.formatted_address || placeDetails.name;
 
                 const { data, error: functionError } = await supabase.functions.invoke('visa-requirements', {
                     body: {
-                        destination: destination.displayName,
+                        destination: destinationName,
                         userNationality: userNationality
                     }
                 });
@@ -49,14 +49,15 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ destination, userNational
                     throw functionError;
                 }
 
-                console.log(`✅ Visa requirements loaded for ${destination.displayName}:`, data);
+                console.log(`✅ Visa requirements loaded for ${destinationName}:`, data);
                 setVisaData({ ...data, isLoading: false });
 
             } catch (error) {
                 console.error('Error fetching visa requirements:', error);
 
                 // Fallback to basic hardcoded data
-                const fallbackData = getFallbackVisaData(destination.displayName);
+                const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
+                const fallbackData = getFallbackVisaData(destinationName);
                 setVisaData({
                     ...fallbackData,
                     isLoading: false,
@@ -66,7 +67,7 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ destination, userNational
         };
 
         fetchVisaRequirements();
-    }, [destination, userNationality]);
+    }, [placeDetails, userNationality]);
 
     // Fallback visa data for when API fails
     const getFallbackVisaData = (dest: string): VisaData => {
