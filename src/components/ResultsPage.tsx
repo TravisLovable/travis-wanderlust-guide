@@ -362,7 +362,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
               <Button
                 variant="ghost"
                 onClick={onBack}
-                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive cursor-pointer pointer-events-auto"
+                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -485,82 +485,68 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             )}
           </div>
 
-          {/* Airbnb-Style Search Bar - Always Visible but Compact when Collapsed */}
-          <form onSubmit={handleSearch} className={`relative transition-all duration-500 ease-out ${isHeaderCollapsed ? '' : ''
+          {/* Search Bar - Always Visible but Compact when Collapsed */}
+          <form onSubmit={handleSearch} className={`bg-white/10 backdrop-blur-sm border border-border/20 rounded-full shadow-lg relative travis-glow-white transition-all duration-500 ease-out ${isHeaderCollapsed ? 'p-1' : 'p-1.5 sm:p-2'
             }`}>
-            <div className={`bg-white shadow-lg rounded-full flex justify-center transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-12' : 'h-14'
-              }`} style={{ fontSize: '0.6rem' }}>
-
-              {/* Location Section */}
-              <div className={`relative flex-1 max-w-[34%] rounded-l-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
-                }`}>
-                <div className="relative">
-                  <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
-                    }`}>Location</p>
-                  <input
-                    ref={searchInputRef}
-                    type="text"
-                    placeholder="Where are you going?"
-                    value={newDestination}
-                    onChange={(e) => handleDestinationChange(e.target.value)}
-                    onKeyPress={handleKeyPress}
-                    onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
-                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className={`bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
-                      }`}
-                    style={{ fontSize: '0.75rem' }}
-                  />
-
-                  {/* Suggestions Dropdown */}
-                  {showSuggestions && mapboxSuggestions.length > 0 && (
-                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                      {isLoadingSuggestions && (
-                        <div className="p-4 text-center text-gray-500">
-                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
-                        </div>
-                      )}
-                      {mapboxSuggestions.map((suggestion, index) => (
-                        <button
-                          key={index}
-                          onClick={() => handleDestinationSelect(suggestion)}
-                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-sm border-b border-gray-100 last:border-b-0"
-                        >
-                          <div className="flex items-center space-x-3">
-                            <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                            <div className="flex-1 min-w-0">
-                              <div className="font-medium text-gray-900 truncate">
-                                {suggestion.text}
-                              </div>
-                              <div className="text-xs text-gray-500 truncate">
-                                {suggestion.place_name}
-                              </div>
+            <div className="flex items-center gap-1 sm:gap-2">
+              <div className="flex-1 relative">
+                <MapPin className={`absolute text-muted-foreground z-10 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'left-2.5 w-4 h-4' : 'left-3 sm:left-4 w-4 h-4 sm:w-5 sm:h-5'
+                  } top-1/2 transform -translate-y-1/2`} />
+                <Input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder="Search any destination worldwide..."
+                  value={newDestination}
+                  onChange={(e) => handleDestinationChange(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
+                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-500 ease-out ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
+                    }`}
+                />
+                {showSuggestions && mapboxSuggestions.length > 0 && (
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                    {isLoadingSuggestions && (
+                      <div className="p-4 text-center text-muted-foreground">
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
+                      </div>
+                    )}
+                    {mapboxSuggestions.map((suggestion, index) => (
+                      <button
+                        key={index}
+                        onClick={() => handleDestinationSelect(suggestion)}
+                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
+                      >
+                        <div className="flex items-center space-x-2 sm:space-x-3">
+                          <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-foreground truncate">
+                              {suggestion.text}
+                            </div>
+                            <div className="text-xs text-muted-foreground truncate">
+                              {suggestion.place_name}
                             </div>
                           </div>
-                        </button>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                )}
               </div>
 
-              {/* Check In Section */}
-              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
+              {/* Date Inputs - Collapsible */}
+              <div className={`flex gap-1 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'
                 }`}>
-                <p className="text-xs font-semibold text-gray-900 mb-1">Check in</p>
                 <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                   <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
-                      style={{ fontSize: '0.75rem' }}
+                    <Button
+                      variant="ghost"
+                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
                     >
-                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Add dates'}
-                    </button>
+                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Depart'}
+                    </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
+                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
                     <CalendarComponent
                       mode="single"
                       selected={newCheckinDate}
@@ -574,66 +560,43 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                   </PopoverContent>
                 </Popover>
 
-                {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
-              </div>
-
-              {/* Check Out Section */}
-              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
-                }`}>
-                <p className="text-xs font-semibold text-gray-900 mb-1">Check out</p>
                 <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                   <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
-                      style={{ fontSize: '0.75rem' }}
+                    <Button
+                      variant="ghost"
+                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
                     >
-                      {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Add dates'}
-                    </button>
+                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Return'}
+                    </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
+                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
                     <CalendarComponent
                       mode="single"
                       selected={newCheckoutDate}
                       onSelect={(date) => {
                         if (date) setNewCheckoutDate(date);
-                        setCheckoutOpen(false);
+                        setCheckinOpen(false);
                       }}
                       initialFocus
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
-
-                {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
               </div>
 
-              {/* Search Section (replacing "Guests" from Airbnb) */}
-              <div className={`relative flex-1 max-w-[22%] rounded-r-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
-                }`}>
-                <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
-                  }`}>Search</p>
-                <div className="flex items-center justify-between">
-                  <span className={`text-gray-600 transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
-                    }`} style={{ fontSize: '0.75rem' }}>
-                    Find destination
-                  </span>
-                  <button
-                    type="submit"
-                    className={`bg-red-500 text-white rounded-full flex items-center justify-center transition-all duration-500 hover:bg-red-600 ${isHeaderCollapsed ? 'w-6 h-6' : 'w-8 h-8'
-                      }`}
-                  >
-                    <Search className={`transition-all duration-500 ${isHeaderCollapsed ? 'w-3 h-3' : 'w-4 h-4'
-                      }`} />
-                  </button>
-                </div>
-              </div>
+              <Button
+                type="submit"
+                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
+                  }`}
+              >
+                <Search className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
+                  }`} />
+              </Button>
             </div>
           </form>
         </div>
       </header>
+  
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
