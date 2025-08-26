@@ -47,7 +47,7 @@ const TimeZonePresenter: React.FC<TimeZonePresenterProps> = ({ data }) => {
     return (
         <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 h-full flex flex-col">
             <CardHeader className="pb-2">
-                <CardTitle className="flex items-center text-lg font-semibold">
+                <CardTitle className="flex items-center text-lg font-semibold mb-8">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-2">
                         <Clock className="w-4 h-4 text-white" />
                     </div>
@@ -57,7 +57,7 @@ const TimeZonePresenter: React.FC<TimeZonePresenterProps> = ({ data }) => {
             </CardHeader>
             <CardContent className="space-y-3 flex-1">
                 <div className="grid grid-cols-2 gap-2">
-                    <div className="text-center gip-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                    <div className="text-center gip-2 bg-blue-500/10 border border-blue-500/20 rounded-xl p-2">
                         <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
                         <div className="text-lg font-bold text-blue-400">
                             {origin.time12}

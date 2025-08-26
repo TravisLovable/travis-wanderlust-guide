@@ -18,14 +18,14 @@ serve(async (req) => {
 
   try {
     const { originTimeZone, destinationTimeZone }: WorldClockRequest = await req.json()
-    
+
     console.log(`Fetching world clock data for origin: ${originTimeZone}, destination: ${destinationTimeZone}`)
-    
+
     if (!originTimeZone || !destinationTimeZone) {
       return new Response(
         JSON.stringify({ error: 'Both originTimeZone and destinationTimeZone parameters are required' }),
-        { 
-          status: 400, 
+        {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -33,12 +33,13 @@ serve(async (req) => {
 
     // Get current time
     const now = new Date()
-    
+
     // Format times for each timezone
     const formatTimeForTimezone = (timezone: string) => {
+      let date;
       try {
-        const date = new Date()
-        
+        date = new Date()
+
         // Get 12-hour time format
         const time12 = date.toLocaleTimeString('en-US', {
           timeZone: timezone,
@@ -46,7 +47,7 @@ serve(async (req) => {
           minute: '2-digit',
           hour12: true
         })
-        
+
         // Get 24-hour time format (military time)
         const time24 = date.toLocaleTimeString('en-US', {
           timeZone: timezone,
@@ -54,14 +55,14 @@ serve(async (req) => {
           minute: '2-digit',
           hour12: false
         })
-        
+
         const dateString = date.toLocaleDateString('en-US', {
           timeZone: timezone,
           weekday: 'short',
           month: 'short',
           day: 'numeric'
         })
-        
+
         // Get timezone abbreviation based on timezone
         const getTimezoneAbbr = (tz: string) => {
           const abbreviations: { [key: string]: string } = {
@@ -81,10 +82,10 @@ serve(async (req) => {
             'Africa/Johannesburg': 'SAST',
             'UTC': 'UTC'
           }
-          
+
           return abbreviations[tz] || tz.split('/')[1]?.toUpperCase() || 'UTC'
         }
-        
+
         return {
           timeZone: timezone,
           time: time24, // 24-hour format
@@ -126,15 +127,15 @@ serve(async (req) => {
         }
       }
     }
-    
+
     const originTime = formatTimeForTimezone(originTimeZone)
     const destinationTime = formatTimeForTimezone(destinationTimeZone)
-    
+
     // Calculate time difference using proper timezone offset calculation
     const getTimezoneOffsetHours = (timezone: string) => {
       try {
         const now = new Date()
-        
+
         // Create a date formatter for the timezone
         const formatter = new Intl.DateTimeFormat('en-CA', {
           timeZone: timezone,
@@ -146,17 +147,17 @@ serve(async (req) => {
           second: '2-digit',
           hour12: false
         })
-        
+
         // Get the formatted date parts
         const parts = formatter.formatToParts(now)
         const tzDateStr = `${parts.find(p => p.type === 'year')?.value}-${parts.find(p => p.type === 'month')?.value}-${parts.find(p => p.type === 'day')?.value}T${parts.find(p => p.type === 'hour')?.value}:${parts.find(p => p.type === 'minute')?.value}:${parts.find(p => p.type === 'second')?.value}`
-        
+
         // Calculate offset in hours
         const utcTime = now.getTime()
         const tzTime = new Date(tzDateStr).getTime()
         const offsetMs = tzTime - utcTime
         const offsetHours = offsetMs / (1000 * 60 * 60)
-        
+
         return offsetHours
       } catch (error) {
         console.error(`Error calculating offset for ${timezone}:`, error)
@@ -168,21 +169,21 @@ serve(async (req) => {
         return diffMs / (1000 * 60 * 60)
       }
     }
-    
+
     const originOffsetHours = getTimezoneOffsetHours(originTimeZone)
     const destOffsetHours = getTimezoneOffsetHours(destinationTimeZone)
     const diffHours = destOffsetHours - originOffsetHours
-    
+
     console.log(`Origin offset: ${originOffsetHours}h, Destination offset: ${destOffsetHours}h, Difference: ${diffHours}h`)
-    
+
     const result = {
       origin: originTime,
       destination: destinationTime,
       timeDifferenceHours: Math.round(diffHours),
-      timeDifferenceText: diffHours === 0 
-        ? 'Same time' 
-        : diffHours > 0 
-          ? `${Math.abs(Math.round(diffHours))}h ahead` 
+      timeDifferenceText: diffHours === 0
+        ? 'Same time'
+        : diffHours > 0
+          ? `${Math.abs(Math.round(diffHours))}h ahead`
           : `${Math.abs(Math.round(diffHours))}h behind`
     }
 
@@ -190,18 +191,18 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(result),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   } catch (error) {
     console.error('Error in get-world-clock function:', error)
-    
+
     return new Response(
-      JSON.stringify({ 
-        error: error.message || 'Failed to fetch world clock data' 
+      JSON.stringify({
+        error: error.message || 'Failed to fetch world clock data'
       }),
-      { 
+      {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }

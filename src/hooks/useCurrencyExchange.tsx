@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getCurrencyFromDestination } from '@/utils/currencyMapping';
+import { getCurrencyFromPlace } from '@/utils/currencyMapping';
 
 
 
@@ -33,14 +33,14 @@ interface MultiCurrencyData {
   };
 }
 
-export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: string) => {
+export const useCurrencyExchange = (baseCurrency: string = 'USD', placeDetails?: { country_code?: string; formatted_address?: string; name?: string }) => {
   const [currencyData, setCurrencyData] = useState<CurrencyData | null>(null);
   const [multiCurrencyData, setMultiCurrencyData] = useState<MultiCurrencyData>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Determine target currency from destination
-  const targetCurrencyInfo = destination ? getCurrencyFromDestination(destination) : { code: 'USD', symbol: '$', name: 'US Dollar' };
+  // Determine target currency from place details
+  const targetCurrencyInfo = placeDetails ? getCurrencyFromPlace(placeDetails) : { code: 'USD', symbol: '$', name: 'US Dollar' };
   const targetCurrency = targetCurrencyInfo.code;
 
 
@@ -136,7 +136,7 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: 
     const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [baseCurrency, targetCurrency, targetCurrencyInfo.symbol, targetCurrencyInfo.name]);
+  }, [baseCurrency, targetCurrency, targetCurrencyInfo.symbol, targetCurrencyInfo.name, placeDetails?.country_code]);
 
   return {
     currencyData,

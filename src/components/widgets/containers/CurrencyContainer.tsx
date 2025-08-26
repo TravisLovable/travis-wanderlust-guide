@@ -11,7 +11,6 @@ interface CurrencyContainerProps {
 const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ placeDetails }) => {
     const [currencyAmount, setCurrencyAmount] = useState(100);
     const [baseCurrency, setBaseCurrency] = useState('USD');
-    const [userCountry, setUserCountry] = useState<string | null>(null);
     const [userLoading, setUserLoading] = useState(true);
 
     useEffect(() => {
@@ -36,23 +35,8 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ placeDetails }) =
         fetchUserCountry();
     }, [])
 
-    // Monitor placeDetails changes and log currency extraction
-    useEffect(() => {
-        if (placeDetails) {
-            const destinationName = placeDetails.formatted_address || placeDetails.name;
-            // Extract currency info for destination
-            import('@/utils/currencyMapping').then(({ extractCountryFromDestination, getCurrencyFromDestination }) => {
-                extractCountryFromDestination(destinationName);
-                getCurrencyFromDestination(destinationName);
-            });
-        }
-    }, [placeDetails, baseCurrency]);
-
-
-
-    // Use real currency exchange data with destination-based currency
-    const destinationName = placeDetails?.formatted_address || placeDetails?.name || '';
-    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, destinationName);
+    // Use real currency exchange data with place details (includes country_code)
+    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, placeDetails);
 
     // Data transformation logic
     const transformedData = {

@@ -1,8 +1,7 @@
 
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import HomePage from '@/components/HomePage';
-import LoadingIntelligence from '@/components/LoadingIntelligence';
-import ResultsPage from '@/components/ResultsPage';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import Header from '@/components/Header';
@@ -10,17 +9,8 @@ import AuthModal from '@/components/AuthModal';
 import OnboardingModal from '@/components/OnboardingModal';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
-interface SearchData {
-  placeDetails: SelectedPlace | null;
-  dates: {
-    checkin: string;
-    checkout: string;
-  };
-}
-
 const Index = () => {
-  const [searchData, setSearchData] = useState<SearchData | null>(null);
-  const [showLoading, setShowLoading] = useState(false);
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(true);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [user, setUser] = useState<User | null>(null);
@@ -29,8 +19,7 @@ const Index = () => {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
   // Authentication setup
-  useEffect((): any => {
-    // Set up auth state listener
+  useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
       async (event, session) => {
         setSession(session);
@@ -57,62 +46,48 @@ const Index = () => {
         }
       }
     );
+
+    return () => subscription.unsubscribe();
   }, []);
 
 
   const handleSearch = (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }, skipTransition = false) => {
-    setSearchData({ placeDetails, dates });
+    if (!placeDetails) return;
 
-    // Skip loading transition if requested (for searches from results page)
-    if (skipTransition) {
-      setShowLoading(false);
-    } else {
-      setShowLoading(true);
-    }
+    // Create URL parameters for the search
+    const searchParams = new URLSearchParams({
+      destination: placeDetails.formatted_address,
+      name: placeDetails.name,
+      lat: placeDetails.latitude.toString(),
+      lng: placeDetails.longitude.toString(),
+      checkin: dates.checkin,
+      checkout: dates.checkout,
+      ...(placeDetails.country_code && { country: placeDetails.country_code }),
+      ...(placeDetails.region && { region: placeDetails.region }),
+      ...(placeDetails.place_id && { placeId: placeDetails.place_id }),
+      ...(!skipTransition && { loading: 'true' })
+    });
+
+    // Navigate to search results page
+    navigate(`/search?${searchParams.toString()}`);
   };
+
   const toggleTheme = () => {
     setIsDarkMode(!isDarkMode);
     document.documentElement.classList.toggle('dark');
   };
 
-  const handleLoadingComplete = () => {
-    // disable while implimenting the loading stuff
-    setShowLoading(false);
-  };
-
-  const handleBack = () => {
-    setSearchData(null);
-    setShowLoading(false);
-  };
-
-  // Determine which page to render based on existing logic
-  let content: React.ReactNode;
-  if (showLoading && searchData) {
-    content = (
-      <LoadingIntelligence
-        placeDetails={searchData.placeDetails}
-        onComplete={handleLoadingComplete}
-      />
-    );
-  } else if (searchData && !showLoading) {
-    content = (
-      <ResultsPage
-        placeDetails={searchData.placeDetails}
-        dates={searchData.dates}
-        onBack={handleBack}
-        onNewSearch={handleSearch}
-      />
-    );
-  } else {
-    content = (
-      <HomePage onSearch={(placeDetails, dates) => handleSearch(placeDetails, dates, false)} />
-    );
-  }
-
-  // Always wrap the rendered page in the same parent container
   return (
-    <div className="min-h-screen w-full bg-background text-foreground ">
-      <Header user={user} userProfile={userProfile} isDarkMode={isDarkMode} toggleTheme={toggleTheme} setIsAuthModalOpen={setIsAuthModalOpen} setCurrentLanguage={setCurrentLanguage} currentLanguage={currentLanguage} />
+    <div className="min-h-screen w-full bg-background text-foreground">
+      <Header
+        user={user}
+        userProfile={userProfile}
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleTheme}
+        setIsAuthModalOpen={setIsAuthModalOpen}
+        setCurrentLanguage={setCurrentLanguage}
+        currentLanguage={currentLanguage}
+      />
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
@@ -123,7 +98,7 @@ const Index = () => {
         onClose={() => setIsOnboardingModalOpen(false)}
         user={user}
       />
-      {content}
+      <HomePage onSearch={(placeDetails, dates) => handleSearch(placeDetails, dates, false)} />
     </div>
   );
 };

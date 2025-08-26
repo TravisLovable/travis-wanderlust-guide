@@ -58,17 +58,18 @@ const WeatherContainer: React.FC<WeatherContainerProps> = ({
 
 
 
-    // Data fetching logic - now with user country context
-    const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
-    const { weatherData, isLoading, error } = useWeatherData(destinationName, userCountry);
+    // Data fetching logic - now with coordinates and user country context
+    const { weatherData, isLoading, error } = useWeatherData(placeDetails, userCountry);
 
     // Data transformation logic
     const transformedData = {
         current: weatherData?.current || null,
         forecast: weatherData?.forecast || [],
-        location: weatherData?.location || destinationName,
+        location: weatherData?.location || placeDetails?.name || 'Unknown',
         isLoading,
-        error
+        error,
+        userCountry: weatherData?.userCountry || userCountry,
+        homeWeather: weatherData?.homeWeather || null
     };
 
     return (
