@@ -453,23 +453,24 @@ const HomePage = ({ onSearch }: HomePageProps) => {
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Interactive Search Bar - removed fade-in animation */}
+          {/* Airbnb-Style Search Bar */}
           <div className="mb-8 max-w-5xl mx-auto">
-            <div
-              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:shadow-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+            <div 
+              className="bar bg-white shadow-lg rounded-full flex justify-center h-14"
+              style={{ fontSize: '0.6rem' }}
               onClick={handleBarClick}
               onKeyDown={handleKeyPress}
               tabIndex={0}
               role="button"
               aria-label="Launch brief"
             >
-              <div className="flex items-center gap-2">
-                {/* Destination Input */}
-                <div className="flex-1 relative group">
-                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white transition-colors z-10" />
-                  <Input
+              {/* Location Section */}
+              <div className="location w-[34%] rounded-l-full px-6 py-4 transition-all duration-250 hover:bg-gray-100 relative">
+                <div className="relative">
+                  <p className="text-xs font-semibold text-gray-900 mb-1">Location</p>
+                  <input
                     type="text"
-                    placeholder={t.searchPlaceholder}
+                    placeholder="Where are you going?"
                     value={destination}
                     onChange={(e) => {
                       setDestination(e.target.value);
@@ -479,18 +480,21 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 focus:outline-none text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full cursor-pointer"
+                    className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-sm pt-1"
+                    style={{ fontSize: '0.75rem' }}
                     required
                   />
+                  
+                  {/* Suggestions Dropdown */}
                   {showSuggestions && (suggestions.length > 0 || fallbackSuggestions.length > 0) && (
-                    <div className="absolute top-full left-0 right-0 bg-card border border-border/50 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
+                    <div className="absolute top-full left-0 right-0 bg-white border border-gray-200 rounded-xl mt-2 shadow-2xl z-20 max-h-60 overflow-y-auto">
                       {!hasApiAccess && destination.length >= 2 && (
-                        <div className="p-2 text-xs text-yellow-500 bg-yellow-500/10 rounded-t-xl border-b border-border/30">
+                        <div className="p-2 text-xs text-yellow-500 bg-yellow-500/10 rounded-t-xl border-b border-gray-200">
                           ⚠️ Using offline search. Connect Mapbox API for better results.
                         </div>
                       )}
                       {isLoadingSuggestions && hasApiAccess && (
-                        <div className="p-4 text-center text-muted-foreground">
+                        <div className="p-4 text-center text-gray-500">
                           <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
                         </div>
                       )}
@@ -503,15 +507,15 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                             e.stopPropagation();
                             handleDestinationSelect(suggestion);
                           }}
-                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
                         >
                           <div className="flex items-center space-x-3">
                             <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-foreground truncate">
+                              <div className="font-medium text-gray-900 truncate">
                                 {suggestion.text}
                               </div>
-                              <div className="text-xs text-muted-foreground truncate">
+                              <div className="text-xs text-gray-500 truncate">
                                 {suggestion.place_name}
                               </div>
                             </div>
@@ -527,12 +531,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                             e.stopPropagation();
                             handleDestinationSelect(suggestion);
                           }}
-                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors first:rounded-t-xl last:rounded-b-xl"
                         >
                           <div className="flex items-center space-x-3">
                             <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             <div className="flex-1 min-w-0">
-                              <div className="font-medium text-foreground truncate">
+                              <div className="font-medium text-gray-900 truncate">
                                 {suggestion}
                               </div>
                             </div>
@@ -542,68 +546,93 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                     </div>
                   )}
                 </div>
+                
+                {/* Separator */}
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+              </div>
 
-                {/* Date Inputs with Calendar Icons */}
-                <div className="flex gap-1">
-                  <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span>{checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
-                      <CalendarComponent
-                        mode="single"
-                        selected={checkinDate}
-                        onSelect={(date) => {
-                          if (date) setCheckinDate(date);
-                          setCheckinOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto w-full"
-                        disabled={(date) => date < new Date()}
-                      />
-                    </PopoverContent>
-                  </Popover>
+              {/* Check In Section */}
+              <div className="check-in w-[22%] px-6 py-4 transition-all duration-250 hover:bg-gray-100 relative">
+                <p className="text-xs font-semibold text-gray-900 mb-1">Check in</p>
+                <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+                  <PopoverTrigger asChild>
+                    <input
+                      type="text"
+                      placeholder="Add dates"
+                      value={checkinDate ? format(checkinDate, 'MMM dd') : ''}
+                      readOnly
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-sm pt-1 cursor-pointer"
+                      style={{ fontSize: '0.75rem' }}
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0 bg-white border-gray-200 fixed" align="start" side="bottom" sideOffset={8}>
+                    <CalendarComponent
+                      mode="single"
+                      selected={checkinDate}
+                      onSelect={(date) => {
+                        if (date) setCheckinDate(date);
+                        setCheckinOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto w-full"
+                      disabled={(date) => date < new Date()}
+                    />
+                  </PopoverContent>
+                </Popover>
+                
+                {/* Separator */}
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+              </div>
 
-                  <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
-                        onClick={(e) => e.stopPropagation()}
-                      >
-                        <span>{checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
-                      <CalendarComponent
-                        mode="single"
-                        selected={checkoutDate}
-                        onSelect={(date) => {
-                          if (date) setCheckoutDate(date);
-                          setCheckoutOpen(false);
-                        }}
-                        initialFocus
-                        className="pointer-events-auto w-full"
-                        disabled={(date) => date < (checkinDate || new Date())}
-                      />
-                    </PopoverContent>
-                  </Popover>
+              {/* Check Out Section */}
+              <div className="check-out w-[22%] px-6 py-4 transition-all duration-250 hover:bg-gray-100 relative">
+                <p className="text-xs font-semibold text-gray-900 mb-1">Check out</p>
+                <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                  <PopoverTrigger asChild>
+                    <input
+                      type="text"
+                      placeholder="Add dates"
+                      value={checkoutDate ? format(checkoutDate, 'MMM dd') : ''}
+                      readOnly
+                      onClick={(e) => e.stopPropagation()}
+                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-sm pt-1 cursor-pointer"
+                      style={{ fontSize: '0.75rem' }}
+                    />
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[300px] p-0 bg-white border-gray-200 fixed" align="start" side="bottom" sideOffset={8}>
+                    <CalendarComponent
+                      mode="single"
+                      selected={checkoutDate}
+                      onSelect={(date) => {
+                        if (date) setCheckoutDate(date);
+                        setCheckoutOpen(false);
+                      }}
+                      initialFocus
+                      className="pointer-events-auto w-full"
+                      disabled={(date) => date < (checkinDate || new Date())}
+                    />
+                  </PopoverContent>
+                </Popover>
+                
+                {/* Separator */}
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+              </div>
+
+              {/* Search Section (replacing "Guests" from Airbnb) */}
+              <div className="guests w-[22%] rounded-r-full px-6 py-4 transition-all duration-250 hover:bg-gray-100 relative">
+                <p className="text-xs font-semibold text-gray-900 mb-1">Search</p>
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-600 text-sm pt-1" style={{ fontSize: '0.75rem' }}>
+                    Find destination
+                  </span>
+                  <span 
+                    className="absolute top-1/2 right-3 transform -translate-y-1/2 bg-red-500 text-white text-sm p-2 rounded-full cursor-pointer hover:bg-red-600 transition-colors"
+                    onClick={handleSearch}
+                  >
+                    <ArrowRight className="w-4 h-4" />
+                  </span>
                 </div>
-
-                {/* Right Arrow Icon */}
-                <button
-                  className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isSearchDisabled} onClick={handleSearch}>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
-                </button>
               </div>
             </div>
           </div>
