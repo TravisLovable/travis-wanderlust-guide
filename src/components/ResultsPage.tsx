@@ -488,12 +488,47 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* Airbnb-Style Search Bar - Always Visible but Compact when Collapsed */}
           <form onSubmit={handleSearch} className={`relative transition-all duration-500 ease-out ${isHeaderCollapsed ? '' : ''
             }`}>
-            <div className={`bg-white shadow-lg rounded-full flex justify-center transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-12' : 'h-14'
-              }`} style={{ fontSize: '0.6rem' }}>
+            <div className={`bar bg-white shadow-lg transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-12' : 'h-14'
+              }`} style={{ 
+                width: '650px', 
+                height: isHeaderCollapsed ? '48px' : '55px',
+                borderRadius: '100vw',
+                display: 'flex',
+                justifyContent: 'center',
+                fontSize: '0.6rem',
+                maxWidth: '100%',
+                margin: '0 auto'
+              }}>
 
               {/* Location Section */}
-              <div className={`relative flex-1 max-w-[34%] rounded-l-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
-                }`}>
+              <div 
+                className={`location relative transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-3'
+                }`} 
+                style={{
+                  width: '34%',
+                  borderRadius: 'inherit',
+                  padding: isHeaderCollapsed ? '0.5rem 0.8rem' : '0.8rem 1.5rem',
+                  transition: 'background 250ms ease'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'hsl(0 0% 94%)';
+                  // Hide separator on hover
+                  const nextSibling = e.currentTarget.nextElementSibling;
+                  if (nextSibling) {
+                    const separator = nextSibling.querySelector('.separator');
+                    if (separator) separator.style.background = 'transparent';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  // Show separator when not hovering
+                  const nextSibling = e.currentTarget.nextElementSibling;
+                  if (nextSibling && !isHeaderCollapsed) {
+                    const separator = nextSibling.querySelector('.separator');
+                    if (separator) separator.style.background = 'hsl(0 0% 90%)';
+                  }
+                }}
+              >
                 <div className="relative">
                   <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
                     }`}>Location</p>
@@ -508,7 +543,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     className={`bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
                       }`}
-                    style={{ fontSize: '0.75rem' }}
+                    style={{ fontSize: '0.75rem', background: 'none', border: 'none', padding: '0.2rem 0 0 0' }}
                   />
 
                   {/* Suggestions Dropdown */}
@@ -541,21 +576,50 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     </div>
                   )}
                 </div>
-
-                {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
               </div>
 
               {/* Check In Section */}
-              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
-                }`}>
+              <div 
+                className={`check-in relative transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100'
+                }`} 
+                style={{
+                  width: isHeaderCollapsed ? '0%' : '22%',
+                  borderRadius: 'inherit',
+                  padding: isHeaderCollapsed ? '0' : '0.8rem 1.5rem',
+                  transition: 'background 250ms ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isHeaderCollapsed) {
+                    e.currentTarget.style.background = 'hsl(0 0% 94%)';
+                    // Hide separator on hover
+                    const separator = e.currentTarget.querySelector('.separator');
+                    if (separator) separator.style.background = 'transparent';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isHeaderCollapsed) {
+                    e.currentTarget.style.background = 'transparent';
+                    // Show separator when not hovering
+                    const separator = e.currentTarget.querySelector('.separator');
+                    if (separator) separator.style.background = 'hsl(0 0% 90%)';
+                  }
+                }}
+              >
+                {/* Separator */}
+                <div 
+                  className="separator absolute left-0 top-1/2 transform -translate-y-1/2 w-px bg-gray-300"
+                  style={{
+                    height: '55%',
+                    background: isHeaderCollapsed ? 'transparent' : 'hsl(0 0% 90%)'
+                  }}
+                ></div>
                 <p className="text-xs font-semibold text-gray-900 mb-1">Check in</p>
                 <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
                       className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
-                      style={{ fontSize: '0.75rem' }}
+                      style={{ fontSize: '0.75rem', background: 'none', border: 'none', padding: '0.2rem 0 0 0' }}
                     >
                       {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Add dates'}
                     </button>
@@ -573,21 +637,50 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     />
                   </PopoverContent>
                 </Popover>
-
-                {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
               </div>
 
               {/* Check Out Section */}
-              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
-                }`}>
+              <div 
+                className={`check-out relative transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100'
+                }`} 
+                style={{
+                  width: isHeaderCollapsed ? '0%' : '22%',
+                  borderRadius: 'inherit',
+                  padding: isHeaderCollapsed ? '0' : '0.8rem 1.5rem',
+                  transition: 'background 250ms ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isHeaderCollapsed) {
+                    e.currentTarget.style.background = 'hsl(0 0% 94%)';
+                    // Hide separator on hover
+                    const separator = e.currentTarget.querySelector('.separator');
+                    if (separator) separator.style.background = 'transparent';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!isHeaderCollapsed) {
+                    e.currentTarget.style.background = 'transparent';
+                    // Show separator when not hovering
+                    const separator = e.currentTarget.querySelector('.separator');
+                    if (separator) separator.style.background = 'hsl(0 0% 90%)';
+                  }
+                }}
+              >
+                {/* Separator */}
+                <div 
+                  className="separator absolute left-0 top-1/2 transform -translate-y-1/2 w-px bg-gray-300"
+                  style={{
+                    height: '55%',
+                    background: isHeaderCollapsed ? 'transparent' : 'hsl(0 0% 90%)'
+                  }}
+                ></div>
                 <p className="text-xs font-semibold text-gray-900 mb-1">Check out</p>
                 <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                   <PopoverTrigger asChild>
                     <button
                       type="button"
                       className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
-                      style={{ fontSize: '0.75rem' }}
+                      style={{ fontSize: '0.75rem', background: 'none', border: 'none', padding: '0.2rem 0 0 0' }}
                     >
                       {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Add dates'}
                     </button>
@@ -605,30 +698,72 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     />
                   </PopoverContent>
                 </Popover>
-
-                {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
               </div>
 
               {/* Search Section (replacing "Guests" from Airbnb) */}
-              <div className={`relative flex-1 max-w-[22%] rounded-r-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
-                }`}>
+              <div 
+                className={`guests relative transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : ''
+                }`} 
+                style={{
+                  width: '22%',
+                  borderRadius: 'inherit',
+                  padding: isHeaderCollapsed ? '0.5rem 0.8rem' : '0.8rem 1.5rem',
+                  transition: 'background 250ms ease',
+                  position: 'relative'
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.background = 'hsl(0 0% 94%)';
+                  // Hide separator on hover
+                  const separator = e.currentTarget.querySelector('.separator');
+                  if (separator) separator.style.background = 'transparent';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.background = 'transparent';
+                  // Show separator when not hovering
+                  const separator = e.currentTarget.querySelector('.separator');
+                  if (separator) separator.style.background = 'hsl(0 0% 90%)';
+                }}
+              >
+                {/* Separator */}
+                <div 
+                  className="separator absolute left-0 top-1/2 transform -translate-y-1/2 w-px bg-gray-300"
+                  style={{
+                    height: '55%',
+                    background: 'hsl(0 0% 90%)'
+                  }}
+                ></div>
                 <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
                   }`}>Search</p>
-                <div className="flex items-center justify-between">
-                  <span className={`text-gray-600 transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
-                    }`} style={{ fontSize: '0.75rem' }}>
-                    Find destination
-                  </span>
-                  <button
-                    type="submit"
-                    className={`bg-red-500 text-white rounded-full flex items-center justify-center transition-all duration-500 hover:bg-red-600 ${isHeaderCollapsed ? 'w-6 h-6' : 'w-8 h-8'
-                      }`}
-                  >
-                    <Search className={`transition-all duration-500 ${isHeaderCollapsed ? 'w-3 h-3' : 'w-4 h-4'
-                      }`} />
-                  </button>
-                </div>
+                <input
+                  type="text"
+                  placeholder="Find destination"
+                  value=""
+                  readOnly
+                  className={`bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
+                    }`}
+                  style={{ fontSize: '0.75rem', background: 'none', border: 'none', padding: '0.2rem 0 0 0' }}
+                />
+                <span 
+                  onClick={handleSearch}
+                  className="cursor-pointer"
+                  style={{
+                    position: 'absolute',
+                    top: '50%',
+                    right: '10px',
+                    transform: 'translateY(-50%)',
+                    background: '#FF385C',
+                    color: 'white',
+                    fontSize: isHeaderCollapsed ? '0.6rem' : '0.8rem',
+                    padding: isHeaderCollapsed ? '0.5rem' : '0.7rem',
+                    borderRadius: '50%',
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center'
+                  }}
+                >
+                  <Search className={`transition-all duration-500 ${isHeaderCollapsed ? 'w-3 h-3' : 'w-4 h-4'
+                    }`} />
+                </span>
               </div>
             </div>
           </form>
