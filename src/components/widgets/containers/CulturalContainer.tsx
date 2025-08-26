@@ -1,8 +1,10 @@
 import React from 'react';
 import CulturalPresenter from '../presenters/CulturalPresenter';
+import { Destination } from '@/types/destination';
+import { getDestinationString } from '@/utils/destinationHelpers';
 
 interface CulturalContainerProps {
-    destination: string;
+    destination: Destination;
 }
 
 const CulturalContainer: React.FC<CulturalContainerProps> = ({ destination }) => {
@@ -182,10 +184,11 @@ const CulturalContainer: React.FC<CulturalContainerProps> = ({ destination }) =>
         return null;
     };
 
-    const culturalData = getCulturalData(destination);
+    const destinationString = getDestinationString(destination);
+    const culturalData = getCulturalData(destinationString);
 
     return (
-        <CulturalPresenter data={culturalData} destination={destination} />
+        <CulturalPresenter data={culturalData} destination={destinationString} />
     );
 };
 

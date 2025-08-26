@@ -1,8 +1,10 @@
 import React from 'react';
 import AirportPresenter from '../presenters/AirportPresenter';
+import { Destination } from '@/types/destination';
+import { getDestinationString } from '@/utils/destinationHelpers';
 
 interface AirportContainerProps {
-    destination: string;
+    destination: Destination;
 }
 
 const AirportContainer: React.FC<AirportContainerProps> = ({ destination }) => {
@@ -76,7 +78,8 @@ const AirportContainer: React.FC<AirportContainerProps> = ({ destination }) => {
         };
     };
 
-    const airportData = getAirportData(destination);
+    const destinationString = getDestinationString(destination);
+    const airportData = getAirportData(destinationString);
 
     return (
         <AirportPresenter data={airportData} />

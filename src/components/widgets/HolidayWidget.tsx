@@ -2,6 +2,8 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, Mountain } from 'lucide-react';
 import { format } from 'date-fns';
+import { Destination } from '@/types/destination';
+import { getDestinationString } from '@/utils/destinationHelpers';
 
 interface HolidayData {
     country: string;
@@ -35,7 +37,7 @@ interface HolidayData {
 interface HolidayWidgetProps {
     holidayData: HolidayData | null;
     isLoadingHolidays: boolean;
-    destination: string;
+    destination: Destination;
     dates: {
         checkin: string;
         checkout: string;
@@ -48,6 +50,7 @@ const HolidayWidget: React.FC<HolidayWidgetProps> = ({
     destination,
     dates
 }) => {
+    const destinationString = getDestinationString(destination);
     return (
         <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
             <CardHeader className="pb-2">
@@ -69,7 +72,7 @@ const HolidayWidget: React.FC<HolidayWidgetProps> = ({
                         {holidayData && holidayData.upcomingHolidays.length > 0 ? (
                             <>
                                 <div className="text-xs text-purple-300 mb-2 font-medium">
-                                    During your trip to {destination}:
+                                    During your trip to {destinationString}:
                                 </div>
                                 {holidayData.upcomingHolidays.map((holiday, idx) => (
                                     <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">

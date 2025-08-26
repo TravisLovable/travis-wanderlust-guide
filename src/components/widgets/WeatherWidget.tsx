@@ -6,16 +6,19 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useWeatherData } from '@/hooks/useWeatherData';
+import { Destination } from '@/types/destination';
+import { getDestinationString } from '@/utils/destinationHelpers';
 
 interface WeatherWidgetProps {
-  destination: string;
+  destination: Destination;
   currentLocation?: string;
   tempUnit: 'C' | 'F';
   onTempUnitToggle: () => void;
 }
 
 const WeatherWidget = ({ destination, currentLocation = 'Current Location', tempUnit, onTempUnitToggle }: WeatherWidgetProps) => {
-  const { weatherData: destinationWeather, isLoading: destinationLoading, error: destinationError } = useWeatherData(destination);
+  const destinationString = getDestinationString(destination);
+  const { weatherData: destinationWeather, isLoading: destinationLoading, error: destinationError } = useWeatherData(destinationString);
   const { weatherData: currentWeather, isLoading: currentLoading, error: currentError } = useWeatherData(currentLocation);
 
   const convertTemp = (temp: number) => {
