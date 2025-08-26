@@ -492,10 +492,10 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
               }`} style={{ fontSize: '0.6rem' }}>
 
               {/* Location Section */}
-              <div className={`relative flex-1 max-w-[34%] rounded-l-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
+              <div className={`relative rounded-l-full transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-3 py-2 w-[34%]' : 'px-6 py-3 w-[34%]'
                 }`}>
                 <div className="relative">
-                  <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
+                  <p className={`font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
                     }`}>Location</p>
                   <input
                     ref={searchInputRef}
@@ -506,9 +506,9 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     onKeyPress={handleKeyPress}
                     onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className={`bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
+                    className={`bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full p-0 transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
                       }`}
-                    style={{ fontSize: '0.75rem' }}
+                    style={{ fontSize: '0.75rem', padding: '0.2rem 0 0 0' }}
                   />
 
                   {/* Suggestions Dropdown */}
@@ -543,92 +543,107 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                 </div>
 
                 {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-px h-[55%] bg-gray-200" style={{ background: 'transparent' }}></div>
               </div>
 
               {/* Check In Section */}
-              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
+              <div className={`relative transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-3 w-[22%]'
                 }`}>
-                <p className="text-xs font-semibold text-gray-900 mb-1">Check in</p>
-                <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
-                      style={{ fontSize: '0.75rem' }}
-                    >
-                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Add dates'}
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={newCheckinDate}
-                      onSelect={(date) => {
-                        if (date) setNewCheckinDate(date);
-                        setCheckinOpen(false);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="relative">
+                  <p className="text-xs font-semibold text-gray-900 mb-1">Check in</p>
+                  <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
+                    <PopoverTrigger asChild>
+                      <input
+                        type="text"
+                        placeholder="Add dates"
+                        value={newCheckinDate ? format(newCheckinDate, 'MMM dd') : ''}
+                        readOnly
+                        className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full cursor-pointer"
+                        style={{ fontSize: '0.75rem', padding: '0.2rem 0 0 0' }}
+                      />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={newCheckinDate}
+                        onSelect={(date) => {
+                          if (date) setNewCheckinDate(date);
+                          setCheckinOpen(false);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
                 {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-px h-[55%] bg-gray-200"></div>
               </div>
 
               {/* Check Out Section */}
-              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
+              <div className={`relative transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-3 w-[22%]'
                 }`}>
-                <p className="text-xs font-semibold text-gray-900 mb-1">Check out</p>
-                <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
-                  <PopoverTrigger asChild>
-                    <button
-                      type="button"
-                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
-                      style={{ fontSize: '0.75rem' }}
-                    >
-                      {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Add dates'}
-                    </button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
-                    <CalendarComponent
-                      mode="single"
-                      selected={newCheckoutDate}
-                      onSelect={(date) => {
-                        if (date) setNewCheckoutDate(date);
-                        setCheckoutOpen(false);
-                      }}
-                      initialFocus
-                      className="pointer-events-auto"
-                    />
-                  </PopoverContent>
-                </Popover>
+                <div className="relative">
+                  <p className="text-xs font-semibold text-gray-900 mb-1">Check out</p>
+                  <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
+                    <PopoverTrigger asChild>
+                      <input
+                        type="text"
+                        placeholder="Add dates"
+                        value={newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : ''}
+                        readOnly
+                        className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full cursor-pointer"
+                        style={{ fontSize: '0.75rem', padding: '0.2rem 0 0 0' }}
+                      />
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
+                      <CalendarComponent
+                        mode="single"
+                        selected={newCheckoutDate}
+                        onSelect={(date) => {
+                          if (date) setNewCheckoutDate(date);
+                          setCheckoutOpen(false);
+                        }}
+                        initialFocus
+                        className="pointer-events-auto"
+                      />
+                    </PopoverContent>
+                  </Popover>
+                </div>
 
                 {/* Separator */}
-                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-px h-[55%] bg-gray-200"></div>
               </div>
 
               {/* Search Section (replacing "Guests" from Airbnb) */}
-              <div className={`relative flex-1 max-w-[22%] rounded-r-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
+              <div className={`relative rounded-r-full transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-3 py-2 w-[22%]' : 'px-6 py-3 w-[22%]'
                 }`}>
-                <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
-                  }`}>Search</p>
-                <div className="flex items-center justify-between">
-                  <span className={`text-gray-600 transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
-                    }`} style={{ fontSize: '0.75rem' }}>
-                    Find destination
-                  </span>
-                  <button
-                    type="submit"
-                    className={`bg-red-500 text-white rounded-full flex items-center justify-center transition-all duration-500 hover:bg-red-600 ${isHeaderCollapsed ? 'w-6 h-6' : 'w-8 h-8'
-                      }`}
-                  >
-                    <Search className={`transition-all duration-500 ${isHeaderCollapsed ? 'w-3 h-3' : 'w-4 h-4'
-                      }`} />
-                  </button>
+                <div className="relative">
+                  <p className={`font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
+                    }`}>Search</p>
+                  <div className="flex items-center justify-between">
+                    <input
+                      type="text"
+                      placeholder="Find destination"
+                      value=""
+                      readOnly
+                      className={`bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 flex-1 transition-all duration-500`}
+                      style={{ fontSize: '0.75rem', padding: '0.2rem 0 0 0' }}
+                    />
+                    <button
+                      type="submit"
+                      className={`absolute top-1/2 right-2 transform -translate-y-1/2 bg-red-500 text-white rounded-full flex items-center justify-center transition-all duration-500 hover:bg-red-600 ${isHeaderCollapsed ? 'w-6 h-6' : 'w-8 h-8'
+                        }`}
+                    >
+                      <Search className={`transition-all duration-500 ${isHeaderCollapsed ? 'w-3 h-3' : 'w-4 h-4'
+                        }`} />
+                    </button>
+                  </div>
                 </div>
+
+                {/* Separator */}
+                <div className="absolute left-0 top-1/2 transform -translate-y-1/2 w-px h-[55%] bg-gray-200"></div>
               </div>
             </div>
           </form>
