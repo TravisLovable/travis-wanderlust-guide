@@ -2,9 +2,11 @@ import React, { useEffect, useState } from 'react';
 import CurrencyPresenter from '../presenters/CurrencyPresenter';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { supabase } from '@/integrations/supabase/client';
+import { Destination } from '@/types/destination';
+import { getDestinationString } from '@/utils/destinationHelpers';
 
 interface CurrencyContainerProps {
-    destination: string;
+    destination: Destination;
 }
 
 const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) => {
@@ -39,26 +41,27 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) =>
         fetchUserCountry();
     }, [])
 
+    const destinationString = getDestinationString(destination);
+
     // Monitor destination changes and log currency extraction
     useEffect(() => {
-        if (destination) {
+        if (destinationString) {
             import('@/utils/currencyMapping').then(({ extractCountryFromDestination, getCurrencyFromDestination }) => {
-                const extractedCountry = extractCountryFromDestination(destination);
-                const currencyInfo = getCurrencyFromDestination(destination);
+                const extractedCountry = extractCountryFromDestination(destinationString);
+                const currencyInfo = getCurrencyFromDestination(destinationString);
                 console.log('🌍 Destination analysis:', {
-                    original: destination,
+                    original: destinationString,
+                    destinationObject: destination,
                     extractedCountry,
                     currencyInfo,
                     baseCurrency
                 });
             });
         }
-    }, [destination, baseCurrency]);
-
-
+    }, [destination, destinationString, baseCurrency]);
 
     // Use real currency exchange data with destination-based currency
-    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, destination);
+    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, destinationString);
 
     // Data transformation logic
     const transformedData = {

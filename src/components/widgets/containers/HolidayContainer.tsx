@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import HolidayPresenter from '../presenters/HolidayPresenter';
 import { supabase } from '@/integrations/supabase/client';
+import { Destination } from '@/types/destination';
+import { getDestinationString } from '@/utils/destinationHelpers';
 
 // Helper function to get region from country code
 const getRegionFromCountryCode = (countryCode: string): string => {
@@ -72,7 +74,7 @@ interface HolidayData {
 }
 
 interface HolidayContainerProps {
-    destination: string;
+    destination: Destination;
     dates: {
         checkin: string;
         checkout: string;
@@ -122,7 +124,8 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
         const fetchHolidayData = async () => {
             setIsLoadingHolidays(true);
             try {
-                console.log('Fetching holiday data for:', destination);
+                const destinationString = getDestinationString(destination);
+                console.log('Fetching holiday data for:', destinationString);
 
                 // Get country code for destination using user country context and smart parsing
                 const getCountryCodeForDestination = (dest: string, userCountryData?: any): string => {
@@ -188,13 +191,13 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
                     return 'US';
                 };
 
-                const countryCode = getCountryCodeForDestination(destination, userCountry);
+                const countryCode = getCountryCodeForDestination(destinationString, userCountry);
                 const checkinDate = new Date(dates.checkin);
                 const checkoutDate = new Date(dates.checkout);
                 const startYear = checkinDate.getFullYear();
                 const endYear = checkoutDate.getFullYear();
 
-                console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destination}`);
+                console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destinationString}`);
                 console.log(`Travel dates span from ${startYear} to ${endYear}`);
 
                 // Fetch holidays for all years in the travel date range
@@ -297,7 +300,8 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
 
     // Debug logging
     console.log('🎉 HolidayContainer Debug:', {
-        destination,
+        destination: getDestinationString(destination),
+        destinationObject: destination,
         userCountry,
         holidayData,
         userLoading
@@ -316,7 +320,7 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
     return (
         <HolidayPresenter
             data={transformedData}
-            destination={destination}
+            destination={getDestinationString(destination)}
             dates={dates}
         />
     );

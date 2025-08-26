@@ -1,8 +1,10 @@
 import React from 'react';
 import VisaPresenter from '../presenters/VisaPresenter';
+import { Destination } from '@/types/destination';
+import { getDestinationString } from '@/utils/destinationHelpers';
 
 interface VisaContainerProps {
-    destination: string;
+    destination: Destination;
 }
 
 const VisaContainer: React.FC<VisaContainerProps> = ({ destination }) => {
@@ -70,7 +72,8 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ destination }) => {
         };
     };
 
-    const visaData = getVisaData(destination);
+    const destinationString = getDestinationString(destination);
+    const visaData = getVisaData(destinationString);
 
     return (
         <VisaPresenter data={visaData} />
