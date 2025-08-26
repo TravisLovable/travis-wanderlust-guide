@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -10,16 +10,11 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { User as SupabaseUser, Session } from '@supabase/supabase-js';
-import OnboardingModal from './OnboardingModal';
 import { useToast } from '@/hooks/use-toast';
-import { normalizeDestination, formatDestination } from '@/utils/destinationHelpers';
-import type { Destination } from '@/types/destination';
-// import CountryTest from './CountryTest';
 
 
 interface HomePageProps {
-  onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
+  onSearch: (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }) => void;
 }
 
 const HomePage = ({ onSearch }: HomePageProps) => {
@@ -30,16 +25,7 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
   const [wordIndex, setWordIndex] = useState(0);
-
-  // Authentication state
-  const [user, setUser] = useState<SupabaseUser | null>(null);
-  const [session, setSession] = useState<Session | null>(null);
-  const [userProfile, setUserProfile] = useState<any>(null);
-  const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   const [isSearchDisabled, setIsSearchDisabled] = useState(true);
   useEffect(() => {
@@ -348,10 +334,19 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (destination && checkinDate && checkoutDate) {
-      onSearch(destination, {
+      // If we have a selectedPlace from Mapbox, use it. Otherwise, create a basic place object
+      const placeToUse = selectedPlace || {
+        name: destination,
+        formatted_address: destination,
+        latitude: 0,
+        longitude: 0,
+        place_id: `manual_${Date.now()}`
+      };
+      
+      onSearch(placeToUse, {
         checkin: format(checkinDate, 'yyyy-MM-dd'),
         checkout: format(checkoutDate, 'yyyy-MM-dd')
-      }, selectedPlace || undefined);
+      });
     } else {
       toast({
         title: 'Please fill in all fields',
@@ -359,7 +354,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         variant: 'destructive',
         className: 'bg-black text-white'
       });
-
     }
   };
 
