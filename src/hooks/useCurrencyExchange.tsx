@@ -1,7 +1,7 @@
 
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import { getCurrencyFromDestination } from '@/utils/currencyMapping';
+import { getCurrencyFromPlace } from '@/utils/currencyMapping';
 
 
 
@@ -33,23 +33,21 @@ interface MultiCurrencyData {
   };
 }
 
-export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: string) => {
+export const useCurrencyExchange = (baseCurrency: string = 'USD', placeDetails?: { country_code?: string; formatted_address?: string; name?: string }) => {
   const [currencyData, setCurrencyData] = useState<CurrencyData | null>(null);
   const [multiCurrencyData, setMultiCurrencyData] = useState<MultiCurrencyData>({});
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Determine target currency from destination
-  const targetCurrencyInfo = destination ? getCurrencyFromDestination(destination) : { code: 'USD', symbol: '$', name: 'US Dollar' };
+  // Determine target currency from place details
+  const targetCurrencyInfo = placeDetails ? getCurrencyFromPlace(placeDetails) : { code: 'USD', symbol: '$', name: 'US Dollar' };
   const targetCurrency = targetCurrencyInfo.code;
 
-  console.log("baseCurrency", baseCurrency);
-  console.log("targetCurrency", targetCurrency);
+
 
   useEffect(() => {
     const fetchExchangeRates = async () => {
-      console.log('🔄 Starting currency exchange fetch...');
-      console.log('📊 Input params:', { baseCurrency, targetCurrency, targetCurrencyInfo });
+
 
       try {
         setIsLoading(true);
@@ -105,7 +103,7 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: 
             lastUpdated: new Date(data.time_last_update_utc).toLocaleTimeString()
           }
         };
-        console.log('🔄 Multi-currency data updated:', newMultiCurrencyData);
+
         setMultiCurrencyData(newMultiCurrencyData);
 
       } catch (err) {
@@ -120,17 +118,14 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: 
         setError(err instanceof Error ? err.message : 'Failed to fetch exchange rates');
 
         // Fallback to mock data if API fails
-        console.log('🔄 Setting fallback data...');
         const fallbackData = {
           rate: targetCurrency === 'BRL' ? 5.15 : 1.0,
           symbol: targetCurrencyInfo.symbol,
           name: targetCurrencyInfo.name,
           lastUpdated: 'API Error - Using fallback'
         };
-        console.log('📊 Fallback data:', fallbackData);
         setCurrencyData(fallbackData);
       } finally {
-        console.log('🏁 Currency exchange fetch completed');
         setIsLoading(false);
       }
     };
@@ -141,7 +136,7 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', destination?: 
     const interval = setInterval(fetchExchangeRates, 5 * 60 * 1000);
 
     return () => clearInterval(interval);
-  }, [baseCurrency, targetCurrency, targetCurrencyInfo.symbol, targetCurrencyInfo.name]);
+  }, [baseCurrency, targetCurrency, targetCurrencyInfo.symbol, targetCurrencyInfo.name, placeDetails?.country_code]);
 
   return {
     currencyData,

@@ -1,8 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Calendar, Thermometer, Clock, CreditCard, Car, Wifi, TrendingUp, Pin, PinOff, Globe, User, ChevronDown, Search, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Pin, Globe, Search, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import {
   Popover,
   PopoverContent,
@@ -17,30 +16,28 @@ import {
   HolidayContainer,
   TimeZoneContainer,
   CurrencyContainer,
-  AirportContainer,
   VisaContainer,
-  // CulturalContainer,
-  TransportWidget,
-  // PowerAdapterWidget,
-  // EmergencyWidget,
-  ConnectivityWidget
+  ConnectivityWidget,
+  UberAvailabilityWidget
 } from './widgets';
-import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
+import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
 
 interface ResultsPageProps {
-  destination: string;
+  placeDetails: SelectedPlace | null;
   dates: {
     checkin: string;
     checkout: string;
   };
   onBack: () => void;
-  onNewSearch: (destination: string, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
+  onNewSearch: (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
 }
 
 
 
-const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPageProps) => {
+const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPageProps) => {
+  // Extract destination string for backwards compatibility (display purposes)
+  const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
 
   // const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
   const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
@@ -156,17 +153,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
 
 
 
-  // Update pinned destinations when destination changes
+  // Update pinned destinations when placeDetails changes
   useEffect(() => {
     if (!pinnedDestinations.includes(destination)) {
       setPinnedDestinations(prev => [destination, ...prev.slice(0, 4)]); // Keep max 5 pinned destinations
     }
-  }, [destination]);
+  }, [placeDetails, destination]);
 
-  // Update newDestination when destination prop changes
+  // Update newDestination when placeDetails prop changes
   useEffect(() => {
     setNewDestination(destination);
-  }, [destination]);
+  }, [placeDetails, destination]);
 
 
 
@@ -273,209 +270,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return null;
   };
 
-  // Check if destination has accommodation map support - COMMENTED OUT: Not in Phase 1 scope
-  // const getSupportedAccommodationDestinations = () => {
-  //   return ['são paulo', 'sao paulo', 'brazil'];
-  // };
 
-  // const hasAccommodationMapSupport = (dest: string) => {
-  //   const lowerDest = dest.toLowerCase();
-  //   return getSupportedAccommodationDestinations().some(supported =>
-  //     lowerDest.includes(supported)
-  //   );
-  // };
-
-  // Dynamic airport data based on destination
-  const getAirportData = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
-
-    if (lowerDest.includes('lima') || lowerDest.includes('peru')) {
-      return {
-        code: 'LIM',
-        name: 'Jorge Chávez International Airport',
-        address: 'Lima, Peru',
-        distance: '11 km',
-        travelTime: '30-60 min',
-        options: 'Bus, Taxi, Uber'
-      };
-    }
-
-    if (lowerDest.includes('são paulo') || lowerDest.includes('sao paulo') || lowerDest.includes('brazil')) {
-      return {
-        code: 'GRU',
-        name: 'São Paulo/Guarulhos International Airport',
-        address: 'Guarulhos, São Paulo',
-        distance: '25 km',
-        travelTime: '45-90 min',
-        options: 'Metro, Bus, Taxi'
-      };
-    }
-
-    if (lowerDest.includes('london') || lowerDest.includes('uk') || lowerDest.includes('united kingdom')) {
-      return {
-        code: 'LHR',
-        name: 'London Heathrow Airport',
-        address: 'London, United Kingdom',
-        distance: '24 km',
-        travelTime: '45-75 min',
-        options: 'Tube, Bus, Taxi'
-      };
-    }
-
-    if (lowerDest.includes('paris') || lowerDest.includes('france')) {
-      return {
-        code: 'CDG',
-        name: 'Charles de Gaulle Airport',
-        address: 'Paris, France',
-        distance: '25 km',
-        travelTime: '45-75 min',
-        options: 'RER, Bus, Taxi'
-      };
-    }
-
-    if (lowerDest.includes('tokyo') || lowerDest.includes('japan')) {
-      return {
-        code: 'NRT',
-        name: 'Narita International Airport',
-        address: 'Tokyo, Japan',
-        distance: '60 km',
-        travelTime: '60-90 min',
-        options: 'Train, Bus, Taxi'
-      };
-    }
-
-    // Generic fallback
-    return {
-      code: 'N/A',
-      name: 'Primary Airport',
-      address: `${dest}`,
-      distance: 'Variable',
-      travelTime: 'Variable',
-      options: 'Multiple options available'
-    };
-  };
-
-  // COMMENTED OUT: Not in Phase 1 scope - Power adapter data
-  // const getPowerAdapterData = (dest: string) => {
-  //   const lowerDest = dest.toLowerCase();
-
-  //   if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-  //     return { type: 'Type C & N', voltage: '220V', frequency: '60Hz' };
-  //   }
-
-  //   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-  //     return { type: 'Type A & C', voltage: '220V', frequency: '60Hz' };
-  //   }
-
-  //   if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-  //     return { type: 'Type G', voltage: '230V', frequency: '50Hz' };
-  //   }
-
-  //   if (lowerDest.includes('france') || lowerDest.includes('paris')) {
-  //     return { type: 'Type C & E', voltage: '230V', frequency: '50Hz' };
-  //   }
-
-  //   if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
-  //     return { type: 'Type A & B', voltage: '100V', frequency: '50Hz/60Hz' };
-  //   }
-
-  //   // Default fallback
-  //   return { type: 'Various', voltage: 'Check locally', frequency: 'Check locally' };
-  // };
-
-  // COMMENTED OUT: Not in Phase 1 scope - Emergency numbers
-  // const getEmergencyNumbers = (dest: string) => {
-  //   const lowerDest = dest.toLowerCase();
-
-  //   if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-  //     return { police: '190', fire: '193', medical: '192' };
-  //   }
-
-  //   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-  //     return { police: '105', fire: '116', medical: '117' };
-  //   }
-
-  //   if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-  //     return { police: '999', fire: '999', medical: '999' };
-  //   }
-
-  //   if (lowerDest.includes('france') || lowerDest.includes('paris')) {
-  //     return { police: '17', fire: '18', medical: '15' };
-  //   }
-
-  //   if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
-  //     return { police: '110', fire: '119', medical: '119' };
-  //   }
-
-  //   // Default fallback
-  //   return { police: '911', fire: '911', medical: '911' };
-  // };
-
-  // Dynamic transport data based on destination
-  const getTransportData = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
-
-    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-      return {
-        primary: 'Metro',
-        secondary: 'Uber/99',
-        metroPass: 'R$12.00',
-        busFare: 'R$4.40',
-        card: 'Bilhete Único'
-      };
-    }
-
-    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-      return {
-        primary: 'Metropolitano',
-        secondary: 'Taxi/Uber',
-        metroPass: 'S/2.50',
-        busFare: 'S/1.20',
-        card: 'Tarjeta Lima'
-      };
-    }
-
-    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-      return {
-        primary: 'Tube',
-        secondary: 'Bus/Uber',
-        metroPass: '£2.80',
-        busFare: '£1.75',
-        card: 'Oyster Card'
-      };
-    }
-
-    // Generic fallback
-    return {
-      primary: 'Public Transit',
-      secondary: 'Taxi/Ride-share',
-      metroPass: 'Variable',
-      busFare: 'Variable',
-      card: 'Local transit card'
-    };
-  };
-
-  // Get dynamic data based on destination
-  const airportData = getAirportData(destination);
-  // const powerData = getPowerAdapterData(destination);
-  // const emergencyData = getEmergencyNumbers(destination);
-  const transportData = getTransportData(destination);
-
-
-
-
-
-  // COMMENTED OUT: Not in Phase 1 scope - Intelligence Dashboard widget options
-  // const widgetOptions = [
-  //   { id: 'currency', name: 'Currency', icon: CreditCard, color: 'from-green-500 to-emerald-600' },
-  //   { id: 'weather', name: 'Weather', icon: Thermometer, color: 'from-orange-500 to-red-600' },
-  //   { id: 'time', name: 'Time', icon: Clock, color: 'from-blue-500 to-cyan-600' },
-  //   { id: 'transport', name: 'Transport', icon: Car, color: 'from-purple-500 to-violet-600' },
-  //   { id: 'emergency', name: 'Emergency', icon: Shield, color: 'from-red-500 to-pink-600' },
-  //   { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
-  // ];
-
-  // Dynamic destination suggestions based on the current destination region
   const getRegionalDestinations = (currentDest: string) => {
     return getContextualDestinations(currentDest);
   };
@@ -493,8 +288,17 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (newDestination && newCheckinDate && newCheckoutDate) {
+      // Create a basic placeDetails object if we don't have the full details
+      const newPlaceDetails: SelectedPlace = {
+        name: newDestination,
+        formatted_address: newDestination,
+        latitude: 0,
+        longitude: 0,
+        place_id: `search_${Date.now()}`
+      };
+
       // Pass skipTransition as true to avoid loading screen
-      onNewSearch(newDestination, {
+      onNewSearch(newPlaceDetails, {
         checkin: format(newCheckinDate, 'yyyy-MM-dd'),
         checkout: format(newCheckoutDate, 'yyyy-MM-dd')
       }, true);
@@ -538,12 +342,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return `Depart: ${departFormatted} • Return: ${returnFormatted}`;
   };
 
-  // COMMENTED OUT: Not used in ResultsPage
-  // const handleSignOut = () => {
-  //   // Navigate to sign out/sign in page
-  //   window.location.href = '/auth';
-  // };
-
 
 
   return (
@@ -564,7 +362,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               <Button
                 variant="ghost"
                 onClick={onBack}
-                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive"
+                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive cursor-pointer pointer-events-auto"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -687,68 +485,82 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             )}
           </div>
 
-          {/* Search Bar - Always Visible but Compact when Collapsed */}
-          <form onSubmit={handleSearch} className={`bg-white/10 backdrop-blur-sm border border-border/20 rounded-full shadow-lg relative travis-glow-white transition-all duration-500 ease-out ${isHeaderCollapsed ? 'p-1' : 'p-1.5 sm:p-2'
+          {/* Airbnb-Style Search Bar - Always Visible but Compact when Collapsed */}
+          <form onSubmit={handleSearch} className={`relative transition-all duration-500 ease-out ${isHeaderCollapsed ? '' : ''
             }`}>
-            <div className="flex items-center gap-1 sm:gap-2">
-              <div className="flex-1 relative">
-                <MapPin className={`absolute text-muted-foreground z-10 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'left-2.5 w-4 h-4' : 'left-3 sm:left-4 w-4 h-4 sm:w-5 sm:h-5'
-                  } top-1/2 transform -translate-y-1/2`} />
-                <Input
-                  ref={searchInputRef}
-                  type="text"
-                  placeholder="Search any destination worldwide..."
-                  value={newDestination}
-                  onChange={(e) => handleDestinationChange(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
-                  onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-500 ease-out ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
-                    }`}
-                />
-                {showSuggestions && mapboxSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {isLoadingSuggestions && (
-                      <div className="p-4 text-center text-muted-foreground">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
-                      </div>
-                    )}
-                    {mapboxSuggestions.map((suggestion, index) => (
-                      <button
-                        key={index}
-                        onClick={() => handleDestinationSelect(suggestion)}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
-                      >
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-foreground truncate">
-                              {suggestion.text}
-                            </div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {suggestion.place_name}
+            <div className={`bg-white shadow-lg rounded-full flex justify-center transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-12' : 'h-14'
+              }`} style={{ fontSize: '0.6rem' }}>
+
+              {/* Location Section */}
+              <div className={`relative flex-1 max-w-[34%] rounded-l-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
+                }`}>
+                <div className="relative">
+                  <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
+                    }`}>Location</p>
+                  <input
+                    ref={searchInputRef}
+                    type="text"
+                    placeholder="Where are you going?"
+                    value={newDestination}
+                    onChange={(e) => handleDestinationChange(e.target.value)}
+                    onKeyPress={handleKeyPress}
+                    onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
+                    onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
+                    className={`bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
+                      }`}
+                    style={{ fontSize: '0.75rem' }}
+                  />
+
+                  {/* Suggestions Dropdown */}
+                  {showSuggestions && mapboxSuggestions.length > 0 && (
+                    <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                      {isLoadingSuggestions && (
+                        <div className="p-4 text-center text-gray-500">
+                          <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
+                        </div>
+                      )}
+                      {mapboxSuggestions.map((suggestion, index) => (
+                        <button
+                          key={index}
+                          onClick={() => handleDestinationSelect(suggestion)}
+                          className="w-full text-left px-4 py-3 hover:bg-gray-50 transition-colors text-sm border-b border-gray-100 last:border-b-0"
+                        >
+                          <div className="flex items-center space-x-3">
+                            <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                            <div className="flex-1 min-w-0">
+                              <div className="font-medium text-gray-900 truncate">
+                                {suggestion.text}
+                              </div>
+                              <div className="text-xs text-gray-500 truncate">
+                                {suggestion.place_name}
+                              </div>
                             </div>
                           </div>
-                        </div>
-                      </button>
-                    ))}
-                  </div>
-                )}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Separator */}
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
               </div>
 
-              {/* Date Inputs - Collapsible */}
-              <div className={`flex gap-1 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'
+              {/* Check In Section */}
+              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
                 }`}>
+                <p className="text-xs font-semibold text-gray-900 mb-1">Check in</p>
                 <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
+                    <button
+                      type="button"
+                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
+                      style={{ fontSize: '0.75rem' }}
                     >
-                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Depart'}
-                    </Button>
+                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Add dates'}
+                    </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
                     <CalendarComponent
                       mode="single"
                       selected={newCheckinDate}
@@ -762,38 +574,62 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
                   </PopoverContent>
                 </Popover>
 
+                {/* Separator */}
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
+              </div>
+
+              {/* Check Out Section */}
+              <div className={`relative flex-1 max-w-[22%] px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden px-0' : 'opacity-100 px-6 py-4'
+                }`}>
+                <p className="text-xs font-semibold text-gray-900 mb-1">Check out</p>
                 <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
+                    <button
+                      type="button"
+                      className="bg-transparent border-none outline-none text-gray-600 placeholder-gray-400 w-full text-left text-sm"
+                      style={{ fontSize: '0.75rem' }}
                     >
-                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Return'}
-                    </Button>
+                      {newCheckoutDate ? format(newCheckoutDate, 'MMM dd') : 'Add dates'}
+                    </button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <PopoverContent className="w-auto p-0 bg-white border-gray-200" align="start">
                     <CalendarComponent
                       mode="single"
                       selected={newCheckoutDate}
                       onSelect={(date) => {
                         if (date) setNewCheckoutDate(date);
-                        setCheckinOpen(false);
+                        setCheckoutOpen(false);
                       }}
                       initialFocus
                       className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
+
+                {/* Separator */}
+                <div className="absolute right-0 top-1/2 transform -translate-y-1/2 w-px h-8 bg-gray-200"></div>
               </div>
 
-              <Button
-                type="submit"
-                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
-                  }`}
-              >
-                <Search className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
-                  }`} />
-              </Button>
+              {/* Search Section (replacing "Guests" from Airbnb) */}
+              <div className={`relative flex-1 max-w-[22%] rounded-r-full px-4 py-3 transition-all duration-250 hover:bg-gray-100 ${isHeaderCollapsed ? 'px-2 py-2' : 'px-6 py-4'
+                }`}>
+                <p className={`text-xs font-semibold text-gray-900 mb-1 transition-all duration-500 ${isHeaderCollapsed ? 'text-[10px]' : 'text-xs'
+                  }`}>Search</p>
+                <div className="flex items-center justify-between">
+                  <span className={`text-gray-600 transition-all duration-500 ${isHeaderCollapsed ? 'text-xs' : 'text-sm'
+                    }`} style={{ fontSize: '0.75rem' }}>
+                    Find destination
+                  </span>
+                  <button
+                    type="submit"
+                    className={`bg-red-500 text-white rounded-full flex items-center justify-center transition-all duration-500 hover:bg-red-600 ${isHeaderCollapsed ? 'w-6 h-6' : 'w-8 h-8'
+                      }`}
+                  >
+                    <Search className={`transition-all duration-500 ${isHeaderCollapsed ? 'w-3 h-3' : 'w-4 h-4'
+                      }`} />
+                  </button>
+                </div>
+              </div>
             </div>
           </form>
         </div>
@@ -803,7 +639,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Hero Section with Photo Slideshow */}
         <div className="mb-6 sm:mb-8">
-          <PhotoSlideshow />
+          <PhotoSlideshow placeDetails={placeDetails} />
         </div>
 
         {/* Essential Travel Information - Mobile First Grid with Equal Heights */}
@@ -814,14 +650,14 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Currency Converter - Essential for travel planning */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <CurrencyContainer destination={destination} />
+                <CurrencyContainer placeDetails={placeDetails} />
               </div>
             </div>
 
             {/* Time Zone - Critical for scheduling */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <TimeZoneContainer destination={destination} />
+                <TimeZoneContainer placeDetails={placeDetails} />
               </div>
             </div>
           </div>
@@ -831,53 +667,54 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
             <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <WeatherContainer destination={destination} />
+                <WeatherContainer placeDetails={placeDetails} />
               </div>
             </div>
-
-            {/* Transportation Info - Compact but informative */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <TransportWidget transportData={transportData} />
+                <HolidayContainer placeDetails={placeDetails} dates={dates} />
               </div>
             </div>
           </div>
 
           {/* Row 3: Local Information & Holidays */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-            {/* Local Holidays - Important for trip planning */}
+
+
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <HolidayContainer destination={destination} dates={dates} />
+                <VisaContainer placeDetails={placeDetails} />
               </div>
             </div>
 
-            {/* Airport Information - Essential for arrival planning */}
+            {/* Uber Availability - Important for ground transportation */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <AirportContainer destination={destination} />
+                <UberAvailabilityWidget placeDetails={placeDetails} />
               </div>
             </div>
           </div>
 
-          {/* Row 4: Entry Requirements & Connectivity */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-            {/* Visa Requirements - Critical for entry */}
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
-                <VisaContainer destination={destination} />
-              </div>
-            </div>
 
+          {/* Row 5: Connectivity & Additional Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
             {/* Connectivity Info - Important for modern travelers */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
                 <ConnectivityWidget />
               </div>
             </div>
+
+            {/* Future expansion slot */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                {/* This space reserved for future widgets */}
+                <div className="h-full"></div>
+              </div>
+            </div>
           </div>
 
-          {/* Row 5: Future Features Placeholder - Subtle indication of what's coming */}
+          {/* Row 6: Future Features Placeholder - Subtle indication of what's coming */}
           <div className="text-center py-8 sm:py-12">
             <div className="inline-flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl">
               <div className="flex items-center space-x-2">

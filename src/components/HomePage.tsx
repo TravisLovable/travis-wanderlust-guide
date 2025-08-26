@@ -13,11 +13,10 @@ import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import OnboardingModal from './OnboardingModal';
 import { useToast } from '@/hooks/use-toast';
-// import CountryTest from './CountryTest';
 
 
 interface HomePageProps {
-  onSearch: (destination: string, dates: { checkin: string; checkout: string }, placeDetails?: SelectedPlace) => void;
+  onSearch: (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }) => void;
 }
 
 const HomePage = ({ onSearch }: HomePageProps) => {
@@ -346,10 +345,19 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (destination && checkinDate && checkoutDate) {
-      onSearch(destination, {
+      // If we have a selectedPlace from Mapbox, use it. Otherwise, create a basic place object
+      const placeToUse = selectedPlace || {
+        name: destination,
+        formatted_address: destination,
+        latitude: 0,
+        longitude: 0,
+        place_id: `manual_${Date.now()}`
+      };
+      
+      onSearch(placeToUse, {
         checkin: format(checkinDate, 'yyyy-MM-dd'),
         checkout: format(checkoutDate, 'yyyy-MM-dd')
-      }, selectedPlace || undefined);
+      });
     } else {
       toast({
         title: 'Please fill in all fields',
@@ -357,7 +365,6 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         variant: 'destructive',
         className: 'bg-black text-white'
       });
-
     }
   };
 

@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import WeatherPresenter from '../presenters/WeatherPresenter';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { supabase } from '@/integrations/supabase/client';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface WeatherContainerProps {
-    destination: string;
+    placeDetails: SelectedPlace | null;
 }
 
 const WeatherContainer: React.FC<WeatherContainerProps> = ({
-    destination
+    placeDetails
 }) => {
     const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
 
@@ -36,7 +37,6 @@ const WeatherContainer: React.FC<WeatherContainerProps> = ({
                         .eq('auth_id', user.id);
 
                     if (userCountry && userCountry[0]?.country_data) {
-                        console.log('🌍 User country data for weather:', userCountry[0].country_data);
                         const countryData = userCountry[0].country_data;
                         setUserCountry(countryData);
 
@@ -56,24 +56,20 @@ const WeatherContainer: React.FC<WeatherContainerProps> = ({
         fetchUserCountry();
     }, []);
 
-    // Debug logging
-    console.log('🌤️ WeatherContainer Debug:', {
-        destination,
-        userCountry,
-        tempUnit,
-        userLoading
-    });
 
-    // Data fetching logic - now with user country context
-    const { weatherData, isLoading, error } = useWeatherData(destination, userCountry);
+
+    // Data fetching logic - now with coordinates and user country context
+    const { weatherData, isLoading, error } = useWeatherData(placeDetails, userCountry);
 
     // Data transformation logic
     const transformedData = {
         current: weatherData?.current || null,
         forecast: weatherData?.forecast || [],
-        location: weatherData?.location || destination,
+        location: weatherData?.location || placeDetails?.name || 'Unknown',
         isLoading,
-        error
+        error,
+        userCountry: weatherData?.userCountry || userCountry,
+        homeWeather: weatherData?.homeWeather || null
     };
 
     return (

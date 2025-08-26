@@ -44,8 +44,11 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
         return Cloud;
     };
 
-    const convertTemp = (temp: number) => {
-        return tempUnit === 'F' ? Math.round((temp * 9 / 5) + 32) : temp;
+    const convertTemp = (temp: number | undefined | null) => {
+        if (temp === null || temp === undefined || isNaN(temp)) {
+            return tempUnit === 'F' ? 68 : 20; // Fallback temperature
+        }
+        return tempUnit === 'F' ? Math.round((temp * 9 / 5) + 32) : Math.round(temp);
     };
 
     if (isLoading) {

@@ -2,6 +2,7 @@ import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { CalendarDays, Mountain } from 'lucide-react';
 import { format } from 'date-fns';
+import { Destination } from '@/types/destination';
 
 interface HolidayData {
     country: string;
@@ -35,7 +36,7 @@ interface HolidayData {
 interface HolidayWidgetProps {
     holidayData: HolidayData | null;
     isLoadingHolidays: boolean;
-    destination: string;
+    destination: Destination;
     dates: {
         checkin: string;
         checkout: string;
@@ -69,7 +70,7 @@ const HolidayWidget: React.FC<HolidayWidgetProps> = ({
                         {holidayData && holidayData.upcomingHolidays.length > 0 ? (
                             <>
                                 <div className="text-xs text-purple-300 mb-2 font-medium">
-                                    During your trip to {destination}:
+                                    During your trip to {destination.displayName}:
                                 </div>
                                 {holidayData.upcomingHolidays.map((holiday, idx) => (
                                     <div key={idx} className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">

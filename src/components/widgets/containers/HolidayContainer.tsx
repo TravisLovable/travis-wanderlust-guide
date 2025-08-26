@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import HolidayPresenter from '../presenters/HolidayPresenter';
 import { supabase } from '@/integrations/supabase/client';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 // Helper function to get region from country code
 const getRegionFromCountryCode = (countryCode: string): string => {
@@ -72,7 +73,7 @@ interface HolidayData {
 }
 
 interface HolidayContainerProps {
-    destination: string;
+    placeDetails: SelectedPlace | null;
     dates: {
         checkin: string;
         checkout: string;
@@ -80,7 +81,7 @@ interface HolidayContainerProps {
 }
 
 const HolidayContainer: React.FC<HolidayContainerProps> = ({
-    destination,
+    placeDetails,
     dates
 }) => {
     const [holidayData, setHolidayData] = useState<HolidayData | null>(null);
@@ -122,12 +123,10 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
         const fetchHolidayData = async () => {
             setIsLoadingHolidays(true);
             try {
-                console.log('Fetching holiday data for:', destination);
+                const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
 
                 // Get country code for destination using user country context and smart parsing
                 const getCountryCodeForDestination = (dest: string, userCountryData?: any): string => {
-                    console.log('🔍 Determining country code for destination:', dest);
-                    console.log('👤 User country context:', userCountryData);
 
                     // First, try to extract country from destination string
                     const parts = dest.split(',').map(part => part.trim());
@@ -184,18 +183,16 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
                     }
 
                     // Priority 4: Default to US if no match found
-                    console.log('⚠️ No country match found, defaulting to US');
                     return 'US';
                 };
 
-                const countryCode = getCountryCodeForDestination(destination, userCountry);
+                const countryCode = getCountryCodeForDestination(destinationName, userCountry);
                 const checkinDate = new Date(dates.checkin);
                 const checkoutDate = new Date(dates.checkout);
                 const startYear = checkinDate.getFullYear();
                 const endYear = checkoutDate.getFullYear();
 
-                console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destination}`);
-                console.log(`Travel dates span from ${startYear} to ${endYear}`);
+
 
                 // Fetch holidays for all years in the travel date range
                 const years = [];
@@ -293,15 +290,9 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
         };
 
         fetchHolidayData();
-    }, [destination, dates.checkin, dates.checkout]);
+    }, [placeDetails, dates.checkin, dates.checkout]);
 
-    // Debug logging
-    console.log('🎉 HolidayContainer Debug:', {
-        destination,
-        userCountry,
-        holidayData,
-        userLoading
-    });
+    const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
 
     // Data transformation logic
     const transformedData = {
@@ -316,7 +307,7 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
     return (
         <HolidayPresenter
             data={transformedData}
-            destination={destination}
+            destination={destinationName}
             dates={dates}
         />
     );

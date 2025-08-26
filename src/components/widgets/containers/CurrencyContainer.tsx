@@ -2,15 +2,15 @@ import React, { useEffect, useState } from 'react';
 import CurrencyPresenter from '../presenters/CurrencyPresenter';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { supabase } from '@/integrations/supabase/client';
+import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface CurrencyContainerProps {
-    destination: string;
+    placeDetails: SelectedPlace | null;
 }
 
-const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) => {
+const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ placeDetails }) => {
     const [currencyAmount, setCurrencyAmount] = useState(100);
     const [baseCurrency, setBaseCurrency] = useState('USD');
-    const [userCountry, setUserCountry] = useState<string | null>(null);
     const [userLoading, setUserLoading] = useState(true);
 
     useEffect(() => {
@@ -25,13 +25,9 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) =>
                 .eq('auth_id', user.id);
 
 
-            console.log('👤 User country data:', userCountry);
-
             if (userCountry && userCountry[0]?.country_data?.currency) {
-                console.log('✅ Setting base currency to:', userCountry[0].country_data.currency);
                 setBaseCurrency(userCountry[0].country_data.currency);
             } else {
-                console.log("❌ No user country data found, falling back to USD");
                 setBaseCurrency('USD'); // Fallback to USD
             }
         }
@@ -39,26 +35,8 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) =>
         fetchUserCountry();
     }, [])
 
-    // Monitor destination changes and log currency extraction
-    useEffect(() => {
-        if (destination) {
-            import('@/utils/currencyMapping').then(({ extractCountryFromDestination, getCurrencyFromDestination }) => {
-                const extractedCountry = extractCountryFromDestination(destination);
-                const currencyInfo = getCurrencyFromDestination(destination);
-                console.log('🌍 Destination analysis:', {
-                    original: destination,
-                    extractedCountry,
-                    currencyInfo,
-                    baseCurrency
-                });
-            });
-        }
-    }, [destination, baseCurrency]);
-
-
-
-    // Use real currency exchange data with destination-based currency
-    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, destination);
+    // Use real currency exchange data with place details (includes country_code)
+    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, placeDetails);
 
     // Data transformation logic
     const transformedData = {

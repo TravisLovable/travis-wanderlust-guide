@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Globe, Church, Heart, Utensils } from 'lucide-react';
+import { Destination } from '@/types/destination';
 
 interface CulturalData {
     language: {
@@ -17,7 +18,7 @@ interface CulturalData {
 
 interface CulturalPresenterProps {
     data: CulturalData | null;
-    destination: string;
+    destination: Destination;
 }
 
 const CulturalPresenter: React.FC<CulturalPresenterProps> = ({ data, destination }) => {
@@ -40,7 +41,7 @@ const CulturalPresenter: React.FC<CulturalPresenterProps> = ({ data, destination
                         <h3 className="text-lg font-semibold mb-2">Cultural insights are currently unavailable for this destination.</h3>
                         <p className="text-muted-foreground">
                             We're working to expand our cultural database to include more destinations.
-                            Check back soon for detailed cultural insights for {destination}.
+                            Check back soon for detailed cultural insights for {destination.displayName}.
                         </p>
                     </div>
                 </CardContent>
