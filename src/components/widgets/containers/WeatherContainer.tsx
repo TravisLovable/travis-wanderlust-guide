@@ -2,9 +2,10 @@ import React, { useState, useEffect } from 'react';
 import WeatherPresenter from '../presenters/WeatherPresenter';
 import { useWeatherData } from '@/hooks/useWeatherData';
 import { supabase } from '@/integrations/supabase/client';
+import { Destination } from '@/types/destination';
 
 interface WeatherContainerProps {
-    destination: string;
+    destination: Destination;
 }
 
 const WeatherContainer: React.FC<WeatherContainerProps> = ({
@@ -36,7 +37,6 @@ const WeatherContainer: React.FC<WeatherContainerProps> = ({
                         .eq('auth_id', user.id);
 
                     if (userCountry && userCountry[0]?.country_data) {
-                        console.log('🌍 User country data for weather:', userCountry[0].country_data);
                         const countryData = userCountry[0].country_data;
                         setUserCountry(countryData);
 
@@ -58,20 +58,20 @@ const WeatherContainer: React.FC<WeatherContainerProps> = ({
 
     // Debug logging
     console.log('🌤️ WeatherContainer Debug:', {
-        destination,
+        destination: destination.displayName,
         userCountry,
         tempUnit,
         userLoading
     });
 
     // Data fetching logic - now with user country context
-    const { weatherData, isLoading, error } = useWeatherData(destination, userCountry);
+    const { weatherData, isLoading, error } = useWeatherData(destination.displayName, userCountry);
 
     // Data transformation logic
     const transformedData = {
         current: weatherData?.current || null,
         forecast: weatherData?.forecast || [],
-        location: weatherData?.location || destination,
+        location: weatherData?.location || destination.displayName,
         isLoading,
         error
     };

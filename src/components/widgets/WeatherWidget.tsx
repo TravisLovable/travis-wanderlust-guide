@@ -6,16 +6,17 @@ import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { useWeatherData } from '@/hooks/useWeatherData';
+import { Destination } from '@/types/destination';
 
 interface WeatherWidgetProps {
-  destination: string;
+  destination: Destination;
   currentLocation?: string;
   tempUnit: 'C' | 'F';
   onTempUnitToggle: () => void;
 }
 
 const WeatherWidget = ({ destination, currentLocation = 'Current Location', tempUnit, onTempUnitToggle }: WeatherWidgetProps) => {
-  const { weatherData: destinationWeather, isLoading: destinationLoading, error: destinationError } = useWeatherData(destination);
+  const { weatherData: destinationWeather, isLoading: destinationLoading, error: destinationError } = useWeatherData(destination.displayName);
   const { weatherData: currentWeather, isLoading: currentLoading, error: currentError } = useWeatherData(currentLocation);
 
   const convertTemp = (temp: number) => {
@@ -137,7 +138,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
               />
               <WeatherCard 
                 weather={destinationWeather} 
-                location={destination}
+                location={destination.displayName}
                 isLoading={destinationLoading}
                 error={destinationError}
               />
@@ -150,7 +151,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
           {destinationWeather && destinationWeather.forecast && destinationWeather.forecast.length > 0 && (
             <div className="space-y-3">
               <div className="flex items-center gap-2">
-                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">7-Day Forecast - {destination}</h3>
+                <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide">7-Day Forecast - {destination.displayName}</h3>
                 <div className="flex-1 h-px bg-border"></div>
               </div>
               <div className="grid grid-cols-7 gap-2">

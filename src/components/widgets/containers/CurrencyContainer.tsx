@@ -2,9 +2,10 @@ import React, { useEffect, useState } from 'react';
 import CurrencyPresenter from '../presenters/CurrencyPresenter';
 import { useCurrencyExchange } from '@/hooks/useCurrencyExchange';
 import { supabase } from '@/integrations/supabase/client';
+import { Destination } from '@/types/destination';
 
 interface CurrencyContainerProps {
-    destination: string;
+    destination: Destination;
 }
 
 const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) => {
@@ -43,10 +44,10 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) =>
     useEffect(() => {
         if (destination) {
             import('@/utils/currencyMapping').then(({ extractCountryFromDestination, getCurrencyFromDestination }) => {
-                const extractedCountry = extractCountryFromDestination(destination);
-                const currencyInfo = getCurrencyFromDestination(destination);
+                const extractedCountry = extractCountryFromDestination(destination.displayName);
+                const currencyInfo = getCurrencyFromDestination(destination.displayName);
                 console.log('🌍 Destination analysis:', {
-                    original: destination,
+                    original: destination.displayName,
                     extractedCountry,
                     currencyInfo,
                     baseCurrency
@@ -58,7 +59,7 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ destination }) =>
 
 
     // Use real currency exchange data with destination-based currency
-    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, destination);
+    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, destination.displayName);
 
     // Data transformation logic
     const transformedData = {

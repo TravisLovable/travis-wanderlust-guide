@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import HolidayPresenter from '../presenters/HolidayPresenter';
 import { supabase } from '@/integrations/supabase/client';
+import { Destination } from '@/types/destination';
 
 // Helper function to get region from country code
 const getRegionFromCountryCode = (countryCode: string): string => {
@@ -72,7 +73,7 @@ interface HolidayData {
 }
 
 interface HolidayContainerProps {
-    destination: string;
+    destination: Destination;
     dates: {
         checkin: string;
         checkout: string;
@@ -188,13 +189,13 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
                     return 'US';
                 };
 
-                const countryCode = getCountryCodeForDestination(destination, userCountry);
+                const countryCode = getCountryCodeForDestination(destination.displayName, userCountry);
                 const checkinDate = new Date(dates.checkin);
                 const checkoutDate = new Date(dates.checkout);
                 const startYear = checkinDate.getFullYear();
                 const endYear = checkoutDate.getFullYear();
 
-                console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destination}`);
+                console.log(`Fetching holidays for country code: ${countryCode} based on destination: ${destination.displayName}`);
                 console.log(`Travel dates span from ${startYear} to ${endYear}`);
 
                 // Fetch holidays for all years in the travel date range

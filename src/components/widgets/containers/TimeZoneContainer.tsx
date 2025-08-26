@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import TimeZonePresenter from '../presenters/TimeZonePresenter';
 import { supabase } from '@/integrations/supabase/client';
+import { Destination } from '@/types/destination';
 
 interface TimeZoneContainerProps {
-  destination: string;
+  destination: Destination;
 }
 
 interface WorldClockData {
@@ -38,7 +39,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) =>
     const fetchWorldClockData = async () => {
       setIsLoading(true);
       try {
-        console.log('Fetching world clock data for:', destination);
+        console.log('Fetching world clock data for:', destination.displayName);
 
         // Get timezone for destination - improved mapping with more destinations
         const getTimezoneForDestination = (dest: string) => {
@@ -105,7 +106,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) =>
           return 'UTC';
         };
 
-        const destinationTimezone = getTimezoneForDestination(destination);
+        const destinationTimezone = getTimezoneForDestination(destination.displayName);
         const originTimezone = 'America/Chicago'; // User's timezone (CST)
 
         console.log(`Using timezones: origin=${originTimezone}, destination=${destinationTimezone}`);
@@ -149,7 +150,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ destination }) =>
     },
     timeDifferenceText: worldClockData?.timeDifferenceText || 'Same time',
     isLoading,
-    destinationName: destination.split(',')[0]
+    destinationName: destination.displayName
   };
 
   return (

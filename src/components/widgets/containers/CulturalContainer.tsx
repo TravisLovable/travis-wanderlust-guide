@@ -1,8 +1,9 @@
 import React from 'react';
 import CulturalPresenter from '../presenters/CulturalPresenter';
+import { Destination } from '@/types/destination';
 
 interface CulturalContainerProps {
-    destination: string;
+    destination: Destination;
 }
 
 const CulturalContainer: React.FC<CulturalContainerProps> = ({ destination }) => {
@@ -182,7 +183,7 @@ const CulturalContainer: React.FC<CulturalContainerProps> = ({ destination }) =>
         return null;
     };
 
-    const culturalData = getCulturalData(destination);
+    const culturalData = getCulturalData(destination.displayName);
 
     return (
         <CulturalPresenter data={culturalData} destination={destination} />

@@ -13,6 +13,8 @@ import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import OnboardingModal from './OnboardingModal';
 import { useToast } from '@/hooks/use-toast';
+import { normalizeDestination, formatDestination } from '@/utils/destinationHelpers';
+import type { Destination } from '@/types/destination';
 // import CountryTest from './CountryTest';
 
 

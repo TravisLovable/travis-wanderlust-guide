@@ -23,7 +23,8 @@ import {
   TransportWidget,
   // PowerAdapterWidget,
   // EmergencyWidget,
-  ConnectivityWidget
+  ConnectivityWidget,
+  UberAvailabilityWidget
 } from './widgets';
 import { useMapboxGeocoding } from '@/hooks/useMapboxGeocoding';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
@@ -273,209 +274,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
     return null;
   };
 
-  // Check if destination has accommodation map support - COMMENTED OUT: Not in Phase 1 scope
-  // const getSupportedAccommodationDestinations = () => {
-  //   return ['são paulo', 'sao paulo', 'brazil'];
-  // };
 
-  // const hasAccommodationMapSupport = (dest: string) => {
-  //   const lowerDest = dest.toLowerCase();
-  //   return getSupportedAccommodationDestinations().some(supported =>
-  //     lowerDest.includes(supported)
-  //   );
-  // };
-
-  // Dynamic airport data based on destination
-  const getAirportData = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
-
-    if (lowerDest.includes('lima') || lowerDest.includes('peru')) {
-      return {
-        code: 'LIM',
-        name: 'Jorge Chávez International Airport',
-        address: 'Lima, Peru',
-        distance: '11 km',
-        travelTime: '30-60 min',
-        options: 'Bus, Taxi, Uber'
-      };
-    }
-
-    if (lowerDest.includes('são paulo') || lowerDest.includes('sao paulo') || lowerDest.includes('brazil')) {
-      return {
-        code: 'GRU',
-        name: 'São Paulo/Guarulhos International Airport',
-        address: 'Guarulhos, São Paulo',
-        distance: '25 km',
-        travelTime: '45-90 min',
-        options: 'Metro, Bus, Taxi'
-      };
-    }
-
-    if (lowerDest.includes('london') || lowerDest.includes('uk') || lowerDest.includes('united kingdom')) {
-      return {
-        code: 'LHR',
-        name: 'London Heathrow Airport',
-        address: 'London, United Kingdom',
-        distance: '24 km',
-        travelTime: '45-75 min',
-        options: 'Tube, Bus, Taxi'
-      };
-    }
-
-    if (lowerDest.includes('paris') || lowerDest.includes('france')) {
-      return {
-        code: 'CDG',
-        name: 'Charles de Gaulle Airport',
-        address: 'Paris, France',
-        distance: '25 km',
-        travelTime: '45-75 min',
-        options: 'RER, Bus, Taxi'
-      };
-    }
-
-    if (lowerDest.includes('tokyo') || lowerDest.includes('japan')) {
-      return {
-        code: 'NRT',
-        name: 'Narita International Airport',
-        address: 'Tokyo, Japan',
-        distance: '60 km',
-        travelTime: '60-90 min',
-        options: 'Train, Bus, Taxi'
-      };
-    }
-
-    // Generic fallback
-    return {
-      code: 'N/A',
-      name: 'Primary Airport',
-      address: `${dest}`,
-      distance: 'Variable',
-      travelTime: 'Variable',
-      options: 'Multiple options available'
-    };
-  };
-
-  // COMMENTED OUT: Not in Phase 1 scope - Power adapter data
-  // const getPowerAdapterData = (dest: string) => {
-  //   const lowerDest = dest.toLowerCase();
-
-  //   if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-  //     return { type: 'Type C & N', voltage: '220V', frequency: '60Hz' };
-  //   }
-
-  //   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-  //     return { type: 'Type A & C', voltage: '220V', frequency: '60Hz' };
-  //   }
-
-  //   if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-  //     return { type: 'Type G', voltage: '230V', frequency: '50Hz' };
-  //   }
-
-  //   if (lowerDest.includes('france') || lowerDest.includes('paris')) {
-  //     return { type: 'Type C & E', voltage: '230V', frequency: '50Hz' };
-  //   }
-
-  //   if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
-  //     return { type: 'Type A & B', voltage: '100V', frequency: '50Hz/60Hz' };
-  //   }
-
-  //   // Default fallback
-  //   return { type: 'Various', voltage: 'Check locally', frequency: 'Check locally' };
-  // };
-
-  // COMMENTED OUT: Not in Phase 1 scope - Emergency numbers
-  // const getEmergencyNumbers = (dest: string) => {
-  //   const lowerDest = dest.toLowerCase();
-
-  //   if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-  //     return { police: '190', fire: '193', medical: '192' };
-  //   }
-
-  //   if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-  //     return { police: '105', fire: '116', medical: '117' };
-  //   }
-
-  //   if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-  //     return { police: '999', fire: '999', medical: '999' };
-  //   }
-
-  //   if (lowerDest.includes('france') || lowerDest.includes('paris')) {
-  //     return { police: '17', fire: '18', medical: '15' };
-  //   }
-
-  //   if (lowerDest.includes('japan') || lowerDest.includes('tokyo')) {
-  //     return { police: '110', fire: '119', medical: '119' };
-  //   }
-
-  //   // Default fallback
-  //   return { police: '911', fire: '911', medical: '911' };
-  // };
-
-  // Dynamic transport data based on destination
-  const getTransportData = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
-
-    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('sao paulo')) {
-      return {
-        primary: 'Metro',
-        secondary: 'Uber/99',
-        metroPass: 'R$12.00',
-        busFare: 'R$4.40',
-        card: 'Bilhete Único'
-      };
-    }
-
-    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-      return {
-        primary: 'Metropolitano',
-        secondary: 'Taxi/Uber',
-        metroPass: 'S/2.50',
-        busFare: 'S/1.20',
-        card: 'Tarjeta Lima'
-      };
-    }
-
-    if (lowerDest.includes('uk') || lowerDest.includes('united kingdom') || lowerDest.includes('london')) {
-      return {
-        primary: 'Tube',
-        secondary: 'Bus/Uber',
-        metroPass: '£2.80',
-        busFare: '£1.75',
-        card: 'Oyster Card'
-      };
-    }
-
-    // Generic fallback
-    return {
-      primary: 'Public Transit',
-      secondary: 'Taxi/Ride-share',
-      metroPass: 'Variable',
-      busFare: 'Variable',
-      card: 'Local transit card'
-    };
-  };
-
-  // Get dynamic data based on destination
-  const airportData = getAirportData(destination);
-  // const powerData = getPowerAdapterData(destination);
-  // const emergencyData = getEmergencyNumbers(destination);
-  const transportData = getTransportData(destination);
-
-
-
-
-
-  // COMMENTED OUT: Not in Phase 1 scope - Intelligence Dashboard widget options
-  // const widgetOptions = [
-  //   { id: 'currency', name: 'Currency', icon: CreditCard, color: 'from-green-500 to-emerald-600' },
-  //   { id: 'weather', name: 'Weather', icon: Thermometer, color: 'from-orange-500 to-red-600' },
-  //   { id: 'time', name: 'Time', icon: Clock, color: 'from-blue-500 to-cyan-600' },
-  //   { id: 'transport', name: 'Transport', icon: Car, color: 'from-purple-500 to-violet-600' },
-  //   { id: 'emergency', name: 'Emergency', icon: Shield, color: 'from-red-500 to-pink-600' },
-  //   { id: 'connectivity', name: 'Wi-Fi', icon: Wifi, color: 'from-teal-500 to-cyan-600' }
-  // ];
-
-  // Dynamic destination suggestions based on the current destination region
   const getRegionalDestinations = (currentDest: string) => {
     return getContextualDestinations(currentDest);
   };
@@ -803,7 +602,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
         {/* Hero Section with Photo Slideshow */}
         <div className="mb-6 sm:mb-8">
-          <PhotoSlideshow />
+          <PhotoSlideshow destination={destination} />
         </div>
 
         {/* Essential Travel Information - Mobile First Grid with Equal Heights */}
@@ -835,12 +634,6 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </div>
 
-            {/* Transportation Info - Compact but informative */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
-                <TransportWidget transportData={transportData} />
-              </div>
-            </div>
           </div>
 
           {/* Row 3: Local Information & Holidays */}
@@ -860,7 +653,7 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
             </div>
           </div>
 
-          {/* Row 4: Entry Requirements & Connectivity */}
+          {/* Row 4: Entry Requirements & Ride Sharing */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
             {/* Visa Requirements - Critical for entry */}
             <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
@@ -869,15 +662,33 @@ const ResultsPage = ({ destination, dates, onBack, onNewSearch }: ResultsPagePro
               </div>
             </div>
 
-            {/* Connectivity Info - Important for modern travelers */}
+            {/* Uber Availability - Important for ground transportation */}
             <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
               <div className="flex-1 flex flex-col">
-                <ConnectivityWidget />
+                <UberAvailabilityWidget destination={destination} />
               </div>
             </div>
           </div>
 
-          {/* Row 5: Future Features Placeholder - Subtle indication of what's coming */}
+          {/* Row 5: Connectivity & Additional Info */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
+            {/* Connectivity Info - Important for modern travelers */}
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                <ConnectivityWidget />
+              </div>
+            </div>
+
+            {/* Future expansion slot */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+              <div className="flex-1 flex flex-col">
+                {/* This space reserved for future widgets */}
+                <div className="h-full"></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Row 6: Future Features Placeholder - Subtle indication of what's coming */}
           <div className="text-center py-8 sm:py-12">
             <div className="inline-flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl">
               <div className="flex items-center space-x-2">

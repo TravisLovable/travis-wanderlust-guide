@@ -57,7 +57,7 @@ const TimeZonePresenter: React.FC<TimeZonePresenterProps> = ({ data }) => {
             </CardHeader>
             <CardContent className="space-y-3 flex-1">
                 <div className="grid grid-cols-2 gap-2">
-                    <div className="text-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
+                    <div className="text-center gip-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
                         <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
                         <div className="text-lg font-bold text-blue-400">
                             {origin.time12}

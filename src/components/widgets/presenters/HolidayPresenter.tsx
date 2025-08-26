@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Calendar, Gift } from 'lucide-react';
+import { Gift, Calendar } from 'lucide-react';
+import { Destination } from '@/types/destination';
 
 interface HolidayData {
     holidays: Array<{
@@ -32,7 +33,7 @@ interface HolidayData {
 
 interface HolidayPresenterProps {
     data: HolidayData;
-    destination: string;
+    destination: Destination;
     dates: {
         checkin: string;
         checkout: string;
