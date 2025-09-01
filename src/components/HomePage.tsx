@@ -12,14 +12,28 @@ import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
 import OnboardingModal from './OnboardingModal';
+import PrivacyModal from './PrivacyModal';
+import TermsModal from './TermsModal';
+import SettingsModal from './SettingsModal';
+import InspirationModal from './InspirationModal';
 import { useToast } from '@/hooks/use-toast';
 
 
 interface HomePageProps {
   onSearch: (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }) => void;
+  isDarkMode?: boolean;
+  toggleTheme?: () => void;
+  currentLanguage?: string;
+  setCurrentLanguage?: (language: string) => void;
 }
 
-const HomePage = ({ onSearch }: HomePageProps) => {
+const HomePage = ({ 
+  onSearch, 
+  isDarkMode: propIsDarkMode, 
+  toggleTheme: propToggleTheme, 
+  currentLanguage: propCurrentLanguage, 
+  setCurrentLanguage: propSetCurrentLanguage 
+}: HomePageProps) => {
   const [destination, setDestination] = useState('');
   const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
   const [checkinDate, setCheckinDate] = useState<Date>();
@@ -27,8 +41,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(true);
-  const [currentLanguage, setCurrentLanguage] = useState('en');
+  const [isDarkMode, setIsDarkMode] = useState(propIsDarkMode ?? true);
+  const [currentLanguage, setCurrentLanguage] = useState(propCurrentLanguage ?? 'en');
+  const [isPrivacyModalOpen, setIsPrivacyModalOpen] = useState(false);
+  const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
+  const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
+  const [isInspirationModalOpen, setIsInspirationModalOpen] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
 
   // Authentication state
@@ -342,6 +360,23 @@ const HomePage = ({ onSearch }: HomePageProps) => {
   const fallbackSuggestions = !hasApiAccess || mapboxSuggestions.length === 0 ? staticSuggestions : [];
   const { toast } = useToast();
 
+  const toggleTheme = () => {
+    if (propToggleTheme) {
+      propToggleTheme();
+    } else {
+      setIsDarkMode(!isDarkMode);
+      document.documentElement.classList.toggle('dark');
+    }
+  };
+
+  const handleLanguageChange = (language: string) => {
+    if (propSetCurrentLanguage) {
+      propSetCurrentLanguage(language);
+    } else {
+      setCurrentLanguage(language);
+    }
+  };
+
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (destination && checkinDate && checkoutDate) {
@@ -601,7 +636,10 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
           {/* Inspirational Link */}
           <div className="text-center">
-            <button className="text-sm text-muted-foreground/80 hover:text-white transition-colors duration-300 underline-offset-4 hover:underline">
+            <button 
+              onClick={() => setIsInspirationModalOpen(true)}
+              className="text-sm text-muted-foreground/80 hover:text-white transition-colors duration-300 underline-offset-4 hover:underline"
+            >
               Not sure where to go? Get inspired.
             </button>
           </div>
@@ -610,16 +648,31 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
 
 
-      {/* <CountryTest /> */}
+
 
       {/* Footer with reduced padding */}
       <footer className="px-3 py-4 border-t border-border/30 relative z-10">
         <div className="max-w-none mx-auto flex justify-between items-center">
           <div></div>
           <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-            <button className="hover:text-foreground transition-colors">{t.privacy}</button>
-            <button className="hover:text-foreground transition-colors">{t.terms}</button>
-            <button className="hover:text-foreground transition-colors">{t.settings}</button>
+            <button 
+              onClick={() => setIsPrivacyModalOpen(true)}
+              className="hover:text-foreground transition-colors"
+            >
+              {t.privacy}
+            </button>
+            <button 
+              onClick={() => setIsTermsModalOpen(true)}
+              className="hover:text-foreground transition-colors"
+            >
+              {t.terms}
+            </button>
+            <button 
+              onClick={() => setIsSettingsModalOpen(true)}
+              className="hover:text-foreground transition-colors"
+            >
+              {t.settings}
+            </button>
           </div>
         </div>
       </footer>
@@ -629,6 +682,34 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         isOpen={isOnboardingModalOpen}
         onClose={() => setIsOnboardingModalOpen(false)}
         user={user}
+      />
+      
+      <PrivacyModal
+        isOpen={isPrivacyModalOpen}
+        onClose={() => setIsPrivacyModalOpen(false)}
+      />
+      
+      <TermsModal
+        isOpen={isTermsModalOpen}
+        onClose={() => setIsTermsModalOpen(false)}
+      />
+      
+      <SettingsModal
+        isOpen={isSettingsModalOpen}
+        onClose={() => setIsSettingsModalOpen(false)}
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleTheme}
+        currentLanguage={currentLanguage}
+        setCurrentLanguage={handleLanguageChange}
+      />
+      
+      <InspirationModal
+        isOpen={isInspirationModalOpen}
+        onClose={() => setIsInspirationModalOpen(false)}
+        onDestinationSelect={(destination) => {
+          setDestination(destination);
+          setSelectedPlace(null);
+        }}
       />
     </div>
   );
