@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Camera } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera, Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { getSearchableDestination, normalizeDestination } from '@/utils/destinationHelpers';
@@ -29,6 +29,8 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [showHearts, setShowHearts] = useState(false);
 
   const processDestination = (placeDetails: SelectedPlace | null): string => {
     if (!placeDetails) return '';
@@ -93,18 +95,37 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
 
   const nextPhoto = () => {
     setCurrentIndex((prev) => (prev + 1) % photos.length);
+    setIsLiked(false); // Reset like state for new photo
   };
 
   const prevPhoto = () => {
     setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
+    setIsLiked(false); // Reset like state for new photo
+  };
+
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    if (!isLiked) {
+      setShowHearts(true);
+      setTimeout(() => setShowHearts(false), 1000);
+    }
   };
 
   if (isLoading) {
     return (
-      <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center">
+      <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center animate-slide-in-up">
         <div className="text-center text-white">
-          <Camera className="w-8 h-8 mx-auto mb-2 animate-pulse" />
-          <p className="text-sm">Loading beautiful photos...</p>
+          <Camera className="w-8 h-8 mx-auto mb-2 animate-pulse-slow playful-hover" />
+          <p className="text-sm animate-fade-in-out">Loading beautiful photos...</p>
+          <div className="flex justify-center mt-2 space-x-1">
+            {[...Array(3)].map((_, i) => (
+              <div
+                key={i}
+                className="w-2 h-2 bg-blue-400 rounded-full animate-bounce-gentle"
+                style={{ animationDelay: `${i * 0.2}s` }}
+              />
+            ))}
+          </div>
         </div>
       </div>
     );
@@ -126,13 +147,13 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
   const currentPhoto = photos[currentIndex];
 
   return (
-    <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
+    <div className="relative w-full h-80 rounded-2xl overflow-hidden group animate-slide-in-up">
       {/* Main Photo */}
       <div className="relative w-full h-full">
         <img
           src={currentPhoto.urls.regular}
           alt={currentPhoto.alt_description}
-          className="w-full h-full object-cover transition-opacity duration-500"
+          className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
           onError={(e) => {
             // Fallback to small image if regular fails
             const target = e.target as HTMLImageElement;
@@ -142,6 +163,24 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
           }}
         />
         <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+        
+        {/* Floating hearts effect */}
+        {showHearts && (
+          <div className="absolute inset-0 pointer-events-none">
+            {[...Array(5)].map((_, i) => (
+              <Heart
+                key={i}
+                className="absolute w-6 h-6 text-pink-400 animate-bounce-gentle fill-current"
+                style={{
+                  left: `${20 + Math.random() * 60}%`,
+                  top: `${20 + Math.random() * 60}%`,
+                  animationDelay: `${i * 0.2}s`,
+                  animationDuration: '1s'
+                }}
+              />
+            ))}
+          </div>
+        )}
 
         {/* Navigation Controls */}
         {photos.length > 1 && (
@@ -150,7 +189,9 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
               variant="ghost"
               size="icon"
               onClick={prevPhoto}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 playful-button"
+              onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+              onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -158,7 +199,9 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
               variant="ghost"
               size="icon"
               onClick={nextPhoto}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 playful-button"
+              onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+              onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
             >
               <ChevronRight className="w-5 h-5" />
             </Button>
@@ -172,14 +215,26 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                  ? 'bg-white'
-                  : 'bg-white/40 hover:bg-white/60'
+                className={`w-2 h-2 rounded-full transition-all duration-300 playful-button ${index === currentIndex
+                  ? 'bg-white animate-scale-bounce'
+                  : 'bg-white/40 hover:bg-white/60 hover:scale-125'
                   }`}
               />
             ))}
           </div>
         )}
+
+        {/* Like button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={handleLike}
+          className="absolute top-4 right-4 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 playful-button"
+          onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+          onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
+        >
+          <Heart className={`w-5 h-5 transition-all duration-300 ${isLiked ? 'fill-pink-400 text-pink-400 scale-110' : ''}`} />
+        </Button>
 
         {/* Content Overlay */}
         <div className="absolute bottom-4 left-4 right-4">

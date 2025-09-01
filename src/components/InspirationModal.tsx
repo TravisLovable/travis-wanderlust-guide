@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -6,7 +6,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { MapPin, Compass } from 'lucide-react';
+import { MapPin, Compass, Sparkles, Heart } from 'lucide-react';
 
 interface InspirationModalProps {
   isOpen: boolean;

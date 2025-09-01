@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Car, Clock, CheckCircle, XCircle, AlertCircle, Zap } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
