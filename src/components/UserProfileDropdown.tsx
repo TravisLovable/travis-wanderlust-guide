@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -12,17 +12,31 @@ import {
 import { User, Settings, LogOut } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import ProfileSettingsModal from './ProfileSettingsModal';
+import SettingsModal from './SettingsModal';
 
 interface UserProfileDropdownProps {
   user: any;
   userProfile: any;
+  isDarkMode: boolean;
+  toggleTheme: () => void;
+  currentLanguage: string;
+  setCurrentLanguage: (language: string) => void;
+  onProfileUpdate: (profile: any) => void;
 }
 
 const UserProfileDropdown = ({ 
   user, 
-  userProfile
+  userProfile,
+  isDarkMode,
+  toggleTheme,
+  currentLanguage,
+  setCurrentLanguage,
+  onProfileUpdate
 }: UserProfileDropdownProps) => {
   const { toast } = useToast();
+  const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -87,11 +101,11 @@ const UserProfileDropdown = ({
         )}
         
         {/* Menu Items */}
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsProfileSettingsOpen(true)}>
           <User className="mr-2 h-4 w-4" />
           Profile Settings
         </DropdownMenuItem>
-        <DropdownMenuItem>
+        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
           <Settings className="mr-2 h-4 w-4" />
           Settings
         </DropdownMenuItem>
@@ -101,6 +115,23 @@ const UserProfileDropdown = ({
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
+      
+      <ProfileSettingsModal
+        isOpen={isProfileSettingsOpen}
+        onClose={() => setIsProfileSettingsOpen(false)}
+        user={user}
+        userProfile={userProfile}
+        onProfileUpdate={onProfileUpdate}
+      />
+      
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleTheme}
+        currentLanguage={currentLanguage}
+        setCurrentLanguage={setCurrentLanguage}
+      />
     </DropdownMenu>
   );
 };

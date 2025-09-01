@@ -10,7 +10,6 @@ import {
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import PhotoSlideshow from './PhotoSlideshow';
-// import SaoPauloAccommodationMap from './SaoPauloAccommodationMap';
 import {
   WeatherContainer,
   HolidayContainer,
@@ -652,25 +651,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             </div>
           </div>
 
-          {/* Row 6: Future Features Placeholder - Subtle indication of what's coming */}
-          <div className="text-center py-8 sm:py-12">
-            <div className="inline-flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-4 px-6 py-4 bg-gradient-to-r from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-2xl">
-              <div className="flex items-center space-x-2">
-                <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                <span className="text-sm sm:text-base text-blue-600 dark:text-blue-300 font-medium">
-                  More travel intelligence features coming soon
-                </span>
-              </div>
-              <div className="flex items-center space-x-1 text-xs text-blue-500/70 dark:text-blue-400/70">
-                <span>•</span>
-                <span>Emergency contacts</span>
-                <span>•</span>
-                <span>Accommodation maps</span>
-                <span>•</span>
-                <span>Power adapters</span>
-              </div>
-            </div>
-          </div>
+
 
         </div>
       </main>

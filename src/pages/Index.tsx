@@ -77,6 +77,10 @@ const Index = () => {
     document.documentElement.classList.toggle('dark');
   };
 
+  const handleProfileUpdate = (profile: any) => {
+    setUserProfile(profile);
+  };
+
   return (
     <div className="min-h-screen w-full bg-background text-foreground">
       <Header
@@ -87,6 +91,7 @@ const Index = () => {
         setIsAuthModalOpen={setIsAuthModalOpen}
         setCurrentLanguage={setCurrentLanguage}
         currentLanguage={currentLanguage}
+        onProfileUpdate={handleProfileUpdate}
       />
       <AuthModal
         isOpen={isAuthModalOpen}
@@ -98,7 +103,13 @@ const Index = () => {
         onClose={() => setIsOnboardingModalOpen(false)}
         user={user}
       />
-      <HomePage onSearch={(placeDetails, dates) => handleSearch(placeDetails, dates, false)} />
+      <HomePage 
+        onSearch={(placeDetails, dates) => handleSearch(placeDetails, dates, false)}
+        isDarkMode={isDarkMode}
+        toggleTheme={toggleTheme}
+        currentLanguage={currentLanguage}
+        setCurrentLanguage={setCurrentLanguage}
+      />
     </div>
   );
 };
