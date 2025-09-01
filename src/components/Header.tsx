@@ -1,4 +1,4 @@
-import { Sun, Moon, Globe } from 'lucide-react';
+import { Sun, Moon, Globe, Sparkles } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
@@ -45,31 +45,34 @@ export default function Header({
     const navigate = useNavigate();
 
     return (
-        <header className="px-3 py-3 border-b border-border/30 backdrop-blur-sm relative z-10">
+        <header className="px-3 py-3 border-b border-border/30 backdrop-blur-sm relative z-10 animate-slide-in-up">
             <div className="max-w-none mx-auto flex items-center justify-between">
                 <button 
                     onClick={() => navigate('/')}
-                    className="text-3xl text-foreground tracking-tight font-unbounded hover:text-foreground/80 transition-colors cursor-pointer"
+                    className="text-3xl text-foreground tracking-tight font-unbounded hover:text-foreground/80 transition-all duration-300 cursor-pointer interactive-scale group relative"
                 >
                     Travis
+                    <div className="absolute -top-1 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        <Sparkles className="w-4 h-4 text-blue-400 animate-sparkle" />
+                    </div>
                 </button>
                 <div className="flex items-center space-x-2">
                     {user ? (
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full">
-                                        <Globe className="w-5 h-5" strokeWidth={1.5} />
+                                    <Button variant="ghost" size="icon" className="rounded-full interactive-scale">
+                                        <Globe className="w-5 h-5 hover:animate-bounce-gentle transition-all duration-300" strokeWidth={1.5} />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuContent align="end" className="w-48 animate-slide-in-up">
                                     {languages.map((lang) => (
                                         <DropdownMenuItem
                                             key={lang.code}
                                             onClick={() => setCurrentLanguage(lang.code)}
-                                            className="flex items-center space-x-3"
+                                            className="flex items-center space-x-3 hover:animate-slide-in-left transition-all duration-200"
                                         >
-                                            <span className="text-lg">{lang.flag}</span>
+                                            <span className="text-lg hover:animate-wiggle transition-all duration-300">{lang.flag}</span>
                                             <span>{lang.name}</span>
                                         </DropdownMenuItem>
                                     ))}
@@ -100,18 +103,18 @@ export default function Header({
                             {/* Language Selector */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full">
-                                        <Globe className="w-5 h-5" strokeWidth={1.5} />
+                                    <Button variant="ghost" size="icon" className="rounded-full interactive-scale">
+                                        <Globe className="w-5 h-5 hover:animate-bounce-gentle transition-all duration-300" strokeWidth={1.5} />
                                     </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48">
+                                <DropdownMenuContent align="end" className="w-48 animate-slide-in-up">
                                     {languages.map((lang) => (
                                         <DropdownMenuItem
                                             key={lang.code}
                                             onClick={() => setCurrentLanguage(lang.code)}
-                                            className="flex items-center space-x-3"
+                                            className="flex items-center space-x-3 hover:animate-slide-in-left transition-all duration-200"
                                         >
-                                            <span className="text-lg">{lang.flag}</span>
+                                            <span className="text-lg hover:animate-wiggle transition-all duration-300">{lang.flag}</span>
                                             <span>{lang.name}</span>
                                         </DropdownMenuItem>
                                     ))}
@@ -122,12 +125,19 @@ export default function Header({
                                 variant="ghost"
                                 size="icon"
                                 onClick={toggleTheme}
-                                className="rounded-full"
+                                className="rounded-full interactive-scale"
                             >
-                                {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
+                                {isDarkMode ? 
+                                    <Sun className="w-5 h-5 hover:animate-wiggle transition-all duration-300 text-yellow-400" strokeWidth={1.5} /> : 
+                                    <Moon className="w-5 h-5 hover:animate-wiggle transition-all duration-300 text-blue-400" strokeWidth={1.5} />
+                                }
                             </Button>
 
-                            <Button onClick={() => setIsAuthModalOpen(true)} variant="outline">
+                            <Button 
+                                onClick={() => setIsAuthModalOpen(true)} 
+                                variant="outline"
+                                className="interactive-scale hover:animate-glow-pulse"
+                            >
                                 Log In / Sign Up
                             </Button>
                         </>
