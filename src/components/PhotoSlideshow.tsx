@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ChevronLeft, ChevronRight, Camera } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Camera, Heart, Star, Sparkles } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { supabase } from '@/integrations/supabase/client';
 import { getSearchableDestination, normalizeDestination } from '@/utils/destinationHelpers';
@@ -29,6 +29,8 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isLiked, setIsLiked] = useState(false);
+  const [showHearts, setShowHearts] = useState(false);
 
   const processDestination = (placeDetails: SelectedPlace | null): string => {
     if (!placeDetails) return '';
@@ -99,6 +101,14 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
     setCurrentIndex((prev) => (prev - 1 + photos.length) % photos.length);
   };
 
+  const handleLike = () => {
+    setIsLiked(!isLiked);
+    if (!isLiked) {
+      setShowHearts(true);
+      setTimeout(() => setShowHearts(false), 1500);
+    }
+  };
+
   if (isLoading) {
     return (
       <div className="relative w-full h-80 rounded-2xl overflow-hidden bg-gray-900 flex items-center justify-center">
@@ -126,13 +136,31 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
   const currentPhoto = photos[currentIndex];
 
   return (
-    <div className="relative w-full h-80 rounded-2xl overflow-hidden group">
+    <div className="relative w-full h-80 rounded-2xl overflow-hidden group animate-slide-in-up">
+      {/* Floating hearts effect */}
+      {showHearts && (
+        <div className="absolute inset-0 pointer-events-none z-30">
+          {[...Array(8)].map((_, i) => (
+            <Heart
+              key={i}
+              className="absolute w-6 h-6 text-red-400 animate-bounce-gentle"
+              style={{
+                left: `${20 + Math.random() * 60}%`,
+                top: `${20 + Math.random() * 60}%`,
+                animationDelay: `${Math.random() * 0.5}s`,
+                animationDuration: `${1 + Math.random() * 0.5}s`
+              }}
+            />
+          ))}
+        </div>
+      )}
+
       {/* Main Photo */}
       <div className="relative w-full h-full">
         <img
           src={currentPhoto.urls.regular}
           alt={currentPhoto.alt_description}
-          className="w-full h-full object-cover transition-opacity duration-500"
+          className="w-full h-full object-cover transition-all duration-500 group-hover:scale-105"
           onError={(e) => {
             // Fallback to small image if regular fails
             const target = e.target as HTMLImageElement;
@@ -150,7 +178,7 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
               variant="ghost"
               size="icon"
               onClick={prevPhoto}
-              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 interactive-scale"
             >
               <ChevronLeft className="w-5 h-5" />
             </Button>
@@ -158,23 +186,33 @@ const PhotoSlideshow = ({ placeDetails }: PhotoSlideshowProps) => {
               variant="ghost"
               size="icon"
               onClick={nextPhoto}
-              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300"
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 interactive-scale"
             >
               <ChevronRight className="w-5 h-5" />
+            </Button>
+
+            {/* Like button */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={handleLike}
+              className="absolute top-4 left-4 bg-black/30 hover:bg-black/50 text-white backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-300 interactive-scale"
+            >
+              <Heart className={`w-5 h-5 transition-all duration-300 ${isLiked ? 'fill-red-400 text-red-400 animate-heart-beat' : ''}`} />
             </Button>
           </>
         )}
 
-        {/* Photo Indicators */}
+        {/* Enhanced Photo Indicators */}
         {photos.length > 1 && (
           <div className="absolute bottom-16 left-1/2 -translate-x-1/2 flex space-x-2">
             {photos.map((_, index) => (
               <button
                 key={index}
                 onClick={() => setCurrentIndex(index)}
-                className={`w-2 h-2 rounded-full transition-all duration-300 ${index === currentIndex
-                  ? 'bg-white'
-                  : 'bg-white/40 hover:bg-white/60'
+                className={`w-2 h-2 rounded-full transition-all duration-300 interactive-scale ${index === currentIndex
+                  ? 'bg-white animate-glow-pulse'
+                  : 'bg-white/40 hover:bg-white/60 hover:animate-bounce-gentle'
                   }`}
               />
             ))}

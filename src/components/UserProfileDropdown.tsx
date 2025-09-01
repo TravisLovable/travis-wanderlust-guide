@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, Sparkles, Star } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ProfileSettingsModal from './ProfileSettingsModal';
@@ -37,6 +37,7 @@ const UserProfileDropdown = ({
   const { toast } = useToast();
   const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [isHovered, setIsHovered] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -69,21 +70,34 @@ const UserProfileDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-          <Avatar className="h-10 w-10">
+        <Button 
+          variant="ghost" 
+          className="relative h-10 w-10 rounded-full interactive-scale"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+        >
+          <Avatar className="h-10 w-10 transition-all duration-300 hover:animate-bounce-gentle">
             <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
+          {isHovered && (
+            <div className="absolute -top-1 -right-1">
+              <Sparkles className="w-3 h-3 text-blue-400 animate-sparkle" />
+            </div>
+          )}
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-80" align="end" forceMount>
-        <div className="flex items-center space-x-2 p-3">
-          <Avatar className="h-8 w-8">
+      <DropdownMenuContent className="w-80 animate-slide-in-up" align="end" forceMount>
+        <div className="flex items-center space-x-2 p-3 relative">
+          <Avatar className="h-8 w-8 hover:animate-bounce-gentle transition-all duration-300">
             <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-1">
             <p className="text-sm font-medium">{getDisplayName()}</p>
+          </div>
+          <div className="absolute top-2 right-2">
+            <Star className="w-3 h-3 text-yellow-400 animate-sparkle" />
           </div>
         </div>
         <DropdownMenuSeparator />
@@ -100,18 +114,27 @@ const UserProfileDropdown = ({
           </>
         )}
 
-        {/* Menu Items */}
-        <DropdownMenuItem onClick={() => setIsProfileSettingsOpen(true)}>
-          <User className="mr-2 h-4 w-4" />
+        {/* Enhanced Menu Items */}
+        <DropdownMenuItem 
+          onClick={() => setIsProfileSettingsOpen(true)}
+          className="transition-all duration-200 hover:animate-slide-in-left"
+        >
+          <User className="mr-2 h-4 w-4 transition-all duration-300 hover:animate-bounce-gentle" />
           Profile Settings
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-          <Settings className="mr-2 h-4 w-4" />
+        <DropdownMenuItem 
+          onClick={() => setIsSettingsOpen(true)}
+          className="transition-all duration-200 hover:animate-slide-in-left"
+        >
+          <Settings className="mr-2 h-4 w-4 transition-all duration-300 hover:animate-wiggle" />
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <DropdownMenuItem 
+          onClick={handleSignOut}
+          className="transition-all duration-200 hover:animate-slide-in-left text-red-600 dark:text-red-400"
+        >
+          <LogOut className="mr-2 h-4 w-4 transition-all duration-300 hover:animate-wiggle" />
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>
