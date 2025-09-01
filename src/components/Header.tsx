@@ -44,7 +44,7 @@ export default function Header({
     return (
         <header className="px-3 py-3 border-b border-border/30 backdrop-blur-sm relative z-10">
             <div className="max-w-none mx-auto flex items-center justify-between">
-                <div className="text-2xl font-bold text-foreground tracking-tight">TRAVIS</div>
+                <div className="text-3xl text-foreground tracking-tight font-unbounded">Travis</div>
                 <div className="flex items-center space-x-2">
                     {user ? (
                         <>

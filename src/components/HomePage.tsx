@@ -386,14 +386,12 @@ const HomePage = ({ onSearch }: HomePageProps) => {
 
 
   const handleDestinationSelect = async (suggestion: any) => {
-    // Handle both Mapbox suggestions and static suggestions
     if (suggestion.id && suggestion.place_name) {
       // Mapbox suggestion
       const placeDetails = await getPlaceDetails(suggestion);
       if (placeDetails) {
         setDestination(placeDetails.formatted_address);
         setSelectedPlace(placeDetails);
-        console.log('Selected place details:', placeDetails);
       } else {
         setDestination(suggestion.place_name);
         setSelectedPlace(null);
@@ -426,16 +424,11 @@ const HomePage = ({ onSearch }: HomePageProps) => {
         ))}
       </div>
 
-      {/* Header with reduced padding */}
-
-
-
-      {/* Main Content with reduced padding */}
       <main className="flex-1 flex items-center justify-center px-3 py-6 relative z-10">
         <div className="max-w-6xl w-full text-center">
           {/* Hero Section without glow animation */}
           <div className="mb-10">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl">
+            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl ">
               {t.title}
             </h1>
             <div className="mb-6">
@@ -449,11 +442,9 @@ const HomePage = ({ onSearch }: HomePageProps) => {
                 </span>
               </p>
             </div>
-            {/* Animated gradient underline with hover shimmer */}
             <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
           </div>
 
-          {/* Interactive Search Bar - removed fade-in animation */}
           <div className="mb-8 max-w-5xl mx-auto">
             <div
               className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:shadow-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group"

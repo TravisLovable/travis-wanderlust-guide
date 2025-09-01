@@ -36,10 +36,8 @@ interface ResultsPageProps {
 
 
 const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPageProps) => {
-  // Extract destination string for backwards compatibility (display purposes)
   const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
 
-  // const [selectedWidgets, setSelectedWidgets] = useState(['currency', 'weather', 'time']);
   const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
   const [newDestination, setNewDestination] = useState(destination);
   const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
@@ -47,38 +45,15 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
-  // const [isAdapterSpinning, setIsAdapterSpinning] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
-  // const [isDarkMode, setIsDarkMode] = useState(true);
 
   // Header scroll state
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
 
-  // Search input ref for focusing
   const searchInputRef = useRef<HTMLInputElement>(null);
 
-  // Function to handle search bar click - scroll to top and expand header
-  const handleSearchBarClick = () => {
-    // Scroll to top smoothly
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-
-    // Expand header if collapsed
-    if (isHeaderCollapsed) {
-      setIsTransitioning(true);
-      setIsHeaderCollapsed(false);
-
-      // Focus on search input after header expansion
-      setTimeout(() => {
-        searchInputRef.current?.focus();
-        setIsTransitioning(false);
-      }, 300); // Wait for header expansion animation
-    } else {
-      // If header is already expanded, just focus on input
-      searchInputRef.current?.focus();
-    }
-  };
 
   // Scroll handler for header minimization with improved hysteresis
   useEffect(() => {
@@ -596,7 +571,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           </form>
         </div>
       </header>
-  
+
 
       {/* Main Content */}
       <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
