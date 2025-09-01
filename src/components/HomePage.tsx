@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe, Sparkles, Plane, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -27,12 +27,12 @@ interface HomePageProps {
   setCurrentLanguage?: (language: string) => void;
 }
 
-const HomePage = ({ 
-  onSearch, 
-  isDarkMode: propIsDarkMode, 
-  toggleTheme: propToggleTheme, 
-  currentLanguage: propCurrentLanguage, 
-  setCurrentLanguage: propSetCurrentLanguage 
+const HomePage = ({
+  onSearch,
+  isDarkMode: propIsDarkMode,
+  toggleTheme: propToggleTheme,
+  currentLanguage: propCurrentLanguage,
+  setCurrentLanguage: propSetCurrentLanguage
 }: HomePageProps) => {
   const [destination, setDestination] = useState('');
   const [selectedPlace, setSelectedPlace] = useState<SelectedPlace | null>(null);
@@ -48,6 +48,8 @@ const HomePage = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isInspirationModalOpen, setIsInspirationModalOpen] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   // Authentication state
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -57,6 +59,13 @@ const HomePage = ({
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   const [isSearchDisabled, setIsSearchDisabled] = useState(true);
+
+  // Refs for focus management
+  const destinationInputRef = useRef<HTMLInputElement>(null);
+  const checkinButtonRef = useRef<HTMLButtonElement>(null);
+  const checkoutButtonRef = useRef<HTMLButtonElement>(null);
+  const searchButtonRef = useRef<HTMLButtonElement>(null);
+
   useEffect(() => {
     if (destination && checkinDate && checkoutDate) {
       setIsSearchDisabled(false);
@@ -64,6 +73,15 @@ const HomePage = ({
       setIsSearchDisabled(true);
     }
   }, [destination, checkinDate, checkoutDate]);
+
+  // Auto-focus destination input on component mount
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      destinationInputRef.current?.focus();
+    }, 500); // Small delay to allow page to settle
+
+    return () => clearTimeout(timer);
+  }, []);
 
 
   // Use Mapbox for destination suggestions
@@ -81,6 +99,21 @@ const HomePage = ({
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  // Mouse tracking for interactive elements
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
+  }, []);
+
+  // Trigger confetti on successful search
+  const triggerConfetti = () => {
+    setShowConfetti(true);
+    setTimeout(() => setShowConfetti(false), 3000);
+  };
 
 
 
@@ -377,9 +410,50 @@ const HomePage = ({
     }
   };
 
+  // Focus management functions
+  const focusNextInput = () => {
+    if (!destination) {
+      destinationInputRef.current?.focus();
+    } else if (!checkinDate) {
+      checkinButtonRef.current?.click();
+    } else if (!checkoutDate) {
+      checkoutButtonRef.current?.click();
+    } else {
+      searchButtonRef.current?.focus();
+    }
+  };
+
+  const handleDestinationComplete = () => {
+    if (destination.trim()) {
+      // Small delay to allow state to update
+      setTimeout(() => {
+        checkinButtonRef.current?.click();
+      }, 100);
+    }
+  };
+
+  const handleCheckinComplete = (date: Date) => {
+    setCheckinDate(date);
+    setCheckinOpen(false);
+    // Small delay to allow popover to close
+    setTimeout(() => {
+      checkoutButtonRef.current?.click();
+    }, 150);
+  };
+
+  const handleCheckoutComplete = (date: Date) => {
+    setCheckoutDate(date);
+    setCheckoutOpen(false);
+    // Focus search button after selecting checkout date
+    setTimeout(() => {
+      searchButtonRef.current?.focus();
+    }, 150);
+  };
+
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (destination && checkinDate && checkoutDate) {
+      triggerConfetti();
       // If we have a selectedPlace from Mapbox, use it. Otherwise, create a basic place object
       const placeToUse = selectedPlace || {
         name: destination,
@@ -388,11 +462,13 @@ const HomePage = ({
         longitude: 0,
         place_id: `manual_${Date.now()}`
       };
-      
-      onSearch(placeToUse, {
-        checkin: format(checkinDate, 'yyyy-MM-dd'),
-        checkout: format(checkoutDate, 'yyyy-MM-dd')
-      });
+
+      setTimeout(() => {
+        onSearch(placeToUse, {
+          checkin: format(checkinDate, 'yyyy-MM-dd'),
+          checkout: format(checkoutDate, 'yyyy-MM-dd')
+        });
+      }, 800);
     } else {
       toast({
         title: 'Please fill in all fields',
@@ -405,7 +481,12 @@ const HomePage = ({
 
   const handleKeyPress = (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      handleSearch();
+      e.preventDefault();
+      if (destination && checkinDate && checkoutDate) {
+        handleSearch();
+      } else {
+        focusNextInput();
+      }
     }
   };
 
@@ -437,15 +518,18 @@ const HomePage = ({
       setSelectedPlace(null);
     }
     setShowSuggestions(false);
+
+    // Trigger autofocus to next input after destination is selected
+    handleDestinationComplete();
   };
 
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
-      {/* Ambient Background Animation */}
+      {/* Enhanced Ambient Background Animation */}
       <div className="absolute inset-0 opacity-[0.02] pointer-events-none">
         <div className="absolute inset-0 bg-grid-pattern animate-drift-slow"></div>
-        {[...Array(20)].map((_, i) => (
+        {[...Array(25)].map((_, i) => (
           <div
             key={i}
             className="absolute w-1 h-1 bg-white rounded-full animate-float"
@@ -457,43 +541,93 @@ const HomePage = ({
             }}
           />
         ))}
+        {/* Floating travel icons */}
+        {[...Array(8)].map((_, i) => (
+          <div
+            key={`icon-${i}`}
+            className="absolute text-white/5 floating-element"
+            style={{
+              left: `${Math.random() * 100}%`,
+              top: `${Math.random() * 100}%`,
+              animationDelay: `${Math.random() * 6}s`,
+            }}
+          >
+            {i % 3 === 0 ? <Plane className="w-6 h-6 rotate-45" /> :
+              i % 3 === 1 ? <Globe className="w-5 h-5" /> :
+                <MapPin className="w-4 h-4" />}
+          </div>
+        ))}
       </div>
+
+      {/* Confetti Effect */}
+      {showConfetti && (
+        <div className="absolute inset-0 pointer-events-none z-50">
+          {[...Array(50)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 animate-confetti-fall"
+              style={{
+                left: `${Math.random() * 100}%`,
+                backgroundColor: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'][Math.floor(Math.random() * 5)],
+                animationDelay: `${Math.random() * 2}s`,
+                animationDuration: `${2 + Math.random() * 1}s`
+              }}
+            />
+          ))}
+        </div>
+      )}
 
       <main className="flex-1 flex items-center justify-center px-3 py-6 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section without glow animation */}
-          <div className="mb-10">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl ">
-              {t.title}
-            </h1>
-            <div className="mb-6">
+          {/* Enhanced Hero Section with Playful Elements */}
+          <div className="mb-10 animate-slide-in-up">
+            <div className="relative">
+              <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl relative">
+                {t.title}
+                {/* Floating sparkles around title */}
+                <Sparkles className="absolute -top-4 -right-8 w-6 h-6 text-blue-400 animate-sparkle" style={{ animationDelay: '0s' }} />
+                <Sparkles className="absolute -bottom-2 -left-6 w-4 h-4 text-purple-400 animate-sparkle" style={{ animationDelay: '0.7s' }} />
+                <Sparkles className="absolute top-1/2 -right-12 w-5 h-5 text-cyan-400 animate-sparkle" style={{ animationDelay: '1.4s' }} />
+              </h1>
+            </div>
+            <div className="mb-6 animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
               <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
                 <span>Data-driven Intelligence for the modern </span>
                 <span
                   key={wordIndex}
-                  className="inline-block animate-fadeIn min-w-[120px] text-left"
+                  className="inline-block animate-fadeIn min-w-[120px] text-left gradient-text font-medium"
                 >
                   {swapWords[wordIndex]}
                 </span>
+                <Heart className="inline-block w-5 h-5 ml-2 text-red-400 animate-heart-beat" />
               </p>
             </div>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-glow-pulse transition-all duration-300 animate-slide-in-up" style={{ animationDelay: '0.4s' }}></div>
           </div>
 
-          <div className="mb-8 max-w-5xl mx-auto">
+          <div className="mb-8 max-w-5xl mx-auto animate-slide-in-up" style={{ animationDelay: '0.6s' }}>
             <div
-              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:shadow-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:shadow-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group interactive-scale"
               onClick={handleBarClick}
               onKeyDown={handleKeyPress}
               tabIndex={0}
               role="button"
               aria-label="Launch brief"
+              onMouseEnter={() => {
+                const element = document.querySelector('.search-bar-main') as HTMLElement;
+                if (element) element.classList.add('animate-glow-pulse');
+              }}
+              onMouseLeave={() => {
+                const element = document.querySelector('.search-bar-main') as HTMLElement;
+                if (element) element.classList.remove('animate-glow-pulse');
+              }}
             >
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-2 search-bar-main">
                 {/* Destination Input */}
                 <div className="flex-1 relative group">
-                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white transition-colors z-10" />
+                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white transition-all duration-300 z-10 group-hover:animate-bounce-gentle" />
                   <Input
+                    ref={destinationInputRef}
                     type="text"
                     placeholder={t.searchPlaceholder}
                     value={destination}
@@ -502,7 +636,15 @@ const HomePage = ({
                       setSelectedPlace(null);
                       setShowSuggestions(true);
                     }}
-                    onKeyPress={handleKeyPress}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && destination.trim()) {
+                        e.preventDefault();
+                        setShowSuggestions(false);
+                        handleDestinationComplete();
+                      } else {
+                        handleKeyPress(e);
+                      }
+                    }}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                     className="pl-12 h-12 bg-transparent border-0 focus:ring-0 focus:outline-none text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full cursor-pointer"
@@ -574,6 +716,7 @@ const HomePage = ({
                   <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                     <PopoverTrigger asChild>
                       <Button
+                        ref={checkinButtonRef}
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
                         onClick={(e) => e.stopPropagation()}
@@ -587,8 +730,7 @@ const HomePage = ({
                         mode="single"
                         selected={checkinDate}
                         onSelect={(date) => {
-                          if (date) setCheckinDate(date);
-                          setCheckinOpen(false);
+                          if (date) handleCheckinComplete(date);
                         }}
                         initialFocus
                         className="pointer-events-auto w-full"
@@ -600,6 +742,7 @@ const HomePage = ({
                   <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                     <PopoverTrigger asChild>
                       <Button
+                        ref={checkoutButtonRef}
                         variant="ghost"
                         className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
                         onClick={(e) => e.stopPropagation()}
@@ -613,8 +756,7 @@ const HomePage = ({
                         mode="single"
                         selected={checkoutDate}
                         onSelect={(date) => {
-                          if (date) setCheckoutDate(date);
-                          setCheckoutOpen(false);
+                          if (date) handleCheckoutComplete(date);
                         }}
                         initialFocus
                         className="pointer-events-auto w-full"
@@ -624,23 +766,42 @@ const HomePage = ({
                   </Popover>
                 </div>
 
-                {/* Right Arrow Icon */}
+                {/* Right Arrow Icon with Enhanced Playfulness */}
                 <button
-                  className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isSearchDisabled} onClick={handleSearch}>
+                  ref={searchButtonRef}
+                  className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:animate-wiggle focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded"
+                  disabled={isSearchDisabled}
+                  onClick={handleSearch}
+                  onKeyPress={handleKeyPress}
+                  onMouseEnter={(e) => {
+                    if (!isSearchDisabled) {
+                      e.currentTarget.classList.add('animate-wiggle');
+                    }
+                  }}
+                  onAnimationEnd={(e) => {
+                    e.currentTarget.classList.remove('animate-wiggle');
+                  }}
+                >
                   <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
+                  {!isSearchDisabled && (
+                    <div className="absolute -top-1 -right-1">
+                      <Sparkles className="w-3 h-3 text-blue-400 animate-sparkle" />
+                    </div>
+                  )}
                 </button>
               </div>
             </div>
           </div>
 
-          {/* Inspirational Link */}
-          <div className="text-center">
-            <button 
+          {/* Enhanced Inspirational Link */}
+          <div className="text-center animate-slide-in-up" style={{ animationDelay: '0.8s' }}>
+            <button
               onClick={() => setIsInspirationModalOpen(true)}
-              className="text-sm text-muted-foreground/80 hover:text-white transition-colors duration-300 underline-offset-4 hover:underline"
+              className="text-sm text-muted-foreground/80 hover:text-white transition-all duration-300 underline-offset-4 hover:underline group flex items-center justify-center space-x-2 mx-auto interactive-scale"
             >
-              Not sure where to go? Get inspired.
+              <Sparkles className="w-4 h-4 group-hover:animate-sparkle" />
+              <span>Not sure where to go? Get inspired.</span>
+              <Sparkles className="w-4 h-4 group-hover:animate-sparkle" style={{ animationDelay: '0.5s' }} />
             </button>
           </div>
         </div>
@@ -655,19 +816,19 @@ const HomePage = ({
         <div className="max-w-none mx-auto flex justify-between items-center">
           <div></div>
           <div className="flex items-center space-x-6 text-sm text-muted-foreground">
-            <button 
+            <button
               onClick={() => setIsPrivacyModalOpen(true)}
               className="hover:text-foreground transition-colors"
             >
               {t.privacy}
             </button>
-            <button 
+            <button
               onClick={() => setIsTermsModalOpen(true)}
               className="hover:text-foreground transition-colors"
             >
               {t.terms}
             </button>
-            <button 
+            <button
               onClick={() => setIsSettingsModalOpen(true)}
               className="hover:text-foreground transition-colors"
             >
@@ -683,17 +844,17 @@ const HomePage = ({
         onClose={() => setIsOnboardingModalOpen(false)}
         user={user}
       />
-      
+
       <PrivacyModal
         isOpen={isPrivacyModalOpen}
         onClose={() => setIsPrivacyModalOpen(false)}
       />
-      
+
       <TermsModal
         isOpen={isTermsModalOpen}
         onClose={() => setIsTermsModalOpen(false)}
       />
-      
+
       <SettingsModal
         isOpen={isSettingsModalOpen}
         onClose={() => setIsSettingsModalOpen(false)}
@@ -702,7 +863,7 @@ const HomePage = ({
         currentLanguage={currentLanguage}
         setCurrentLanguage={handleLanguageChange}
       />
-      
+
       <InspirationModal
         isOpen={isInspirationModalOpen}
         onClose={() => setIsInspirationModalOpen(false)}

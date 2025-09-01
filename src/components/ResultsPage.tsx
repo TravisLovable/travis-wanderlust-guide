@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Calendar, Pin, Globe, Search, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Pin, Globe, Search, MapPin, Sparkles, Star, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -45,6 +45,8 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const [checkoutOpen, setCheckoutOpen] = useState(false);
 
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
+  const [hoveredWidget, setHoveredWidget] = useState<string | null>(null);
 
   // Header scroll state
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
@@ -52,6 +54,15 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+
+  // Trigger celebration effect on page load
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 2000);
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [placeDetails]);
 
 
   // Scroll handler for header minimization with improved hysteresis
@@ -319,7 +330,24 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-black dark:to-gray-900">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-black dark:to-gray-900 relative">
+      {/* Celebration confetti */}
+      {showCelebration && (
+        <div className="absolute inset-0 pointer-events-none z-50">
+          {[...Array(25)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute w-2 h-2 animate-confetti-fall"
+              style={{
+                left: `${Math.random() * 100}%`,
+                backgroundColor: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'][Math.floor(Math.random() * 5)],
+                animationDelay: `${Math.random() * 1}s`,
+                animationDuration: `${2 + Math.random() * 1}s`
+              }}
+            />
+          ))}
+        </div>
+      )}
       {/* Header - Clean and Mobile-First with Scroll-Based Minimization */}
       <header className={`bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm sticky top-0 z-40 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'py-2 shadow-lg' : 'py-3 sm:py-4'
         } ${isTransitioning ? 'pointer-events-none' : ''}`}>
@@ -350,21 +378,22 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                       <img
                         src={getCountryFlag(destination)!}
                         alt="Country Flag"
-                        className={`rounded shadow-sm flex-shrink-0 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
+                        className={`rounded shadow-sm flex-shrink-0 transition-all duration-500 ease-out hover:animate-wiggle ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
                           }`}
                       />
                     ) : (
-                      <Globe className={`text-blue-400 flex-shrink-0 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
+                      <Globe className={`text-blue-400 flex-shrink-0 transition-all duration-500 ease-out hover:animate-bounce-gentle ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
                         }`} />
                     )}
                     <Button
                       variant="ghost"
                       size="icon"
                       onClick={() => handlePinDestination(destination)}
-                      className="text-blue-400 hover:text-blue-300 ml-1 sm:ml-2"
+                      className="text-blue-400 hover:text-blue-300 ml-1 sm:ml-2 interactive-scale hover:animate-wiggle"
                     >
                       <Pin className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
+                    <Sparkles className="w-4 h-4 text-yellow-400 animate-sparkle ml-2" />
                   </h1>
                 </div>
 
@@ -585,16 +614,34 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* Row 1: Core Travel Essentials - Full Width on Mobile, 2 Columns on Tablet+ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
             {/* Currency Converter - Essential for travel planning */}
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
+            <div
+              className="order-1 playful-card flex flex-col animate-slide-in-left"
+              onMouseEnter={() => setHoveredWidget('currency')}
+              onMouseLeave={() => setHoveredWidget(null)}
+            >
+              <div className="flex-1 flex flex-col relative">
                 <CurrencyContainer placeDetails={placeDetails} />
+                {hoveredWidget === 'currency' && (
+                  <div className="absolute -top-2 -right-2">
+                    <Star className="w-4 h-4 text-yellow-400 animate-sparkle" />
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Time Zone - Critical for scheduling */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
+            <div
+              className="order-2 playful-card flex flex-col animate-slide-in-right"
+              onMouseEnter={() => setHoveredWidget('timezone')}
+              onMouseLeave={() => setHoveredWidget(null)}
+            >
+              <div className="flex-1 flex flex-col relative">
                 <TimeZoneContainer placeDetails={placeDetails} />
+                {hoveredWidget === 'timezone' && (
+                  <div className="absolute -top-2 -right-2">
+                    <Star className="w-4 h-4 text-blue-400 animate-sparkle" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
@@ -602,51 +649,109 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* Row 2: Weather & Transportation - Stack on Mobile, Side by Side on Larger */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
             {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
-            <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col">
-              <div className="flex-1 flex flex-col">
+            <div
+              className="lg:col-span-2 order-1 playful-card flex flex-col animate-slide-in-up"
+              style={{ animationDelay: '0.2s' }}
+              onMouseEnter={() => setHoveredWidget('weather')}
+              onMouseLeave={() => setHoveredWidget(null)}
+            >
+              <div className="flex-1 flex flex-col relative">
                 <WeatherContainer placeDetails={placeDetails} />
+                {hoveredWidget === 'weather' && (
+                  <div className="absolute -top-2 -right-2">
+                    <Heart className="w-4 h-4 text-red-400 animate-heart-beat" />
+                  </div>
+                )}
               </div>
             </div>
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
+            <div
+              className="order-1 playful-card flex flex-col animate-slide-in-up"
+              style={{ animationDelay: '0.4s' }}
+              onMouseEnter={() => setHoveredWidget('holidays')}
+              onMouseLeave={() => setHoveredWidget(null)}
+            >
+              <div className="flex-1 flex flex-col relative">
                 <HolidayContainer placeDetails={placeDetails} dates={dates} />
+                {hoveredWidget === 'holidays' && (
+                  <div className="absolute -top-2 -right-2">
+                    <Sparkles className="w-4 h-4 text-purple-400 animate-sparkle" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
-          {/* Row 3: Local Information & Holidays */}
+          {/* Row 3: Local Information & Transportation */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-
-
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
+            <div
+              className="order-1 playful-card flex flex-col animate-slide-in-left"
+              style={{ animationDelay: '0.6s' }}
+              onMouseEnter={() => setHoveredWidget('visa')}
+              onMouseLeave={() => setHoveredWidget(null)}
+            >
+              <div className="flex-1 flex flex-col relative">
                 <VisaContainer placeDetails={placeDetails} />
+                {hoveredWidget === 'visa' && (
+                  <div className="absolute -top-2 -right-2">
+                    <Star className="w-4 h-4 text-green-400 animate-sparkle" />
+                  </div>
+                )}
               </div>
             </div>
 
             {/* Uber Availability - Important for ground transportation */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
+            <div
+              className="order-2 playful-card flex flex-col animate-slide-in-right"
+              style={{ animationDelay: '0.8s' }}
+              onMouseEnter={() => setHoveredWidget('uber')}
+              onMouseLeave={() => setHoveredWidget(null)}
+            >
+              <div className="flex-1 flex flex-col relative">
                 <UberAvailabilityWidget placeDetails={placeDetails} />
+                {hoveredWidget === 'uber' && (
+                  <div className="absolute -top-2 -right-2">
+                    <Star className="w-4 h-4 text-cyan-400 animate-sparkle" />
+                  </div>
+                )}
               </div>
             </div>
           </div>
 
 
-          {/* Row 5: Connectivity & Additional Info */}
+          {/* Row 4: Connectivity & Additional Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
             {/* Connectivity Info - Important for modern travelers */}
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
+            <div
+              className="order-1 playful-card flex flex-col animate-slide-in-up"
+              style={{ animationDelay: '1.0s' }}
+              onMouseEnter={() => setHoveredWidget('connectivity')}
+              onMouseLeave={() => setHoveredWidget(null)}
+            >
+              <div className="flex-1 flex flex-col relative">
                 <ConnectivityWidget />
+                {hoveredWidget === 'connectivity' && (
+                  <div className="absolute -top-2 -right-2">
+                    <Star className="w-4 h-4 text-indigo-400 animate-sparkle" />
+                  </div>
+                )}
               </div>
             </div>
 
-            {/* Future expansion slot */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
-              <div className="flex-1 flex flex-col">
-                {/* This space reserved for future widgets */}
-                <div className="h-full"></div>
+            {/* Future expansion slot with playful placeholder */}
+            <div
+              className="order-2 playful-card flex flex-col animate-slide-in-up"
+              style={{ animationDelay: '1.2s' }}
+            >
+              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+                <div className="relative">
+                  <Sparkles className="w-12 h-12 text-gray-400/50 animate-sparkle mb-4" />
+                  <div className="absolute -top-1 -right-1">
+                    <div className="w-3 h-3 bg-blue-400/30 rounded-full animate-bounce-gentle"></div>
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground/70 italic">
+                  More amazing features coming soon...
+                </p>
               </div>
             </div>
           </div>
