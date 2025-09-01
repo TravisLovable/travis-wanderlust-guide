@@ -9,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { User, Settings, LogOut } from 'lucide-react';
+import { User, Settings, LogOut, Sparkles } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import ProfileSettingsModal from './ProfileSettingsModal';
@@ -37,6 +37,7 @@ const UserProfileDropdown = ({
   const { toast } = useToast();
   const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  const [showSparkle, setShowSparkle] = useState(false);
 
   const handleSignOut = async () => {
     try {
@@ -69,11 +70,21 @@ const UserProfileDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+        <Button 
+          variant="ghost" 
+          className="relative h-10 w-10 rounded-full playful-button profile-dropdown-glow"
+          onMouseEnter={() => setShowSparkle(true)}
+          onMouseLeave={() => setShowSparkle(false)}
+        >
           <Avatar className="h-10 w-10">
             <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
+          {showSparkle && (
+            <div className="absolute -top-1 -right-1">
+              <Sparkles className="w-3 h-3 text-yellow-400 animate-bounce-gentle" />
+            </div>
+          )}
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-80" align="end" forceMount>
@@ -101,17 +112,26 @@ const UserProfileDropdown = ({
         )}
 
         {/* Menu Items */}
-        <DropdownMenuItem onClick={() => setIsProfileSettingsOpen(true)}>
-          <User className="mr-2 h-4 w-4" />
+        <DropdownMenuItem 
+          onClick={() => setIsProfileSettingsOpen(true)}
+          className="playful-hover cursor-pointer"
+        >
+          <User className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:scale-110" />
           Profile Settings
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={() => setIsSettingsOpen(true)}>
-          <Settings className="mr-2 h-4 w-4" />
+        <DropdownMenuItem 
+          onClick={() => setIsSettingsOpen(true)}
+          className="playful-hover cursor-pointer"
+        >
+          <Settings className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:rotate-90" />
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={handleSignOut}>
-          <LogOut className="mr-2 h-4 w-4" />
+        <DropdownMenuItem 
+          onClick={handleSignOut}
+          className="playful-hover cursor-pointer hover:bg-red-500/10"
+        >
+          <LogOut className="mr-2 h-4 w-4 transition-transform duration-200 group-hover:-translate-x-1" />
           Sign Out
         </DropdownMenuItem>
       </DropdownMenuContent>

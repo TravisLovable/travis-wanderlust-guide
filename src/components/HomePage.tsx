@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe, Sparkles, Plane, Heart } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -48,6 +48,9 @@ const HomePage = ({
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isInspirationModalOpen, setIsInspirationModalOpen] = useState(false);
   const [wordIndex, setWordIndex] = useState(0);
+  const [showSparkles, setShowSparkles] = useState(false);
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const [showEasterEgg, setShowEasterEgg] = useState(false);
 
   // Authentication state
   const [user, setUser] = useState<SupabaseUser | null>(null);
@@ -80,6 +83,23 @@ const HomePage = ({
       setWordIndex((prev) => (prev + 1) % swapWords.length);
     }, 3000);
     return () => clearInterval(interval);
+  }, []);
+
+  // Sparkle effect on hover
+  useEffect(() => {
+    const sparkleInterval = setInterval(() => {
+      setShowSparkles(prev => !prev);
+    }, 2000);
+    return () => clearInterval(sparkleInterval);
+  }, []);
+
+  // Mouse tracking for interactive elements
+  useEffect(() => {
+    const handleMouseMove = (e: MouseEvent) => {
+      setMousePosition({ x: e.clientX, y: e.clientY });
+    };
+    window.addEventListener('mousemove', handleMouseMove);
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
 
@@ -459,53 +479,101 @@ const HomePage = ({
         ))}
       </div>
 
+      {/* Easter Egg: Celebration when typing "travis" */}
+      {showEasterEgg && (
+        <div className="absolute inset-0 pointer-events-none z-20">
+          {[...Array(15)].map((_, i) => (
+            <div
+              key={i}
+              className="absolute text-2xl animate-confetti"
+              style={{
+                left: `${Math.random() * 100}%`,
+                top: `${Math.random() * 100}%`,
+                animationDelay: `${Math.random() * 0.5}s`
+              }}
+            >
+              {['🎉', '✨', '🚀', '🌟', '💫'][Math.floor(Math.random() * 5)]}
+            </div>
+          ))}
+          <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+            <p className="text-4xl font-bold text-yellow-400 animate-bounce-gentle">
+              Hey there! 👋
+            </p>
+            <p className="text-xl text-white mt-2 animate-fade-in-out">
+              You found the secret! 🕵️‍♂️
+            </p>
+          </div>
+        </div>
+      )}
+
       <main className="flex-1 flex items-center justify-center px-3 py-6 relative z-10">
         <div className="max-w-6xl w-full text-center">
-          {/* Hero Section without glow animation */}
-          <div className="mb-10">
-            <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl ">
-              {t.title}
-            </h1>
-            <div className="mb-6">
+          {/* Hero Section with enhanced playful elements */}
+          <div className="mb-10 animate-slide-in-up">
+            <div className="relative">
+              <h1 className="text-7xl md:text-8xl font-light text-foreground mb-4 tracking-tighter dark:text-glow dark:drop-shadow-2xl playful-hover">
+                {t.title}
+                {showSparkles && (
+                  <Sparkles className="inline-block w-8 h-8 md:w-12 md:h-12 text-yellow-400 animate-bounce-gentle ml-4" />
+                )}
+              </h1>
+              {/* Floating travel icons */}
+              <div className="absolute -top-4 -right-4 opacity-20">
+                <Plane className="w-6 h-6 text-blue-400 animate-bounce-gentle" style={{ animationDelay: '0.5s' }} />
+              </div>
+              <div className="absolute -bottom-2 -left-4 opacity-20">
+                <Heart className="w-5 h-5 text-pink-400 animate-bounce-gentle" style={{ animationDelay: '1s' }} />
+              </div>
+            </div>
+            <div className="mb-6 animate-slide-in-left" style={{ animationDelay: '0.2s' }}>
               <p className="text-xl text-muted-foreground font-light dark:text-glow-subtle leading-relaxed">
                 <span>Data-driven Intelligence for the modern </span>
                 <span
                   key={wordIndex}
-                  className="inline-block animate-fadeIn min-w-[120px] text-left"
+                  className="inline-block animate-fadeIn min-w-[120px] text-left text-blue-400 font-medium"
                 >
                   {swapWords[wordIndex]}
                 </span>
               </p>
             </div>
-            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-pulse transition-all duration-300"></div>
+            <div className="w-24 h-1 bg-gradient-to-r from-blue-500 to-purple-600 mx-auto mb-8 animate-shimmer hover:animate-glow-pulse transition-all duration-300 playful-hover"></div>
           </div>
 
-          <div className="mb-8 max-w-5xl mx-auto">
+          <div className="mb-8 max-w-5xl mx-auto animate-slide-in-up" style={{ animationDelay: '0.4s' }}>
             <div
-              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:shadow-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group"
+              className="bg-white/10 backdrop-blur-sm border border-border/30 rounded-full p-2 shadow-2xl travis-glow-white hover:shadow-white/20 hover:shadow-2xl transition-all duration-300 cursor-pointer group playful-hover hover:animate-scale-bounce"
               onClick={handleBarClick}
               onKeyDown={handleKeyPress}
               tabIndex={0}
               role="button"
               aria-label="Launch brief"
+              onMouseEnter={() => setShowSparkles(true)}
+              onMouseLeave={() => setShowSparkles(false)}
             >
               <div className="flex items-center gap-2">
                 {/* Destination Input */}
                 <div className="flex-1 relative group">
-                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white transition-colors z-10" />
+                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white group-hover:animate-wiggle transition-all duration-200 z-10" />
                   <Input
                     type="text"
                     placeholder={t.searchPlaceholder}
                     value={destination}
                     onChange={(e) => {
-                      setDestination(e.target.value);
+                      const value = e.target.value;
+                      setDestination(value);
                       setSelectedPlace(null);
                       setShowSuggestions(true);
+                      
+                      // Easter egg: typing "travis" triggers celebration
+                      if (value.toLowerCase() === 'travis') {
+                        setShowEasterEgg(true);
+                        setTimeout(() => setShowEasterEgg(false), 3000);
+                      }
                     }}
                     onKeyPress={handleKeyPress}
                     onFocus={() => setShowSuggestions(true)}
                     onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 focus:outline-none text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full cursor-pointer"
+                    className="pl-12 h-12 bg-transparent border-0 focus:ring-0 focus:outline-none text-base placeholder:text-muted-foreground/60 placeholder:font-light rounded-l-full cursor-sparkle"
                     required
                   />
                   {showSuggestions && (suggestions.length > 0 || fallbackSuggestions.length > 0) && (
@@ -529,7 +597,9 @@ const HomePage = ({
                             e.stopPropagation();
                             handleDestinationSelect(suggestion);
                           }}
-                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
+                          className="w-full text-left px-4 py-3 suggestion-hover transition-all duration-200 first:rounded-t-xl last:rounded-b-xl playful-hover"
+                          onMouseEnter={(e) => e.currentTarget.classList.add('animate-slide-in-left')}
+                          onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-slide-in-left')}
                         >
                           <div className="flex items-center space-x-3">
                             <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
@@ -553,7 +623,9 @@ const HomePage = ({
                             e.stopPropagation();
                             handleDestinationSelect(suggestion);
                           }}
-                          className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
+                          className="w-full text-left px-4 py-3 suggestion-hover transition-all duration-200 first:rounded-t-xl last:rounded-b-xl playful-hover"
+                          onMouseEnter={(e) => e.currentTarget.classList.add('animate-slide-in-left')}
+                          onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-slide-in-left')}
                         >
                           <div className="flex items-center space-x-3">
                             <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
@@ -575,11 +647,13 @@ const HomePage = ({
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
+                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px] playful-button"
                         onClick={(e) => e.stopPropagation()}
+                        onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+                        onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
                       >
                         <span>{checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
+                        <Calendar className="w-4 h-4 text-white/70 ml-2 transition-transform duration-200 hover:scale-110" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
@@ -601,11 +675,13 @@ const HomePage = ({
                     <PopoverTrigger asChild>
                       <Button
                         variant="ghost"
-                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px]"
+                        className="h-12 px-4 bg-transparent hover:bg-white/5 rounded-none text-sm justify-between font-normal border-l border-border/30 min-w-[100px] playful-button"
                         onClick={(e) => e.stopPropagation()}
+                        onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+                        onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
                       >
                         <span>{checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
+                        <Calendar className="w-4 h-4 text-white/70 ml-2 transition-transform duration-200 hover:scale-110" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
@@ -626,21 +702,29 @@ const HomePage = ({
 
                 {/* Right Arrow Icon */}
                 <button
-                  className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
-                  disabled={isSearchDisabled} onClick={handleSearch}>
-                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform duration-300" strokeWidth={1.5} />
+                  className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed playful-button"
+                  disabled={isSearchDisabled} 
+                  onClick={handleSearch}
+                  onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+                  onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
+                >
+                  <ArrowRight className="w-5 h-5 group-hover:translate-x-1 group-hover:scale-110 transition-all duration-300" strokeWidth={1.5} />
                 </button>
               </div>
             </div>
           </div>
 
           {/* Inspirational Link */}
-          <div className="text-center">
+          <div className="text-center animate-slide-in-up" style={{ animationDelay: '0.6s' }}>
             <button 
               onClick={() => setIsInspirationModalOpen(true)}
-              className="text-sm text-muted-foreground/80 hover:text-white transition-colors duration-300 underline-offset-4 hover:underline"
+              className="text-sm text-muted-foreground/80 hover:text-white transition-all duration-300 underline-offset-4 hover:underline playful-button relative group"
+              onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+              onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
             >
+              <Sparkles className="inline-block w-4 h-4 mr-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
               Not sure where to go? Get inspired.
+              <Sparkles className="inline-block w-4 h-4 ml-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </button>
           </div>
         </div>

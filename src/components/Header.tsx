@@ -49,7 +49,9 @@ export default function Header({
             <div className="max-w-none mx-auto flex items-center justify-between">
                 <button 
                     onClick={() => navigate('/')}
-                    className="text-3xl text-foreground tracking-tight font-unbounded hover:text-foreground/80 transition-colors cursor-pointer"
+                    className="text-3xl text-foreground tracking-tight font-unbounded hover:text-foreground/80 transition-all duration-300 cursor-pointer playful-button"
+                    onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+                    onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
                 >
                     Travis
                 </button>
@@ -58,7 +60,13 @@ export default function Header({
                         <>
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="rounded-full playful-button"
+                                        onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+                                        onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
+                                    >
                                         <Globe className="w-5 h-5" strokeWidth={1.5} />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -67,9 +75,9 @@ export default function Header({
                                         <DropdownMenuItem
                                             key={lang.code}
                                             onClick={() => setCurrentLanguage(lang.code)}
-                                            className="flex items-center space-x-3"
+                                            className="flex items-center space-x-3 playful-hover cursor-pointer"
                                         >
-                                            <span className="text-lg">{lang.flag}</span>
+                                            <span className="text-lg transition-transform duration-200 hover:scale-125">{lang.flag}</span>
                                             <span>{lang.name}</span>
                                         </DropdownMenuItem>
                                     ))}
@@ -80,9 +88,14 @@ export default function Header({
                                 variant="ghost"
                                 size="icon"
                                 onClick={toggleTheme}
-                                className="rounded-full"
+                                className="rounded-full playful-button"
+                                onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+                                onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
                             >
-                                {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
+                                {isDarkMode ? 
+                                    <Sun className="w-5 h-5 transition-transform duration-300 hover:rotate-90" strokeWidth={1.5} /> : 
+                                    <Moon className="w-5 h-5 transition-transform duration-300 hover:-rotate-12" strokeWidth={1.5} />
+                                }
                             </Button>
 
                             <UserProfileDropdown
@@ -100,7 +113,13 @@ export default function Header({
                             {/* Language Selector */}
                             <DropdownMenu>
                                 <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full">
+                                    <Button 
+                                        variant="ghost" 
+                                        size="icon" 
+                                        className="rounded-full playful-button"
+                                        onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+                                        onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
+                                    >
                                         <Globe className="w-5 h-5" strokeWidth={1.5} />
                                     </Button>
                                 </DropdownMenuTrigger>
@@ -109,9 +128,9 @@ export default function Header({
                                         <DropdownMenuItem
                                             key={lang.code}
                                             onClick={() => setCurrentLanguage(lang.code)}
-                                            className="flex items-center space-x-3"
+                                            className="flex items-center space-x-3 playful-hover cursor-pointer"
                                         >
-                                            <span className="text-lg">{lang.flag}</span>
+                                            <span className="text-lg transition-transform duration-200 hover:scale-125">{lang.flag}</span>
                                             <span>{lang.name}</span>
                                         </DropdownMenuItem>
                                     ))}
@@ -122,12 +141,21 @@ export default function Header({
                                 variant="ghost"
                                 size="icon"
                                 onClick={toggleTheme}
-                                className="rounded-full"
+                                className="rounded-full playful-button"
+                                onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+                                onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
                             >
-                                {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
+                                {isDarkMode ? 
+                                    <Sun className="w-5 h-5 transition-transform duration-300 hover:rotate-90" strokeWidth={1.5} /> : 
+                                    <Moon className="w-5 h-5 transition-transform duration-300 hover:-rotate-12" strokeWidth={1.5} />
+                                }
                             </Button>
 
-                            <Button onClick={() => setIsAuthModalOpen(true)} variant="outline">
+                            <Button 
+                                onClick={() => setIsAuthModalOpen(true)} 
+                                variant="outline"
+                                className="playful-button"
+                            >
                                 Log In / Sign Up
                             </Button>
                         </>

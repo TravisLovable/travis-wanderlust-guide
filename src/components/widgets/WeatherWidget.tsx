@@ -1,7 +1,7 @@
 
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Thermometer, MapPin } from 'lucide-react';
+import { Thermometer, MapPin, Sun, Cloud, CloudRain } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
@@ -32,6 +32,20 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
     if (lowerCondition.includes('storm') || lowerCondition.includes('thunder')) return '⛈️';
     if (lowerCondition.includes('fog') || lowerCondition.includes('mist')) return '🌫️';
     return '🌤️';
+  };
+
+  const getWeatherIcon = (condition: string) => {
+    const lowerCondition = condition.toLowerCase();
+    if (lowerCondition.includes('sun') || lowerCondition.includes('clear')) {
+      return <Sun className="w-5 h-5 text-yellow-400 animate-bounce-gentle" />;
+    }
+    if (lowerCondition.includes('rain') || lowerCondition.includes('drizzle')) {
+      return <CloudRain className="w-5 h-5 text-blue-400 animate-bounce-gentle" />;
+    }
+    if (lowerCondition.includes('cloud')) {
+      return <Cloud className="w-5 h-5 text-gray-400 animate-float" />;
+    }
+    return <Sun className="w-5 h-5 text-yellow-400" />;
   };
 
   const WeatherCard = ({ weather, location, isLoading, error }: any) => {

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Calendar, Pin, Globe, Search, MapPin } from 'lucide-react';
+import { ArrowLeft, Calendar, Pin, Globe, Search, MapPin, Sparkles, Heart, Star } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -50,6 +50,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
   const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [showCelebration, setShowCelebration] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
 
@@ -290,6 +291,9 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const handlePinDestination = (dest: string) => {
     if (!pinnedDestinations.includes(dest)) {
       setPinnedDestinations([...pinnedDestinations, dest]);
+      // Show celebration effect
+      setShowCelebration(true);
+      setTimeout(() => setShowCelebration(false), 1000);
     }
   };
 
@@ -336,7 +340,9 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
               <Button
                 variant="ghost"
                 onClick={onBack}
-                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive"
+                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive playful-button"
+                onMouseEnter={(e) => e.currentTarget.classList.add('animate-wiggle')}
+                onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-wiggle')}
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
@@ -361,9 +367,16 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                       variant="ghost"
                       size="icon"
                       onClick={() => handlePinDestination(destination)}
-                      className="text-blue-400 hover:text-blue-300 ml-1 sm:ml-2"
+                      className="text-blue-400 hover:text-blue-300 ml-1 sm:ml-2 playful-button relative"
+                      onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+                      onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
                     >
                       <Pin className="w-4 h-4 sm:w-5 sm:h-5" />
+                      {showCelebration && (
+                        <div className="absolute -top-1 -right-1">
+                          <Sparkles className="w-3 h-3 text-yellow-400 animate-bounce-gentle" />
+                        </div>
+                      )}
                     </Button>
                   </h1>
                 </div>
@@ -422,11 +435,12 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                 <span className="text-xs sm:text-sm text-muted-foreground font-medium">PINNED:</span>
                 <div className="flex flex-wrap gap-2">
-                  {pinnedDestinations.map((dest) => (
+                  {pinnedDestinations.map((dest, index) => (
                     <button
                       key={dest}
                       onClick={() => setNewDestination(dest)}
-                      className="group flex items-center space-x-2 px-2 sm:px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-xs sm:text-sm text-white hover:bg-blue-700/40 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-2 sm:px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-xs sm:text-sm text-white hover:bg-blue-700/40 transition-all duration-300 shadow-sm playful-button animate-slide-in-left"
+                      style={{ animationDelay: `${index * 0.1}s` }}
                     >
                       <span className="truncate max-w-[120px] sm:max-w-[150px]">{dest}</span>
                       <button
@@ -444,12 +458,15 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
                 {/* Regional Suggestions - Compact on mobile */}
                 <div className="flex flex-wrap gap-1 sm:gap-2">
-                  {getRegionalDestinations(destination).map((city) => (
+                  {getRegionalDestinations(destination).map((city, index) => (
                     <button
                       key={city}
                       onClick={() => handlePinDestination(city)}
-                      className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white hover:bg-green-700/40 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white hover:bg-green-700/40 transition-all duration-300 shadow-sm playful-button animate-slide-in-right"
+                      style={{ animationDelay: `${index * 0.1 + 0.3}s` }}
                       title="Click to pin"
+                      onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+                      onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
                     >
                       + {city}
                     </button>
@@ -475,7 +492,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                   onKeyPress={handleKeyPress}
                   onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-500 ease-out ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
+                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-500 ease-out cursor-sparkle ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
                     }`}
                 />
                 {showSuggestions && mapboxSuggestions.length > 0 && (
@@ -560,8 +577,10 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
               <Button
                 type="submit"
-                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
+                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out playful-button ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
                   }`}
+                onMouseEnter={(e) => e.currentTarget.classList.add('animate-scale-bounce')}
+                onAnimationEnd={(e) => e.currentTarget.classList.remove('animate-scale-bounce')}
               >
                 <Search className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
                   }`} />
@@ -585,14 +604,14 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* Row 1: Core Travel Essentials - Full Width on Mobile, 2 Columns on Tablet+ */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
             {/* Currency Converter - Essential for travel planning */}
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col playful-hover animate-slide-in-left">
               <div className="flex-1 flex flex-col">
                 <CurrencyContainer placeDetails={placeDetails} />
               </div>
             </div>
 
             {/* Time Zone - Critical for scheduling */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col playful-hover animate-slide-in-right" style={{ animationDelay: '0.1s' }}>
               <div className="flex-1 flex flex-col">
                 <TimeZoneContainer placeDetails={placeDetails} />
               </div>
@@ -602,12 +621,12 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* Row 2: Weather & Transportation - Stack on Mobile, Side by Side on Larger */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
             {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
-            <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col">
+            <div className="lg:col-span-2 order-1 transform transition-all duration-300 hover:scale-[1.01] flex flex-col playful-hover animate-slide-in-up" style={{ animationDelay: '0.2s' }}>
               <div className="flex-1 flex flex-col">
                 <WeatherContainer placeDetails={placeDetails} />
               </div>
             </div>
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col playful-hover animate-slide-in-up" style={{ animationDelay: '0.3s' }}>
               <div className="flex-1 flex flex-col">
                 <HolidayContainer placeDetails={placeDetails} dates={dates} />
               </div>
@@ -616,16 +635,14 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
           {/* Row 3: Local Information & Holidays */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-
-
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col playful-hover animate-slide-in-left" style={{ animationDelay: '0.4s' }}>
               <div className="flex-1 flex flex-col">
                 <VisaContainer placeDetails={placeDetails} />
               </div>
             </div>
 
             {/* Uber Availability - Important for ground transportation */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col playful-hover animate-slide-in-right" style={{ animationDelay: '0.5s' }}>
               <div className="flex-1 flex flex-col">
                 <UberAvailabilityWidget placeDetails={placeDetails} />
               </div>
@@ -636,17 +653,22 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* Row 5: Connectivity & Additional Info */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
             {/* Connectivity Info - Important for modern travelers */}
-            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            <div className="order-1 transform transition-all duration-300 hover:scale-[1.02] flex flex-col playful-hover animate-slide-in-left" style={{ animationDelay: '0.6s' }}>
               <div className="flex-1 flex flex-col">
                 <ConnectivityWidget />
               </div>
             </div>
 
-            {/* Future expansion slot */}
-            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col">
+            {/* Future expansion slot with playful placeholder */}
+            <div className="order-2 transform transition-all duration-300 hover:scale-[1.02] flex flex-col playful-hover animate-slide-in-right" style={{ animationDelay: '0.7s' }}>
               <div className="flex-1 flex flex-col">
-                {/* This space reserved for future widgets */}
-                <div className="h-full"></div>
+                {/* Playful "coming soon" widget */}
+                <div className="h-full bg-card border border-border rounded-lg p-6 flex items-center justify-center">
+                  <div className="text-center">
+                    <Sparkles className="w-8 h-8 text-muted-foreground mx-auto mb-2 animate-bounce-gentle" />
+                    <p className="text-sm text-muted-foreground">More insights coming soon!</p>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
