@@ -1,4 +1,5 @@
 import { Sun, Moon, Globe } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -17,6 +18,7 @@ interface HeaderProps {
     setIsAuthModalOpen: (open: boolean) => void;
     setCurrentLanguage: (language: string) => void;
     currentLanguage: string;
+    onProfileUpdate: (profile: any) => void;
 }
 const languages = [
     { code: 'en', name: 'English', flag: '🇺🇸' },
@@ -37,14 +39,20 @@ export default function Header({
     toggleTheme,
     setIsAuthModalOpen,
     setCurrentLanguage,
-    currentLanguage
+    currentLanguage,
+    onProfileUpdate
 }: HeaderProps) {
-
+    const navigate = useNavigate();
 
     return (
         <header className="px-3 py-3 border-b border-border/30 backdrop-blur-sm relative z-10">
             <div className="max-w-none mx-auto flex items-center justify-between">
-                <div className="text-3xl text-foreground tracking-tight font-unbounded">Travis</div>
+                <button 
+                    onClick={() => navigate('/')}
+                    className="text-3xl text-foreground tracking-tight font-unbounded hover:text-foreground/80 transition-colors cursor-pointer"
+                >
+                    Travis
+                </button>
                 <div className="flex items-center space-x-2">
                     {user ? (
                         <>
@@ -80,6 +88,11 @@ export default function Header({
                             <UserProfileDropdown
                                 user={user}
                                 userProfile={userProfile}
+                                isDarkMode={isDarkMode}
+                                toggleTheme={toggleTheme}
+                                currentLanguage={currentLanguage}
+                                setCurrentLanguage={setCurrentLanguage}
+                                onProfileUpdate={onProfileUpdate}
                             />
                         </>
                     ) : (

@@ -23,7 +23,6 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [onboardingData, setOnboardingData] = useState({
     preferredAirline: '',
-    frequentFlyerNumber: '',
     travelType: '',
     countryData: null as CountryData | null, // New comprehensive country data
     profilePhotoUrl: ''
@@ -44,7 +43,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
   // Countries are now fetched dynamically from the REST Countries API
 
   const handleNext = () => {
-    if (step < 5) {
+    if (step < 4) {
       setStep(step + 1);
     }
   };
@@ -63,7 +62,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
         email: user.email,
         full_name: user.user_metadata?.full_name || '',
         preferred_airline: onboardingData.preferredAirline,
-        frequent_flyer_number: onboardingData.frequentFlyerNumber,
+
         travel_type: onboardingData.travelType,
         nationality: onboardingData.countryData?.code || '',
         country_data: onboardingData.countryData,
@@ -110,10 +109,8 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
       case 2:
         return true; // Optional field
       case 3:
-        return onboardingData.travelType !== '';
-      case 4:
         return onboardingData.countryData !== null && !countriesLoading;
-      case 5:
+      case 4:
         return true; // Optional field
       default:
         return false;
@@ -143,18 +140,6 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
       case 2:
         return (
           <div>
-            <Label htmlFor="loyalty">Loyalty Number (Optional)</Label>
-            <Input
-              id="loyalty"
-              value={onboardingData.frequentFlyerNumber}
-              onChange={(e) => setOnboardingData(prev => ({ ...prev, frequentFlyerNumber: e.target.value }))}
-              placeholder="Enter your frequent flyer number"
-            />
-          </div>
-        );
-      case 3:
-        return (
-          <div>
             <Label>Travel Type</Label>
             <Select value={onboardingData.travelType} onValueChange={(value) =>
               setOnboardingData(prev => ({ ...prev, travelType: value }))
@@ -163,14 +148,18 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
                 <SelectValue placeholder="Select your travel type" />
               </SelectTrigger>
               <SelectContent>
-                {travelTypes.map(type => (
-                  <SelectItem key={type} value={type}>{type}</SelectItem>
-                ))}
+                <SelectItem value="business">Business</SelectItem>
+                <SelectItem value="leisure">Leisure</SelectItem>
+                <SelectItem value="mixed">Mixed</SelectItem>
+                <SelectItem value="adventure">Adventure</SelectItem>
+                <SelectItem value="cultural">Cultural</SelectItem>
+                <SelectItem value="luxury">Luxury</SelectItem>
+                <SelectItem value="budget">Budget</SelectItem>
               </SelectContent>
             </Select>
           </div>
         );
-      case 4:
+      case 3:
         return (
           <div>
             <Label>Passport Country</Label>
@@ -205,7 +194,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
             </Select>
           </div>
         );
-      case 5:
+      case 4:
         return (
           <div className="text-center space-y-4">
             <Label>Profile Photo (Optional)</Label>
@@ -250,7 +239,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
 
         <div className="space-y-6">
           <div className="text-sm text-muted-foreground">
-            Step {step} of 5
+            Step {step} of 4
           </div>
 
           {renderStep()}
@@ -261,7 +250,7 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
                 Back
               </Button>
             )}
-            {step < 5 ? (
+            {step < 4 ? (
               <Button
                 onClick={handleNext}
                 className="flex-1"

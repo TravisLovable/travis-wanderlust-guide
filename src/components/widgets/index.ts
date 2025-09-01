@@ -6,7 +6,5 @@ export { default as AirportContainer } from './containers/AirportContainer';
 export { default as VisaContainer } from './containers/VisaContainer';
 export { default as CulturalContainer } from './containers/CulturalContainer';
 export { default as TransportWidget } from './TransportWidget';
-export { default as PowerAdapterWidget } from './PowerAdapterWidget';
-export { default as EmergencyWidget } from './EmergencyWidget';
 export { default as ConnectivityWidget } from './ConnectivityWidget';
 export { default as UberAvailabilityWidget } from './UberAvailabilityWidget';

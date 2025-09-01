@@ -91,6 +91,10 @@ const SearchResults = () => {
         document.documentElement.classList.toggle('dark');
     };
 
+    const handleProfileUpdate = (profile: any) => {
+        setUserProfile(profile);
+    };
+
     const handleLoadingComplete = () => {
         setShowLoading(false);
         // Update URL to remove loading parameter
@@ -162,6 +166,7 @@ const SearchResults = () => {
                 setIsAuthModalOpen={setIsAuthModalOpen}
                 setCurrentLanguage={setCurrentLanguage}
                 currentLanguage={currentLanguage}
+                onProfileUpdate={handleProfileUpdate}
             />
             <AuthModal
                 isOpen={isAuthModalOpen}
