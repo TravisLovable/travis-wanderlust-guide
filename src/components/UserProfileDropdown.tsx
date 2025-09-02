@@ -70,8 +70,8 @@ const UserProfileDropdown = ({
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button
-          variant="ghost"
+        <Button 
+          variant="ghost" 
           className="relative h-10 w-10 rounded-full interactive-scale"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
@@ -115,14 +115,14 @@ const UserProfileDropdown = ({
         )}
 
         {/* Enhanced Menu Items */}
-        <DropdownMenuItem
+        <DropdownMenuItem 
           onClick={() => setIsProfileSettingsOpen(true)}
           className="transition-all duration-200 hover:animate-slide-in-left"
         >
           <User className="mr-2 h-4 w-4 transition-all duration-300 hover:animate-bounce-gentle" />
           Profile Settings
         </DropdownMenuItem>
-        <DropdownMenuItem
+        <DropdownMenuItem 
           onClick={() => setIsSettingsOpen(true)}
           className="transition-all duration-200 hover:animate-slide-in-left"
         >
@@ -130,7 +130,7 @@ const UserProfileDropdown = ({
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem
+        <DropdownMenuItem 
           onClick={handleSignOut}
           className="transition-all duration-200 hover:animate-slide-in-left text-red-600 dark:text-red-400"
         >
