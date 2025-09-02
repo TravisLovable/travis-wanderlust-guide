@@ -28,14 +28,12 @@ export type Database = {
       users: {
         Row: {
           auth_id: string
-          country: string | null
           country_data: CountryData | null
           created_at: string
           email: string | null
           frequent_flyer_number: string | null
           full_name: string | null
           id: string
-          nationality: string | null
           onboarding_completed: boolean
           preferred_airline: string | null
           profile_photo_url: string | null
@@ -44,14 +42,12 @@ export type Database = {
         }
         Insert: {
           auth_id: string
-          country?: string | null
           country_data?: CountryData | null
           created_at?: string
           email?: string | null
           frequent_flyer_number?: string | null
           full_name?: string | null
           id?: string
-          nationality?: string | null
           onboarding_completed?: boolean
           preferred_airline?: string | null
           profile_photo_url?: string | null
@@ -60,14 +56,12 @@ export type Database = {
         }
         Update: {
           auth_id?: string
-          country?: string | null
           country_data?: CountryData | null
           created_at?: string
           email?: string | null
           frequent_flyer_number?: string | null
           full_name?: string | null
           id?: string
-          nationality?: string | null
           onboarding_completed?: boolean
           preferred_airline?: string | null
           profile_photo_url?: string | null

@@ -18,6 +18,7 @@ import {
 import { User, Plane, Globe } from 'lucide-react';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useCountryData, CountryData } from '@/hooks/useCountryData';
 
 interface ProfileSettingsModalProps {
   isOpen: boolean;
@@ -39,12 +40,7 @@ const travelTypes = [
   'Business', 'Leisure', 'Mixed', 'Adventure', 'Cultural', 'Luxury', 'Budget'
 ];
 
-const countries = [
-  'United States', 'Canada', 'United Kingdom', 'Germany', 'France', 'Italy',
-  'Spain', 'Japan', 'South Korea', 'China', 'Australia', 'New Zealand',
-  'Brazil', 'Argentina', 'Mexico', 'India', 'Singapore', 'Thailand',
-  'South Africa', 'Other'
-];
+// Countries are now fetched dynamically from the REST Countries API via useCountryData hook
 
 const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
   isOpen,
@@ -56,36 +52,38 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
   const [fullName, setFullName] = useState('');
   const [preferredAirline, setPreferredAirline] = useState('');
   const [travelType, setTravelType] = useState('');
-  const [nationality, setNationality] = useState('');
+  const [selectedCountry, setSelectedCountry] = useState<CountryData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { countries, isLoading: countriesLoading, error: countriesError } = useCountryData();
 
   useEffect(() => {
     if (userProfile) {
       setFullName(userProfile.full_name || '');
       setPreferredAirline(userProfile.preferred_airline || '');
       setTravelType(userProfile.travel_type || '');
-      setNationality(userProfile.nationality || '');
+      // Set the selected country from country_data
+      setSelectedCountry(userProfile.country_data || null);
     }
   }, [userProfile]);
 
   const handleSave = async () => {
     if (!user) return;
-    
+
     setIsLoading(true);
     try {
       const profileData = {
-        auth_id: user.id,
         full_name: fullName,
         preferred_airline: preferredAirline,
         travel_type: travelType,
-        nationality: nationality,
+        country_data: selectedCountry,
         onboarding_completed: true
       };
 
       const { data, error } = await supabase
         .from('users')
-        .upsert(profileData)
+        .update(profileData)
+        .eq('auth_id', user.id)
         .select()
         .single();
 
@@ -117,7 +115,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
             <span>Profile Settings</span>
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-4 py-4">
           {/* Full Name */}
           <div className="space-y-2">
@@ -167,22 +165,37 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
             </Select>
           </div>
 
-          {/* Nationality */}
+          {/* Passport Country */}
           <div className="space-y-2">
             <Label className="flex items-center space-x-2">
               <Globe className="w-4 h-4" />
-              <span>Nationality</span>
+              <span>Passport Country</span>
             </Label>
-            <Select value={nationality} onValueChange={setNationality}>
+            <Select
+              value={selectedCountry?.code || ''}
+              onValueChange={(value) => {
+                const country = countries.find(c => c.code === value);
+                setSelectedCountry(country || null);
+              }}
+            >
               <SelectTrigger>
-                <SelectValue placeholder="Select your nationality" />
+                <SelectValue placeholder="Select your passport country" />
               </SelectTrigger>
               <SelectContent className="max-h-[200px]">
-                {countries.map((country) => (
-                  <SelectItem key={country} value={country}>
-                    {country}
-                  </SelectItem>
-                ))}
+                {countriesLoading ? (
+                  <SelectItem value="" disabled>Loading countries...</SelectItem>
+                ) : countriesError ? (
+                  <SelectItem value="" disabled>Error loading countries</SelectItem>
+                ) : (
+                  countries.map((country) => (
+                    <SelectItem key={country.code} value={country.code}>
+                      <div className="flex items-center space-x-2">
+                        <img src={country.flag} alt={country.name} className="w-4 h-4" />
+                        <span>{country.name}</span>
+                      </div>
+                    </SelectItem>
+                  ))
+                )}
               </SelectContent>
             </Select>
           </div>

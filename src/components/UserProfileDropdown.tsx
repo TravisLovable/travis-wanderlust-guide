@@ -108,7 +108,7 @@ const UserProfileDropdown = ({
             <div className="px-3 py-2 text-xs text-muted-foreground">
               <div className="mb-1">Airline: {userProfile.preferred_airline || 'Not set'}</div>
               <div className="mb-1">Travel: {userProfile.travel_type || 'Not set'}</div>
-              <div>Country: {userProfile.nationality || 'Not set'}</div>
+              <div>Country: {userProfile.country_data?.name || 'Not set'}</div>
             </div>
             <DropdownMenuSeparator />
           </>

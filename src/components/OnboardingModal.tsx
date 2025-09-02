@@ -64,7 +64,6 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
         preferred_airline: onboardingData.preferredAirline,
 
         travel_type: onboardingData.travelType,
-        nationality: onboardingData.countryData?.code || '',
         country_data: onboardingData.countryData,
         profile_photo_url: onboardingData.profilePhotoUrl,
         onboarding_completed: true
@@ -168,7 +167,6 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
               const selectedCountry = countries.find(country => country.code === value);
               setOnboardingData(prev => ({
                 ...prev,
-                nationality: value, // Keep legacy field for backward compatibility
                 countryData: selectedCountry || null // Store full country data
               }));
             }}>

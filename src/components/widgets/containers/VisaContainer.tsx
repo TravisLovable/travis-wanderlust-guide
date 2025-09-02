@@ -5,7 +5,6 @@ import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface VisaContainerProps {
     placeDetails: SelectedPlace | null;
-    userNationality?: string;
 }
 
 interface VisaData {
@@ -29,8 +28,9 @@ interface VisaData {
     hasDbData?: boolean;
 }
 
-const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails, userNationality = 'US' }) => {
+const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
     const [visaData, setVisaData] = useState<VisaData>({ visaRequired: 'unknown', isLoading: true });
+    const [userNationality, setUserNationality] = useState<string>('US');
 
     useEffect(() => {
         console.log('🔄 VisaContainer useEffect triggered with:', { placeDetails, userNationality });
@@ -181,6 +181,34 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails, userNationa
 
         fetchVisaRequirements();
     }, [placeDetails, userNationality]);
+
+    // Separate useEffect to fetch user country data once
+    useEffect(() => {
+        const fetchUserCountry = async () => {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (user) {
+                    const { data: userCountry, error } = await supabase
+                        .from('users')
+                        .select('country_data')
+                        .eq('auth_id', user.id);
+
+                    if (userCountry && userCountry[0]?.country_data) {
+                        const countryData = userCountry[0].country_data;
+                        // Use country name for visa requirements, with fallback to code
+                        const nationality = countryData.name || countryData.code || 'US';
+                        setUserNationality(nationality);
+                        console.log('🌍 User nationality set to:', nationality);
+                    }
+                }
+            } catch (error) {
+                console.error('Error fetching user country:', error);
+                // Keep default 'US' nationality
+            }
+        };
+
+        fetchUserCountry();
+    }, []); // Run once on mount
 
     // Fallback visa data for when API fails
     const getFallbackVisaData = (dest: string): VisaData => {
