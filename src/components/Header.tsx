@@ -103,25 +103,7 @@ export default function Header({
                     ) : (
                         <>
                             {/* Language Selector */}
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="ghost" size="icon" className="rounded-full interactive-scale">
-                                        <Globe className="w-5 h-5 hover:animate-bounce-gentle transition-all duration-300" strokeWidth={1.5} />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-48 animate-slide-in-up">
-                                    {languages.map((lang) => (
-                                        <DropdownMenuItem
-                                            key={lang.code}
-                                            onClick={() => setCurrentLanguage(lang.code)}
-                                            className="flex items-center space-x-3 hover:animate-slide-in-left transition-all duration-200"
-                                        >
-                                            <span className="text-lg hover:animate-wiggle transition-all duration-300">{lang.flag}</span>
-                                            <span>{lang.name}</span>
-                                        </DropdownMenuItem>
-                                    ))}
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                           
 
                             <Button
                                 variant="ghost"

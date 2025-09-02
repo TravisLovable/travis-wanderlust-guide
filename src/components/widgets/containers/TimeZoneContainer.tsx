@@ -34,6 +34,10 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) =
   const [worldClockData, setWorldClockData] = useState<WorldClockData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
+  console.log('TimeZoneContainer render - worldClockData:', worldClockData, 'isLoading:', isLoading);
+  console.log('TimeZoneContainer render - placeDetails:', placeDetails);
+  console.log('placeDetails has coordinates?', placeDetails?.latitude, placeDetails?.longitude);
+
   const getTimezoneFromCoordinates = (lat: number, lng: number): string => {
 
 
@@ -165,10 +169,24 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) =
 
   // Fetch world clock data
   useEffect(() => {
+    console.log('useEffect triggered - placeDetails:', placeDetails);
+    console.log('Checking coordinates:', placeDetails?.latitude, placeDetails?.longitude);
+
     const fetchWorldClockData = async () => {
-      if (!placeDetails?.latitude || !placeDetails?.longitude) {
-        console.log('No coordinates available for timezone lookup');
+      if (placeDetails?.latitude === undefined || placeDetails?.latitude === null ||
+        placeDetails?.longitude === undefined || placeDetails?.longitude === null) {
+        console.log('No coordinates available for timezone lookup - exiting early');
+        console.log('placeDetails:', placeDetails);
+        console.log('latitude:', placeDetails?.latitude);
+        console.log('longitude:', placeDetails?.longitude);
         return;
+      }
+
+      console.log('Proceeding with API call using coordinates:', placeDetails.latitude, placeDetails.longitude);
+
+      // Note: coordinates 0,0 indicate a data issue - should be actual location coordinates
+      if (placeDetails.latitude === 0 && placeDetails.longitude === 0) {
+        console.warn('WARNING: Using coordinates 0,0 which may not represent the actual location');
       }
 
       setIsLoading(true);
@@ -194,8 +212,19 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) =
           throw error;
         }
 
-        console.log('World clock data received:', data);
-        setWorldClockData(data);
+        console.log('World clock data fetched successfully:', JSON.stringify(data, null, 2));
+
+        if (data && typeof data === 'object') {
+          console.log('About to set worldClockData state with:', data);
+          setWorldClockData(data);
+          console.log('World clock data set in state successfully');
+          // Log immediately after state set to check if it worked
+          setTimeout(() => {
+            console.log('State check after setWorldClockData:', worldClockData);
+          }, 100);
+        } else {
+          console.error('Invalid world clock data structure received:', data);
+        }
       } catch (error) {
         console.error('Failed to fetch world clock data:', error);
         // Keep existing mock data as fallback
@@ -208,6 +237,10 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) =
   }, [placeDetails]);
 
   // Data transformation logic
+  console.log('Transforming data - worldClockData state:', worldClockData);
+  console.log('Is worldClockData null?', worldClockData === null);
+  console.log('worldClockData origin:', worldClockData?.origin);
+
   const transformedData = {
     origin: worldClockData?.origin || {
       time: '16:50',
@@ -223,6 +256,8 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) =
     isLoading,
     destinationName: placeDetails?.formatted_address || placeDetails?.name || 'Unknown'
   };
+
+  console.log('Final transformed data being passed to presenter:', transformedData);
 
   return (
     <TimeZonePresenter data={transformedData} />

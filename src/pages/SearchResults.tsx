@@ -37,6 +37,14 @@ const SearchResults = () => {
         const loading = searchParams.get('loading');
 
         if (destination && lat && lng && checkin && checkout) {
+            console.log('SearchResults URL params:', { destination, name, lat, lng, country, region, placeId });
+            console.log('Parsing coordinates:', {
+                latString: lat,
+                lngString: lng,
+                parsedLat: parseFloat(lat),
+                parsedLng: parseFloat(lng)
+            });
+
             const reconstructedPlace: SelectedPlace = {
                 name: name || destination,
                 formatted_address: destination,
