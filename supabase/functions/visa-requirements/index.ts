@@ -1,9 +1,20 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.54.0'
+import OpenAI from 'https://deno.land/x/openai@v4.24.0/mod.ts'
 
 const corsHeaders = {
     'Access-Control-Allow-Origin': '*',
     'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 }
+
+// Initialize Supabase client
+const supabaseUrl = Deno.env.get('SUPABASE_URL')!
+const supabaseKey = Deno.env.get('SUPABASE_ANON_KEY')!
+const supabase = createClient(supabaseUrl, supabaseKey)
+
+// Initialize OpenAI client
+const openaiApiKey = Deno.env.get('OPENAI_API_KEY')
+const openai = openaiApiKey ? new OpenAI({ apiKey: openaiApiKey }) : null
 
 serve(async (req) => {
     // Handle CORS preflight requests
@@ -12,7 +23,7 @@ serve(async (req) => {
     }
 
     try {
-        const { destination, userNationality = 'US' } = await req.json()
+        const { destination, userNationality = 'US', streamResponse = false } = await req.json()
 
         if (!destination) {
             return new Response(
@@ -26,14 +37,30 @@ serve(async (req) => {
 
         console.log(`🛂 Checking visa requirements for ${userNationality} citizens traveling to: ${destination}`)
 
-        // For MVP, we'll use a comprehensive visa database instead of external APIs
-        // This provides reliable information without rate limits or API key requirements
-        const visaInfo = getVisaRequirements(destination, userNationality)
+        // First, try to get data from Supabase database
+        const dbVisaInfo = await getVisaFromDatabase(destination, userNationality)
 
-        console.log(`✅ Visa requirements found for ${destination}:`, visaInfo)
+        if (dbVisaInfo && !streamResponse) {
+            console.log(`✅ Visa requirements found in database for ${destination}:`, dbVisaInfo)
+            return new Response(
+                JSON.stringify(dbVisaInfo),
+                {
+                    headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+                }
+            )
+        }
+
+        // If streaming is requested or no data in DB, use OpenAI with hybrid approach
+        if (streamResponse && openai) {
+            return await streamVisaResponse(destination, userNationality, dbVisaInfo)
+        }
+
+        // Fallback to hardcoded data if no OpenAI
+        const fallbackInfo = getVisaRequirements(destination, userNationality)
+        console.log(`✅ Using fallback visa requirements for ${destination}:`, fallbackInfo)
 
         return new Response(
-            JSON.stringify(visaInfo),
+            JSON.stringify(fallbackInfo),
             {
                 headers: { ...corsHeaders, 'Content-Type': 'application/json' }
             }
@@ -55,6 +82,219 @@ serve(async (req) => {
         )
     }
 })
+
+// Function to query visa requirements from database
+async function getVisaFromDatabase(destination: string, userNationality: string) {
+    try {
+        const destLower = destination.toLowerCase()
+
+        // Clean the destination string - remove commas and extra spaces that break the query
+        const cleanDest = destLower.replace(/,/g, ' ').replace(/\s+/g, ' ').trim()
+
+        console.log(`Querying database for: "${cleanDest}" from ${userNationality}`)
+
+        // Try to find a match by checking if any part of the destination matches our data
+        const { data: allData, error } = await supabase
+            .from('visa_requirements')
+            .select('*')
+            .eq('origin_country', userNationality.toUpperCase())
+
+        if (error) {
+            console.error('Database query error:', error)
+            return null
+        }
+
+        // Find the best match by checking destination country and aliases
+        const matchedData = allData?.find(row => {
+            const destCountry = row.destination_country?.toLowerCase() || ''
+            const aliases = row.destination_aliases || []
+
+            // Check if destination contains the country name or vice versa
+            if (destCountry && (cleanDest.includes(destCountry) || destCountry.includes(cleanDest))) {
+                return true
+            }
+
+            // Check aliases
+            return aliases.some((alias: string) =>
+                cleanDest.includes(alias.toLowerCase()) || alias.toLowerCase().includes(cleanDest)
+            )
+        })
+
+        const data = matchedData || null
+
+        if (data) {
+            return {
+                visaRequired: data.visa_required,
+                maxStay: data.max_stay_description || `${data.max_stay_days} days`,
+                passportValidity: data.passport_validity_description || `${data.passport_validity_months} months minimum`,
+                yellowFever: data.yellow_fever_required ? 'Required' : 'Not required',
+                notes: data.additional_notes || 'Check official sources for latest updates',
+                requiresETA: data.requires_eta,
+                processingTime: data.processing_time_description,
+                cost: data.cost_description,
+                exceptions: data.exceptions,
+                dataSource: data.data_source,
+                lastUpdated: data.last_updated,
+                destination: destination,
+                userNationality: userNationality
+            }
+        }
+
+        return null
+    } catch (error) {
+        console.error('Error querying visa database:', error)
+        return null
+    }
+}
+
+// Fallback streaming function when OpenAI is not available
+async function streamFallbackResponse(destination: string, userNationality: string, dbData: any) {
+    const encoder = new TextEncoder()
+
+    // Create a helpful fallback response
+    const fallbackText = dbData ?
+        `Based on our records, here's what we know about **visa requirements** for **${userNationality} passport holders** traveling to **${destination}**:\n\n**Visa Required:** ${dbData.visaRequired ? 'Yes' : 'No'}\n**Maximum Stay:** ${dbData.maxStay}\n**Passport Validity:** ${dbData.passportValidity}\n**Yellow Fever:** ${dbData.yellowFever}\n\n**Source:** ${dbData.dataSource}\n**Last Updated:** ${new Date(dbData.lastUpdated).toDateString()}\n\nFor the most current information, please verify with official government sources before traveling.` :
+        `Here's general information about **visa requirements** for **${userNationality} passport holders** traveling to **${destination}**:\n\nI don't have specific data for this destination in our database. **Visa requirements** can vary significantly by destination and change frequently.\n\n**Important:** Please check with the **embassy** or **consulate** of your destination country for the most accurate and up-to-date information.\n\n**Recommended verification sources:**\n- U.S. State Department travel.state.gov\n- Destination country's embassy website\n- Official government travel advisories`
+    
+    const readable = new ReadableStream({
+        async start(controller) {
+            try {
+                // Simulate streaming by sending chunks of text
+                const words = fallbackText.split(' ')
+                for (let i = 0; i < words.length; i += 2) {
+                    const chunk = words.slice(i, i + 2).join(' ') + ' '
+                    const data = JSON.stringify({
+                        content: chunk,
+                        type: 'chunk',
+                        hasDbData: !!dbData,
+                        dataSource: dbData?.dataSource || 'Fallback Data',
+                        lastUpdated: dbData?.lastUpdated || new Date().toISOString()
+                    })
+                    controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+                    // Small delay to simulate streaming
+                    await new Promise(resolve => setTimeout(resolve, 50))
+                }
+
+                // Send completion signal
+                controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'complete' })}\n\n`))
+                controller.close()
+            } catch (error) {
+                console.error('Fallback streaming error:', error)
+                controller.error(error)
+            }
+        }
+    })
+
+    return new Response(readable, {
+        headers: {
+            ...corsHeaders,
+            'Content-Type': 'text/event-stream',
+            'Cache-Control': 'no-cache',
+            'Connection': 'keep-alive'
+        }
+    })
+}
+
+// Function to stream OpenAI response for visa requirements
+async function streamVisaResponse(destination: string, userNationality: string, dbData: any) {
+    try {
+        // If OpenAI is not available, use fallback
+        if (!openai) {
+            console.log('OpenAI not available, using fallback streaming')
+            return streamFallbackResponse(destination, userNationality, dbData)
+        }
+
+        const prompt = createVisaPrompt(destination, userNationality, dbData)
+
+        const stream = await openai.chat.completions.create({
+            model: 'gpt-4o-mini',
+            messages: [
+                {
+                    role: 'system',
+                    content: `You are a travel visa expert. Provide accurate, helpful visa requirement information. 
+                    Always cite official sources and include disclaimers about verifying with embassies.
+                    Format your response in a conversational but informative way.
+                    Highlight important terms by wrapping them in **bold** markdown.
+                    End with suggestions for official sources to verify information.`
+                },
+                {
+                    role: 'user',
+                    content: prompt
+                }
+            ],
+            stream: true,
+            temperature: 0.3,
+            max_tokens: 500
+        })
+
+        const encoder = new TextEncoder()
+        const readable = new ReadableStream({
+            async start(controller) {
+                try {
+                    for await (const chunk of stream) {
+                        const content = chunk.choices[0]?.delta?.content || ''
+                        if (content) {
+                            const data = JSON.stringify({
+                                content,
+                                type: 'chunk',
+                                hasDbData: !!dbData,
+                                dataSource: dbData?.dataSource || 'AI Analysis',
+                                lastUpdated: dbData?.lastUpdated || new Date().toISOString()
+                            })
+                            controller.enqueue(encoder.encode(`data: ${data}\n\n`))
+                        }
+                    }
+                    // Send completion signal
+                    controller.enqueue(encoder.encode(`data: ${JSON.stringify({ type: 'complete' })}\n\n`))
+                    controller.close()
+                } catch (error) {
+                    console.error('Streaming error:', error)
+                    controller.error(error)
+                }
+            }
+        })
+
+        return new Response(readable, {
+            headers: {
+                ...corsHeaders,
+                'Content-Type': 'text/event-stream',
+                'Cache-Control': 'no-cache',
+                'Connection': 'keep-alive'
+            }
+        })
+
+    } catch (error) {
+        console.error('OpenAI streaming error:', error)
+        throw error
+    }
+}
+
+// Create a detailed prompt for OpenAI
+function createVisaPrompt(destination: string, userNationality: string, dbData: any): string {
+    let prompt = `I need visa requirement information for ${userNationality} passport holders traveling to ${destination}.`
+
+    if (dbData) {
+        prompt += `\n\nI have some structured data: ${JSON.stringify(dbData, null, 2)}`
+        prompt += `\n\nPlease interpret this data and present it in a clear, conversational way. Explain what it means for travelers and highlight important details.`
+    } else {
+        prompt += `\n\nI don't have specific data for this destination. Please provide general visa requirement information based on your knowledge, but emphasize the need to verify with official sources.`
+    }
+
+    prompt += `\n\nPlease include:
+    - Whether a visa is required
+    - Maximum stay duration
+    - Passport validity requirements
+    - Any special requirements (yellow fever, etc.)
+    - Processing time and costs if applicable
+    - Important exceptions or notes
+    - Where to get official verification
+    
+    Format your response to be helpful for travelers planning their trip.`
+
+    prompt += `\n\nPlease exclude any information that is not relevant to the visa requirements. as well as any colloquialisms or slang.`;
+
+    return prompt
+}
 
 function getVisaRequirements(destination: string, userNationality: string) {
     const destLower = destination.toLowerCase()

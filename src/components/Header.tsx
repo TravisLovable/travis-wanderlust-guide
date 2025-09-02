@@ -53,7 +53,7 @@ export default function Header({
                     className="text-3xl text-foreground tracking-tight font-unbounded hover:text-foreground/80 transition-all duration-300 cursor-pointer interactive-scale group relative"
                 >
                     {/* <WordCraftComponent /> */}
-                    Travis
+                    Travis.
                     <div className="absolute -top-1 -right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <Sparkles className="w-4 h-4 text-blue-400 animate-sparkle" />
                     </div>

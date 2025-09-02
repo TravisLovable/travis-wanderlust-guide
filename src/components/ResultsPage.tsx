@@ -72,7 +72,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
     let transitionTimeout: NodeJS.Timeout;
 
     const handleScroll = () => {
-      if (!ticking && !isTransitioning) {
+      if (!ticking) {
         requestAnimationFrame(() => {
           const currentScrollY = window.scrollY;
           const scrollDelta = currentScrollY - lastScrollY;
@@ -85,32 +85,35 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             setScrollDirection(direction);
           }
 
-          // Collapse header when scrolling down more than 100px
-          if (currentScrollY > 100) {
-            if (direction === 'down' && scrollDelta > 20 && !isHeaderCollapsed) {
-              // Scrolling down significantly - collapse header
-              setIsTransitioning(true);
-              setIsHeaderCollapsed(true);
+          // Only process state changes if not currently transitioning
+          if (!isTransitioning) {
+            // Collapse header when scrolling down more than 100px
+            if (currentScrollY > 100) {
+              if (direction === 'down' && scrollDelta > 20 && !isHeaderCollapsed) {
+                // Scrolling down significantly - collapse header
+                setIsTransitioning(true);
+                setIsHeaderCollapsed(true);
 
-              // Prevent rapid state changes for 300ms
-              clearTimeout(transitionTimeout);
-              transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
-            } else if (direction === 'up' && scrollDelta < -20 && isHeaderCollapsed) {
-              // Scrolling up significantly - expand header
-              setIsTransitioning(true);
-              setIsHeaderCollapsed(false);
+                // Prevent rapid state changes for 200ms (reduced from 300ms)
+                clearTimeout(transitionTimeout);
+                transitionTimeout = setTimeout(() => setIsTransitioning(false), 200);
+              } else if (direction === 'up' && scrollDelta < -20 && isHeaderCollapsed) {
+                // Scrolling up significantly - expand header
+                setIsTransitioning(true);
+                setIsHeaderCollapsed(false);
 
-              // Prevent rapid state changes for 300ms
-              clearTimeout(transitionTimeout);
-              transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
-            }
-          } else {
-            // Always show full header when near top
-            if (isHeaderCollapsed) {
-              setIsTransitioning(true);
-              setIsHeaderCollapsed(false);
-              clearTimeout(transitionTimeout);
-              transitionTimeout = setTimeout(() => setIsTransitioning(false), 300);
+                // Prevent rapid state changes for 200ms (reduced from 300ms)
+                clearTimeout(transitionTimeout);
+                transitionTimeout = setTimeout(() => setIsTransitioning(false), 200);
+              }
+            } else {
+              // Always show full header when near top
+              if (isHeaderCollapsed) {
+                setIsTransitioning(true);
+                setIsHeaderCollapsed(false);
+                clearTimeout(transitionTimeout);
+                transitionTimeout = setTimeout(() => setIsTransitioning(false), 200);
+              }
             }
           }
 
@@ -350,7 +353,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
       )}
       {/* Header - Clean and Mobile-First with Scroll-Based Minimization */}
       <header className={`bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm sticky top-0 z-40 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'py-2 shadow-lg' : 'py-3 sm:py-4'
-        } ${isTransitioning ? 'pointer-events-none' : ''}`}>
+        }`}>
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
 
           {/* Scroll Indicator - Subtle visual feedback */}
@@ -719,25 +722,8 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
 
           {/* Row 4: Connectivity & Additional Info */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-            {/* Connectivity Info - Important for modern travelers */}
-            <div
-              className="order-1 playful-card flex flex-col animate-slide-in-up"
-              style={{ animationDelay: '1.0s' }}
-              onMouseEnter={() => setHoveredWidget('connectivity')}
-              onMouseLeave={() => setHoveredWidget(null)}
-            >
-              <div className="flex-1 flex flex-col relative">
-                <ConnectivityWidget />
-                {hoveredWidget === 'connectivity' && (
-                  <div className="absolute -top-2 -right-2">
-                    <Star className="w-4 h-4 text-indigo-400 animate-sparkle" />
-                  </div>
-                )}
-              </div>
-            </div>
+          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 sm:gap-6 items-stretch">
 
-            {/* Future expansion slot with playful placeholder */}
             <div
               className="order-2 playful-card flex flex-col animate-slide-in-up"
               style={{ animationDelay: '1.2s' }}
