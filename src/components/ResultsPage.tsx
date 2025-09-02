@@ -21,6 +21,7 @@ import {
 } from './widgets';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
+import { usePinnedLocations, PinnedLocation } from '@/hooks/usePinnedLocations';
 
 interface ResultsPageProps {
   placeDetails: SelectedPlace | null;
@@ -37,7 +38,8 @@ interface ResultsPageProps {
 const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPageProps) => {
   const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
 
-  const [pinnedDestinations, setPinnedDestinations] = useState([destination]);
+  // Use persistent pinned locations hook
+  const { pinnedLocations, pinLocation, isPinned, toSelectedPlace } = usePinnedLocations();
   const [newDestination, setNewDestination] = useState(destination);
   const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
   const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
@@ -141,12 +143,12 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
 
 
-  // Update pinned destinations when placeDetails changes
+  // Auto-pin current destination when page loads (if not already pinned)
   useEffect(() => {
-    if (!pinnedDestinations.includes(destination)) {
-      setPinnedDestinations(prev => [destination, ...prev.slice(0, 4)]); // Keep max 5 pinned destinations
+    if (placeDetails && !isPinned(placeDetails)) {
+      pinLocation(placeDetails);
     }
-  }, [placeDetails, destination]);
+  }, [placeDetails, isPinned, pinLocation]);
 
   // Update newDestination when placeDetails prop changes
   useEffect(() => {
@@ -302,13 +304,23 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   };
 
   const handlePinDestination = (dest: string) => {
-    if (!pinnedDestinations.includes(dest)) {
-      setPinnedDestinations([...pinnedDestinations, dest]);
-    }
+    // Create a SelectedPlace object from the destination string
+    const place: SelectedPlace = {
+      name: dest,
+      formatted_address: dest,
+      latitude: placeDetails?.latitude || 0,
+      longitude: placeDetails?.longitude || 0,
+      place_id: `manual_${Date.now()}_${dest.replace(/\s+/g, '_')}`
+    };
+    pinLocation(place);
   };
 
-  const removePinnedDestination = (dest: string) => {
-    setPinnedDestinations(pinnedDestinations.filter(d => d !== dest));
+  const handlePinnedLocationClick = (pinnedLocation: PinnedLocation) => {
+    const selectedPlace = toSelectedPlace(pinnedLocation);
+    onNewSearch(selectedPlace, {
+      checkin: dates.checkin,
+      checkout: dates.checkout
+    }, true); // Skip transition for quick navigation
   };
 
 
@@ -391,10 +403,17 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => handlePinDestination(destination)}
-                      className="text-blue-400 hover:text-blue-300 ml-1 sm:ml-2 interactive-scale hover:animate-wiggle"
+                      onClick={() => placeDetails && pinLocation(placeDetails)}
+                      className={`ml-1 sm:ml-2 interactive-scale hover:animate-wiggle ${
+                        placeDetails && isPinned(placeDetails) 
+                          ? 'text-yellow-400 hover:text-yellow-300' 
+                          : 'text-blue-400 hover:text-blue-300'
+                      }`}
+                      title={placeDetails && isPinned(placeDetails) ? 'Already pinned' : 'Pin this location'}
                     >
-                      <Pin className="w-4 h-4 sm:w-5 sm:h-5" />
+                      <Pin className={`w-4 h-4 sm:w-5 sm:h-5 ${
+                        placeDetails && isPinned(placeDetails) ? 'fill-current' : ''
+                      }`} />
                     </Button>
                     <Sparkles className="w-4 h-4 text-yellow-400 animate-sparkle ml-2" />
                   </h1>
@@ -450,28 +469,25 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* Pinned Destinations - Collapsible */}
           <div className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden mb-0' : 'opacity-100 h-auto mb-3 sm:mb-4'
             }`}>
-            {pinnedDestinations.length > 0 && (
+            {pinnedLocations.length > 0 && (
               <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
                 <span className="text-xs sm:text-sm text-muted-foreground font-medium">PINNED:</span>
                 <div className="flex flex-wrap gap-2">
-                  {pinnedDestinations.map((dest) => (
+                  {pinnedLocations.slice(0, 5).map((location) => (
                     <button
-                      key={dest}
-                      onClick={() => setNewDestination(dest)}
+                      key={location.id}
+                      onClick={() => handlePinnedLocationClick(location)}
                       className="group flex items-center space-x-2 px-2 sm:px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-xs sm:text-sm text-white hover:bg-blue-700/40 transition-colors shadow-sm"
                     >
-                      <span className="truncate max-w-[120px] sm:max-w-[150px]">{dest}</span>
-                      <button
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          removePinnedDestination(dest);
-                        }}
-                        className="w-3 h-3 sm:w-4 sm:h-4 rounded-full bg-white/20 hover:bg-red-500 flex items-center justify-center text-xs opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0"
-                      >
-                        ×
-                      </button>
+                      <span className="truncate max-w-[120px] sm:max-w-[150px]">{location.name}</span>
+                      <span className="text-xs opacity-60">📍</span>
                     </button>
                   ))}
+                  {pinnedLocations.length > 5 && (
+                    <span className="text-xs text-muted-foreground px-2 py-1">
+                      +{pinnedLocations.length - 5} more
+                    </span>
+                  )}
                 </div>
 
                 {/* Regional Suggestions - Compact on mobile */}

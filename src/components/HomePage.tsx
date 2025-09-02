@@ -11,6 +11,7 @@ import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { User as SupabaseUser, Session } from '@supabase/supabase-js';
+import { usePinnedLocations } from '@/hooks/usePinnedLocations';
 import OnboardingModal from './OnboardingModal';
 import PrivacyModal from './PrivacyModal';
 import TermsModal from './TermsModal';
@@ -59,6 +60,9 @@ const HomePage = ({
   const [isOnboardingModalOpen, setIsOnboardingModalOpen] = useState(false);
 
   const [isSearchDisabled, setIsSearchDisabled] = useState(true);
+
+  // Pinned locations hook
+  const { pinnedLocations, toSelectedPlace } = usePinnedLocations();
 
   // Refs for focus management
   const destinationInputRef = useRef<HTMLInputElement>(null);
@@ -523,6 +527,17 @@ const HomePage = ({
     handleDestinationComplete();
   };
 
+  const handlePinnedLocationSelect = (locationId: string) => {
+    const location = pinnedLocations.find(p => p.id === locationId);
+    if (location) {
+      const selectedPlace = toSelectedPlace(location);
+      setDestination(selectedPlace.formatted_address);
+      setSelectedPlace(selectedPlace);
+      // Trigger autofocus to next input after destination is selected
+      handleDestinationComplete();
+    }
+  };
+
 
   return (
     <div className="min-h-screen bg-background flex flex-col relative overflow-hidden">
@@ -792,6 +807,33 @@ const HomePage = ({
               </div>
             </div>
           </div>
+
+          {/* Pinned Locations Section */}
+          {pinnedLocations.length > 0 && (
+            <div className="text-center animate-slide-in-up mb-6" style={{ animationDelay: '0.7s' }}>
+              <div className="flex items-center justify-center space-x-2 mb-3">
+                <Pin className="w-4 h-4 text-blue-400" />
+                <span className="text-sm text-muted-foreground font-medium">Your Pinned Locations</span>
+              </div>
+              <div className="flex flex-wrap justify-center gap-2 max-w-2xl mx-auto">
+                {pinnedLocations.slice(0, 6).map((location) => (
+                  <button
+                    key={location.id}
+                    onClick={() => handlePinnedLocationSelect(location.id)}
+                    className="group flex items-center space-x-2 px-3 py-2 bg-white/10 hover:bg-white/20 border border-white/20 hover:border-white/40 rounded-full text-sm text-white transition-all duration-300 interactive-scale"
+                  >
+                    <MapPin className="w-3 h-3 text-blue-400" />
+                    <span className="truncate max-w-[150px]">{location.name}</span>
+                  </button>
+                ))}
+                {pinnedLocations.length > 6 && (
+                  <span className="text-xs text-muted-foreground/60 px-3 py-2">
+                    +{pinnedLocations.length - 6} more in header
+                  </span>
+                )}
+              </div>
+            </div>
+          )}
 
           {/* Enhanced Inspirational Link */}
           <div className="text-center animate-slide-in-up" style={{ animationDelay: '0.8s' }}>
