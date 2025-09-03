@@ -404,16 +404,14 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                       variant="ghost"
                       size="icon"
                       onClick={() => placeDetails && pinLocation(placeDetails)}
-                      className={`ml-1 sm:ml-2 interactive-scale hover:animate-wiggle ${
-                        placeDetails && isPinned(placeDetails) 
-                          ? 'text-yellow-400 hover:text-yellow-300' 
+                      className={`ml-1 sm:ml-2 interactive-scale hover:animate-wiggle ${placeDetails && isPinned(placeDetails)
+                          ? 'text-yellow-400 hover:text-yellow-300'
                           : 'text-blue-400 hover:text-blue-300'
-                      }`}
+                        }`}
                       title={placeDetails && isPinned(placeDetails) ? 'Already pinned' : 'Pin this location'}
                     >
-                      <Pin className={`w-4 h-4 sm:w-5 sm:h-5 ${
-                        placeDetails && isPinned(placeDetails) ? 'fill-current' : ''
-                      }`} />
+                      <Pin className={`w-4 h-4 sm:w-5 sm:h-5 ${placeDetails && isPinned(placeDetails) ? 'fill-current' : ''
+                        }`} />
                     </Button>
                     <Sparkles className="w-4 h-4 text-yellow-400 animate-sparkle ml-2" />
                   </h1>
