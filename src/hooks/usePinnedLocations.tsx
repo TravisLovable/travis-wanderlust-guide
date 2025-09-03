@@ -18,6 +18,7 @@ const MAX_PINNED_LOCATIONS = 10;
 
 export function usePinnedLocations() {
     const [pinnedLocations, setPinnedLocations] = useState<PinnedLocation[]>([]);
+    const [isInitialized, setIsInitialized] = useState(false);
 
     // Load pinned locations from localStorage on mount
     useEffect(() => {
@@ -27,19 +28,23 @@ export function usePinnedLocations() {
                 const parsed = JSON.parse(stored);
                 setPinnedLocations(parsed);
             }
+            setIsInitialized(true);
         } catch (error) {
             console.error('Failed to load pinned locations:', error);
+            setIsInitialized(true);
         }
     }, []);
 
-    // Save to localStorage whenever pinnedLocations changes
+    // Save to localStorage whenever pinnedLocations changes (but only after initial load)
     useEffect(() => {
+        if (!isInitialized) return; // Don't save until we've loaded from storage
+
         try {
             localStorage.setItem(STORAGE_KEY, JSON.stringify(pinnedLocations));
         } catch (error) {
             console.error('Failed to save pinned locations:', error);
         }
-    }, [pinnedLocations]);
+    }, [pinnedLocations, isInitialized]);
 
     const pinLocation = useCallback((place: SelectedPlace) => {
         const newPinned: PinnedLocation = {

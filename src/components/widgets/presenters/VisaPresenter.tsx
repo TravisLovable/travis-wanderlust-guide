@@ -3,6 +3,22 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Shield, Database, Bot, ExternalLink } from 'lucide-react';
 
+// Add CSS for smooth cursor animation
+const cursorStyles = `
+  @keyframes blink {
+    0%, 50% { opacity: 1; }
+    51%, 100% { opacity: 0; }
+  }
+`;
+
+// Inject styles into head if not already present
+if (typeof document !== 'undefined' && !document.getElementById('visa-cursor-styles')) {
+    const styleElement = document.createElement('style');
+    styleElement.id = 'visa-cursor-styles';
+    styleElement.textContent = cursorStyles;
+    document.head.appendChild(styleElement);
+}
+
 interface VisaData {
     visaRequired: boolean | string;
     maxStay?: string;
@@ -70,7 +86,7 @@ const renderMarkdown = (text: string) => {
     return rendered;
 };
 
-const VisaPresenter: React.FC<VisaPresenterProps> = ({ data }) => {
+const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
     const {
         visaRequired,
         maxStay,
@@ -118,7 +134,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = ({ data }) => {
     // Show streaming content
     if (isStreaming || streamingContent) {
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 flex flex-col max-h-[400px]">
+            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 flex flex-col h-[400px]">
                 <CardHeader className="pb-3 flex-shrink-0">
                     <CardTitle className="flex items-center text-lg font-semibold">
                         <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
@@ -131,27 +147,32 @@ const VisaPresenter: React.FC<VisaPresenterProps> = ({ data }) => {
                         </div>
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col overflow-hidden">
-                    {/* Scrollable content area */}
-                    <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600">
+                <CardContent className="flex-1 flex flex-col overflow-hidden min-h-0">
+                    {/* Scrollable content area with fixed height to prevent layout shifts */}
+                    <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 min-h-0">
                         <div className="prose prose-sm prose-invert max-w-none">
                             <div
-                                className="text-sm leading-snug text-gray-200"
+                                className="text-sm leading-snug text-gray-200 whitespace-pre-wrap"
                                 dangerouslySetInnerHTML={{
                                     __html: renderMarkdown(streamingContent || '')
                                 }}
+                                style={{ willChange: 'contents' }}
                             />
                             {isStreaming && (
-                                <span className="inline-block w-2 h-4 bg-blue-400 animate-pulse ml-1" />
+                                <span className="inline-block w-2 h-4 bg-blue-400 ml-1"
+                                    style={{
+                                        animation: 'blink 1s infinite',
+                                        willChange: 'opacity'
+                                    }} />
                             )}
                         </div>
                     </div>
 
-                    {/* Fixed bottom section */}
-                    <div className="flex-shrink-0 pt-2 space-y-2">
+                    {/* Fixed bottom section with consistent height */}
+                    <div className="flex-shrink-0 pt-2 space-y-2 border-t border-gray-700 mt-2">
                         {/* Data source citation */}
-                        {(dataSource || lastUpdated) && (
-                            <div className="pt-2 border-t border-gray-700">
+                        <div className="min-h-[20px]">
+                            {(dataSource || lastUpdated) && (
                                 <div className="flex items-center justify-between text-xs text-muted-foreground">
                                     <div className="flex items-center space-x-1">
                                         {hasDbData ? (
@@ -170,8 +191,8 @@ const VisaPresenter: React.FC<VisaPresenterProps> = ({ data }) => {
                                         <span>Updated: {new Date(lastUpdated).toLocaleDateString()}</span>
                                     )}
                                 </div>
-                            </div>
-                        )}
+                            )}
+                        </div>
 
                         {/* Fixed bottom button */}
                         <Button
@@ -269,6 +290,8 @@ const VisaPresenter: React.FC<VisaPresenterProps> = ({ data }) => {
             </CardContent>
         </Card>
     );
-};
+});
+
+VisaPresenter.displayName = 'VisaPresenter';
 
 export default VisaPresenter;

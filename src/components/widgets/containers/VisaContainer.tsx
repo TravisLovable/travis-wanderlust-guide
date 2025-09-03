@@ -136,13 +136,16 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
 
                                     if (data.type === 'chunk') {
                                         accumulatedContent += data.content;
-                                        setVisaData(prev => ({
-                                            ...prev,
-                                            streamingContent: accumulatedContent,
-                                            dataSource: data.dataSource,
-                                            lastUpdated: data.lastUpdated,
-                                            hasDbData: data.hasDbData
-                                        }));
+                                        // Use requestAnimationFrame to batch updates and reduce flickering
+                                        requestAnimationFrame(() => {
+                                            setVisaData(prev => ({
+                                                ...prev,
+                                                streamingContent: accumulatedContent,
+                                                dataSource: data.dataSource,
+                                                lastUpdated: data.lastUpdated,
+                                                hasDbData: data.hasDbData
+                                            }));
+                                        });
                                     } else if (data.type === 'complete') {
                                         setVisaData(prev => ({
                                             ...prev,

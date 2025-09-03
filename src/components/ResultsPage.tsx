@@ -39,7 +39,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
 
   // Use persistent pinned locations hook
-  const { pinnedLocations, pinLocation, isPinned, toSelectedPlace } = usePinnedLocations();
+  const { pinnedLocations, pinLocation, unpinLocation, isPinned, toSelectedPlace } = usePinnedLocations();
   const [newDestination, setNewDestination] = useState(destination);
   const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
   const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
@@ -143,12 +143,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
 
 
-  // Auto-pin current destination when page loads (if not already pinned)
-  useEffect(() => {
-    if (placeDetails && !isPinned(placeDetails)) {
-      pinLocation(placeDetails);
-    }
-  }, [placeDetails, isPinned, pinLocation]);
+  // Note: Removed auto-pinning behavior - users should manually pin locations they want to save
 
   // Update newDestination when placeDetails prop changes
   useEffect(() => {
@@ -403,12 +398,27 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     <Button
                       variant="ghost"
                       size="icon"
-                      onClick={() => placeDetails && pinLocation(placeDetails)}
+                      onClick={() => {
+                        if (placeDetails) {
+                          if (isPinned(placeDetails)) {
+                            // Find the pinned location and unpin it
+                            const pinnedLocation = pinnedLocations.find(p =>
+                              p.formatted_address === placeDetails.formatted_address ||
+                              (p.place_id && placeDetails.place_id && p.place_id === placeDetails.place_id)
+                            );
+                            if (pinnedLocation) {
+                              unpinLocation(pinnedLocation.id);
+                            }
+                          } else {
+                            pinLocation(placeDetails);
+                          }
+                        }
+                      }}
                       className={`ml-1 sm:ml-2 interactive-scale hover:animate-wiggle ${placeDetails && isPinned(placeDetails)
-                          ? 'text-yellow-400 hover:text-yellow-300'
-                          : 'text-blue-400 hover:text-blue-300'
+                        ? 'text-yellow-400 hover:text-yellow-300'
+                        : 'text-blue-400 hover:text-blue-300'
                         }`}
-                      title={placeDetails && isPinned(placeDetails) ? 'Already pinned' : 'Pin this location'}
+                      title={placeDetails && isPinned(placeDetails) ? 'Unpin this location' : 'Pin this location'}
                     >
                       <Pin className={`w-4 h-4 sm:w-5 sm:h-5 ${placeDetails && isPinned(placeDetails) ? 'fill-current' : ''
                         }`} />

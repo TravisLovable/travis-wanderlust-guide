@@ -1,4 +1,4 @@
-import { Sun, Moon, Sparkles, Pin, MapPin } from 'lucide-react';
+import { Sun, Moon, Sparkles, Pin, MapPin, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -33,7 +33,7 @@ export default function Header({
     onProfileUpdate
 }: HeaderProps) {
     const navigate = useNavigate();
-    const { pinnedLocations, toSelectedPlace, isAuthenticated } = usePinnedLocations();
+    const { pinnedLocations, toSelectedPlace, unpinLocation } = usePinnedLocations();
 
     const handlePinnedLocationClick = (locationId: string) => {
         const location = pinnedLocations.find(p => p.id === locationId);
@@ -140,22 +140,38 @@ export default function Header({
                                             {pinnedLocations.slice(0, 8).map((location) => (
                                                 <DropdownMenuItem
                                                     key={location.id}
-                                                    onClick={() => handlePinnedLocationClick(location.id)}
-                                                    className="flex items-center space-x-3 p-3 cursor-pointer hover:animate-slide-in-left transition-all duration-200"
+                                                    className="flex items-center space-x-3 p-3 group hover:animate-slide-in-left transition-all duration-200"
                                                 >
-                                                    {getCountryFlag(location) ? (
-                                                        <span className="text-lg hover:animate-wiggle transition-all duration-300 flex-shrink-0">
-                                                            {getCountryFlag(location)}
-                                                        </span>
-                                                    ) : (
-                                                        <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                                                    )}
-                                                    <div className="flex-1 min-w-0">
-                                                        <div className="font-medium truncate">{location.name}</div>
-                                                        <div className="text-xs text-muted-foreground truncate">
-                                                            {location.formatted_address}
+                                                    <button
+                                                        onClick={() => handlePinnedLocationClick(location.id)}
+                                                        className="flex items-center space-x-3 flex-1 min-w-0 text-left"
+                                                    >
+                                                        {getCountryFlag(location) ? (
+                                                            <span className="text-lg hover:animate-wiggle transition-all duration-300 flex-shrink-0">
+                                                                {getCountryFlag(location)}
+                                                            </span>
+                                                        ) : (
+                                                            <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
+                                                        )}
+                                                        <div className="flex-1 min-w-0">
+                                                            <div className="font-medium truncate">{location.name}</div>
+                                                            <div className="text-xs text-muted-foreground truncate">
+                                                                {location.formatted_address}
+                                                            </div>
                                                         </div>
-                                                    </div>
+                                                    </button>
+                                                    <Button
+                                                        variant="ghost"
+                                                        size="sm"
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            unpinLocation(location.id);
+                                                        }}
+                                                        className="opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-destructive flex-shrink-0"
+                                                        title="Remove pin"
+                                                    >
+                                                        <X className="w-4 h-4" />
+                                                    </Button>
                                                 </DropdownMenuItem>
                                             ))}
                                             {pinnedLocations.length > 8 && (

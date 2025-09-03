@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe, Sparkles, Plane, Heart } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin, User, Sun, Moon, Globe, Sparkles, Plane, Heart, Pin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
