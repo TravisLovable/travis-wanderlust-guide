@@ -39,6 +39,7 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
             if (!placeDetails) {
                 console.log('❌ No place details provided');
                 setVisaData({
+                    visaRequired: 'unknown',
                     isLoading: false,
                     isStreaming: false,
                     streamingContent: '## No Destination Selected\n\nPlease select a destination to view visa requirements.',
@@ -73,6 +74,7 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
                 const fallbackContent = formatFallbackAsStreaming(fallbackData);
 
                 setVisaData({
+                    visaRequired: 'unknown',
                     isLoading: false,
                     isStreaming: false,
                     streamingContent: fallbackContent,
@@ -190,6 +192,7 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
                 const fallbackContent = formatFallbackAsStreaming(fallbackData);
 
                 setVisaData({
+                    visaRequired: 'unknown',
                     isStreaming: false,
                     isLoading: false,
                     streamingContent: fallbackContent,
