@@ -104,7 +104,7 @@ const HolidayWidget: React.FC<HolidayWidgetProps> = ({
                             </>
                         ) : (
                             <div className="p-2 bg-gray-500/10 border border-gray-500/20 rounded-xl">
-                                <div className="text-gray-400 text-sm">No holidays during your travel dates</div>
+                                <div className="text-muted-foreground text-sm">No holidays during your travel dates</div>
                                 <div className="text-xs text-muted-foreground">
                                     {format(new Date(dates.checkin), 'MMM dd, yyyy')} - {format(new Date(dates.checkout), 'MMM dd, yyyy')}
                                 </div>

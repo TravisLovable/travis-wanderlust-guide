@@ -155,7 +155,7 @@ async function streamFallbackResponse(destination: string, userNationality: stri
     const fallbackText = dbData ?
         `Based on our records, here's what we know about **visa requirements** for **${userNationality} passport holders** traveling to **${destination}**:\n\n**Visa Required:** ${dbData.visaRequired ? 'Yes' : 'No'}\n**Maximum Stay:** ${dbData.maxStay}\n**Passport Validity:** ${dbData.passportValidity}\n**Yellow Fever:** ${dbData.yellowFever}\n\n**Source:** ${dbData.dataSource}\n**Last Updated:** ${new Date(dbData.lastUpdated).toDateString()}\n\nFor the most current information, please verify with official government sources before traveling.` :
         `Here's general information about **visa requirements** for **${userNationality} passport holders** traveling to **${destination}**:\n\nI don't have specific data for this destination in our database. **Visa requirements** can vary significantly by destination and change frequently.\n\n**Important:** Please check with the **embassy** or **consulate** of your destination country for the most accurate and up-to-date information.\n\n**Recommended verification sources:**\n- U.S. State Department travel.state.gov\n- Destination country's embassy website\n- Official government travel advisories`
-    
+
     const readable = new ReadableStream({
         async start(controller) {
             try {
@@ -211,11 +211,30 @@ async function streamVisaResponse(destination: string, userNationality: string, 
             messages: [
                 {
                     role: 'system',
-                    content: `You are a travel visa expert. Provide accurate, helpful visa requirement information. 
-                    Always cite official sources and include disclaimers about verifying with embassies.
-                    Format your response in a conversational but informative way.
-                    Highlight important terms by wrapping them in **bold** markdown.
-                    End with suggestions for official sources to verify information.`
+                    content: `You are a travel visa expert. Provide visa requirements in a STRICT JSON-like format.
+
+CRITICAL: Your response must follow this EXACT format with no variations:
+
+VISA_STATUS: [REQUIRED/NO_VISA_REQUIRED]
+MAX_STAY: [duration or "varies"]
+PASSPORT_VALIDITY: [requirement]
+HEALTH_REQUIREMENTS: [requirement or "none"]
+NOTES: [brief important note]
+
+Examples:
+VISA_STATUS: NO_VISA_REQUIRED
+MAX_STAY: 90 days
+PASSPORT_VALIDITY: 6 months beyond stay
+HEALTH_REQUIREMENTS: none
+NOTES: For US passport holders
+
+VISA_STATUS: REQUIRED
+MAX_STAY: varies by visa type
+PASSPORT_VALIDITY: 6 months minimum
+HEALTH_REQUIREMENTS: Yellow fever certificate
+NOTES: Apply at embassy or consulate
+
+Do not include any other text, explanations, or formatting. Only provide the 5 lines above.`
                 },
                 {
                     role: 'user',
@@ -280,18 +299,7 @@ function createVisaPrompt(destination: string, userNationality: string, dbData: 
         prompt += `\n\nI don't have specific data for this destination. Please provide general visa requirement information based on your knowledge, but emphasize the need to verify with official sources.`
     }
 
-    prompt += `\n\nPlease include:
-    - Whether a visa is required
-    - Maximum stay duration
-    - Passport validity requirements
-    - Any special requirements (yellow fever, etc.)
-    - Processing time and costs if applicable
-    - Important exceptions or notes
-    - Where to get official verification
-    
-    Format your response to be helpful for travelers planning their trip.`
-
-    prompt += `\n\nPlease exclude any information that is not relevant to the visa requirements. as well as any colloquialisms or slang.`;
+    prompt += `\n\nRespond with ONLY the 5 required lines in the exact format specified above. No additional text, explanations, or formatting.`;
 
     return prompt
 }

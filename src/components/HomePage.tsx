@@ -477,8 +477,7 @@ const HomePage = ({
       toast({
         title: 'Please fill in all fields',
         description: 'Location and Departure Date are required',
-        variant: 'destructive',
-        className: 'bg-black text-white'
+        variant: 'destructive'
       });
     }
   };
@@ -640,7 +639,7 @@ const HomePage = ({
               <div className="flex items-center gap-2 search-bar-main">
                 {/* Destination Input */}
                 <div className="flex-1 relative group">
-                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-white transition-all duration-300 z-10 group-hover:animate-bounce-gentle" />
+                  <MapPin className="absolute left-4 top-1/2 transform -translate-y-1/2 text-muted-foreground w-5 h-5 group-hover:text-foreground transition-all duration-300 z-10 group-hover:animate-bounce-gentle" />
                   <Input
                     ref={destinationInputRef}
                     type="text"
@@ -713,7 +712,7 @@ const HomePage = ({
                           className="w-full text-left px-4 py-3 suggestion-hover transition-colors first:rounded-t-xl last:rounded-b-xl"
                         >
                           <div className="flex items-center space-x-3">
-                            <MapPin className="w-4 h-4 text-gray-400 flex-shrink-0" />
+                            <MapPin className="w-4 h-4 text-muted-foreground flex-shrink-0" />
                             <div className="flex-1 min-w-0">
                               <div className="font-medium text-foreground truncate">
                                 {suggestion}
@@ -737,7 +736,7 @@ const HomePage = ({
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span>{checkinDate ? format(checkinDate, 'MMM dd') : 'Depart'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
+                        <Calendar className="w-4 h-4 text-muted-foreground ml-2" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
@@ -763,7 +762,7 @@ const HomePage = ({
                         onClick={(e) => e.stopPropagation()}
                       >
                         <span>{checkoutDate ? format(checkoutDate, 'MMM dd') : 'Return'}</span>
-                        <Calendar className="w-4 h-4 text-white/70 ml-2" />
+                        <Calendar className="w-4 h-4 text-muted-foreground ml-2" />
                       </Button>
                     </PopoverTrigger>
                     <PopoverContent className="w-[300px] p-0 bg-card border-border fixed" align="start" side="bottom" sideOffset={8}>
@@ -784,7 +783,7 @@ const HomePage = ({
                 {/* Right Arrow Icon with Enhanced Playfulness */}
                 <button
                   ref={searchButtonRef}
-                  className="h-12 px-6 flex items-center justify-center text-white/60 group-hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:animate-wiggle focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded"
+                  className="h-12 px-6 flex items-center justify-center text-muted-foreground group-hover:text-foreground transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed hover:animate-wiggle focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-50 rounded"
                   disabled={isSearchDisabled}
                   onClick={handleSearch}
                   onKeyPress={handleKeyPress}
@@ -839,7 +838,7 @@ const HomePage = ({
           <div className="text-center animate-slide-in-up" style={{ animationDelay: '0.8s' }}>
             <button
               onClick={() => setIsInspirationModalOpen(true)}
-              className="text-sm text-muted-foreground/80 hover:text-white transition-all duration-300 underline-offset-4 hover:underline group flex items-center justify-center space-x-2 mx-auto interactive-scale"
+              className="text-sm text-muted-foreground/80 hover:text-foreground transition-all duration-300 underline-offset-4 hover:underline group flex items-center justify-center space-x-2 mx-auto interactive-scale"
             >
               <Sparkles className="w-4 h-4 group-hover:animate-sparkle" />
               <span>Not sure where to go? Get inspired.</span>

@@ -1,7 +1,8 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Shield, Database, Bot, ExternalLink } from 'lucide-react';
+import { Badge } from '@/components/ui/badge';
+import { Shield, Database, Bot, ExternalLink, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
 
 // Add CSS for smooth cursor animation
 const cursorStyles = `
@@ -38,6 +39,55 @@ interface VisaPresenterProps {
     data: VisaData;
 }
 
+// Helper function to parse AI response and extract structured data
+const parseAIResponse = (content: string) => {
+    const result = {
+        visaStatus: '',
+        maxStay: '',
+        passportValidity: '',
+        healthRequirements: '',
+        notes: '',
+        isVisaFree: false
+    };
+
+    console.log('🔍 Parsing AI content:', content.substring(0, 300));
+
+    // Parse the new consistent format: VISA_STATUS: value
+    const visaStatusMatch = content.match(/VISA_STATUS:\s*(.+)/);
+    if (visaStatusMatch) {
+        result.visaStatus = visaStatusMatch[1].trim();
+        result.isVisaFree = result.visaStatus === 'NO_VISA_REQUIRED';
+        console.log('✅ Parsed visa status:', result.visaStatus, 'isVisaFree:', result.isVisaFree);
+    }
+
+    const maxStayMatch = content.match(/MAX_STAY:\s*(.+)/);
+    if (maxStayMatch) {
+        result.maxStay = maxStayMatch[1].trim();
+        console.log('✅ Parsed max stay:', result.maxStay);
+    }
+
+    const passportMatch = content.match(/PASSPORT_VALIDITY:\s*(.+)/);
+    if (passportMatch) {
+        result.passportValidity = passportMatch[1].trim();
+        console.log('✅ Parsed passport:', result.passportValidity);
+    }
+
+    const healthMatch = content.match(/HEALTH_REQUIREMENTS:\s*(.+)/);
+    if (healthMatch) {
+        result.healthRequirements = healthMatch[1].trim();
+        console.log('✅ Parsed health:', result.healthRequirements);
+    }
+
+    const notesMatch = content.match(/NOTES:\s*(.+)/);
+    if (notesMatch) {
+        result.notes = notesMatch[1].trim();
+        console.log('✅ Parsed notes:', result.notes);
+    }
+
+    console.log('🎯 Final parsed result:', result);
+    return result;
+};
+
 // Helper function to render markdown with consistent highlighting
 const renderMarkdown = (text: string) => {
     let rendered = text;
@@ -64,14 +114,20 @@ const renderMarkdown = (text: string) => {
         return `<span class="font-semibold text-blue-400 bg-blue-400/10 px-1 rounded">${content}</span>`;
     });
 
+    // Convert [link text](url) to clickable links
+    rendered = rendered.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">$1</a>');
+
+    // Convert plain URLs to clickable links (but avoid double-converting already processed links)
+    rendered = rendered.replace(/(^|[^"'>])(https?:\/\/[^\s<]+)/g, '$1<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-400 hover:text-blue-300 underline underline-offset-2 transition-colors">$2</a>');
+
     // Convert *italic* to subtle emphasis
-    rendered = rendered.replace(/\*(.*?)\*/g, '<em class="text-gray-300 italic">$1</em>');
+    rendered = rendered.replace(/\*(.*?)\*/g, '<em class="text-muted-foreground italic">$1</em>');
 
     // Convert ### Headers
-    rendered = rendered.replace(/^### (.*$)/gim, '<h3 class="text-base font-semibold text-white mt-3 mb-1">$1</h3>');
+    rendered = rendered.replace(/^### (.*$)/gim, '<h3 class="text-base font-semibold text-foreground mt-3 mb-1">$1</h3>');
 
     // Convert ## Headers  
-    rendered = rendered.replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-white mt-3 mb-1">$1</h2>');
+    rendered = rendered.replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-foreground mt-3 mb-1">$1</h2>');
 
     // Convert bullet points
     rendered = rendered.replace(/^- (.*$)/gim, '<div class="flex items-start space-x-2 my-1"><span class="text-blue-400 mt-0.5 text-xs">•</span><span class="text-sm">$1</span></div>');
@@ -107,24 +163,17 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
     // Show loading state
     if (isLoading) {
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 h-64 flex flex-col">
-                <CardHeader className="pb-3 flex-shrink-0">
-                    <CardTitle className="flex items-center text-lg font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
-                            <Shield className="w-4 h-4 text-white" />
-                        </div>
+            <Card className="h-full">
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-lg">
+                        <Shield className="w-5 h-5 mr-2 text-red-500" />
                         Visa & Entry
-                        <div className="ml-auto">
-                            <div className="w-4 h-4 border-2 border-red-400 border-t-transparent rounded-full animate-spin" />
-                        </div>
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 flex items-center justify-center">
-                    <div className="text-center text-sm text-muted-foreground">
-                        <div className="flex items-center justify-center space-x-2 mb-2">
-                            <Bot className="w-4 h-4 animate-pulse" />
-                            <span>Analyzing visa requirements...</span>
-                        </div>
+                <CardContent>
+                    <div className="flex items-center justify-center py-8">
+                        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
+                        <span className="ml-2 text-sm text-muted-foreground">Checking requirements...</span>
                     </div>
                 </CardContent>
             </Card>
@@ -133,13 +182,22 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
 
     // Show streaming content
     if (isStreaming || streamingContent) {
+        // Parse AI response to extract structured data
+        const parsedData = streamingContent ? parseAIResponse(streamingContent) : null;
+
+        // Debug logging
+        console.log('🔍 VisaPresenter Debug:', {
+            streamingContent: streamingContent?.substring(0, 200) + '...',
+            parsedData,
+            isStreaming,
+            hasStreamingContent: !!streamingContent
+        });
+
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 flex flex-col h-[400px]">
-                <CardHeader className="pb-3 flex-shrink-0">
-                    <CardTitle className="flex items-center text-lg font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
-                            <Shield className="w-4 h-4 text-white" />
-                        </div>
+            <Card className="h-full">
+                <CardHeader className="pb-3">
+                    <CardTitle className="flex items-center text-lg">
+                        <Shield className="w-5 h-5 mr-2 text-red-500" />
                         Visa & Entry
                         <div className="ml-auto flex items-center space-x-1">
                             {hasDbData && <Database className="w-3 h-3 text-green-400" />}
@@ -147,114 +205,72 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         </div>
                     </CardTitle>
                 </CardHeader>
-                <CardContent className="flex-1 flex flex-col overflow-hidden min-h-0">
-                    {/* Scrollable content area with fixed height to prevent layout shifts */}
-                    <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600 min-h-0">
-                        <div className="prose prose-sm prose-invert max-w-none">
-                            <div
-                                className="text-sm leading-snug text-gray-200 whitespace-pre-wrap"
-                                dangerouslySetInnerHTML={{
-                                    __html: renderMarkdown(streamingContent || '')
-                                }}
-                                style={{ willChange: 'contents' }}
-                            />
-                            {isStreaming && (
-                                <span className="inline-block w-2 h-4 bg-blue-400 ml-1"
-                                    style={{
-                                        animation: 'blink 1s infinite',
-                                        willChange: 'opacity'
-                                    }} />
-                            )}
-                        </div>
+                <CardContent className="space-y-4">
+                    {/* Main visa status with icon */}
+                    <div className="flex items-center space-x-2">
+                        {parsedData?.isVisaFree ? (
+                            <>
+                                <CheckCircle className="w-5 h-5 text-green-500" />
+                                <span className="font-medium">Visa-Free Entry</span>
+                                <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                    No Visa Required
+                                </Badge>
+                            </>
+                        ) : (
+                            <>
+                                <XCircle className="w-5 h-5 text-red-500" />
+                                <span className="font-medium">Visa Required</span>
+                                <Badge variant="secondary" className="bg-red-100 text-red-800">
+                                    Apply Required
+                                </Badge>
+                            </>
+                        )}
                     </div>
 
-                    {/* Fixed bottom section with consistent height */}
-                    <div className="flex-shrink-0 pt-2 space-y-2 border-t border-gray-700 mt-2">
-                        {/* Data source citation */}
-                        <div className="min-h-[20px]">
-                            {(dataSource || lastUpdated) && (
-                                <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                    <div className="flex items-center space-x-1">
-                                        {hasDbData ? (
-                                            <>
-                                                <Database className="w-3 h-3" />
-                                                <span>Source: {dataSource}</span>
-                                            </>
-                                        ) : (
-                                            <>
-                                                <Bot className="w-3 h-3" />
-                                                <span>AI Analysis</span>
-                                            </>
-                                        )}
-                                    </div>
-                                    {lastUpdated && (
-                                        <span>Updated: {new Date(lastUpdated).toLocaleDateString()}</span>
-                                    )}
-                                </div>
-                            )}
-                        </div>
+                    {/* Key requirements with icons */}
+                    <div className="space-y-3">
+                        {(parsedData?.maxStay || maxStay) && (
+                            <div className="flex items-center space-x-2 text-sm">
+                                <Clock className="w-4 h-4 text-blue-500" />
+                                <span>Max stay: {parsedData?.maxStay || maxStay}</span>
+                            </div>
+                        )}
 
-                        {/* Fixed bottom button */}
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full text-xs"
-                            onClick={() => window.open('https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages.html', '_blank')}
-                        >
-                            <ExternalLink className="w-3 h-3 mr-1" />
-                            Verify with Official Sources
-                        </Button>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
+                        {(parsedData?.passportValidity || passportValidity) && (
+                            <div className="flex items-center space-x-2 text-sm">
+                                <Shield className="w-4 h-4 text-blue-500" />
+                                <span>Passport: {parsedData?.passportValidity || passportValidity}</span>
+                            </div>
+                        )}
 
-    // Show structured data (legacy format)
-    return (
-        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 h-64 flex flex-col">
-            <CardHeader className="pb-3 flex-shrink-0">
-                <CardTitle className="flex items-center text-lg font-semibold">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-red-500 to-pink-600 flex items-center justify-center mr-2">
-                        <Shield className="w-4 h-4 text-white" />
+                        {(parsedData?.healthRequirements || yellowFever) && (
+                            <div className="flex items-center space-x-2 text-sm">
+                                <AlertCircle className="w-4 h-4 text-yellow-500" />
+                                <span>Health: {parsedData?.healthRequirements || yellowFever}</span>
+                            </div>
+                        )}
                     </div>
-                    Visa & Entry Overview
-                    <div className="ml-auto flex items-center space-x-1">
-                        {hasDbData && <Database className="w-3 h-3 text-green-400" />}
-                        <Shield className="w-3 h-3 text-red-400 group-hover:scale-110 transition-transform" />
-                    </div>
-                </CardTitle>
-            </CardHeader>
-            <CardContent className="flex-1 flex flex-col overflow-hidden">
-                {/* Scrollable content area */}
-                <div className="flex-1 overflow-y-auto pr-1 space-y-2 scrollbar-thin scrollbar-track-gray-800 scrollbar-thumb-gray-600">
-                    {error && (
-                        <div className="p-2 bg-red-500/10 border-red-500/20 border rounded-lg">
-                            <div className="font-medium text-sm text-red-400">⚠ {error}</div>
+
+                    {/* Additional notes */}
+                    {(parsedData?.notes || notes) && (
+                        <div className="pt-2 border-t border-border">
+                            <p className="text-xs text-muted-foreground text-red-600">{parsedData?.notes || notes}</p>
                         </div>
                     )}
 
-                    <div className={`p-2 ${isVisaFree ? 'bg-green-500/10 border-green-500/20' : 'bg-orange-500/10 border-orange-500/20'} border rounded-lg`}>
-                        <div className={`font-medium text-sm ${isVisaFree ? 'text-green-700' : 'text-orange-700'}`}>
-                            {isVisaFree ? '✓ Visa-free entry' : '⚠ Check visa requirements'}
-                        </div>
-                        <div className="text-xs text-muted-foreground">{notes}</div>
-                    </div>
-
-                    {(maxStay || passportValidity || yellowFever) && (
-                        <div className="text-xs space-y-1">
-                            {maxStay && <p><span className="font-medium">Max stay:</span> {maxStay}</p>}
-                            {passportValidity && <p><span className="font-medium">Passport validity:</span> {passportValidity}</p>}
-                            {yellowFever && <p><span className="font-medium">Yellow fever:</span> {yellowFever}</p>}
+                    {/* Debug: Show raw content if parsing failed */}
+                    {streamingContent && !parsedData?.visaStatus && (
+                        <div className="pt-2 border-t border-border">
+                            <p className="text-xs text-muted-foreground font-mono bg-gray-100 p-2 rounded">
+                                Debug - Raw AI content:<br />
+                                {streamingContent.substring(0, 200)}...
+                            </p>
                         </div>
                     )}
-                </div>
 
-                {/* Fixed bottom section */}
-                <div className="flex-shrink-0 pt-2 space-y-2">
-                    {/* Data source citation */}
+                    {/* Data source */}
                     {(dataSource || lastUpdated) && (
-                        <div className="pt-2 border-t border-gray-700">
+                        <div className="pt-2 border-t border-border">
                             <div className="flex items-center justify-between text-xs text-muted-foreground">
                                 <div className="flex items-center space-x-1">
                                     {hasDbData ? (
@@ -265,7 +281,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                                     ) : (
                                         <>
                                             <Bot className="w-3 h-3" />
-                                            <span>Fallback Data</span>
+                                            <span>AI Analysis</span>
                                         </>
                                     )}
                                 </div>
@@ -276,7 +292,125 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         </div>
                     )}
 
-                    {/* Fixed bottom button */}
+                    {/* Official sources link */}
+                    <div className="pt-2 border-t border-border">
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="w-full text-xs"
+                            onClick={() => window.open('https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages.html', '_blank')}
+                        >
+                            <ExternalLink className="w-3 h-3 mr-1" />
+                            Official Visa Information
+                        </Button>
+                    </div>
+                </CardContent>
+            </Card>
+        );
+    }
+
+    // Show structured data (legacy format)
+    return (
+        <Card className="h-full">
+            <CardHeader className="pb-3">
+                <CardTitle className="flex items-center text-lg">
+                    <Shield className="w-5 h-5 mr-2 text-red-500" />
+                    Visa & Entry
+                    <div className="ml-auto flex items-center space-x-1">
+                        {hasDbData && <Database className="w-3 h-3 text-green-400" />}
+                        <Bot className="w-3 h-3 text-blue-400" />
+                    </div>
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                {error && (
+                    <div className="flex items-center space-x-2">
+                        <AlertCircle className="w-5 h-5 text-red-500" />
+                        <span className="font-medium text-red-500">Error</span>
+                        <Badge variant="secondary" className="bg-red-100 text-red-800">
+                            Failed
+                        </Badge>
+                    </div>
+                )}
+
+                {/* Main visa status with icon */}
+                <div className="flex items-center space-x-2">
+                    {isVisaFree ? (
+                        <>
+                            <CheckCircle className="w-5 h-5 text-green-500" />
+                            <span className="font-medium">Visa-Free Entry</span>
+                            <Badge variant="secondary" className="bg-green-100 text-green-800">
+                                No Visa Required
+                            </Badge>
+                        </>
+                    ) : (
+                        <>
+                            <XCircle className="w-5 h-5 text-red-500" />
+                            <span className="font-medium">Visa Required</span>
+                            <Badge variant="secondary" className="bg-red-100 text-red-800">
+                                Apply Required
+                            </Badge>
+                        </>
+                    )}
+                </div>
+
+                {/* Key requirements with icons */}
+                <div className="space-y-3">
+                    {maxStay && (
+                        <div className="flex items-center space-x-2 text-sm">
+                            <Clock className="w-4 h-4 text-blue-500" />
+                            <span>Max stay: {maxStay}</span>
+                        </div>
+                    )}
+
+                    {passportValidity && (
+                        <div className="flex items-center space-x-2 text-sm">
+                            <Shield className="w-4 h-4 text-blue-500" />
+                            <span>Passport: {passportValidity}</span>
+                        </div>
+                    )}
+
+                    {yellowFever && (
+                        <div className="flex items-center space-x-2 text-sm">
+                            <AlertCircle className="w-4 h-4 text-yellow-500" />
+                            <span>Yellow fever: {yellowFever}</span>
+                        </div>
+                    )}
+                </div>
+
+                {/* Additional notes */}
+                {notes && (
+                    <div className="pt-2 border-t border-border">
+                        <p className="text-xs text-muted-foreground">{notes}</p>
+                    </div>
+                )}
+
+                {/* Data source */}
+                {(dataSource || lastUpdated) && (
+                    <div className="pt-2 border-t border-border">
+                        <div className="flex items-center justify-between text-xs text-muted-foreground">
+                            <div className="flex items-center space-x-1">
+                                {hasDbData ? (
+                                    <>
+                                        <Database className="w-3 h-3" />
+                                        <span>Source: {dataSource}</span>
+                                    </>
+                                ) : (
+                                    <>
+                                        <Bot className="w-3 h-3" />
+                                        <span>AI Analysis</span>
+                                    </>
+                                )}
+                            </div>
+                            {lastUpdated && (
+                                <span>Updated: {new Date(lastUpdated).toLocaleDateString()}</span>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Official sources link */}
+                <div className="pt-2 border-t border-border">
                     <Button
                         variant="outline"
                         size="sm"
@@ -284,7 +418,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         onClick={() => window.open('https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages.html', '_blank')}
                     >
                         <ExternalLink className="w-3 h-3 mr-1" />
-                        Verify with Official Sources
+                        Official Visa Information
                     </Button>
                 </div>
             </CardContent>

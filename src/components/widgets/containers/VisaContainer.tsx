@@ -38,7 +38,14 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
         const fetchVisaRequirements = async () => {
             if (!placeDetails) {
                 console.log('❌ No place details provided');
-                setVisaData({ visaRequired: 'unknown', isLoading: false, error: 'No destination provided' });
+                setVisaData({
+                    isLoading: false,
+                    isStreaming: false,
+                    streamingContent: '## No Destination Selected\n\nPlease select a destination to view visa requirements.',
+                    error: 'No destination provided',
+                    dataSource: 'System',
+                    hasDbData: false
+                });
                 return;
             }
 
@@ -60,13 +67,18 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
             } catch (error) {
                 console.error('Error fetching visa requirements:', error);
 
-                // Fallback to basic hardcoded data
+                // Fallback to basic hardcoded data but maintain streaming UI consistency
                 const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
                 const fallbackData = getFallbackVisaData(destinationName);
+                const fallbackContent = formatFallbackAsStreaming(fallbackData);
+
                 setVisaData({
-                    ...fallbackData,
                     isLoading: false,
-                    error: 'Using offline data - verify with official sources'
+                    isStreaming: false,
+                    streamingContent: fallbackContent,
+                    error: 'Using offline data - verify with official sources',
+                    dataSource: 'Offline Database',
+                    hasDbData: false
                 });
             }
         };
@@ -171,13 +183,19 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
             } catch (streamError) {
                 console.error('Streaming error:', streamError);
 
-                // Fallback to hardcoded data on streaming failure
+                // Fallback to hardcoded data but maintain streaming UI for consistency
                 const fallbackData = getFallbackVisaData(destinationName);
+
+                // Convert fallback data to streaming format to prevent UI flickering
+                const fallbackContent = formatFallbackAsStreaming(fallbackData);
+
                 setVisaData({
-                    ...fallbackData,
                     isStreaming: false,
                     isLoading: false,
-                    error: 'AI analysis unavailable - using offline data'
+                    streamingContent: fallbackContent,
+                    error: 'AI analysis unavailable - using offline data',
+                    dataSource: 'Offline Database',
+                    hasDbData: false
                 });
             }
         };
@@ -212,6 +230,47 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
 
         fetchUserCountry();
     }, []); // Run once on mount
+
+    // Convert fallback data to streaming format to maintain UI consistency
+    const formatFallbackAsStreaming = (fallbackData: VisaData): string => {
+        const { visaRequired, maxStay, passportValidity, yellowFever, notes } = fallbackData;
+
+        let content = '';
+
+        // Main visa requirement
+        if (typeof visaRequired === 'boolean') {
+            content += visaRequired
+                ? '## Visa Status\n\n**Visa Required** for entry.\n\n'
+                : '## Visa Status\n\n**No visa required** for short-term visits.\n\n';
+        } else {
+            content += '## Visa Status\n\n**Requirements vary** - check official sources.\n\n';
+        }
+
+        // Key requirements section
+        content += '## Key Requirements\n\n';
+
+        if (maxStay) {
+            content += `**Max stay:** ${maxStay}\n`;
+        }
+
+        if (passportValidity) {
+            content += `**Passport:** ${passportValidity}\n`;
+        }
+
+        if (yellowFever) {
+            content += `**Health:** ${yellowFever}\n`;
+        }
+
+        content += '\n## Notes\n\n';
+
+        if (notes) {
+            content += `${notes}\n\n`;
+        }
+
+        content += '*Offline database - verify with official sources.*';
+
+        return content;
+    };
 
     // Fallback visa data for when API fails
     const getFallbackVisaData = (dest: string): VisaData => {

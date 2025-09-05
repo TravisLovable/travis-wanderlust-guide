@@ -485,7 +485,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     <button
                       key={location.id}
                       onClick={() => handlePinnedLocationClick(location)}
-                      className="group flex items-center space-x-2 px-2 sm:px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-xs sm:text-sm text-white hover:bg-blue-700/40 transition-colors shadow-sm"
+                      className="group flex items-center space-x-2 px-2 sm:px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-xs sm:text-sm text-white dark:text-gray-100 hover:bg-blue-700/40 transition-colors shadow-sm"
                     >
                       <span className="truncate max-w-[120px] sm:max-w-[150px]">{location.name}</span>
                       <span className="text-xs opacity-60">📍</span>
@@ -504,7 +504,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                     <button
                       key={city}
                       onClick={() => handlePinDestination(city)}
-                      className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white hover:bg-green-700/40 transition-colors shadow-sm"
+                      className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white dark:text-gray-100 hover:bg-green-700/40 transition-colors shadow-sm"
                       title="Click to pin"
                     >
                       + {city}
@@ -616,7 +616,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
               <Button
                 type="submit"
-                className={`bg-white/20 hover:bg-white/30 text-white rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
+                className={`bg-white/20 hover:bg-white/30 text-white dark:text-gray-100 rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
                   }`}
               >
                 <Search className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
@@ -754,7 +754,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             >
               <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
                 <div className="relative">
-                  <Sparkles className="w-12 h-12 text-gray-400/50 animate-sparkle mb-4" />
+                  <Sparkles className="w-12 h-12 text-muted-foreground/50 animate-sparkle mb-4" />
                   <div className="absolute -top-1 -right-1">
                     <div className="w-3 h-3 bg-blue-400/30 rounded-full animate-bounce-gentle"></div>
                   </div>
