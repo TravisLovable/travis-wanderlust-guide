@@ -55,7 +55,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             <span>Settings</span>
           </DialogTitle>
         </DialogHeader>
-        
+
         <div className="space-y-6 py-4">
           {/* Theme Toggle */}
           <div className="flex items-center justify-between">
@@ -74,38 +74,6 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
             />
           </div>
 
-          {/* Language Selection */}
-          <div className="space-y-3">
-            <div className="flex items-center space-x-3">
-              <Globe className="w-5 h-5" />
-              <div>
-                <Label className="text-sm font-medium">Language</Label>
-                <p className="text-xs text-muted-foreground">
-                  Choose your preferred language
-                </p>
-              </div>
-            </div>
-            <Select value={currentLanguage} onValueChange={setCurrentLanguage}>
-              <SelectTrigger className="w-full">
-                <SelectValue>
-                  <div className="flex items-center space-x-2">
-                    <span>{selectedLanguage.flag}</span>
-                    <span>{selectedLanguage.name}</span>
-                  </div>
-                </SelectValue>
-              </SelectTrigger>
-              <SelectContent>
-                {languages.map((lang) => (
-                  <SelectItem key={lang.code} value={lang.code}>
-                    <div className="flex items-center space-x-2">
-                      <span>{lang.flag}</span>
-                      <span>{lang.name}</span>
-                    </div>
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
         </div>
 
         <div className="flex justify-end">
