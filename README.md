@@ -1,73 +1,175 @@
-# Welcome to your Lovable project
+# Travis - Intelligent Travel Planning Platform
 
-## Project info
+## Project Overview
 
-**URL**: https://lovable.dev/projects/8097652b-147d-4f35-ba0b-a1b8f859a41c
+Travis is a mobile-first travel planning platform that provides intelligent destination insights and essential travel information. This Phase 1 MVP delivers a seamless user experience for travelers seeking detailed information about their destinations.
 
-## How can I edit this code?
+## Completed Features (Phase 1)
 
-There are several ways of editing your application.
+- **Destination Search** - Intelligent search with Mapbox geocoding and contextual suggestions
+- **Results Transition** - Smooth animated loading screens and seamless transitions  
+- **Currency Converter** - Real-time exchange rates with interactive interface
+- **Weather Forecast** - Current conditions and 7-day forecasts with detailed breakdowns
+- **Local Holidays** - Comprehensive holiday calendar with cultural insights
+- **Time Zone Comparison** - Real-time world clock with business hours considerations
+- **Visa Requirements** - Hybrid AI-powered system with database-first approach and OpenAI streaming
+- **Uber Availability** - Real-time ride availability with wait times and pricing
+- **Photo Gallery** - High-quality destination photography with Unsplash integration
+- **Pinned Locations** - User authentication-based location saving (max 10 per user)
+- **User Authentication** - Secure login/signup with Supabase Auth
+- **Mobile-First Design** - Responsive interface optimized for all devices
 
-**Use Lovable**
+## Technical Stack
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/8097652b-147d-4f35-ba0b-a1b8f859a41c) and start prompting.
+**Frontend:** React 18 + TypeScript, Vite, Tailwind CSS, Radix UI, Framer Motion, React Query, React Router
 
-Changes made via Lovable will be committed automatically to this repo.
+**Backend:** Supabase (PostgreSQL + Edge Functions + Auth), Real-time subscriptions
 
-**Use your preferred IDE**
+**Integrations:** Mapbox, OpenAI, Unsplash, Weather APIs, Currency APIs, Uber API
 
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
+## Project Structure
 
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
+```
+src/
+├── components/           # React components
+│   ├── ui/              # Reusable UI components
+│   ├── widgets/         # Feature-specific widgets
+│   │   ├── containers/ # Widget container components
+│   │   └── presenters/ # Widget presentation components
+│   └── [Feature Components]
+├── hooks/               # Custom React hooks
+├── pages/               # Route components
+├── types/               # TypeScript type definitions
+├── utils/                # Utility functions
+└── integrations/        # Third-party service integrations
 
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+supabase/
+├── functions/           # Edge functions
+├── migrations/          # Database migrations
+└── config.toml         # Supabase configuration
 ```
 
-**Edit a file directly in GitHub**
+## Getting Started
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Prerequisites
+- Node.js 18+ 
+- npm or yarn
+- Supabase CLI (for development)
 
-**Use GitHub Codespaces**
+### Installation
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+1. **Clone the repository**
+   ```bash
+   git clone [repository-url]
+   cd travis
+   ```
 
-## What technologies are used for this project?
+2. **Install dependencies**
+   ```bash
+   npm install
+   ```
 
-This project is built with:
+3. **Environment Setup**
+   ```bash
+   # Add your API keys to .env.local
+   VITE_SUPABASE_URL=your_supabase_url
+   VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
+   VITE_MAPBOX_TOKEN=your_mapbox_token
+   ```
 
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
+4. **Start development server**
+   ```bash
+   npm run dev
+   ```
 
-## How can I deploy this project?
+5. **Build for production**
+   ```bash
+   npm run build
+   ```
 
-Simply open [Lovable](https://lovable.dev/projects/8097652b-147d-4f35-ba0b-a1b8f859a41c) and click on Share -> Publish.
+## Configuration
 
-## Can I connect a custom domain to my Lovable project?
+### API Keys Required
 
-Yes, you can!
+| Service | Purpose | Required |
+|---------|---------|----------|
+| Supabase | Database & Auth | ✅ Required |
+| Mapbox | Geocoding & Maps | ✅ Required |
+| OpenAI | Visa Analysis | ✅ Required |
+| Unsplash | Destination Photos | ✅ Required |
+| Weather API | Forecast Data | ✅ Required |
+| Currency API | Exchange Rates | ✅ Required |
+| Uber API | Ride Availability | ✅ Required |
 
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
+### Supabase Setup
 
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/tips-tricks/custom-domain#step-by-step-guide)
+1. **Database Migrations**
+   ```bash
+   supabase db reset
+   ```
+
+2. **Deploy Edge Functions**
+   ```bash
+   supabase functions deploy
+   ```
+
+3. **Environment Variables**
+   ```bash
+   supabase secrets set OPENAI_API_KEY=your_openai_key
+   ```
+
+## Key Features
+
+**Mobile-First Design:** Responsive grid system, touch-optimized interface, progressive web app capabilities
+
+**Security:** Supabase Auth with Row Level Security, secure API key management, GDPR compliance
+
+**Performance:** Code splitting, image optimization, intelligent caching, bundle optimization
+
+**Accessibility:** WCAG 2.1 compliant, keyboard navigation, screen reader support
+
+## Quality & Deployment
+
+**Testing:** ESLint, TypeScript, component testing, integration testing
+
+**Deployment:** Production build via `npm run build`, recommended on Vercel/Netlify with Supabase backend
+
+**Development:** Feature branches, TypeScript best practices, meaningful commits
+
+## Phase 1 Deliverables
+
+✅ **Production-Ready Application** - Fully deployed web app with mobile-first design and all core features
+
+✅ **Source Code Repository** - Complete codebase in private GitHub repo with documentation
+
+✅ **API Integration Framework** - Comprehensive third-party service integration with secure key management
+
+✅ **Technical Documentation** - Setup guides, API docs, and implementation details
+
+✅ **Live Demonstration** - Working app with real-time data and user authentication
+
+## Out of Scope (Phase 1)
+
+**Excluded Features:** Design iterations, alert system, loyalty features, advanced analytics, social features, offline support, advanced search
+
+## Future Opportunities
+
+**Phase 2 Potential:** Advanced trip planning, social sharing, offline mode, React Native app, analytics, booking platform integration
+
+**Technical Improvements:** Performance monitoring, advanced caching, microservices, real-time collaboration
+
+## Support & Maintenance
+
+**Technical Support:** Comprehensive documentation, inline code comments, setup guides, troubleshooting docs
+
+**Maintenance:** Regular dependency updates, security patches, performance monitoring, user feedback integration
+
+## License & Usage
+
+This project is proprietary software developed for client use. All rights reserved.
+
+---
+
+**Travis - Intelligent Travel Planning Platform**  
+*Phase 1 MVP - Production Ready*
+
