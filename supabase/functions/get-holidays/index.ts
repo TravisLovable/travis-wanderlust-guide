@@ -14,27 +14,28 @@ serve(async (req) => {
 
   try {
     const { country, year } = await req.json();
-    
+
     if (!country) {
       return new Response(
         JSON.stringify({ error: 'Country parameter is required' }),
-        { 
-          status: 400, 
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       );
     }
 
     const timeAndDateApiKey = '6NbsuamveP';
-    
+    const timeAndDateSecretKey = 'your_secret_key_here'; // You'll need to provide the actual secret key
+
     // Use current year if not provided
     const targetYear = year || new Date().getFullYear();
-    
+
     console.log(`Fetching holidays for country: ${country}, year: ${targetYear}`);
 
-    // Call Time and Date Holidays API
-    const holidayUrl = `https://api.timezonedb.com/v2.1/list-holidays?key=${timeAndDateApiKey}&format=json&country=${country}&year=${targetYear}`;
-    
+    // Call Time and Date Holidays API - Updated to use correct endpoint with both accesskey and secretkey
+    const holidayUrl = `https://api.xmltime.com/holidays?version=3&accesskey=${timeAndDateApiKey}&secretkey=${timeAndDateSecretKey}&country=${country}&year=${targetYear}`;
+
     const response = await fetch(holidayUrl, {
       method: 'GET',
       headers: {
@@ -44,11 +45,11 @@ serve(async (req) => {
 
     if (!response.ok) {
       console.error(`Time and Date API error: ${response.status} ${response.statusText}`);
-      
+
       // Fallback to nager.at API if Time and Date API fails
       const fallbackUrl = `https://date.nager.at/api/v3/PublicHolidays/${targetYear}/${country}`;
       console.log(`Falling back to nager.at API: ${fallbackUrl}`);
-      
+
       const fallbackResponse = await fetch(fallbackUrl, {
         method: 'GET',
         headers: {
@@ -58,12 +59,12 @@ serve(async (req) => {
 
       if (!fallbackResponse.ok) {
         return new Response(
-          JSON.stringify({ 
-            error: `Failed to fetch holidays from both APIs: ${response.status} ${response.statusText}` 
+          JSON.stringify({
+            error: `Failed to fetch holidays from both APIs: ${response.status} ${response.statusText}`
           }),
-          { 
-            status: response.status, 
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+          {
+            status: response.status,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
       }
@@ -104,14 +105,14 @@ serve(async (req) => {
     let holidays = [];
     if (holidayData.holidays && Array.isArray(holidayData.holidays)) {
       holidays = holidayData.holidays.map((holiday: any) => ({
-        date: holiday.date,
-        name: holiday.name,
-        localName: holiday.localname || holiday.name,
-        countryCode: country,
+        date: holiday.date?.iso || holiday.date,
+        name: holiday.name?.[0]?.text || holiday.name,
+        localName: holiday.name?.[0]?.text || holiday.name,
+        countryCode: holiday.country?.id || country,
         fixed: true,
-        global: holiday.type === 'national',
-        type: holiday.type || 'Public',
-        region: holiday.locations || 'National'
+        global: holiday.types?.includes('National holiday') || false,
+        type: holiday.types?.[0] || 'Public',
+        region: holiday.country?.name || 'National'
       }));
     }
 
@@ -130,13 +131,13 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error in get-holidays function:', error);
     return new Response(
-      JSON.stringify({ 
+      JSON.stringify({
         error: 'Internal server error',
-        details: error.message 
+        details: error.message
       }),
-      { 
-        status: 500, 
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' } 
+      {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     );
   }

@@ -11,8 +11,7 @@ import { User } from '@supabase/supabase-js';
 import { useNavigate } from 'react-router-dom';
 
 import { usePinnedLocations, PinnedLocation } from '@/hooks/usePinnedLocations';
-import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import WordCraftComponent from './WordCraftComponent';
+
 
 interface HeaderProps {
     user: User;
