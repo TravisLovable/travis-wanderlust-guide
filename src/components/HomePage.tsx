@@ -18,6 +18,7 @@ import TermsModal from './TermsModal';
 import SettingsModal from './SettingsModal';
 import InspirationModal from './InspirationModal';
 import { useToast } from '@/hooks/use-toast';
+import { useNavigate } from 'react-router-dom';
 
 
 interface HomePageProps {
@@ -63,6 +64,9 @@ const HomePage = ({
 
   // Pinned locations hook
   const { pinnedLocations, toSelectedPlace } = usePinnedLocations();
+
+  // Navigation hook
+  const navigate = useNavigate();
 
   // Refs for focus management
   const destinationInputRef = useRef<HTMLInputElement>(null);
@@ -530,10 +534,19 @@ const HomePage = ({
     const location = pinnedLocations.find(p => p.id === locationId);
     if (location) {
       const selectedPlace = toSelectedPlace(location);
-      setDestination(selectedPlace.formatted_address);
-      setSelectedPlace(selectedPlace);
-      // Trigger autofocus to next input after destination is selected
-      handleDestinationComplete();
+      // Navigate to search results with the pinned location (same behavior as Header dropdown)
+      const searchParams = new URLSearchParams({
+        destination: selectedPlace.formatted_address,
+        name: selectedPlace.name,
+        lat: selectedPlace.latitude.toString(),
+        lng: selectedPlace.longitude.toString(),
+        checkin: new Date().toISOString().split('T')[0], // Default to today
+        checkout: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0], // Default to 1 week later
+        ...(selectedPlace.country_code && { country: selectedPlace.country_code }),
+        ...(selectedPlace.region && { region: selectedPlace.region }),
+        ...(selectedPlace.place_id && { placeId: selectedPlace.place_id }),
+      });
+      navigate(`/search?${searchParams.toString()}`);
     }
   };
 

@@ -98,7 +98,7 @@ export default function Header({
             <div className="max-w-none mx-auto flex items-center justify-between">
                 <button
                     onClick={() => navigate('/')}
-                    className="text-3xl text-foreground tracking-tight font-unbounded hover:text-foreground/80 transition-all duration-300 cursor-pointer interactive-scale group relative"
+                    className="text-3xl text-foreground tracking-tight hover:text-foreground/80 transition-all duration-300 cursor-pointer interactive-scale group relative font-semibold"
                 >
 
                     Travis.
