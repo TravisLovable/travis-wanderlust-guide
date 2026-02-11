@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Calendar, Pin, Globe, Search, MapPin, Sparkles, Star, Heart } from 'lucide-react';
+import { ArrowLeft, Calendar, Pin, Globe, Search, MapPin, Clock, DollarSign, Plane, Sun, Cloud, Umbrella } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -8,20 +8,17 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
-import { format } from 'date-fns';
-import PhotoSlideshow from './PhotoSlideshow';
-import {
-  WeatherContainer,
-  HolidayContainer,
-  TimeZoneContainer,
-  CurrencyContainer,
-  VisaContainer,
-  ConnectivityWidget,
-  UberAvailabilityWidget
-} from './widgets';
+import { format, differenceInDays } from 'date-fns';
 import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { getContextualDestinations } from '@/utils/contextualDestinationSuggestions';
 import { usePinnedLocations, PinnedLocation } from '@/hooks/usePinnedLocations';
+import {
+  getMockWeather,
+  getMockCurrency,
+  getMockTimezone,
+  getMockVisa,
+  getMockHolidays,
+  getMockTransport,
+} from '@/utils/mockData';
 
 interface ResultsPageProps {
   placeDetails: SelectedPlace | null;
@@ -33,247 +30,61 @@ interface ResultsPageProps {
   onNewSearch: (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }, skipTransition?: boolean) => void;
 }
 
-
-
 const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPageProps) => {
   const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
+  const destinationName = placeDetails?.name || destination.split(',')[0];
 
-  // Use persistent pinned locations hook
   const { pinnedLocations, pinLocation, unpinLocation, isPinned, toSelectedPlace } = usePinnedLocations();
   const [newDestination, setNewDestination] = useState(destination);
   const [newCheckinDate, setNewCheckinDate] = useState<Date>(new Date(dates.checkin));
   const [newCheckoutDate, setNewCheckoutDate] = useState<Date>(new Date(dates.checkout));
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [showCelebration, setShowCelebration] = useState(false);
-  const [hoveredWidget, setHoveredWidget] = useState<string | null>(null);
-
-  // Header scroll state
-  const [isHeaderCollapsed, setIsHeaderCollapsed] = useState(false);
-  const [scrollDirection, setScrollDirection] = useState<'up' | 'down' | null>(null);
-  const [isTransitioning, setIsTransitioning] = useState(false);
+  const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
 
   const searchInputRef = useRef<HTMLInputElement>(null);
+  const lastScrollY = useRef(0);
 
-  // Trigger celebration effect on page load
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setShowCelebration(true);
-      setTimeout(() => setShowCelebration(false), 2000);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [placeDetails]);
+  // Get mock data
+  const weather = getMockWeather(destination);
+  const currency = getMockCurrency(destination);
+  const timezone = getMockTimezone(destination);
+  const visa = getMockVisa(destination);
+  const holidays = getMockHolidays(destination, dates);
+  const transport = getMockTransport(destination);
 
+  const tripDuration = differenceInDays(new Date(dates.checkout), new Date(dates.checkin));
 
-  // Scroll handler for header minimization with improved hysteresis
-  useEffect(() => {
-    let ticking = false;
-    let lastScrollY = window.scrollY;
-    let transitionTimeout: NodeJS.Timeout;
-
-    const handleScroll = () => {
-      if (!ticking) {
-        requestAnimationFrame(() => {
-          const currentScrollY = window.scrollY;
-          const scrollDelta = currentScrollY - lastScrollY;
-
-          // Determine scroll direction
-          const direction = scrollDelta > 0 ? 'down' : scrollDelta < 0 ? 'up' : null;
-
-          // Only update if direction actually changed
-          if (direction && direction !== scrollDirection) {
-            setScrollDirection(direction);
-          }
-
-          // Only process state changes if not currently transitioning
-          if (!isTransitioning) {
-            // Collapse header when scrolling down more than 100px
-            if (currentScrollY > 100) {
-              if (direction === 'down' && scrollDelta > 20 && !isHeaderCollapsed) {
-                // Scrolling down significantly - collapse header
-                setIsTransitioning(true);
-                setIsHeaderCollapsed(true);
-
-                // Prevent rapid state changes for 200ms (reduced from 300ms)
-                clearTimeout(transitionTimeout);
-                transitionTimeout = setTimeout(() => setIsTransitioning(false), 200);
-              } else if (direction === 'up' && scrollDelta < -20 && isHeaderCollapsed) {
-                // Scrolling up significantly - expand header
-                setIsTransitioning(true);
-                setIsHeaderCollapsed(false);
-
-                // Prevent rapid state changes for 200ms (reduced from 300ms)
-                clearTimeout(transitionTimeout);
-                transitionTimeout = setTimeout(() => setIsTransitioning(false), 200);
-              }
-            } else {
-              // Always show full header when near top
-              if (isHeaderCollapsed) {
-                setIsTransitioning(true);
-                setIsHeaderCollapsed(false);
-                clearTimeout(transitionTimeout);
-                transitionTimeout = setTimeout(() => setIsTransitioning(false), 200);
-              }
-            }
-          }
-
-          lastScrollY = currentScrollY;
-          ticking = false;
-        });
-
-        ticking = true;
-      }
-    };
-
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => {
-      window.removeEventListener('scroll', handleScroll);
-      clearTimeout(transitionTimeout);
-    };
-  }, [isHeaderCollapsed, scrollDirection, isTransitioning]);
-
-
-  // Use Mapbox geocoding for destination suggestions
+  // Mapbox suggestions
   const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions } = useMapboxGeocoding(
     newDestination,
     showSuggestions && newDestination.length >= 2
   );
 
+  // Scroll handler for header minimization
+  useEffect(() => {
+    const handleScroll = () => {
+      const currentScrollY = window.scrollY;
+      if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
+        setIsHeaderMinimized(true);
+      } else if (currentScrollY < lastScrollY.current - 20 || currentScrollY < 50) {
+        setIsHeaderMinimized(false);
+      }
+      lastScrollY.current = currentScrollY;
+    };
 
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
-  // Note: Removed auto-pinning behavior - users should manually pin locations they want to save
-
-  // Update newDestination when placeDetails prop changes
   useEffect(() => {
     setNewDestination(destination);
-  }, [placeDetails, destination]);
-
-
-
-
-
-  // Dynamic flag mapping based on destination
-  const getCountryFlag = (dest: string) => {
-    const lowerDest = dest.toLowerCase();
-
-    // African countries
-    if (lowerDest.includes('south africa') || lowerDest.includes('cape town') || lowerDest.includes('johannesburg') || lowerDest.includes('durban')) {
-      return 'https://flagcdn.com/w40/za.png';
-    }
-    if (lowerDest.includes('egypt') || lowerDest.includes('cairo') || lowerDest.includes('alexandria')) {
-      return 'https://flagcdn.com/w40/eg.png';
-    }
-    if (lowerDest.includes('nigeria') || lowerDest.includes('lagos') || lowerDest.includes('abuja')) {
-      return 'https://flagcdn.com/w40/ng.png';
-    }
-    if (lowerDest.includes('kenya') || lowerDest.includes('nairobi') || lowerDest.includes('mombasa')) {
-      return 'https://flagcdn.com/w40/ke.png';
-    }
-    if (lowerDest.includes('morocco') || lowerDest.includes('marrakech') || lowerDest.includes('casablanca') || lowerDest.includes('rabat')) {
-      return 'https://flagcdn.com/w40/ma.png';
-    }
-    if (lowerDest.includes('tunisia') || lowerDest.includes('tunis')) {
-      return 'https://flagcdn.com/w40/tn.png';
-    }
-    if (lowerDest.includes('ghana') || lowerDest.includes('accra')) {
-      return 'https://flagcdn.com/w40/gh.png';
-    }
-    if (lowerDest.includes('ethiopia') || lowerDest.includes('addis ababa')) {
-      return 'https://flagcdn.com/w40/et.png';
-    }
-    if (lowerDest.includes('tanzania') || lowerDest.includes('dar es salaam') || lowerDest.includes('dodoma')) {
-      return 'https://flagcdn.com/w40/tz.png';
-    }
-    if (lowerDest.includes('uganda') || lowerDest.includes('kampala')) {
-      return 'https://flagcdn.com/w40/ug.png';
-    }
-    if (lowerDest.includes('rwanda') || lowerDest.includes('kigali')) {
-      return 'https://flagcdn.com/w40/rw.png';
-    }
-    if (lowerDest.includes('senegal') || lowerDest.includes('dakar')) {
-      return 'https://flagcdn.com/w40/sn.png';
-    }
-    if (lowerDest.includes('madagascar') || lowerDest.includes('antananarivo')) {
-      return 'https://flagcdn.com/w40/mg.png';
-    }
-    if (lowerDest.includes('zimbabwe') || lowerDest.includes('harare')) {
-      return 'https://flagcdn.com/w40/zw.png';
-    }
-    if (lowerDest.includes('botswana') || lowerDest.includes('gaborone')) {
-      return 'https://flagcdn.com/w40/bw.png';
-    }
-    if (lowerDest.includes('namibia') || lowerDest.includes('windhoek')) {
-      return 'https://flagcdn.com/w40/na.png';
-    }
-    if (lowerDest.includes('zambia') || lowerDest.includes('lusaka')) {
-      return 'https://flagcdn.com/w40/zm.png';
-    }
-    if (lowerDest.includes('malawi') || lowerDest.includes('lilongwe')) {
-      return 'https://flagcdn.com/w40/mw.png';
-    }
-    if (lowerDest.includes('mozambique') || lowerDest.includes('maputo')) {
-      return 'https://flagcdn.com/w40/mz.png';
-    }
-    if (lowerDest.includes('angola') || lowerDest.includes('luanda')) {
-      return 'https://flagcdn.com/w40/ao.png';
-    }
-
-    // Existing non-African countries
-    if (lowerDest.includes('brazil') || lowerDest.includes('são paulo') || lowerDest.includes('rio de janeiro')) {
-      return 'https://flagcdn.com/w40/br.png';
-    }
-    if (lowerDest.includes('peru') || lowerDest.includes('lima')) {
-      return 'https://flagcdn.com/w40/pe.png';
-    }
-    if (lowerDest.includes('italy') || lowerDest.includes('rome') || lowerDest.includes('milan')) {
-      return 'https://flagcdn.com/w40/it.png';
-    }
-    if (lowerDest.includes('france') || lowerDest.includes('paris')) {
-      return 'https://flagcdn.com/w40/fr.png';
-    }
-    if (lowerDest.includes('spain') || lowerDest.includes('madrid') || lowerDest.includes('barcelona')) {
-      return 'https://flagcdn.com/w40/es.png';
-    }
-    if (lowerDest.includes('japan') || lowerDest.includes('tokyo') || lowerDest.includes('osaka')) {
-      return 'https://flagcdn.com/w40/jp.png';
-    }
-    if (lowerDest.includes('united kingdom') || lowerDest.includes('london') || lowerDest.includes('uk')) {
-      return 'https://flagcdn.com/w40/gb.png';
-    }
-    if (lowerDest.includes('germany') || lowerDest.includes('berlin') || lowerDest.includes('munich')) {
-      return 'https://flagcdn.com/w40/de.png';
-    }
-    if (lowerDest.includes('australia') || lowerDest.includes('sydney') || lowerDest.includes('melbourne')) {
-      return 'https://flagcdn.com/w40/au.png';
-    }
-    if (lowerDest.includes('canada') || lowerDest.includes('toronto') || lowerDest.includes('vancouver')) {
-      return 'https://flagcdn.com/w40/ca.png';
-    }
-    // Default to world icon if no country match
-    return null;
-  };
-
-
-  const getRegionalDestinations = (currentDest: string) => {
-    return getContextualDestinations(currentDest);
-  };
-
-  const handleDestinationChange = (value: string) => {
-    setNewDestination(value);
-    setShowSuggestions(value.length >= 2);
-  };
-
-  const handleDestinationSelect = (suggestion: any) => {
-    setNewDestination(suggestion.place_name);
-    setShowSuggestions(false);
-  };
+  }, [destination]);
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
     if (newDestination && newCheckinDate && newCheckoutDate) {
-      // Create a basic placeDetails object if we don't have the full details
       const newPlaceDetails: SelectedPlace = {
         name: newDestination,
         formatted_address: newDestination,
@@ -281,493 +92,393 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
         longitude: 0,
         place_id: `search_${Date.now()}`
       };
-
-      // Pass skipTransition as true to avoid loading screen
       onNewSearch(newPlaceDetails, {
         checkin: format(newCheckinDate, 'yyyy-MM-dd'),
         checkout: format(newCheckoutDate, 'yyyy-MM-dd')
       }, true);
-      setShowSuggestions(false); // Hide suggestions after search
+      setShowSuggestions(false);
     }
   };
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      handleSearch();
-    }
-  };
-
-  const handlePinDestination = (dest: string) => {
-    // Create a SelectedPlace object from the destination string
-    const place: SelectedPlace = {
-      name: dest,
-      formatted_address: dest,
-      latitude: placeDetails?.latitude || 0,
-      longitude: placeDetails?.longitude || 0,
-      place_id: `manual_${Date.now()}_${dest.replace(/\s+/g, '_')}`
-    };
-    pinLocation(place);
+  const handleDestinationSelect = (suggestion: any) => {
+    setNewDestination(suggestion.place_name);
+    setShowSuggestions(false);
   };
 
   const handlePinnedLocationClick = (pinnedLocation: PinnedLocation) => {
     const selectedPlace = toSelectedPlace(pinnedLocation);
-    onNewSearch(selectedPlace, {
-      checkin: dates.checkin,
-      checkout: dates.checkout
-    }, true); // Skip transition for quick navigation
+    onNewSearch(selectedPlace, dates, true);
   };
 
-
-
-  // COMMENTED OUT: Not in Phase 1 scope - Power adapter functionality
-  // const handleAdapterClick = () => {
-  //   setIsAdapterSpinning(!isAdapterSpinning);
-  // };
-
-  // COMMENTED OUT: Not used in ResultsPage
-  // const toggleTheme = () => {
-  //   setIsDarkMode(!isDarkMode);
-  //   document.documentElement.classList.toggle('dark');
-  // };
-
-  const formatDateRange = (checkin: Date, checkout: Date) => {
-    const departFormatted = format(checkin, 'EEEE MMMM do');
-    const returnFormatted = format(checkout, 'EEEE MMMM do');
-    return `Depart: ${departFormatted} • Return: ${returnFormatted}`;
+  const handleTogglePin = () => {
+    if (placeDetails) {
+      if (isPinned(placeDetails)) {
+        const pinnedLocation = pinnedLocations.find(p =>
+          p.formatted_address === placeDetails.formatted_address ||
+          (p.place_id && placeDetails.place_id && p.place_id === placeDetails.place_id)
+        );
+        if (pinnedLocation) {
+          unpinLocation(pinnedLocation.id);
+        }
+      } else {
+        pinLocation(placeDetails);
+      }
+    }
   };
 
-
+  const getWeatherIcon = (condition: string) => {
+    const lower = condition.toLowerCase();
+    if (lower.includes('rain')) return <Umbrella className="w-5 h-5" />;
+    if (lower.includes('cloud')) return <Cloud className="w-5 h-5" />;
+    return <Sun className="w-5 h-5" />;
+  };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-black dark:to-gray-900 relative">
-      {/* Celebration confetti */}
-      {showCelebration && (
-        <div className="absolute inset-0 pointer-events-none z-50">
-          {[...Array(25)].map((_, i) => (
-            <div
-              key={i}
-              className="absolute w-2 h-2 animate-confetti-fall"
-              style={{
-                left: `${Math.random() * 100}%`,
-                backgroundColor: ['#3b82f6', '#8b5cf6', '#06b6d4', '#10b981', '#f59e0b'][Math.floor(Math.random() * 5)],
-                animationDelay: `${Math.random() * 1}s`,
-                animationDuration: `${2 + Math.random() * 1}s`
-              }}
-            />
-          ))}
-        </div>
-      )}
-      {/* Header - Clean and Mobile-First with Scroll-Based Minimization */}
-      <header className={`bg-white/80 dark:bg-black/80 backdrop-blur-md border-b border-gray-200/50 dark:border-gray-800/50 shadow-sm sticky top-0 z-40 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'py-2 shadow-lg' : 'py-3 sm:py-4'
-        }`}>
-        <div className="max-w-7xl mx-auto px-4 sm:px-6">
-
-          {/* Scroll Indicator - Subtle visual feedback */}
-          <div className={`absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-blue-500 to-purple-600 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-100' : 'opacity-0'
-            }`} />
-
-          {/* Main Header Row - Collapsible */}
-          <div className={`flex items-center justify-between transition-all duration-500 ease-out ${isHeaderCollapsed ? 'mb-2' : 'mb-3 sm:mb-4'
-            }`}>
-            <div className="flex items-center space-x-2 sm:space-x-4">
+    <div className="min-h-screen bg-background">
+      {/* Header */}
+      <header className={`sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border transition-all duration-300 ${isHeaderMinimized ? 'py-2' : 'py-4'}`}>
+        <div className="max-w-6xl mx-auto px-4">
+          {/* Top Row */}
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-3">
               <Button
                 variant="ghost"
+                size="icon"
                 onClick={onBack}
-                className="p-2 hover:bg-secondary/50 rounded-xl travis-interactive"
+                className="rounded-full"
               >
                 <ArrowLeft className="w-5 h-5" />
               </Button>
 
-              <div className="min-w-0">
-                <div className="flex items-center space-x-2 sm:space-x-3">
-                  <h1 className={`font-bold text-foreground flex items-center tracking-tight truncate transition-all duration-500 ease-out ${isHeaderCollapsed ? 'text-lg sm:text-xl' : 'text-xl sm:text-2xl md:text-3xl'
-                    }`}>
-                    {destination}
-                    {getCountryFlag(destination) ? (
-                      <img
-                        src={getCountryFlag(destination)!}
-                        alt="Country Flag"
-                        className={`rounded shadow-sm flex-shrink-0 transition-all duration-500 ease-out hover:animate-wiggle ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
-                          }`}
-                      />
-                    ) : (
-                      <Globe className={`text-blue-400 flex-shrink-0 transition-all duration-500 ease-out hover:animate-bounce-gentle ${isHeaderCollapsed ? 'w-5 h-4 sm:w-6 sm:h-5 ml-2' : 'w-6 h-4 sm:w-8 sm:h-6 ml-2 sm:ml-3 mr-1 sm:mr-2'
-                        }`} />
-                    )}
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => {
-                        if (placeDetails) {
-                          if (isPinned(placeDetails)) {
-                            // Find the pinned location and unpin it
-                            const pinnedLocation = pinnedLocations.find(p =>
-                              p.formatted_address === placeDetails.formatted_address ||
-                              (p.place_id && placeDetails.place_id && p.place_id === placeDetails.place_id)
-                            );
-                            if (pinnedLocation) {
-                              unpinLocation(pinnedLocation.id);
-                            }
-                          } else {
-                            pinLocation(placeDetails);
-                          }
-                        }
-                      }}
-                      className={`ml-1 sm:ml-2 interactive-scale hover:animate-wiggle ${placeDetails && isPinned(placeDetails)
-                        ? 'text-yellow-400 hover:text-yellow-300'
-                        : 'text-blue-400 hover:text-blue-300'
-                        }`}
-                      title={placeDetails && isPinned(placeDetails) ? 'Unpin this location' : 'Pin this location'}
-                    >
-                      <Pin className={`w-4 h-4 sm:w-5 sm:h-5 ${placeDetails && isPinned(placeDetails) ? 'fill-current' : ''
-                        }`} />
-                    </Button>
-                    <Sparkles className="w-4 h-4 text-yellow-400 animate-sparkle ml-2" />
-                  </h1>
-                </div>
+              <div className={`transition-all duration-300 ${isHeaderMinimized ? 'hidden' : 'block'}`}>
+                <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
+                  {destinationName}
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={handleTogglePin}
+                    className={`h-8 w-8 rounded-full ${placeDetails && isPinned(placeDetails) ? 'text-primary' : 'text-muted-foreground'}`}
+                  >
+                    <Pin className={`w-4 h-4 ${placeDetails && isPinned(placeDetails) ? 'fill-current' : ''}`} />
+                  </Button>
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {format(new Date(dates.checkin), 'MMM d')} - {format(new Date(dates.checkout), 'MMM d, yyyy')} ({tripDuration} days)
+                </p>
+              </div>
 
-                {/* Date Range - Collapsible */}
-                <div className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden' : 'opacity-100 h-auto'
-                  }`}>
-                  <Popover>
-                    <PopoverTrigger asChild>
-                      <Button
-                        variant="ghost"
-                        className="text-xs sm:text-sm text-muted-foreground flex items-center font-light p-0 h-auto hover:text-foreground transition-colors mt-1"
-                      >
-                        <Calendar className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-                        <span className="truncate">
-                          {formatDateRange(newCheckinDate, newCheckoutDate)}
-                        </span>
-                      </Button>
-                    </PopoverTrigger>
-                    <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
-                      <div className="p-4 space-y-4">
-                        <div>
-                          <p className="text-sm font-medium mb-2">Depart Date</p>
-                          <CalendarComponent
-                            mode="single"
-                            selected={newCheckinDate}
-                            onSelect={(date) => {
-                              if (date) setNewCheckinDate(date);
-                            }}
-                            className="pointer-events-auto"
-                          />
-                        </div>
-                        <div>
-                          <p className="text-sm font-medium mb-2">Return Date</p>
-                          <CalendarComponent
-                            mode="single"
-                            selected={newCheckoutDate}
-                            onSelect={(date) => {
-                              if (date) setNewCheckoutDate(date);
-                            }}
-                            className="pointer-events-auto"
-                          />
-                        </div>
-                      </div>
-                    </PopoverContent>
-                  </Popover>
-                </div>
+              {/* Minimized title */}
+              <div className={`transition-all duration-300 ${isHeaderMinimized ? 'block' : 'hidden'}`}>
+                <span className="font-medium text-foreground">{destinationName}</span>
+                <span className="text-muted-foreground mx-2">|</span>
+                <span className="text-sm text-muted-foreground">{tripDuration} days</span>
               </div>
             </div>
           </div>
 
-          {/* Pinned Destinations - Collapsible */}
-          <div className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 h-0 overflow-hidden mb-0' : 'opacity-100 h-auto mb-3 sm:mb-4'
-            }`}>
-            {pinnedLocations.length > 0 && (
-              <div className="flex flex-col sm:flex-row sm:items-center space-y-2 sm:space-y-0 sm:space-x-3">
-                <span className="text-xs sm:text-sm text-muted-foreground font-medium">PINNED:</span>
-                <div className="flex flex-wrap gap-2">
-                  {pinnedLocations.slice(0, 5).map((location) => (
-                    <button
-                      key={location.id}
-                      onClick={() => handlePinnedLocationClick(location)}
-                      className="group flex items-center space-x-2 px-2 sm:px-3 py-1 bg-blue-600/30 border border-blue-500/30 rounded-full text-xs sm:text-sm text-white dark:text-gray-100 hover:bg-blue-700/40 transition-colors shadow-sm"
-                    >
-                      <span className="truncate max-w-[120px] sm:max-w-[150px]">{location.name}</span>
-                      <span className="text-xs opacity-60">📍</span>
-                    </button>
-                  ))}
-                  {pinnedLocations.length > 5 && (
-                    <span className="text-xs text-muted-foreground px-2 py-1">
-                      +{pinnedLocations.length - 5} more
-                    </span>
-                  )}
-                </div>
-
-                {/* Regional Suggestions - Compact on mobile */}
-                <div className="flex flex-wrap gap-1 sm:gap-2">
-                  {getRegionalDestinations(destination).map((city) => (
-                    <button
-                      key={city}
-                      onClick={() => handlePinDestination(city)}
-                      className="px-2 py-1 bg-green-600/30 border border-green-500/30 rounded text-xs text-white dark:text-gray-100 hover:bg-green-700/40 transition-colors shadow-sm"
-                      title="Click to pin"
-                    >
-                      + {city}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Search Bar - Always Visible but Compact when Collapsed */}
-          <form onSubmit={handleSearch} className={`bg-white/10 backdrop-blur-sm border border-border/20 rounded-full shadow-lg relative travis-glow-white transition-all duration-500 ease-out ${isHeaderCollapsed ? 'p-1' : 'p-1.5 sm:p-2'
-            }`}>
-            <div className="flex items-center gap-1 sm:gap-2">
+          {/* Search Bar */}
+          <form onSubmit={handleSearch} className={`search-bar p-1.5 transition-all duration-300 ${isHeaderMinimized ? 'max-w-xl' : 'max-w-full'}`}>
+            <div className="flex items-center gap-2">
               <div className="flex-1 relative">
-                <MapPin className={`absolute text-muted-foreground z-10 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'left-2.5 w-4 h-4' : 'left-3 sm:left-4 w-4 h-4 sm:w-5 sm:h-5'
-                  } top-1/2 transform -translate-y-1/2`} />
+                <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                 <Input
                   ref={searchInputRef}
                   type="text"
-                  placeholder="Search any destination worldwide..."
+                  placeholder="Search destination..."
                   value={newDestination}
-                  onChange={(e) => handleDestinationChange(e.target.value)}
-                  onKeyPress={handleKeyPress}
-                  onFocus={() => newDestination.length >= 2 && setShowSuggestions(true)}
+                  onChange={(e) => {
+                    setNewDestination(e.target.value);
+                    setShowSuggestions(true);
+                  }}
+                  onFocus={() => setShowSuggestions(newDestination.length >= 2)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className={`bg-transparent border-0 focus:ring-0 placeholder:text-muted-foreground/70 rounded-l-full transition-all duration-500 ease-out ${isHeaderCollapsed ? 'pl-8 h-8 text-sm' : 'pl-10 sm:pl-12 h-10 sm:h-12 text-sm sm:text-base'
-                    }`}
+                  className="pl-9 h-10 bg-transparent border-0 text-sm"
                 />
+
                 {showSuggestions && mapboxSuggestions.length > 0 && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border/50 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
-                    {isLoadingSuggestions && (
-                      <div className="p-4 text-center text-muted-foreground">
-                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-400 mx-auto"></div>
-                      </div>
-                    )}
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-lg z-50 overflow-hidden">
                     {mapboxSuggestions.map((suggestion, index) => (
                       <button
                         key={index}
+                        type="button"
                         onClick={() => handleDestinationSelect(suggestion)}
-                        className="w-full text-left px-3 sm:px-4 py-2 sm:py-3 hover:bg-secondary/50 transition-colors text-sm border-b border-border/20 last:border-b-0"
+                        className="w-full text-left px-3 py-2 hover:bg-secondary/50 transition-colors text-sm"
                       >
-                        <div className="flex items-center space-x-2 sm:space-x-3">
-                          <MapPin className="w-4 h-4 text-blue-400 flex-shrink-0" />
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-foreground truncate">
-                              {suggestion.text}
-                            </div>
-                            <div className="text-xs text-muted-foreground truncate">
-                              {suggestion.place_name}
-                            </div>
-                          </div>
-                        </div>
+                        <div className="font-medium truncate">{suggestion.text}</div>
+                        <div className="text-xs text-muted-foreground truncate">{suggestion.place_name}</div>
                       </button>
                     ))}
                   </div>
                 )}
               </div>
 
-              {/* Date Inputs - Collapsible */}
-              <div className={`flex gap-1 transition-all duration-500 ease-out ${isHeaderCollapsed ? 'opacity-0 w-0 overflow-hidden' : 'opacity-100 w-auto'
-                }`}>
+              <div className={`flex items-center gap-1 transition-all duration-300 ${isHeaderMinimized ? 'hidden md:flex' : 'flex'}`}>
                 <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
-                    >
-                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Depart'}
+                    <Button variant="ghost" className="h-10 px-3 text-sm font-normal">
+                      <Calendar className="w-4 h-4 mr-1.5 text-muted-foreground" />
+                      {format(newCheckinDate, 'MMM d')}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <PopoverContent className="w-auto p-0" align="center">
                     <CalendarComponent
                       mode="single"
                       selected={newCheckinDate}
                       onSelect={(date) => {
-                        if (date) setNewCheckinDate(date);
-                        setCheckinOpen(false);
+                        if (date) {
+                          setNewCheckinDate(date);
+                          setCheckinOpen(false);
+                        }
                       }}
                       initialFocus
-                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
 
+                <span className="text-muted-foreground">-</span>
+
                 <Popover open={checkoutOpen} onOpenChange={setCheckoutOpen}>
                   <PopoverTrigger asChild>
-                    <Button
-                      variant="ghost"
-                      className="h-10 sm:h-12 px-2 sm:px-4 bg-transparent hover:bg-white/5 rounded-none text-xs sm:text-sm justify-start font-normal border-l border-border/30 min-w-[60px] sm:min-w-[80px]"
-                    >
-                      {newCheckinDate ? format(newCheckinDate, 'MMM dd') : 'Return'}
+                    <Button variant="ghost" className="h-10 px-3 text-sm font-normal">
+                      {format(newCheckoutDate, 'MMM d')}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0 bg-card border-border" align="start">
+                  <PopoverContent className="w-auto p-0" align="center">
                     <CalendarComponent
                       mode="single"
                       selected={newCheckoutDate}
                       onSelect={(date) => {
-                        if (date) setNewCheckoutDate(date);
-                        setCheckinOpen(false);
+                        if (date) {
+                          setNewCheckoutDate(date);
+                          setCheckoutOpen(false);
+                        }
                       }}
                       initialFocus
-                      className="pointer-events-auto"
                     />
                   </PopoverContent>
                 </Popover>
               </div>
 
-              <Button
-                type="submit"
-                className={`bg-white/20 hover:bg-white/30 text-white dark:text-gray-100 rounded-r-full border-l border-border/30 search-icon-glow transition-all duration-500 ease-out ${isHeaderCollapsed ? 'h-8 px-2' : 'h-10 sm:h-12 px-3 sm:px-4'
-                  }`}
-              >
-                <Search className={`transition-all duration-500 ease-out ${isHeaderCollapsed ? 'w-4 h-4' : 'w-4 h-4 sm:w-5 sm:h-5'
-                  }`} />
+              <Button type="submit" size="icon" className="h-10 w-10 rounded-full bg-primary">
+                <Search className="w-4 h-4" />
               </Button>
             </div>
           </form>
+
+          {/* Pinned Locations */}
+          {pinnedLocations.length > 0 && !isHeaderMinimized && (
+            <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1">
+              <span className="text-xs text-muted-foreground shrink-0">Saved:</span>
+              {pinnedLocations.slice(0, 4).map((location) => (
+                <button
+                  key={location.id}
+                  onClick={() => handlePinnedLocationClick(location)}
+                  className="pill-button text-xs py-1 shrink-0"
+                >
+                  {location.name}
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </header>
 
-
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6">
-        {/* Hero Section with Photo Slideshow */}
-        <div className="mb-6 sm:mb-8">
-          <PhotoSlideshow placeDetails={placeDetails} />
+      <main className="max-w-6xl mx-auto px-4 py-6">
+        {/* Hero Image Placeholder */}
+        <div className="relative h-64 md:h-80 rounded-2xl overflow-hidden mb-8 bg-gradient-to-br from-primary/20 to-primary/5">
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <Globe className="w-16 h-16 text-primary/30 mx-auto mb-4" />
+              <p className="text-muted-foreground">Destination photos loading...</p>
+            </div>
+          </div>
+          <div className="absolute bottom-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg px-4 py-2">
+            <p className="font-semibold text-foreground">{destinationName}</p>
+            <p className="text-sm text-muted-foreground">{destination}</p>
+          </div>
         </div>
 
-        {/* Essential Travel Information - Mobile First Grid with Equal Heights */}
-        <div className="space-y-6 sm:space-y-8">
-
-          {/* Row 1: Core Travel Essentials - Full Width on Mobile, 2 Columns on Tablet+ */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-            {/* Currency Converter - Essential for travel planning */}
-            <div
-              className="order-1 playful-card flex flex-col animate-slide-in-left"
-              onMouseEnter={() => setHoveredWidget('currency')}
-              onMouseLeave={() => setHoveredWidget(null)}
-            >
-              <div className="flex-1 flex flex-col relative">
-                <CurrencyContainer placeDetails={placeDetails} />
-                {hoveredWidget === 'currency' && (
-                  <div className="absolute -top-2 -right-2">
-                    <Star className="w-4 h-4 text-yellow-400 animate-sparkle" />
-                  </div>
-                )}
+        {/* Widgets Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {/* Weather Widget */}
+          <div className="widget-card lg:col-span-2 animate-slide-up">
+            <div className="widget-header">
+              <div className="widget-icon bg-amber-500/10 text-amber-500">
+                <Sun className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="widget-title">Weather</h3>
+                <p className="widget-subtitle">Current conditions & forecast</p>
               </div>
             </div>
 
-            {/* Time Zone - Critical for scheduling */}
-            <div
-              className="order-2 playful-card flex flex-col animate-slide-in-right"
-              onMouseEnter={() => setHoveredWidget('timezone')}
-              onMouseLeave={() => setHoveredWidget(null)}
-            >
-              <div className="flex-1 flex flex-col relative">
-                <TimeZoneContainer placeDetails={placeDetails} />
-                {hoveredWidget === 'timezone' && (
-                  <div className="absolute -top-2 -right-2">
-                    <Star className="w-4 h-4 text-blue-400 animate-sparkle" />
-                  </div>
-                )}
+            <div className="flex items-center justify-between mb-6">
+              <div>
+                <p className="widget-value">{weather.current.temp}°C</p>
+                <p className="text-sm text-muted-foreground">{weather.current.condition}</p>
+              </div>
+              <div className="text-right text-sm text-muted-foreground">
+                <p>Feels like {weather.current.feelsLike}°C</p>
+                <p>Humidity {weather.current.humidity}%</p>
+              </div>
+            </div>
+
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {weather.forecast.slice(0, 7).map((day, i) => (
+                <div key={i} className="flex-shrink-0 text-center p-3 rounded-xl bg-secondary/30 min-w-[70px]">
+                  <p className="text-xs text-muted-foreground mb-1">{day.day}</p>
+                  <div className="text-amber-500 mb-1">{getWeatherIcon(day.condition)}</div>
+                  <p className="text-sm font-medium">{day.high}°</p>
+                  <p className="text-xs text-muted-foreground">{day.low}°</p>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Time Zone Widget */}
+          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.1s' }}>
+            <div className="widget-header">
+              <div className="widget-icon bg-blue-500/10 text-blue-500">
+                <Clock className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="widget-title">Local Time</h3>
+                <p className="widget-subtitle">{timezone.timezone}</p>
+              </div>
+            </div>
+
+            <p className="widget-value mb-2">{timezone.currentTime}</p>
+            <p className="text-sm text-muted-foreground">{timezone.offset}</p>
+          </div>
+
+          {/* Currency Widget */}
+          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.15s' }}>
+            <div className="widget-header">
+              <div className="widget-icon bg-green-500/10 text-green-500">
+                <DollarSign className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="widget-title">Currency</h3>
+                <p className="widget-subtitle">USD to {currency.toCurrency}</p>
+              </div>
+            </div>
+
+            <div className="flex items-baseline gap-2 mb-4">
+              <p className="widget-value">{currency.toSymbol}{currency.rate.toFixed(2)}</p>
+              <p className="text-sm text-muted-foreground">= $1</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 text-sm">
+              <div className="p-2 rounded-lg bg-secondary/30">
+                <p className="text-muted-foreground">$10</p>
+                <p className="font-medium">{currency.toSymbol}{(10 * currency.rate).toFixed(0)}</p>
+              </div>
+              <div className="p-2 rounded-lg bg-secondary/30">
+                <p className="text-muted-foreground">$100</p>
+                <p className="font-medium">{currency.toSymbol}{(100 * currency.rate).toFixed(0)}</p>
               </div>
             </div>
           </div>
 
-          {/* Row 2: Weather & Transportation - Stack on Mobile, Side by Side on Larger */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 sm:gap-6 items-stretch">
-            {/* Weather Widget - Takes 2 columns on larger screens for better visibility */}
-            <div
-              className="lg:col-span-2 order-1 playful-card flex flex-col animate-slide-in-up"
-              style={{ animationDelay: '0.2s' }}
-              onMouseEnter={() => setHoveredWidget('weather')}
-              onMouseLeave={() => setHoveredWidget(null)}
-            >
-              <div className="flex-1 flex flex-col relative">
-                <WeatherContainer placeDetails={placeDetails} />
-                {hoveredWidget === 'weather' && (
-                  <div className="absolute -top-2 -right-2">
-                    <Heart className="w-4 h-4 text-red-400 animate-heart-beat" />
-                  </div>
-                )}
+          {/* Visa Widget */}
+          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <div className="widget-header">
+              <div className={`widget-icon ${visa.required ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'}`}>
+                <Plane className="w-5 h-5" />
               </div>
-            </div>
-            <div
-              className="order-1 playful-card flex flex-col animate-slide-in-up"
-              style={{ animationDelay: '0.4s' }}
-              onMouseEnter={() => setHoveredWidget('holidays')}
-              onMouseLeave={() => setHoveredWidget(null)}
-            >
-              <div className="flex-1 flex flex-col relative">
-                <HolidayContainer placeDetails={placeDetails} dates={dates} />
-                {hoveredWidget === 'holidays' && (
-                  <div className="absolute -top-2 -right-2">
-                    <Sparkles className="w-4 h-4 text-purple-400 animate-sparkle" />
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-
-          {/* Row 3: Local Information & Transportation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 items-stretch">
-            <div
-              className="order-1 playful-card flex flex-col animate-slide-in-left"
-              style={{ animationDelay: '0.6s' }}
-              onMouseEnter={() => setHoveredWidget('visa')}
-              onMouseLeave={() => setHoveredWidget(null)}
-            >
-              <div className="flex-1 flex flex-col relative">
-                <VisaContainer placeDetails={placeDetails} />
-                {hoveredWidget === 'visa' && (
-                  <div className="absolute -top-2 -right-2">
-                    <Star className="w-4 h-4 text-green-400 animate-sparkle" />
-                  </div>
-                )}
+              <div>
+                <h3 className="widget-title">Visa Requirements</h3>
+                <p className="widget-subtitle">For US citizens</p>
               </div>
             </div>
 
-            {/* Uber Availability - Important for ground transportation */}
-            <div
-              className="order-2 playful-card flex flex-col animate-slide-in-right"
-              style={{ animationDelay: '0.8s' }}
-              onMouseEnter={() => setHoveredWidget('uber')}
-              onMouseLeave={() => setHoveredWidget(null)}
-            >
-              <div className="flex-1 flex flex-col relative">
-                <UberAvailabilityWidget placeDetails={placeDetails} />
-                {hoveredWidget === 'uber' && (
-                  <div className="absolute -top-2 -right-2">
-                    <Star className="w-4 h-4 text-cyan-400 animate-sparkle" />
-                  </div>
-                )}
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4 ${visa.required ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'}`}>
+              {visa.required ? 'Visa Required' : 'Visa Free'}
+            </div>
+
+            <div className="space-y-2 text-sm">
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Type</span>
+                <span className="font-medium">{visa.type}</span>
               </div>
+              <div className="flex justify-between">
+                <span className="text-muted-foreground">Max Stay</span>
+                <span className="font-medium">{visa.maxStay}</span>
+              </div>
+              {visa.required && (
+                <div className="flex justify-between">
+                  <span className="text-muted-foreground">Est. Cost</span>
+                  <span className="font-medium">{visa.cost}</span>
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Holidays Widget */}
+          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.25s' }}>
+            <div className="widget-header">
+              <div className="widget-icon bg-purple-500/10 text-purple-500">
+                <Calendar className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="widget-title">Local Holidays</h3>
+                <p className="widget-subtitle">During your trip</p>
+              </div>
+            </div>
 
-          {/* Row 4: Connectivity & Additional Info */}
-          <div className="grid grid-cols-1 md:grid-cols-1 gap-4 sm:gap-6 items-stretch">
+            {holidays.holidays.length > 0 ? (
+              <div className="space-y-3">
+                {holidays.holidays.map((holiday, i) => (
+                  <div key={i} className="flex items-center justify-between p-3 rounded-lg bg-secondary/30">
+                    <div>
+                      <p className="font-medium">{holiday.name}</p>
+                      <p className="text-xs text-muted-foreground">{holiday.type}</p>
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      {format(new Date(holiday.date), 'MMM d')}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-muted-foreground text-sm">No major holidays during your trip dates.</p>
+            )}
+          </div>
 
-            <div
-              className="order-2 playful-card flex flex-col animate-slide-in-up"
-              style={{ animationDelay: '1.2s' }}
-            >
-              <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
-                <div className="relative">
-                  <Sparkles className="w-12 h-12 text-muted-foreground/50 animate-sparkle mb-4" />
-                  <div className="absolute -top-1 -right-1">
-                    <div className="w-3 h-3 bg-blue-400/30 rounded-full animate-bounce-gentle"></div>
+          {/* Transport Widget */}
+          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.3s' }}>
+            <div className="widget-header">
+              <div className="widget-icon bg-cyan-500/10 text-cyan-500">
+                <MapPin className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="widget-title">Transportation</h3>
+                <p className="widget-subtitle">Getting around</p>
+              </div>
+            </div>
+
+            <div className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium mb-4 ${transport.available ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+              {transport.available ? 'Ride-share Available' : 'Limited Options'}
+            </div>
+
+            <div className="space-y-2">
+              {transport.services.map((service, i) => (
+                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 text-sm">
+                  <span className="font-medium">{service.name}</span>
+                  <div className="text-right">
+                    <p className="text-muted-foreground">{service.estimatedPrice}</p>
+                    <p className="text-xs text-muted-foreground">{service.estimatedTime}</p>
                   </div>
                 </div>
-                <p className="text-sm text-muted-foreground/70 italic">
-                  More amazing features coming soon...
-                </p>
-              </div>
+              ))}
             </div>
           </div>
+        </div>
 
-
-
+        {/* Footer Note */}
+        <div className="mt-8 text-center text-sm text-muted-foreground">
+          <p>Data shown is for demonstration purposes. Connect APIs for live information.</p>
         </div>
       </main>
     </div>
