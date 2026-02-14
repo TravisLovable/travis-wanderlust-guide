@@ -1,13 +1,24 @@
 import { useEffect, useRef, useState } from 'react';
-import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { SelectedPlace } from '@/hooks/useGooglePlaces';
 
 function toTitleCase(str: string): string {
-  return str.replace(/\b\w+/g, word => {
+  return str.replace(/\b\w+/g, (word) => {
     const lower = word.toLowerCase();
     const minor = ['a','an','the','and','but','or','for','nor','in','on','at','to','by','of','up','as'];
     if (minor.includes(lower)) return lower;
     return lower.charAt(0).toUpperCase() + lower.slice(1);
   });
+}
+
+function deriveCityCountry(formattedAddress: string): { city: string; country: string } {
+  const parts = formattedAddress.split(',').map((s) => s.trim());
+  if (parts.length >= 2) {
+    return {
+      city: toTitleCase(parts[0]),
+      country: toTitleCase(parts[parts.length - 1]),
+    };
+  }
+  return { city: toTitleCase(formattedAddress), country: '' };
 }
 
 interface LoadingIntelligenceProps {
@@ -18,58 +29,74 @@ interface LoadingIntelligenceProps {
 const LoadingIntelligence = ({ placeDetails, onComplete }: LoadingIntelligenceProps) => {
   const onCompleteRef = useRef(onComplete);
   onCompleteRef.current = onComplete;
+  const completedRef = useRef(false);
+  const [visible, setVisible] = useState(false);
 
-  const [progress, setProgress] = useState(0);
-
-  const displayName = toTitleCase(
-    placeDetails?.name || placeDetails?.formatted_address || 'Destination'
+  const { city, country } = deriveCityCountry(
+    placeDetails?.formatted_address || placeDetails?.name || 'Destination'
   );
+  const displayLabel = country ? `${city}, ${country}` : city;
 
   useEffect(() => {
-    const progressTimer = setInterval(() => {
-      setProgress(prev => {
-        if (prev >= 100) {
-          clearInterval(progressTimer);
-          return 100;
-        }
-        return prev + 1;
-      });
-    }, 50);
+    completedRef.current = false;
+    console.log('[transition] mounted');
 
-    const transitionTimer = setTimeout(() => onCompleteRef.current(), 5200);
+    // Trigger fade-in on next frame
+    requestAnimationFrame(() => setVisible(true));
+
+    const complete = () => {
+      if (!completedRef.current) {
+        completedRef.current = true;
+        console.log('[transition] navigating to results');
+        onCompleteRef.current();
+      }
+    };
+
+    // Navigate after 2500ms
+    const navTimer = setTimeout(() => {
+      console.log('[transition] fade-in complete');
+      complete();
+    }, 2500);
+
+    // Safety fallback
+    const safetyTimer = setTimeout(() => {
+      console.warn('[transition] safety timeout');
+      complete();
+    }, 3000);
 
     return () => {
-      clearInterval(progressTimer);
-      clearTimeout(transitionTimer);
+      clearTimeout(navTimer);
+      clearTimeout(safetyTimer);
     };
   }, []);
 
   return (
-    <div className="fixed inset-0 flex items-center justify-center bg-white">
-      <div className="text-center px-6 w-full max-w-md">
+    <div className="fixed inset-0 z-50 bg-white flex items-center justify-center">
+      <div
+        className="text-center px-8"
+        style={{
+          opacity: visible ? 1 : 0,
+          transition: 'opacity 400ms ease-out',
+        }}
+      >
         <h1
-          className="text-4xl tracking-tight text-[#1A1A1A]"
-          style={{ fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 500 }}
+          className="text-3xl md:text-4xl font-medium tracking-tight"
+          style={{
+            fontFamily: "'Inter', system-ui, sans-serif",
+            color: '#2B2F33',
+          }}
         >
-          {displayName}
+          {displayLabel}
         </h1>
-
         <p
-          className="mt-3 text-lg text-[#9CA3AF]"
-          style={{ fontFamily: "'Inter', system-ui, sans-serif", fontWeight: 400 }}
+          className="mt-2 text-sm"
+          style={{
+            fontFamily: "'Inter', system-ui, sans-serif",
+            color: '#5A626B',
+          }}
         >
           Preparing your intelligence brief
         </p>
-
-        <div className="mt-10 mx-auto w-full max-w-[280px] h-[2px] bg-black/[0.04] rounded-full overflow-hidden">
-          <div
-            className="h-full rounded-full transition-[width] duration-75 ease-linear"
-            style={{
-              width: `${progress}%`,
-              background: 'linear-gradient(90deg, #6B87C8, #8E7CF3)',
-            }}
-          />
-        </div>
       </div>
     </div>
   );
