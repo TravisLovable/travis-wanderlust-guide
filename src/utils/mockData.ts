@@ -1,5 +1,6 @@
 // Mock data for development and demo purposes
 // This allows the UI to function without real API connections
+import { toLocalMidnight } from '@/lib/dates';
 
 export interface MockWeatherData {
   location: string;
@@ -37,6 +38,15 @@ export interface MockTimezoneData {
   isDaylight: boolean;
 }
 
+export interface MockSunData {
+  sunrise: string;
+  sunset: string;
+  sunriseHour: number;   // decimal hours (6.2 = 6:12 AM)
+  sunsetHour: number;    // decimal hours (18.57 = 6:34 PM)
+  currentHour: number;   // decimal hours in destination tz
+  daylightMinutes: number;
+}
+
 export interface MockVisaData {
   required: boolean;
   type: string;
@@ -72,14 +82,14 @@ export function getMockWeather(destination: string): MockWeatherData {
   const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
   const today = new Date();
 
-  for (let i = 0; i < 7; i++) {
+  for (let i = 0; i < 14; i++) {
     const date = new Date(today);
     date.setDate(date.getDate() + i);
     const dayCondition = weatherConditions[Math.floor(Math.random() * weatherConditions.length)];
     const variation = Math.floor(Math.random() * 6) - 3;
 
     forecast.push({
-      date: date.toISOString().split('T')[0],
+      date: `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`,
       day: days[date.getDay()],
       high: baseTemp + variation + 5,
       low: baseTemp + variation - 5,
@@ -233,6 +243,67 @@ export function getMockTimezone(destination: string): MockTimezoneData {
   };
 }
 
+// TODO: Replace dummy data with actual WeatherAPI astronomy data from Supabase
+// Sunrise/sunset mock data
+export function getMockSunData(destination: string): MockSunData {
+  const lower = destination.toLowerCase();
+
+  let sunriseHour: number;
+  let sunsetHour: number;
+
+  // High-latitude summer (very long days)
+  if (lower.includes('iceland') || lower.includes('norway') || lower.includes('sweden') || lower.includes('finland')) {
+    sunriseHour = 3.25;   // 3:15 AM
+    sunsetHour = 23.5;    // 11:30 PM
+  }
+  // Equatorial (nearly 12/12 split year-round)
+  else if (lower.includes('singapore') || lower.includes('ecuador') || lower.includes('kenya') || lower.includes('colombia')) {
+    sunriseHour = 6.0;    // 6:00 AM
+    sunsetHour = 18.25;   // 6:15 PM
+  }
+  // Tropical
+  else if (lower.includes('bali') || lower.includes('thailand') || lower.includes('hawaii') || lower.includes('miami')) {
+    sunriseHour = 5.75;   // 5:45 AM
+    sunsetHour = 18.75;   // 6:45 PM
+  }
+  // Default mid-latitude
+  else {
+    sunriseHour = 6.2;    // 6:12 AM
+    sunsetHour = 18.567;  // 6:34 PM
+  }
+
+  const formatTime = (decimalHour: number): string => {
+    const h = Math.floor(decimalHour);
+    const m = Math.round((decimalHour - h) * 60);
+    const period = h >= 12 ? 'PM' : 'AM';
+    const h12 = h > 12 ? h - 12 : h === 0 ? 12 : h;
+    return `${h12}:${String(m).padStart(2, '0')} ${period}`;
+  };
+
+  // Compute current hour in destination timezone (reuse timezone lookup)
+  const tz = getMockTimezone(destination);
+  let currentHour = 12;
+  try {
+    const now = new Date();
+    const parts = now.toLocaleTimeString('en-US', { timeZone: tz.timezone, hour12: false, hour: '2-digit', minute: '2-digit' });
+    const [h, m] = parts.split(':').map(Number);
+    currentHour = h + m / 60;
+  } catch {
+    // fallback: midday
+  }
+
+  const daylightMinutes = Math.round((sunsetHour - sunriseHour) * 60);
+
+  return {
+    sunrise: formatTime(sunriseHour),
+    sunset: formatTime(sunsetHour),
+    sunriseHour,
+    sunsetHour,
+    currentHour,
+    daylightMinutes,
+  };
+}
+
 // Visa requirements
 export function getMockVisa(destination: string, nationality: string = 'US'): MockVisaData {
   const lower = destination.toLowerCase();
@@ -281,8 +352,8 @@ export function getMockVisa(destination: string, nationality: string = 'US'): Mo
 
 // Holiday data
 export function getMockHolidays(destination: string, dates: { checkin: string; checkout: string }): MockHolidayData {
-  const checkin = new Date(dates.checkin);
-  const checkout = new Date(dates.checkout);
+  const checkin = toLocalMidnight(dates.checkin);
+  const checkout = toLocalMidnight(dates.checkout);
 
   // Generate some mock holidays within the date range
   const holidays = [];
@@ -305,8 +376,12 @@ export function getMockHolidays(destination: string, dates: { checkin: string; c
 
     const randomHoliday = possibleHolidays[Math.floor(Math.random() * possibleHolidays.length)];
 
+    const y = holidayDate.getFullYear();
+    const m = String(holidayDate.getMonth() + 1).padStart(2, '0');
+    const d = String(holidayDate.getDate()).padStart(2, '0');
+
     holidays.push({
-      date: holidayDate.toISOString().split('T')[0],
+      date: `${y}-${m}-${d}`,
       name: randomHoliday.name,
       type: randomHoliday.type,
     });
@@ -352,6 +427,183 @@ export function getMockTransport(destination: string): MockTransportData {
       { name: 'Ride Share', estimatedPrice: '$10-20', estimatedTime: '10-15 min' },
     ],
   };
+}
+
+// Local Events data
+export interface MockLocalEvent {
+  name: string;
+  startDate: string;
+  endDate: string;
+  category: 'Festival' | 'Conference' | 'Sports' | 'Concert' | 'Civic';
+}
+
+export interface MockLocalEventsData {
+  events: MockLocalEvent[];
+}
+
+const eventPool: Record<string, Array<{ name: string; category: MockLocalEvent['category']; monthRange: [number, number]; durationDays: number }>> = {
+  japan: [
+    { name: 'Cherry Blossom Festival', category: 'Festival', monthRange: [3, 4], durationDays: 14 },
+    { name: 'Tokyo Marathon', category: 'Sports', monthRange: [2, 3], durationDays: 1 },
+    { name: 'Fuji Rock Festival', category: 'Concert', monthRange: [7, 7], durationDays: 3 },
+    { name: 'Gion Matsuri', category: 'Festival', monthRange: [7, 7], durationDays: 31 },
+  ],
+  france: [
+    { name: 'Roland Garros', category: 'Sports', monthRange: [5, 6], durationDays: 14 },
+    { name: 'Fête de la Musique', category: 'Concert', monthRange: [6, 6], durationDays: 1 },
+    { name: 'Tour de France', category: 'Sports', monthRange: [7, 7], durationDays: 21 },
+    { name: 'Paris Fashion Week', category: 'Civic', monthRange: [9, 10], durationDays: 7 },
+  ],
+  uk: [
+    { name: 'Wimbledon', category: 'Sports', monthRange: [6, 7], durationDays: 14 },
+    { name: 'Notting Hill Carnival', category: 'Festival', monthRange: [8, 8], durationDays: 2 },
+    { name: 'London Tech Week', category: 'Conference', monthRange: [6, 6], durationDays: 5 },
+    { name: 'Glastonbury Festival', category: 'Concert', monthRange: [6, 6], durationDays: 5 },
+  ],
+  spain: [
+    { name: 'La Tomatina', category: 'Festival', monthRange: [8, 8], durationDays: 1 },
+    { name: 'Running of the Bulls', category: 'Festival', monthRange: [7, 7], durationDays: 9 },
+    { name: 'Mobile World Congress', category: 'Conference', monthRange: [2, 3], durationDays: 4 },
+    { name: 'Primavera Sound', category: 'Concert', monthRange: [5, 6], durationDays: 4 },
+  ],
+  germany: [
+    { name: 'Oktoberfest', category: 'Festival', monthRange: [9, 10], durationDays: 16 },
+    { name: 'Berlin Film Festival', category: 'Civic', monthRange: [2, 2], durationDays: 10 },
+    { name: 'CeBIT Tech Conference', category: 'Conference', monthRange: [3, 3], durationDays: 5 },
+    { name: 'Carnival', category: 'Festival', monthRange: [2, 2], durationDays: 6 },
+  ],
+  italy: [
+    { name: 'Venice Carnival', category: 'Festival', monthRange: [2, 2], durationDays: 14 },
+    { name: 'Milan Design Week', category: 'Civic', monthRange: [4, 4], durationDays: 7 },
+    { name: 'Palio di Siena', category: 'Sports', monthRange: [7, 8], durationDays: 1 },
+    { name: 'Venice Film Festival', category: 'Civic', monthRange: [8, 9], durationDays: 10 },
+  ],
+  thailand: [
+    { name: 'Songkran Water Festival', category: 'Festival', monthRange: [4, 4], durationDays: 3 },
+    { name: 'Loy Krathong', category: 'Festival', monthRange: [11, 11], durationDays: 1 },
+    { name: 'Bangkok International Film Festival', category: 'Civic', monthRange: [3, 3], durationDays: 7 },
+  ],
+  australia: [
+    { name: 'Sydney Festival', category: 'Festival', monthRange: [1, 1], durationDays: 21 },
+    { name: 'Australian Open', category: 'Sports', monthRange: [1, 1], durationDays: 14 },
+    { name: 'Melbourne Cup', category: 'Sports', monthRange: [11, 11], durationDays: 1 },
+    { name: 'Vivid Sydney', category: 'Festival', monthRange: [5, 6], durationDays: 23 },
+  ],
+  brazil: [
+    { name: 'Carnival', category: 'Festival', monthRange: [2, 3], durationDays: 5 },
+    { name: 'Rock in Rio', category: 'Concert', monthRange: [9, 10], durationDays: 7 },
+    { name: 'São Paulo Fashion Week', category: 'Civic', monthRange: [4, 4], durationDays: 5 },
+  ],
+  india: [
+    { name: 'Diwali Festival', category: 'Festival', monthRange: [10, 11], durationDays: 5 },
+    { name: 'Holi Festival', category: 'Festival', monthRange: [3, 3], durationDays: 2 },
+    { name: 'Bangalore Tech Summit', category: 'Conference', monthRange: [11, 11], durationDays: 3 },
+  ],
+  singapore: [
+    { name: 'Singapore Grand Prix', category: 'Sports', monthRange: [9, 10], durationDays: 3 },
+    { name: 'Singapore Food Festival', category: 'Festival', monthRange: [7, 8], durationDays: 14 },
+    { name: 'Innovfest Unbound', category: 'Conference', monthRange: [6, 6], durationDays: 2 },
+  ],
+  dubai: [
+    { name: 'Dubai Shopping Festival', category: 'Civic', monthRange: [12, 1], durationDays: 30 },
+    { name: 'Dubai World Cup', category: 'Sports', monthRange: [3, 3], durationDays: 1 },
+    { name: 'GITEX Technology Week', category: 'Conference', monthRange: [10, 10], durationDays: 5 },
+  ],
+  mexico: [
+    { name: 'Día de los Muertos', category: 'Festival', monthRange: [10, 11], durationDays: 2 },
+    { name: 'Guelaguetza Festival', category: 'Festival', monthRange: [7, 7], durationDays: 14 },
+    { name: 'Mexican Grand Prix', category: 'Sports', monthRange: [10, 10], durationDays: 3 },
+  ],
+};
+
+// Fallback events for unrecognized destinations
+const fallbackEvents: Array<{ name: string; category: MockLocalEvent['category']; durationDays: number }> = [
+  { name: 'International Food Festival', category: 'Festival', durationDays: 5 },
+  { name: 'Regional Tech Summit', category: 'Conference', durationDays: 3 },
+  { name: 'City Marathon', category: 'Sports', durationDays: 1 },
+  { name: 'Open-Air Concert Series', category: 'Concert', durationDays: 2 },
+  { name: 'Civic Heritage Week', category: 'Civic', durationDays: 7 },
+];
+
+export function getMockLocalEvents(
+  destination: string,
+  dates: { checkin: string; checkout: string }
+): MockLocalEventsData {
+  const checkin = toLocalMidnight(dates.checkin);
+  const checkout = toLocalMidnight(dates.checkout);
+  const lower = destination.toLowerCase();
+
+  // Find matching event pool
+  let pool: typeof eventPool[string] | undefined;
+  for (const [key, events] of Object.entries(eventPool)) {
+    if (lower.includes(key)) {
+      pool = events;
+      break;
+    }
+  }
+
+  const results: MockLocalEvent[] = [];
+  const year = checkin.getFullYear();
+
+  if (pool) {
+    // Check each event for date overlap with trip window
+    for (const event of pool) {
+      // Build event dates for the trip year
+      const eventStart = new Date(year, event.monthRange[0] - 1, 5 + Math.floor(Math.abs(hashString(event.name)) % 20));
+      const eventEnd = new Date(eventStart);
+      eventEnd.setDate(eventEnd.getDate() + event.durationDays);
+
+      // Date overlap: event starts before checkout AND event ends after checkin
+      if (eventStart < checkout && eventEnd > checkin) {
+        results.push({
+          name: event.name,
+          startDate: `${eventStart.getFullYear()}-${String(eventStart.getMonth() + 1).padStart(2, '0')}-${String(eventStart.getDate()).padStart(2, '0')}`,
+          endDate: `${eventEnd.getFullYear()}-${String(eventEnd.getMonth() + 1).padStart(2, '0')}-${String(eventEnd.getDate()).padStart(2, '0')}`,
+          category: event.category,
+        });
+      }
+    }
+  } else {
+    // For unrecognized destinations, probabilistically generate 0-2 events
+    const tripLength = Math.ceil((checkout.getTime() - checkin.getTime()) / (1000 * 60 * 60 * 24));
+    const seed = hashString(destination + dates.checkin);
+
+    if (tripLength > 4 && Math.abs(seed) % 3 !== 0) {
+      const count = 1 + (Math.abs(seed) % 2);
+      for (let i = 0; i < count && i < fallbackEvents.length; i++) {
+        const fb = fallbackEvents[(Math.abs(seed) + i) % fallbackEvents.length];
+        const offset = Math.abs((seed + i * 7) % Math.max(tripLength - 1, 1));
+        const start = new Date(checkin);
+        start.setDate(start.getDate() + offset);
+        const end = new Date(start);
+        end.setDate(end.getDate() + fb.durationDays);
+
+        const fmt = (dt: Date) => `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}-${String(dt.getDate()).padStart(2, '0')}`;
+        results.push({
+          name: fb.name,
+          startDate: fmt(start),
+          endDate: fmt(end),
+          category: fb.category,
+        });
+      }
+    }
+  }
+
+  // Sort by start date
+  results.sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+  return { events: results };
+}
+
+// Stable hash for deterministic mock data (no Math.random)
+function hashString(str: string): number {
+  let hash = 0;
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charCodeAt(i);
+    hash = ((hash << 5) - hash) + char;
+    hash |= 0;
+  }
+  return hash;
 }
 
 // Photo URLs for destinations (using placeholder images)

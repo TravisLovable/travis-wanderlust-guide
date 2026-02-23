@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Google Places API Diagnostic</title>
+  <style>
+    body { font-family: monospace; padding: 24px; background: #111; color: #eee; }
+    .log { margin: 4px 0; padding: 6px 10px; border-radius: 4px; }
+    .ok { background: #1a3a1a; color: #6f6; }
+    .err { background: #3a1a1a; color: #f66; }
+    .info { background: #1a1a3a; color: #6af; }
+    input { width: 300px; padding: 8px; font-size: 16px; border-radius: 6px; border: 1px solid #444; background: #222; color: #fff; margin: 8px 0; }
+    #results { margin-top: 12px; }
+  </style>
+</head>
+<body>
+  <h2>Google Places JS SDK — Isolated Test</h2>
+  <div id="log"></div>
+  <hr>
+  <input id="q" type="text" placeholder="Type a city name..." disabled />
+  <div id="results"></div>
+
+  <script>
+    const API_KEY = 'AIzaSyBRZyqRS5Nx5PtEswwY5x8l39n-eOZ-POk';
+    const logEl = document.getElementById('log');
+    const qEl = document.getElementById('q');
+    const resEl = document.getElementById('results');
+
+    function log(msg, cls = 'info') {
+      const d = document.createElement('div');
+      d.className = 'log ' + cls;
+      d.textContent = `[${new Date().toISOString().slice(11,19)}] ${msg}`;
+      logEl.appendChild(d);
+      console.log(`[${cls}]`, msg);
+    }
+
+    // Step 1: Load the script
+    log('Loading Maps JS API with libraries=places...');
+    const script = document.createElement('script');
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${API_KEY}&libraries=places`;
+    script.async = true;
+
+    script.onload = () => {
+      log('Script loaded successfully', 'ok');
+
+      // Step 2: Check google.maps.places exists
+      if (!window.google?.maps?.places) {
+        log('FATAL: google.maps.places is undefined after script load', 'err');
+        return;
+      }
+      log('google.maps.places namespace exists', 'ok');
+
+      // Step 3: Check for console errors injected by Google
+      // Google may emit errors asynchronously — listen
+      const origError = console.error;
+      console.error = function(...args) {
+        const msg = args.map(a => String(a)).join(' ');
+        if (msg.includes('Google Maps') || msg.includes('google.maps') || msg.includes('gm_authFailure')) {
+          log('GOOGLE CONSOLE ERROR: ' + msg, 'err');
+        }
+        origError.apply(console, args);
+      };
+
+      // Step 4: Check for gm_authFailure (Google's auth failure callback)
+      window.gm_authFailure = () => {
+        log('gm_authFailure() fired — API key is rejected for this domain/referrer', 'err');
+      };
+
+      // Step 5: Instantiate services
+      let autocompleteService, sessionToken;
+      try {
+        autocompleteService = new google.maps.places.AutocompleteService();
+        sessionToken = new google.maps.places.AutocompleteSessionToken();
+        log('AutocompleteService instantiated', 'ok');
+        log('SessionToken created: ' + String(sessionToken), 'ok');
+      } catch (e) {
+        log('Failed to instantiate AutocompleteService: ' + e.message, 'err');
+        return;
+      }
+
+      // Step 6: Enable input and test on type
+      qEl.disabled = false;
+      qEl.focus();
+      log('Type a city name to test predictions...', 'info');
+
+      let debounce = null;
+      qEl.addEventListener('input', () => {
+        clearTimeout(debounce);
+        const val = qEl.value.trim();
+        if (val.length < 2) {
+          resEl.innerHTML = '';
+          return;
+        }
+
+        debounce = setTimeout(() => {
+          log(`Calling getPlacePredictions("${val}")...`);
+          const t0 = performance.now();
+
+          autocompleteService.getPlacePredictions(
+            {
+              input: val,
+              types: ['(cities)'],
+              sessionToken: sessionToken,
+            },
+            (predictions, status) => {
+              const ms = Math.round(performance.now() - t0);
+
+              log(`Callback fired in ${ms}ms — status: "${status}"`,
+                status === 'OK' ? 'ok' : 'err');
+
+              if (status === 'OK' && predictions) {
+                log(`Got ${predictions.length} predictions`, 'ok');
+                resEl.innerHTML = predictions.map(p =>
+                  `<div class="log ok">${p.structured_formatting.main_text} — ${p.structured_formatting.secondary_text}</div>`
+                ).join('');
+              } else {
+                log(`No predictions. Status: ${status}`, 'err');
+
+                // Decode status
+                const statusMap = {
+                  'REQUEST_DENIED': 'API key rejected. Check: 1) Places API enabled, 2) Referrer restrictions match this origin, 3) API key restrictions include Maps JavaScript API',
+                  'OVER_QUERY_LIMIT': 'Rate limited or billing issue',
+                  'INVALID_REQUEST': 'Bad request parameters',
+                  'ZERO_RESULTS': 'Query matched nothing (not an error)',
+                  'UNKNOWN_ERROR': 'Server error — retry',
+                };
+                if (statusMap[status]) {
+                  log('Diagnosis: ' + statusMap[status], 'err');
+                }
+                resEl.innerHTML = `<div class="log err">Status: ${status}</div>`;
+              }
+            }
+          );
+        }, 300);
+      });
+    };
+
+    script.onerror = (e) => {
+      log('FATAL: Script failed to load — network error or blocked', 'err');
+    };
+
+    document.head.appendChild(script);
+
+    // Step 7: Log the current origin for referrer comparison
+    setTimeout(() => {
+      log('Current origin: ' + window.location.origin, 'info');
+      log('Current referrer: ' + (document.referrer || '(empty)'), 'info');
+      log('Expected referrer patterns in GCP: localhost, localhost:*, or http://localhost:*/*', 'info');
+    }, 100);
+  </script>
+</body>
+</html>

@@ -9,10 +9,11 @@ import {
 } from '@/components/ui/popover';
 import { Calendar as CalendarComponent } from '@/components/ui/calendar';
 import { format } from 'date-fns';
-import { useMapboxGeocoding, SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { useGooglePlaces, SelectedPlace } from '@/hooks/useGooglePlaces';
 import { useToast } from '@/hooks/use-toast';
 import { useNavigate } from 'react-router-dom';
 import PrivacyModal from './PrivacyModal';
+import { todayLocal } from '@/lib/dates';
 import TermsModal from './TermsModal';
 import SettingsModal from './SettingsModal';
 
@@ -96,8 +97,8 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
   const submitButtonRef = useRef<HTMLButtonElement>(null);
   const { toast } = useToast();
 
-  // Mapbox suggestions
-  const { suggestions: mapboxSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useMapboxGeocoding(
+  // Google Places suggestions
+  const { suggestions: placeSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useGooglePlaces(
     destination,
     showSuggestions && destination.length >= 2
   );
@@ -150,13 +151,13 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
   }, [destination, checkinDate, checkoutDate, selectedPlace, onSearch, toast]);
 
   const handleDestinationSelect = async (suggestion: any) => {
-    if (suggestion.id && suggestion.place_name) {
-      const placeDetails = await getPlaceDetails(suggestion);
-      if (placeDetails) {
-        setDestination(placeDetails.formatted_address);
-        setSelectedPlace(placeDetails);
+    if (suggestion.place_id) {
+      const details = await getPlaceDetails(suggestion.place_id);
+      if (details) {
+        setDestination(details.formatted_address);
+        setSelectedPlace(details);
       } else {
-        setDestination(suggestion.place_name);
+        setDestination(suggestion.description || suggestion.place_id);
         setSelectedPlace(null);
       }
     } else if (typeof suggestion === 'string') {
@@ -365,7 +366,7 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
                   />
 
                   {/* Suggestions Dropdown */}
-                  {showSuggestions && (mapboxSuggestions.length > 0 || destination.length < 2) && (
+                  {showSuggestions && destination.length >= 2 && (
                     <div className="absolute top-full left-0 right-0 mt-2 bg-card border border-border rounded-xl shadow-xl z-50 overflow-hidden">
                       {isLoadingSuggestions && hasApiAccess && (
                         <div className="p-4 text-center text-muted-foreground">
@@ -373,24 +374,24 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
                         </div>
                       )}
 
-                      {mapboxSuggestions.map((suggestion, index) => (
+                      {placeSuggestions.map((suggestion, index) => (
                         <button
-                          key={`mapbox-${index}`}
+                          key={`place-${index}`}
                           type="button"
                           onClick={() => handleDestinationSelect(suggestion)}
                           className="w-full text-left px-4 py-3 hover:bg-secondary/50 transition-colors flex items-center gap-3"
                         >
                           <MapPin className="w-4 h-4 text-primary flex-shrink-0" />
                           <div className="flex-1 min-w-0">
-                            <div className="font-medium text-foreground truncate">{suggestion.text}</div>
-                            <div className="text-xs text-muted-foreground truncate">{suggestion.place_name}</div>
+                            <div className="font-medium text-foreground truncate">{suggestion.structured_formatting.main_text}</div>
+                            <div className="text-xs text-muted-foreground truncate">{suggestion.structured_formatting.secondary_text}</div>
                           </div>
                         </button>
                       ))}
 
-                      {!hasApiAccess && destination.length < 2 && (
+                      {!hasApiAccess && (
                         <div className="p-3 text-xs text-muted-foreground border-t border-border">
-                          Type at least 2 characters to search
+                          Search unavailable — check API key
                         </div>
                       )}
                     </div>
@@ -420,7 +421,7 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
                       mode="single"
                       selected={checkinDate}
                       onSelect={handleCheckinSelect}
-                      disabled={(date) => date < new Date()}
+                      disabled={(date) => date < todayLocal()}
                       initialFocus
                     />
                   </PopoverContent>
@@ -449,7 +450,7 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
                       mode="single"
                       selected={checkoutDate}
                       onSelect={handleCheckoutSelect}
-                      disabled={(date) => date < (checkinDate || new Date())}
+                      disabled={(date) => date < (checkinDate || todayLocal())}
                       initialFocus
                     />
                   </PopoverContent>
@@ -461,9 +462,9 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
                   type="submit"
                   tabIndex={4}
                   disabled={!isSearchEnabled}
-                  className="h-10 px-5 rounded-full bg-primary hover:bg-primary/90 text-primary-foreground disabled:opacity-50 hover:cursor-pointer disabled:cursor-not-allowed"
+                  className="h-9 w-9 rounded-full bg-foreground/85 hover:bg-foreground/95 text-background disabled:opacity-40 hover:cursor-pointer disabled:cursor-not-allowed shadow-none transition-colors duration-150"
                 >
-                  <ArrowRight className="w-5 h-5" />
+                  <ArrowRight className="w-4 h-4" strokeWidth={1.75} />
                 </Button>
               </form>
             </div>
@@ -492,6 +493,11 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
             </div>
           </div>
         </div>
+
+        {/* Copyright */}
+        <span className="fixed bottom-6 left-8 z-10 text-xs font-medium select-none" style={{ color: '#2B2B2B' }}>
+          &copy; 2026 Travis
+        </span>
 
         {/* Utility links - bottom right */}
         <div className="fixed bottom-6 right-8 z-10 flex items-center gap-1.5 text-xs font-medium" style={{ color: '#2B2B2B' }}>
