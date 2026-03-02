@@ -40,8 +40,9 @@ serve(async (req) => {
     console.log('API Key starts with:', apiKey ? apiKey.substring(0, 10) + '...' : 'undefined')
 
     if (!apiKey) {
+      const msg = 'Mapbox API key not configured. Set the MAPBOX_API_KEY secret for this function in Supabase Dashboard → Edge Functions → mapbox-geocoding → Secrets.';
       return new Response(
-        JSON.stringify({ error: 'Mapbox API key not configured' }),
+        JSON.stringify({ error: msg }),
         {
           status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -68,9 +69,10 @@ serve(async (req) => {
       }
     )
   } catch (error) {
-    console.error('Mapbox geocoding error:', error)
+    console.error('Mapbox geocoding error:', error);
+    const message = error instanceof Error ? error.message : String(error);
     return new Response(
-      JSON.stringify({ error: error.message }),
+      JSON.stringify({ error: `mapbox-geocoding: ${message}` }),
       {
         status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }

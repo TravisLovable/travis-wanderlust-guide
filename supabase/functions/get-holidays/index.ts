@@ -26,7 +26,7 @@ serve(async (req) => {
     }
 
     const timeAndDateApiKey = '6NbsuamveP';
-    const timeAndDateSecretKey = 'your_secret_key_here'; // You'll need to provide the actual secret key
+    const timeAndDateSecretKey = 'O2Uiz1iGOVbcMAEr5EuE'; // You'll need to provide the actual secret key
 
     // Use current year if not provided
     const targetYear = year || new Date().getFullYear();

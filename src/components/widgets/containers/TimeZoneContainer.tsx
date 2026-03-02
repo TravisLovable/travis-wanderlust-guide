@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import TimeZonePresenter from '../presenters/TimeZonePresenter';
-import { supabase } from '@/integrations/supabase/client';
+import { invokeFunction } from '@/integrations/supabase/client';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface TimeZoneContainerProps {
@@ -200,33 +200,31 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) =
           originTimezone
         });
 
-        const { data, error } = await supabase.functions.invoke('get-world-clock', {
-          body: {
-            originTimeZone: originTimezone,
-            destinationTimeZone: destinationTimezone
-          }
+        const data = await invokeFunction<Record<string, unknown>>('get-world-clock', {
+          originTimeZone: originTimezone,
+          destinationTimeZone: destinationTimezone
         });
-
-        if (error) {
-          console.error('Error fetching world clock data:', error);
-          throw error;
-        }
 
         console.log('World clock data fetched successfully:', JSON.stringify(data, null, 2));
 
-        if (data && typeof data === 'object') {
-          console.log('About to set worldClockData state with:', data);
-          setWorldClockData(data);
-          console.log('World clock data set in state successfully');
-          // Log immediately after state set to check if it worked
-          setTimeout(() => {
-            console.log('State check after setWorldClockData:', worldClockData);
-          }, 100);
+        // Use payload: support wrapped { data: {...} } or direct { origin, destination, ... }
+        const payload = (data && typeof data === 'object' && 'data' in data && data.data && typeof data.data === 'object')
+          ? (data.data as Record<string, unknown>)
+          : data;
+        const isErrorResponse = payload && typeof payload === 'object' && typeof (payload as { error?: unknown }).error === 'string';
+        const hasExpectedShape = payload && typeof payload === 'object' && 'origin' in payload && 'destination' in payload && 'timeDifferenceText' in payload;
+
+        if (hasExpectedShape && !isErrorResponse) {
+          console.log('About to set worldClockData state with:', payload);
+          setWorldClockData(payload as WorldClockData);
+        } else if (isErrorResponse) {
+          console.error('World clock API returned error:', (payload as { error: string }).error);
         } else {
           console.error('Invalid world clock data structure received:', data);
         }
       } catch (error) {
-        console.error('Failed to fetch world clock data:', error);
+        const message = error instanceof Error ? error.message : String(error);
+        console.error('TimeZoneContainer —', message);
         // Keep existing mock data as fallback
       } finally {
         setIsLoading(false);

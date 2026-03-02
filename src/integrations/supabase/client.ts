@@ -2,8 +2,14 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Database } from './types';
 
-const SUPABASE_URL = "https://jmbjxlijwojvavmmzpmo.supabase.co";
-const SUPABASE_PUBLISHABLE_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptYmp4bGlqd29qdmF2bW16cG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzQ2NjcsImV4cCI6MjA3MDM1MDY2N30.RR7vxI8Q1kQ0Qsb20f4QK5fD4CY4zehwuq65NVgbVNo";
+// Use env so the app points at the linked Supabase project. Vite only exposes VITE_* vars.
+const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL ?? "https://jmbjxlijwojvavmmzpmo.supabase.co";
+const SUPABASE_PUBLISHABLE_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY ?? "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptYmp4bGlqd29qdmF2bW16cG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzQ2NjcsImV4cCI6MjA3MDM1MDY2N30.RR7vxI8Q1kQ0Qsb20f4QK5fD4CY4zehwuq65NVgbVNo";
+
+// Supabase anon key must be a JWT (starts with "eyJ"). "sb_publishable_..." causes 401 Invalid JWT.
+if (typeof SUPABASE_PUBLISHABLE_KEY === 'string' && !SUPABASE_PUBLISHABLE_KEY.startsWith('eyJ')) {
+  console.error('[Supabase] Invalid anon key: use the JWT from Dashboard → Settings → API → anon public.');
+}
 
 // Import the supabase client like this:
 // import { supabase } from "@/integrations/supabase/client";
@@ -15,3 +21,19 @@ export const supabase = createClient<Database>(SUPABASE_URL, SUPABASE_PUBLISHABL
     autoRefreshToken: true,
   }
 });
+
+/** Invoke an Edge Function and throw with a descriptive message on failure. */
+export async function invokeFunction<T = unknown>(
+  name: string,
+  body?: Record<string, unknown>
+): Promise<T> {
+  const { data, error } = await supabase.functions.invoke<T & { error?: string }>(name, { body });
+  if (error) {
+    const msg = typeof data?.error === 'string' ? data.error : error.message;
+    const hint = error.message === 'Failed to fetch'
+      ? ' (Check Supabase URL in .env.local and that the project is running.)'
+      : '';
+    throw new Error(`Edge Function "${name}": ${msg}${hint}`);
+  }
+  return data as T;
+}
