@@ -59,6 +59,8 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
   const searchInputRef = useRef<HTMLInputElement>(null);
   const lastScrollY = useRef(0);
+  const isHeaderMinimizedRef = useRef(false);
+  isHeaderMinimizedRef.current = isHeaderMinimized;
 
   const tripDuration = differenceInDays(toLocalMidnight(dates.checkout), toLocalMidnight(dates.checkin));
 
@@ -81,16 +83,20 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
     showSuggestions && newDestination.length >= 2
   );
 
-  // Scroll handler for header minimization
+  // Scroll handler for header minimization (only setState when value changes to avoid layout→scroll→state loop)
   useEffect(() => {
     const handleScroll = () => {
       const currentScrollY = window.scrollY;
-      if (currentScrollY > 100 && currentScrollY > lastScrollY.current) {
-        setIsHeaderMinimized(true);
-      } else if (currentScrollY < lastScrollY.current - 20 || currentScrollY < 50) {
-        setIsHeaderMinimized(false);
-      }
+      const scrollingDown = currentScrollY > lastScrollY.current;
+      const shouldMinimize = currentScrollY > 100 && scrollingDown;
+      const shouldExpand = currentScrollY < lastScrollY.current - 20 || currentScrollY < 50;
       lastScrollY.current = currentScrollY;
+
+      const nextMinimized = shouldExpand ? false : shouldMinimize ? true : isHeaderMinimizedRef.current;
+      if (nextMinimized !== isHeaderMinimizedRef.current) {
+        isHeaderMinimizedRef.current = nextMinimized;
+        setIsHeaderMinimized(nextMinimized);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
