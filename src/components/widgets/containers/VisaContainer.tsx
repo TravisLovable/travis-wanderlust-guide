@@ -89,9 +89,9 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
             try {
                 console.log('🚀 Starting streaming request for:', destinationName);
 
-                // Use the same values as the Supabase client
-                const SUPABASE_URL = "https://jmbjxlijwojvavmmzpmo.supabase.co";
-                const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImptYmp4bGlqd29qdmF2bW16cG1vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTQ3NzQ2NjcsImV4cCI6MjA3MDM1MDY2N30.RR7vxI8Q1kQ0Qsb20f4QK5fD4CY4zehwuq65NVgbVNo";
+                // Use same project as app (from env)
+                const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string;
+                const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string;
 
                 // Set a timeout for the streaming request
                 const controller = new AbortController();

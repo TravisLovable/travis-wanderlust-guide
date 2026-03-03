@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +17,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
   const { toast } = useToast();
+  const { isDevBypassEnabled, signInAsDevUser } = useAuth();
 
   const handleSendLink = async () => {
     if (!email.trim() || !email.includes('@')) return;
@@ -84,6 +86,16 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             >
               {isLoading ? 'Sending...' : 'Send magic link'}
             </Button>
+            {isDevBypassEnabled && (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full mt-2 text-muted-foreground"
+                onClick={() => signInAsDevUser()}
+              >
+                Dev: Sign in without email (bypass rate limit)
+              </Button>
+            )}
           </div>
         ) : (
           <div className="space-y-4 pt-2">

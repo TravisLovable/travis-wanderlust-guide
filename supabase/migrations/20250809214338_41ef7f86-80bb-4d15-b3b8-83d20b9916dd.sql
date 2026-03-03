@@ -1,5 +1,5 @@
--- Create users table for user profiles
-CREATE TABLE public.users (
+-- Create users table for user profiles (skip if already exists, e.g. from backup restore)
+CREATE TABLE IF NOT EXISTS public.users (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
   auth_id UUID NOT NULL UNIQUE REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT,

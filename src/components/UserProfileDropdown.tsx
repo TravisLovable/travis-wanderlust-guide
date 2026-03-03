@@ -27,6 +27,7 @@ const UserProfileDropdown = ({
   const { toast } = useToast();
   const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  console.log('userProfile', userProfile);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleSignOut = async () => {
@@ -55,6 +56,12 @@ const UserProfileDropdown = ({
     return user?.user_metadata?.full_name || userProfile?.full_name || user?.email || 'User';
   };
 
+  // Blob URLs (e.g. from local file preview) don't persist; only use http(s) URLs for avatar
+  const avatarSrc =
+    userProfile?.profile_photo_url?.startsWith('http://') || userProfile?.profile_photo_url?.startsWith('https://')
+      ? userProfile.profile_photo_url
+      : undefined;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -65,7 +72,7 @@ const UserProfileDropdown = ({
           onMouseLeave={() => setIsHovered(false)}
         >
           <Avatar className="h-10 w-10 transition-all duration-300 hover:animate-bounce-gentle">
-            <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
+            <AvatarImage src={avatarSrc} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           {isHovered && (
@@ -78,7 +85,7 @@ const UserProfileDropdown = ({
       <DropdownMenuContent className="w-80 animate-slide-in-up" align="end" forceMount>
         <div className="flex items-center space-x-2 p-3 relative">
           <Avatar className="h-8 w-8 hover:animate-bounce-gentle transition-all duration-300">
-            <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
+            <AvatarImage src={avatarSrc} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-1">

@@ -13,13 +13,19 @@ serve(async (req) => {
 
   try {
     const url = new URL(req.url)
-    const placeId = url.searchParams.get('place_id')
-    
+    let placeId = url.searchParams.get('place_id')
+    if (!placeId && req.method === 'POST') {
+      try {
+        const body = await req.json()
+        placeId = body?.place_id ?? body?.placeId ?? null
+      } catch (_) { /* ignore */ }
+    }
+
     if (!placeId) {
       return new Response(
         JSON.stringify({ error: 'Place ID parameter is required' }),
-        { 
-          status: 400, 
+        {
+          status: 400,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -29,8 +35,8 @@ serve(async (req) => {
     if (!apiKey) {
       return new Response(
         JSON.stringify({ error: 'Google Places API key not configured' }),
-        { 
-          status: 500, 
+        {
+          status: 500,
           headers: { ...corsHeaders, 'Content-Type': 'application/json' }
         }
       )
@@ -44,15 +50,15 @@ serve(async (req) => {
 
     return new Response(
       JSON.stringify(data),
-      { 
+      {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )
   } catch (error) {
     return new Response(
       JSON.stringify({ error: error.message }),
-      { 
-        status: 500, 
+      {
+        status: 500,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       }
     )

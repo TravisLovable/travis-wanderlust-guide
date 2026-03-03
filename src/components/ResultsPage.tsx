@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, useMemo } from 'react';
-import { ArrowLeft, Calendar, Pin, Search, MapPin, Clock, DollarSign, Plane, Sun, Cloud, CloudRain, Sunrise, Sunset } from 'lucide-react';
+import React, { useState, useEffect, useRef } from 'react';
+import { ArrowLeft, Calendar, Pin, Search, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,27 +12,25 @@ import { format, differenceInDays } from 'date-fns';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { useGooglePlaces } from '@/hooks/useGooglePlaces';
 import { usePinnedLocations, PinnedLocation } from '@/hooks/usePinnedLocations';
-import {
-  getMockWeather,
-  getMockCurrency,
-  getMockTimezone,
-  getMockSunData,
-  getMockVisa,
-  getMockHolidays,
-  getMockTransport,
-} from '@/utils/mockData';
 import LocalEventsCard from '@/components/LocalEventsCard';
 import WaterSafetyWidget from '@/components/WaterSafetyWidget';
 import PowerAdaptorWidget from '@/components/PowerAdaptorWidget';
 import UVIndexCard from '@/components/UVIndexCard';
 import HealthEntryCard from '@/components/HealthEntryCard';
 import PharmacyIntelCard from '@/components/PharmacyIntelCard';
-import { CulturalContainer } from '@/components/widgets';
+import {
+  CulturalContainer,
+  WeatherContainer,
+  TimeZoneContainer,
+  CurrencyContainer,
+  VisaContainer,
+  HolidayContainer,
+  UberAvailabilityWidget,
+} from '@/components/widgets';
 import { InsightLine } from '@/components/InsightLine';
 import { InsightsProvider } from '@/contexts/InsightsContext';
 import { useTravisInsights } from '@/hooks/useTravisInsights';
-import { useTripWindow } from '@/hooks/useTripWindow';
-import { toLocalMidnight, formatDateOnlyLocal } from '@/lib/dates';
+import { toLocalMidnight } from '@/lib/dates';
 
 interface ResultsPageProps {
   placeDetails: SelectedPlace | null;
@@ -59,37 +57,12 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
-  const [useFahrenheit, setUseFahrenheit] = useState(true);
-  const [sunRevealed, setSunRevealed] = useState(false);
-
-  const t = (c: number) => useFahrenheit ? Math.round(c * 9 / 5 + 32) : c;
-  const unit = useFahrenheit ? '°F' : '°C';
-
   const searchInputRef = useRef<HTMLInputElement>(null);
   const lastScrollY = useRef(0);
 
-  // Get mock data (memoized to prevent re-randomizing on every keystroke re-render)
-  const weather = useMemo(() => getMockWeather(destination), [destination]);
-  const currency = useMemo(() => getMockCurrency(destination), [destination]);
-  const timezone = useMemo(() => getMockTimezone(destination), [destination]);
-  const sunData = useMemo(() => getMockSunData(destination), [destination]);
-  const visa = useMemo(() => getMockVisa(destination), [destination]);
-  const holidays = useMemo(() => getMockHolidays(destination, dates), [destination, dates]);
-  const transport = useMemo(() => getMockTransport(destination), [destination]);
-
   const tripDuration = differenceInDays(toLocalMidnight(dates.checkout), toLocalMidnight(dates.checkin));
-  const tripWindow = useTripWindow(dates.checkin, dates.checkout);
 
-  // Travis AI insights
-  const widgetData = useMemo(() => ({
-    weather: { current: weather.current, forecastDays: weather.forecast.length },
-    currency: { toCurrency: currency.toCurrency, rate: currency.rate },
-    timezone: { timezone: timezone.timezone, offset: timezone.offset },
-    visa: { required: visa.required, type: visa.type, maxStay: visa.maxStay },
-    holidays: holidays.holidays.map(h => h.name),
-    transport: { available: transport.available, services: transport.services.map(s => s.name) },
-  }), [weather, currency, timezone, visa, holidays, transport]);
-
+  // Travis AI insights (widgetData left empty; widgets fetch their own data)
   const { insights, loading: insightsLoading, error: insightsError } = useTravisInsights({
     destination: {
       city: destinationName,
@@ -98,22 +71,9 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
       lng: placeDetails?.longitude || 0,
     },
     dates: { start: dates.checkin, end: dates.checkout },
-    widgetData,
+    widgetData: {},
     enabled: !!destinationName,
   });
-
-  // Temp ranges — ONLY for Option B (trips outside the 14-day forecast window)
-  const tempRanges = (() => {
-    if (tripWindow.isTripWithin14DayForecastWindow || weather.forecast.length === 0) return null;
-    const highs = weather.forecast.map(d => d.high);
-    const lows = weather.forecast.map(d => d.low);
-    return {
-      highMin: Math.min(...highs),
-      highMax: Math.max(...highs),
-      lowMin: Math.min(...lows),
-      lowMax: Math.max(...lows),
-    };
-  })();
 
   // Google Places suggestions
   const { suggestions: placeSuggestions, isLoading: isLoadingSuggestions, hasApiAccess, getPlaceDetails } = useGooglePlaces(
@@ -146,12 +106,6 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
     setNewCheckinDate(toLocalMidnight(dates.checkin));
     setNewCheckoutDate(toLocalMidnight(dates.checkout));
   }, [dates.checkin, dates.checkout]);
-
-  // Sun position reveal animation on mount
-  useEffect(() => {
-    const timer = setTimeout(() => setSunRevealed(true), 150);
-    return () => clearTimeout(timer);
-  }, []);
 
   const handleSearch = (e?: React.FormEvent) => {
     e?.preventDefault();
@@ -206,14 +160,6 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
         pinLocation(placeDetails);
       }
     }
-  };
-
-  const getWeatherIcon = (condition: string) => {
-    const lower = condition.toLowerCase();
-    const cls = "w-[18px] h-[18px] stroke-[1.6]";
-    if (lower.includes('rain')) return <CloudRain className={`${cls} text-[#5B7A99]`} />;
-    if (lower.includes('cloud')) return <Cloud className={`${cls} text-[#6B7280]`} />;
-    return <Sun className={`${cls} text-[#D97706]`} />;
   };
 
   return (
@@ -405,212 +351,26 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
           {/* ROW 0 — CULTURAL CONTEXT (full width, collapsible) */}
           <CulturalContainer destination={destination} animationDelay="0.04s" />
 
-          {/* ROW 1 — ENVIRONMENTAL CONTEXT */}
+          {/* ROW 1 — ENVIRONMENTAL CONTEXT (real data from Edge Functions) */}
 
-          {/* Weather Widget */}
-          <div className="widget-card animate-slide-up">
-            <div className="widget-header">
-              <div className="widget-icon bg-amber-500/10 text-amber-500">
-                <Sun className="w-5 h-5" />
-              </div>
-              <div className="flex-1">
-                <h3 className="widget-title">Weather Intel</h3>
-                <p className="widget-subtitle">During your trip</p>
-              </div>
-              <div className="flex items-center bg-secondary/60 rounded-full p-0.5">
-                <button
-                  onClick={() => setUseFahrenheit(true)}
-                  className={`text-xs font-semibold rounded-full px-2.5 py-1 transition-all ${useFahrenheit ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  °F
-                </button>
-                <button
-                  onClick={() => setUseFahrenheit(false)}
-                  className={`text-xs font-semibold rounded-full px-2.5 py-1 transition-all ${!useFahrenheit ? 'bg-foreground text-background shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
-                >
-                  °C
-                </button>
-              </div>
-            </div>
-
-            {tripWindow.isTripWithin14DayForecastWindow ? (
-              /* ── OPTION A: Within 14-day window ── Today ALWAYS + forecast strip */
-              <>
-                {/* Today section — ALWAYS rendered in Option A; "Today" label only when today is inside the trip */}
-                <div className="flex items-center justify-between mb-4">
-                  <div>
-                    <p className="widget-value">
-                      {t(weather.current.temp)}{unit}
-                      {tripWindow.isTodayWithinTrip && (
-                        <span className="text-sm font-normal text-muted-foreground/[0.62] ml-1.5">· Today</span>
-                      )}
-                    </p>
-                    <p className="text-sm text-muted-foreground">{weather.current.condition}</p>
-                  </div>
-                  <div className="text-right text-xs text-muted-foreground/[0.62]">
-                    <p>Feels like {t(weather.current.feelsLike)}{unit}</p>
-                    <p>Humidity {weather.current.humidity}%</p>
-                  </div>
-                </div>
-
-                {/* Forecast strip */}
-                <div className="relative">
-                  <div
-                    className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide forecast-scroll"
-                    onScroll={(e) => {
-                      const el = e.currentTarget;
-                      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-                      if (atEnd) el.setAttribute('data-scrolled-end', '');
-                      else el.removeAttribute('data-scrolled-end');
-                    }}
-                  >
-                    {weather.forecast.map((day, i) => (
-                      <div key={i} className="flex-shrink-0 text-center p-2.5 rounded-xl bg-secondary/30 w-[calc((100%-12*0.5rem)/7)] min-w-[58px]">
-                        <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
-                        <div className="mb-0.5">{getWeatherIcon(day.condition)}</div>
-                        <p className="text-sm font-medium">{t(day.high)}°</p>
-                        <p className="text-xs text-muted-foreground/[0.62]">{t(day.low)}°</p>
-                      </div>
-                    ))}
-                  </div>
-                  <div className="forecast-fade pointer-events-none" />
-                </div>
-              </>
-            ) : (
-              /* ── OPTION B: Beyond 14-day window ── Ranges only, NO forecast, NO Today */
-              <div className="flex items-center justify-between">
-                <div>
-                  {tempRanges && (
-                    <>
-                      <p className="widget-value">
-                        {t(tempRanges.highMin) === t(tempRanges.highMax)
-                          ? `${t(tempRanges.highMin)}${unit}`
-                          : `${t(tempRanges.highMin)}-${t(tempRanges.highMax)}${unit}`}
-                      </p>
-                      <p className="text-xs text-muted-foreground/[0.62]">
-                        {t(tempRanges.lowMin) === t(tempRanges.lowMax)
-                          ? `${t(tempRanges.lowMin)}${unit}`
-                          : `${t(tempRanges.lowMin)}-${t(tempRanges.lowMax)}${unit}`}
-                      </p>
-                      <p className="text-xs text-muted-foreground/[0.62] mt-1">Historical averages for your travel dates</p>
-                    </>
-                  )}
-                </div>
-                <div className="text-right text-xs text-muted-foreground/[0.62]">
-                  <p>Humidity {weather.current.humidity}%</p>
-                </div>
-              </div>
-            )}
-
+          <div className="animate-slide-up">
+            <WeatherContainer placeDetails={placeDetails} />
             <InsightLine insight={insights?.weather} loading={insightsLoading} />
           </div>
 
-          {/* Local Time Widget */}
-          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.08s' }}>
-            <div className="widget-header">
-              <div className="widget-icon bg-blue-500/10 text-blue-500">
-                <Clock className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="widget-title">Local Time</h3>
-                <p className="widget-subtitle">{timezone.timezone}</p>
-              </div>
-            </div>
-
-            <p className="widget-value mb-1">{timezone.currentTime}</p>
-            <p className="text-xs text-muted-foreground/[0.62]">{timezone.offset}</p>
-
-            {/* Sunrise / Sunset — shallow arc */}
-            {(() => {
-              const { sunriseHour, sunsetHour, currentHour } = sunData;
-              const isDaytime = currentHour >= sunriseHour && currentHour <= sunsetHour;
-              const rawPos = sunsetHour > sunriseHour
-                ? (currentHour - sunriseHour) / (sunsetHour - sunriseHour)
-                : 0.5;
-              const p = Math.max(0, Math.min(1, rawPos));
-
-              // Shallow arc: viewBox 0 0 100 20, quadratic bezier from (6,18) peak (50,2) to (94,18)
-              const sx = 6, sy = 18, cx = 50, cy = 2, ex = 94, ey = 18;
-              const t = p;
-              const arcX = (1 - t) * (1 - t) * sx + 2 * (1 - t) * t * cx + t * t * ex;
-              const arcY = (1 - t) * (1 - t) * sy + 2 * (1 - t) * t * cy + t * t * ey;
-              const leftPct = arcX;
-              const topPct = (arcY / 20) * 100;
-              const startLeft = sx;
-              const startTop = (sy / 20) * 100;
-
-              return (
-                <div className="border-t border-border/30 mt-3.5 pt-3">
-                  <div className="relative">
-                    <svg viewBox="0 0 100 20" className="w-full" fill="none" xmlns="http://www.w3.org/2000/svg">
-                      <path d={`M ${sx},${sy} Q ${cx},${cy} ${ex},${ey}`}
-                        stroke="hsl(var(--muted-foreground) / 0.12)" strokeWidth="1.2" strokeLinecap="round" />
-                    </svg>
-                    <div
-                      className={`sun-indicator absolute w-2.5 h-2.5 rounded-full ${isDaytime ? 'bg-amber-400 sun-glow-pulse' : 'bg-muted-foreground/30'}`}
-                      style={{
-                        left: sunRevealed ? `${leftPct}%` : `${startLeft}%`,
-                        top: sunRevealed ? `${topPct}%` : `${startTop}%`,
-                        opacity: sunRevealed ? 1 : 0,
-                        transform: 'translate(-50%, -50%)',
-                        transition: 'left 1.5s cubic-bezier(0.4, 0, 0.2, 1), top 1.5s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease-out',
-                      }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between mt-1">
-                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground/60">
-                      <Sunrise className="w-3 h-3 text-amber-500" />{sunData.sunrise}
-                    </span>
-                    <span className="flex items-center gap-1 text-[11px] text-muted-foreground/60">
-                      {sunData.sunset}<Sunset className="w-3 h-3 text-orange-600" />
-                    </span>
-                  </div>
-                </div>
-              );
-            })()}
+          <div className="animate-slide-up" style={{ animationDelay: '0.08s' }}>
+            <TimeZoneContainer placeDetails={placeDetails} />
             <InsightLine insight={insights?.localTime} loading={insightsLoading} />
           </div>
 
           {/* ROW 2 — TRIP GATE / COMPLIANCE */}
 
-          {/* Visa + Health Entry — stacked vertically, rows match utility grid */}
+          {/* Visa + Health Entry */}
           <div className="grid grid-rows-2 gap-3">
-            {/* Visa Widget */}
-            <div className="widget-card animate-slide-up" style={{ animationDelay: '0.14s' }}>
-              <div className="widget-header">
-                <div className={`widget-icon ${visa.required ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'}`}>
-                  <Plane className="w-5 h-5" />
-                </div>
-                <div>
-                  <h3 className="widget-title">Visa Requirements</h3>
-                  <p className="widget-subtitle">For US citizens</p>
-                </div>
-              </div>
-
-              <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-3 ${visa.required ? 'bg-amber-500/10 text-amber-500' : 'bg-green-500/10 text-green-500'}`}>
-                {visa.required ? 'Visa Required' : 'Visa Free'}
-              </div>
-
-              <div className="space-y-1.5 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Type</span>
-                  <span className="font-medium">{visa.type}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-muted-foreground">Max Stay</span>
-                  <span className="font-medium">{visa.maxStay}</span>
-                </div>
-                {visa.required && (
-                  <div className="flex justify-between">
-                    <span className="text-muted-foreground">Est. Cost</span>
-                    <span className="font-medium">{visa.cost}</span>
-                  </div>
-                )}
-              </div>
+            <div className="animate-slide-up" style={{ animationDelay: '0.14s' }}>
+              <VisaContainer placeDetails={placeDetails} />
               <InsightLine insight={insights?.visa} loading={insightsLoading} />
             </div>
-
-            {/* Health Entry Widget */}
             <HealthEntryCard destination={destination} animationDelay="0.16s" />
           </div>
 
@@ -622,99 +382,22 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             <PowerAdaptorWidget placeDetails={placeDetails} animationDelay="0.24s" />
           </div>
 
-          {/* ROW 3 — ECONOMICS + EXECUTION */}
+          {/* ROW 3 — ECONOMICS + EXECUTION (real data from Edge Functions) */}
 
-          {/* Currency Widget */}
-          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.2s' }}>
-            <div className="widget-header">
-              <div className="widget-icon bg-green-500/10 text-green-500">
-                <DollarSign className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="widget-title">Currency</h3>
-                <p className="widget-subtitle">USD to {currency.toCurrency}</p>
-              </div>
-            </div>
-
-            <div className="flex items-baseline gap-2 mb-3">
-              <p className="widget-value">{currency.toSymbol}{currency.rate.toFixed(2)}</p>
-              <p className="text-xs text-muted-foreground/[0.62]">= $1</p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 text-sm">
-              <div className="p-2 rounded-lg bg-secondary/30">
-                <p className="text-muted-foreground">$10</p>
-                <p className="font-medium">{currency.toSymbol}{(10 * currency.rate).toFixed(0)}</p>
-              </div>
-              <div className="p-2 rounded-lg bg-secondary/30">
-                <p className="text-muted-foreground">$100</p>
-                <p className="font-medium">{currency.toSymbol}{(100 * currency.rate).toFixed(0)}</p>
-              </div>
-            </div>
+          <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
+            <CurrencyContainer placeDetails={placeDetails} />
             <InsightLine insight={insights?.currency} loading={insightsLoading} />
           </div>
 
-          {/* Transportation Widget */}
-          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.26s' }}>
-            <div className="widget-header">
-              <div className="widget-icon bg-cyan-500/10 text-cyan-500">
-                <MapPin className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="widget-title">Transportation</h3>
-                <p className="widget-subtitle">Getting around</p>
-              </div>
-            </div>
-
-            <div className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium mb-3 ${transport.available ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-              {transport.available ? 'Ride-share Available' : 'Limited Options'}
-            </div>
-
-            <div className="space-y-1.5">
-              {transport.services.map((service, i) => (
-                <div key={i} className="flex items-center justify-between p-2 rounded-lg bg-secondary/30 text-sm">
-                  <span className="font-medium">{service.name}</span>
-                  <div className="text-right">
-                    <p className="text-muted-foreground">{service.estimatedPrice}</p>
-                    <p className="text-xs text-muted-foreground">{service.estimatedTime}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
+          <div className="animate-slide-up" style={{ animationDelay: '0.26s' }}>
+            <UberAvailabilityWidget placeDetails={placeDetails} />
             <InsightLine insight={insights?.transportation} loading={insightsLoading} />
           </div>
 
           {/* ROW 4 — CONTEXTUAL SIGNALS */}
 
-          {/* Local Holidays Widget */}
-          <div className="widget-card animate-slide-up" style={{ animationDelay: '0.32s' }}>
-            <div className="widget-header">
-              <div className="widget-icon bg-purple-500/10 text-purple-500">
-                <Calendar className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="widget-title">Local Holidays</h3>
-                <p className="widget-subtitle">During your trip</p>
-              </div>
-            </div>
-
-            {holidays.holidays.length > 0 ? (
-              <div className="space-y-2">
-                {holidays.holidays.map((holiday, i) => (
-                  <div key={i} className="flex items-center justify-between p-2.5 rounded-lg bg-secondary/30">
-                    <div>
-                      <p className="font-medium">{holiday.name}</p>
-                      <p className="text-xs text-muted-foreground">{holiday.type}</p>
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      {format(toLocalMidnight(holiday.date), 'MMM d')}
-                    </p>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-muted-foreground text-sm">No major holidays during your trip dates.</p>
-            )}
+          <div className="animate-slide-up" style={{ animationDelay: '0.32s' }}>
+            <HolidayContainer placeDetails={placeDetails} dates={dates} />
             <InsightLine insight={insights?.localHolidays} loading={insightsLoading} />
           </div>
 
@@ -730,7 +413,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
         {/* Footer Note */}
         <div className="mt-6 text-center text-xs text-muted-foreground/60">
-          <p>Data shown is for demonstration purposes. Connect APIs for live information.</p>
+          <p>Weather, currency, time zone, visa, holidays, and transport use live data from our APIs.</p>
         </div>
       </main>
     </div>

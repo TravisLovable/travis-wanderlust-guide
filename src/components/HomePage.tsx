@@ -103,6 +103,8 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
     showSuggestions && destination.length >= 2
   );
 
+  console.log('hasApiAccess', hasApiAccess);
+
   // Auto-focus on mount
   useEffect(() => {
     const timer = setTimeout(() => {

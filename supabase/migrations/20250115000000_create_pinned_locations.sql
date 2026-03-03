@@ -1,7 +1,7 @@
 -- Create pinned_locations table for user's saved destinations
 CREATE TABLE public.pinned_locations (
   id UUID NOT NULL DEFAULT gen_random_uuid() PRIMARY KEY,
-  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  user_id uuid NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
   name TEXT NOT NULL,
   formatted_address TEXT NOT NULL,
   latitude DECIMAL(10,8) NOT NULL,
