@@ -3,8 +3,15 @@ import { Sun, Cloud, CloudRain } from 'lucide-react';
 import { getMockWeather } from '@/utils/mockData';
 import { useTripWindow } from '@/hooks/useTripWindow';
 import { InsightLine } from '@/components/InsightLine';
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from '@/components/ui/accordion';
 
 const OPEN_METEO_HISTORICAL_URL = 'https://historical-forecast-api.open-meteo.com/v1/forecast';
+const OPEN_METEO_FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 interface WeatherDay {
@@ -29,16 +36,6 @@ function formatDayLabel(dateStr: string): string {
 function formatShortDate(dateStr: string): string {
   const d = new Date(dateStr + 'T12:00:00');
   return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
-function formatDateRangeLabel(checkin: string, checkout: string): string {
-  return `${formatShortDate(checkin)} – ${formatShortDate(checkout)}`;
-}
-
-function tripLengthDays(checkin: string, checkout: string): number {
-  const start = new Date(checkin + 'T12:00:00');
-  const end = new Date(checkout + 'T12:00:00');
-  return Math.max(1, Math.ceil((end.getTime() - start.getTime()) / (24 * 60 * 60 * 1000)));
 }
 
 function mockToWeatherData(mock: ReturnType<typeof getMockWeather>): WeatherData {
@@ -80,12 +77,68 @@ export default function WeatherIntelWidget({
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [weatherError, setWeatherError] = useState<string | null>(null);
+  const [currentWeekForecast, setCurrentWeekForecast] = useState<WeatherDay[] | null>(null);
+  const [currentWeekLoading, setCurrentWeekLoading] = useState(false);
+  const [currentWeekError, setCurrentWeekError] = useState<string | null>(null);
 
   const t = (c: number) => (useFahrenheit ? Math.round((c * 9) / 5 + 32) : c);
   const unit = useFahrenheit ? '°F' : '°C';
 
   const mockWeather = useMemo(() => getMockWeather(destination), [destination]);
-  
+
+  // Fetch current-week forecast (next 7 days from today) — separate from historical data
+  useEffect(() => {
+    const hasCoords = latitude != null && longitude != null && !Number.isNaN(latitude) && !Number.isNaN(longitude);
+    if (!hasCoords) {
+      setCurrentWeekForecast(null);
+      setCurrentWeekError(null);
+      return;
+    }
+    let cancelled = false;
+    setCurrentWeekLoading(true);
+    setCurrentWeekError(null);
+    const params = new URLSearchParams({
+      latitude: String(latitude),
+      longitude: String(longitude),
+      daily: 'temperature_2m_max,temperature_2m_min',
+      forecast_days: '7',
+      timezone: 'auto',
+    });
+    fetch(`${OPEN_METEO_FORECAST_URL}?${params.toString()}`)
+      .then((res) => {
+        if (!res.ok) throw new Error(`Open-Meteo forecast: ${res.status}`);
+        return res.json();
+      })
+      .then((data: { daily?: { time?: string[]; temperature_2m_max?: number[]; temperature_2m_min?: number[] } }) => {
+        if (cancelled) return;
+        const daily = data.daily;
+        if (!daily?.time?.length || !daily.temperature_2m_max || !daily.temperature_2m_min) {
+          setCurrentWeekForecast(null);
+          return;
+        }
+        const forecast: WeatherDay[] = daily.time.map((dateStr, i) => ({
+          date: dateStr,
+          day: formatDayLabel(dateStr),
+          high: daily.temperature_2m_max![i] ?? 0,
+          low: daily.temperature_2m_min![i] ?? 0,
+          condition: 'Partly Cloudy',
+        }));
+        setCurrentWeekForecast(forecast);
+        setCurrentWeekError(null);
+      })
+      .catch((err) => {
+        if (!cancelled) {
+          setCurrentWeekError(err instanceof Error ? err.message : 'Failed to load current week');
+          setCurrentWeekForecast(null);
+        }
+      })
+      .finally(() => {
+        if (!cancelled) setCurrentWeekLoading(false);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [latitude, longitude]);
 
   useEffect(() => {
     const hasCoords = latitude != null && longitude != null && !Number.isNaN(latitude) && !Number.isNaN(longitude);
@@ -180,9 +233,9 @@ export default function WeatherIntelWidget({
 
   const displayWeather = weather ?? mockToWeatherData(mockWeather);
   const tripWindow = useTripWindow(dates.checkin, dates.checkout);
-  const tripDays = tripLengthDays(dates.checkin, dates.checkout);
-  const tripForecast = displayWeather.forecast.slice(0, Math.min(tripDays, displayWeather.forecast.length));
   const hasForecast = displayWeather.forecast.length > 0;
+  const nowSectionForecast = currentWeekForecast ?? (currentWeekError ? displayWeather.forecast.slice(0, 7) : []);
+  const hasNowSection = nowSectionForecast.length > 0 || currentWeekLoading;
 
   const getWeatherIcon = (condition: string) => {
     const lower = condition.toLowerCase();
@@ -242,72 +295,95 @@ export default function WeatherIntelWidget({
             </div>
           )}
 
-          {hasForecast && (
-            <>
-              {tripForecast.length > 0 && (
-                <div className="mb-4">
-                  <p className="text-xs font-medium text-muted-foreground mb-2">
-                    Your trip · {formatDateRangeLabel(dates.checkin, dates.checkout)}
-                  </p>
-                  <div className="relative">
-                    <div
-                      className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide forecast-scroll"
-                      onScroll={(e) => {
-                        const el = e.currentTarget;
-                        const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-                        if (atEnd) el.setAttribute('data-scrolled-end', '');
-                        else el.removeAttribute('data-scrolled-end');
-                      }}
-                    >
-                      {tripForecast.map((day, i) => (
-                        <div
-                          key={`trip-${day.date}-${i}`}
-                          className="flex-shrink-0 text-center p-2.5 rounded-xl bg-secondary/30 min-w-[58px]"
-                        >
-                          <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
-                          <p className="text-[10px] text-muted-foreground/80 mb-0.5">{formatShortDate(day.date)}</p>
-                          <div className="mb-0.5">{getWeatherIcon(day.condition)}</div>
-                          <p className="text-sm font-medium">{t(day.high)}{unit}</p>
-                          <p className="text-xs text-muted-foreground/[0.62]">{t(day.low)}{unit}</p>
-                        </div>
-                      ))}
+          {(hasForecast || hasNowSection) && (
+            <Accordion
+              type="single"
+              collapsible={false}
+              defaultValue={hasForecast ? 'historical' : 'now'}
+              className="w-full"
+            >
+              {hasForecast && (
+                <AccordionItem value="historical" className="border-b border-border/50">
+                  <AccordionTrigger className="py-2 text-xs font-medium text-muted-foreground hover:no-underline hover:text-foreground [&[data-state=open]>svg]:rotate-180">
+                    Historical 14-day forecast
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-2 pt-0">
+                    <div className="relative">
+                      <div
+                        className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide forecast-scroll"
+                        onScroll={(e) => {
+                          const el = e.currentTarget;
+                          const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+                          if (atEnd) el.setAttribute('data-scrolled-end', '');
+                          else el.removeAttribute('data-scrolled-end');
+                        }}
+                      >
+                        {displayWeather.forecast.map((day, i) => (
+                          <div
+                            key={`hist-${day.date}-${i}`}
+                            className="flex-shrink-0 text-center p-2.5 rounded-xl bg-secondary/30 min-w-[58px]"
+                          >
+                            <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
+                            <p className="text-[10px] text-muted-foreground/80 mb-0.5">{formatShortDate(day.date)}</p>
+                            <div className="mb-0.5">{getWeatherIcon(day.condition)}</div>
+                            <p className="text-sm font-medium">{t(day.high)}{unit}</p>
+                            <p className="text-xs text-muted-foreground/[0.62]">{t(day.low)}{unit}</p>
+                          </div>
+                        ))}
+                      </div>
+                      <div className="forecast-fade pointer-events-none" />
                     </div>
-                    <div className="forecast-fade pointer-events-none" />
-                  </div>
-                </div>
+                  </AccordionContent>
+                </AccordionItem>
               )}
 
-              <div>
-                <p className="text-xs font-medium text-muted-foreground mb-2">
-                  Historical 14-day forecast
-                </p>
-                <div className="relative">
-                  <div
-                    className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide forecast-scroll"
-                    onScroll={(e) => {
-                      const el = e.currentTarget;
-                      const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-                      if (atEnd) el.setAttribute('data-scrolled-end', '');
-                      else el.removeAttribute('data-scrolled-end');
-                    }}
-                  >
-                    {displayWeather.forecast.map((day, i) => (
-                      <div
-                        key={`hist-${day.date}-${i}`}
-                        className="flex-shrink-0 text-center p-2.5 rounded-xl bg-secondary/30 min-w-[58px]"
-                      >
-                        <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
-                        <p className="text-[10px] text-muted-foreground/80 mb-0.5">{formatShortDate(day.date)}</p>
-                        <div className="mb-0.5">{getWeatherIcon(day.condition)}</div>
-                        <p className="text-sm font-medium">{t(day.high)}{unit}</p>
-                        <p className="text-xs text-muted-foreground/[0.62]">{t(day.low)}{unit}</p>
+              {hasNowSection && (
+                <AccordionItem value="now" className={hasForecast ? 'border-b-0' : ''}>
+                  <AccordionTrigger className="py-2 text-xs font-medium text-muted-foreground hover:no-underline hover:text-foreground [&[data-state=open]>svg]:rotate-180">
+                    Now · This week
+                    {currentWeekLoading && (
+                      <span className="ml-1.5 inline-block h-3 w-3 rounded-full border-2 border-amber-500/30 border-t-amber-500 animate-spin" />
+                    )}
+                  </AccordionTrigger>
+                  <AccordionContent className="pb-2 pt-0">
+                    {currentWeekLoading && nowSectionForecast.length === 0 ? (
+                      <div className="flex items-center justify-center py-6">
+                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-amber-500/30 border-t-amber-500" />
                       </div>
-                    ))}
-                  </div>
-                  <div className="forecast-fade pointer-events-none" />
-                </div>
-              </div>
-            </>
+                    ) : (
+                      <div className="relative">
+                        <div
+                          className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide forecast-scroll"
+                          onScroll={(e) => {
+                            const el = e.currentTarget;
+                            const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
+                            if (atEnd) el.setAttribute('data-scrolled-end', '');
+                            else el.removeAttribute('data-scrolled-end');
+                          }}
+                        >
+                          {nowSectionForecast.map((day, i) => (
+                            <div
+                              key={`now-${day.date}-${i}`}
+                              className="flex-shrink-0 text-center p-2.5 rounded-xl bg-secondary/30 min-w-[58px]"
+                            >
+                              <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
+                              <p className="text-[10px] text-muted-foreground/80 mb-0.5">{formatShortDate(day.date)}</p>
+                              <div className="mb-0.5">{getWeatherIcon(day.condition)}</div>
+                              <p className="text-sm font-medium">{t(day.high)}{unit}</p>
+                              <p className="text-xs text-muted-foreground/[0.62]">{t(day.low)}{unit}</p>
+                            </div>
+                          ))}
+                        </div>
+                        <div className="forecast-fade pointer-events-none" />
+                        {currentWeekError && (
+                          <p className="text-[10px] text-muted-foreground/80 mt-1.5">Using fallback for this week</p>
+                        )}
+                      </div>
+                    )}
+                  </AccordionContent>
+                </AccordionItem>
+              )}
+            </Accordion>
           )}
         </>
       )}

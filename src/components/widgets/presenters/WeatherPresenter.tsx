@@ -1,5 +1,5 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Thermometer, Sun, Cloud, CloudRain, CloudLightning } from 'lucide-react';
 
@@ -53,16 +53,18 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
 
     if (isLoading) {
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-                <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center text-lg font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-2">
-                            <Thermometer className="w-4 h-4 text-white" />
+            <Card className="travis-card travis-interactive group">
+                <CardHeader className="p-5 pb-2">
+                    <div className="widget-header">
+                        <div className="widget-icon bg-amber-500/10 text-amber-500">
+                            <Thermometer className="w-5 h-5" />
                         </div>
-                        Weather
-                    </CardTitle>
+                        <div className="flex-1">
+                            <h3 className="widget-title">Weather</h3>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="flex justify-center items-center p-4">
+                <CardContent className="flex justify-center items-center p-4 pt-0">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-orange-400"></div>
                 </CardContent>
             </Card>
@@ -71,16 +73,18 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
 
     if (error) {
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-                <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center text-lg font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-2">
-                            <Thermometer className="w-4 h-4 text-white" />
+            <Card className="travis-card travis-interactive group">
+                <CardHeader className="p-5 pb-2">
+                    <div className="widget-header">
+                        <div className="widget-icon bg-amber-500/10 text-amber-500">
+                            <Thermometer className="w-5 h-5" />
                         </div>
-                        Weather
-                    </CardTitle>
+                        <div className="flex-1">
+                            <h3 className="widget-title">Weather</h3>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="text-center p-4">
+                <CardContent className="text-center p-4 pt-0">
                     <p className="text-orange-400 text-sm">Unable to load weather data</p>
                 </CardContent>
             </Card>
@@ -88,14 +92,14 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
     }
 
     return (
-        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 h-full flex flex-col">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center justify-between text-lg font-semibold">
-                    <div className="flex items-center">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center mr-2">
-                            <Thermometer className="w-4 h-4 text-white" />
-                        </div>
-                        Weather
+        <Card className="travis-card travis-interactive group h-full flex flex-col">
+            <CardHeader className="p-5 pb-2">
+                <div className="widget-header">
+                    <div className="widget-icon bg-amber-500/10 text-amber-500">
+                        <Thermometer className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="widget-title">Weather</h3>
                     </div>
                     <Button
                         variant="ghost"
@@ -105,9 +109,9 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
                     >
                         °{tempUnit}
                     </Button>
-                </CardTitle>
+                </div>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1">
+            <CardContent className="space-y-4 flex-1 p-5 pt-0">
                 {/* User's Home Country Context */}
                 {homeWeather && (
                     <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">

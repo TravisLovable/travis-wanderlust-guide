@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Car, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { supabase } from '@/integrations/supabase/client';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
@@ -73,14 +73,18 @@ const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) =
 
   if (isLoading) {
     return (
-      <Card className="h-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center text-lg">
-            <Car className="w-5 h-5 mr-2 text-blue-500" />
-            Ride Sharing
-          </CardTitle>
+      <Card className="travis-card h-full">
+        <CardHeader className="p-0 pb-2">
+          <div className="widget-header">
+            <div className="widget-icon bg-blue-500/10 text-blue-500">
+              <Car className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="widget-title">Ride Sharing</h3>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 pt-0">
           <div className="flex items-center justify-center py-8">
             <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
             <span className="ml-2 text-sm text-muted-foreground">Checking availability...</span>
@@ -92,14 +96,18 @@ const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) =
 
   if (!uberData) {
     return (
-      <Card className="h-full">
-        <CardHeader className="pb-3">
-          <CardTitle className="flex items-center text-lg">
-            <Car className="w-5 h-5 mr-2 text-muted-foreground" />
-            Ride Sharing
-          </CardTitle>
+      <Card className="travis-card h-full">
+        <CardHeader className="p-0 pb-2">
+          <div className="widget-header">
+            <div className="widget-icon bg-blue-500/10 text-blue-500">
+              <Car className="w-5 h-5" />
+            </div>
+            <div className="flex-1">
+              <h3 className="widget-title">Ride Sharing</h3>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-0 pt-0">
           <div className="text-center py-8">
             <AlertCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
             <p className="text-sm text-muted-foreground">Unable to load ride-sharing information</p>
@@ -110,14 +118,18 @@ const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) =
   }
 
   return (
-    <Card className="h-full">
-      <CardHeader className="pb-3">
-        <CardTitle className="flex items-center text-lg">
-          <Car className="w-5 h-5 mr-2 text-blue-500" />
-          Ride Sharing
-        </CardTitle>
+    <Card className="travis-card h-full">
+      <CardHeader className="p-0 pb-2">
+        <div className="widget-header">
+          <div className="widget-icon bg-blue-500/10 text-blue-500">
+            <Car className="w-5 h-5" />
+          </div>
+          <div className="flex-1">
+            <h3 className="widget-title">Ride Sharing</h3>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-4 p-0 pt-0">
         {uberData.available ? (
           <>
             {/* Uber Available */}

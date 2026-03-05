@@ -279,7 +279,7 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
     return (
         <HolidayPresenter
             data={transformedData}
-            destination={destinationName}
+            destination={{ name: destinationName }}
             dates={dates}
         />
     );
