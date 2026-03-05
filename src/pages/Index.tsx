@@ -11,7 +11,7 @@ import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(true);
+  const [isDarkMode, setIsDarkMode] = useState(false);
   const [currentLanguage, setCurrentLanguage] = useState('en');
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
@@ -103,12 +103,10 @@ const Index = () => {
         onClose={() => setIsOnboardingModalOpen(false)}
         user={user}
       />
-      <HomePage 
+      <HomePage
         onSearch={(placeDetails, dates) => handleSearch(placeDetails, dates, false)}
         isDarkMode={isDarkMode}
         toggleTheme={toggleTheme}
-        currentLanguage={currentLanguage}
-        setCurrentLanguage={setCurrentLanguage}
       />
     </div>
   );

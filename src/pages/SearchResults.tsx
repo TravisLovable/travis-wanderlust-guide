@@ -140,7 +140,7 @@ const SearchResults = () => {
     if (!placeDetails || !dates.checkin || !dates.checkout) {
         return (
             <div className="min-h-screen w-full bg-background text-foreground flex items-center justify-center">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+                <div className="rounded-full h-8 w-8 border-b-2 border-primary"></div>
             </div>
         );
     }
