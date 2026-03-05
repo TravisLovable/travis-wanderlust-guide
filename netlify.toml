@@ -2,6 +2,10 @@
   command = "npm run build"
   publish = "dist"
 
+[build.environment]
+  # Vite/React app — skip Next.js plugin
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+
 # SPA: serve index.html for all routes so React Router can mount
 [[redirects]]
   from = "/*"
