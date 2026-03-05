@@ -75,7 +75,7 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [checkinOpen, setCheckinOpen] = useState(false);
   const [checkoutOpen, setCheckoutOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(propIsDarkMode ?? false);
+  const isDarkMode = propIsDarkMode ?? false;
 
   // Search bar state
   const [searchBarState, setSearchBarState] = useState<'idle' | 'active' | 'submitted'>('idle');
@@ -223,14 +223,7 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
     setSurpriseDestination(null);
   };
 
-  const toggleTheme = () => {
-    if (propToggleTheme) {
-      propToggleTheme();
-    } else {
-      setIsDarkMode(!isDarkMode);
-      document.documentElement.classList.toggle('dark');
-    }
-  };
+  const toggleTheme = () => propToggleTheme?.();
 
   // Compute search bar classes based on state
   const searchBarClasses = [

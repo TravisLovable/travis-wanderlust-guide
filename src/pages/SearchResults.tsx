@@ -4,14 +4,15 @@ import Header from '@/components/Header';
 import LoadingIntelligence from '@/components/LoadingIntelligence';
 import ResultsPage from '@/components/ResultsPage';
 import { SelectedPlace } from '@/hooks/useGooglePlaces';
+import { useTheme } from '@/hooks/useTheme';
 
 const SearchResults = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
+    const { isDarkMode, toggleTheme } = useTheme();
     const [showLoading, setShowLoading] = useState(false);
     const [placeDetails, setPlaceDetails] = useState<SelectedPlace | null>(null);
     const [dates, setDates] = useState({ checkin: '', checkout: '' });
-    const [isDarkMode, setIsDarkMode] = useState(true);
     const [currentLanguage, setCurrentLanguage] = useState('en');
 
     // Parse URL parameters on component mount
@@ -45,11 +46,6 @@ const SearchResults = () => {
             navigate('/', { replace: true });
         }
     }, [searchParams, navigate]);
-
-    const toggleTheme = () => {
-        setIsDarkMode(!isDarkMode);
-        document.documentElement.classList.toggle('dark');
-    };
 
     const handleLoadingComplete = () => {
         setShowLoading(false);

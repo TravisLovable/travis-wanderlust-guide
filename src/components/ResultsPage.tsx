@@ -65,6 +65,9 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const searchInputRef = useRef<HTMLInputElement>(null);
   const lastScrollY = useRef(0);
   const isHeaderMinimizedRef = useRef(false);
+  const scrollTick = useRef<number | null>(null);
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  const effectiveMinimized = isHeaderMinimized && !isMobile;
   isHeaderMinimizedRef.current = isHeaderMinimized;
 
   // Client's weather widget expects a Destination (kept for commented implementation)
@@ -99,24 +102,62 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
     showSuggestions && newDestination.length >= 2
   );
 
-  // Scroll handler for header minimization (only setState when value changes to avoid layout→scroll→state loop)
+  // Scroll handler for header minimization: desktop only (disabled on mobile to avoid touch-scroll flicker)
+  const MOBILE_BREAKPOINT = 768;
   useEffect(() => {
-    const handleScroll = () => {
+    const MIN_SCROLL_TO_MINIMIZE = 120;
+    const SCROLL_UP_DELTA_TO_EXPAND = 50;
+    const SCROLL_TOP_TO_EXPAND = 60;
+
+    const updateMinimized = () => {
+      if (window.innerWidth < MOBILE_BREAKPOINT) {
+        if (isHeaderMinimizedRef.current) {
+          isHeaderMinimizedRef.current = false;
+          setIsHeaderMinimized(false);
+        }
+        scrollTick.current = null;
+        return;
+      }
+
       const currentScrollY = window.scrollY;
-      const scrollingDown = currentScrollY > lastScrollY.current;
-      const shouldMinimize = currentScrollY > 100 && scrollingDown;
-      const shouldExpand = currentScrollY < lastScrollY.current - 20 || currentScrollY < 50;
+      const prevScrollY = lastScrollY.current;
+      const scrollingDown = currentScrollY > prevScrollY;
       lastScrollY.current = currentScrollY;
+
+      const shouldMinimize = currentScrollY > MIN_SCROLL_TO_MINIMIZE && scrollingDown;
+      const scrollUpDelta = prevScrollY - currentScrollY;
+      const shouldExpand = scrollUpDelta > SCROLL_UP_DELTA_TO_EXPAND || currentScrollY < SCROLL_TOP_TO_EXPAND;
 
       const nextMinimized = shouldExpand ? false : shouldMinimize ? true : isHeaderMinimizedRef.current;
       if (nextMinimized !== isHeaderMinimizedRef.current) {
         isHeaderMinimizedRef.current = nextMinimized;
         setIsHeaderMinimized(nextMinimized);
       }
+      scrollTick.current = null;
+    };
+
+    const handleScroll = () => {
+      if (scrollTick.current == null) {
+        scrollTick.current = requestAnimationFrame(updateMinimized);
+      }
+    };
+
+    const handleResize = () => {
+      const mobile = window.innerWidth < MOBILE_BREAKPOINT;
+      setIsMobile(mobile);
+      if (mobile && isHeaderMinimizedRef.current) {
+        isHeaderMinimizedRef.current = false;
+        setIsHeaderMinimized(false);
+      }
     };
 
     window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
+    window.addEventListener('resize', handleResize);
+    return () => {
+      window.removeEventListener('scroll', handleScroll);
+      window.removeEventListener('resize', handleResize);
+      if (scrollTick.current != null) cancelAnimationFrame(scrollTick.current);
+    };
   }, []);
 
   useEffect(() => {
@@ -188,7 +229,10 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
     <InsightsProvider value={{ insights, loading: insightsLoading, error: insightsError }}>
       <div className="min-h-screen bg-background">
         {/* Header */}
-        <header className={`sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/60 transition-all duration-300 ${isHeaderMinimized ? 'py-1.5' : 'py-3'}`}>
+        <header
+          className={`sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/60 transition-[padding] duration-300 ${effectiveMinimized ? 'py-1.5' : 'py-3'}`}
+          style={{ contain: 'layout style' }}
+        >
           <div className="max-w-6xl mx-auto px-4">
             {/* Top Row */}
             <div className="flex items-center justify-between mb-2">
@@ -202,7 +246,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
 
-                <div className={`transition-all duration-300 ${isHeaderMinimized ? 'hidden' : 'block'}`}>
+                <div className={`transition-all duration-300 ${effectiveMinimized ? 'hidden' : 'block'}`}>
                   {insights?.greeting && (
                     <p className="text-sm text-muted-foreground/70 italic mb-0.5">{insights.greeting}</p>
                   )}
@@ -232,7 +276,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                 </div>
 
                 {/* Minimized title */}
-                <div className={`transition-all duration-300 flex items-center ${isHeaderMinimized ? 'flex' : 'hidden'}`}>
+                <div className={`transition-all duration-300 flex items-center ${effectiveMinimized ? 'flex' : 'hidden'}`}>
                   <span className="font-medium text-foreground">{destinationName}{countryName && <>,<span className="font-normal text-muted-foreground"> {countryName}</span></>}</span>
                   {flagUrl && (
                     <img
@@ -294,7 +338,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                   )}
                 </div>
 
-                <div className={`flex items-center gap-1 transition-all duration-300 ${isHeaderMinimized ? 'hidden md:flex' : 'flex'}`}>
+                <div className={`flex items-center gap-1 transition-all duration-300 ${effectiveMinimized ? 'hidden md:flex' : 'flex'}`}>
                   <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" className="h-10 px-3 text-sm font-normal">
@@ -348,7 +392,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
             </form>
 
             {/* Pinned Locations */}
-            {pinnedLocations.length > 0 && !isHeaderMinimized && (
+            {pinnedLocations.length > 0 && !effectiveMinimized && (
               <div className="flex items-center gap-2 mt-2 overflow-x-auto pb-1">
                 <span className="text-xs text-muted-foreground shrink-0">Saved:</span>
                 {pinnedLocations.slice(0, 4).map((location) => (

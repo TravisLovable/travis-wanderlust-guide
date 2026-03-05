@@ -160,10 +160,14 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
 
     const isVisaFree = typeof visaRequired === 'boolean' && !visaRequired;
 
+    // Shared min-height to prevent layout jitter when switching loading → streaming → content
+    const cardClassName = 'travis-card h-full min-h-[300px]';
+    const contentMinHeight = 'min-h-[220px]';
+
     // Show loading state
     if (isLoading) {
         return (
-            <Card className="travis-card h-full">
+            <Card className={cardClassName}>
                 <CardHeader className="p-0 pb-2">
                     <div className="widget-header">
                         <div className="widget-icon bg-red-500/10 text-red-500">
@@ -174,8 +178,8 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="p-0 pt-0">
-                    <div className="flex items-center justify-center py-8">
+                <CardContent className={`p-0 pt-0 flex flex-col ${contentMinHeight}`}>
+                    <div className="flex items-center justify-center flex-1 py-8">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
                         <span className="ml-2 text-sm text-muted-foreground">Checking requirements...</span>
                     </div>
@@ -198,7 +202,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
         });
 
         return (
-            <Card className="travis-card h-full">
+            <Card className={cardClassName}>
                 <CardHeader className="p-0 pb-2">
                     <div className="widget-header">
                         <div className="widget-icon bg-red-500/10 text-red-500">
@@ -213,7 +217,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-4 p-0 pt-0">
+                <CardContent className={`space-y-4 p-0 pt-0 ${contentMinHeight}`}>
                     {/* Main visa status with icon */}
                     <div className="flex items-center space-x-2">
                         {parsedData?.isVisaFree ? (
@@ -319,7 +323,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
 
     // Show structured data (legacy format)
     return (
-        <Card className="travis-card h-full">
+        <Card className={cardClassName}>
             <CardHeader className="p-0 pb-2">
                 <div className="widget-header">
                     <div className="widget-icon bg-red-500/10 text-red-500">
@@ -334,7 +338,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4 p-0 pt-0">
+            <CardContent className={`space-y-4 p-0 pt-0 ${contentMinHeight}`}>
                 {error && (
                     <div className="flex items-center space-x-2">
                         <AlertCircle className="w-5 h-5 text-red-500" />

@@ -3,10 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import HomePage from '@/components/HomePage';
 import Header from '@/components/Header';
 import { SelectedPlace } from '@/hooks/useGooglePlaces';
+import { useTheme } from '@/hooks/useTheme';
 
 const Index = () => {
   const navigate = useNavigate();
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { isDarkMode, toggleTheme } = useTheme();
   const [currentLanguage, setCurrentLanguage] = useState('en');
 
   const handleSearch = (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }, skipTransition = false) => {
@@ -26,11 +27,6 @@ const Index = () => {
     });
 
     navigate(`/search?${searchParams.toString()}`);
-  };
-
-  const toggleTheme = () => {
-    setIsDarkMode(!isDarkMode);
-    document.documentElement.classList.toggle('dark');
   };
 
   return (
