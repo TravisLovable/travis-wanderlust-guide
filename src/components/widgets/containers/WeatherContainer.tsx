@@ -8,6 +8,8 @@ interface WeatherContainerProps {
     placeDetails: SelectedPlace | null;
 }
 
+// show historical data 
+
 const WeatherContainer: React.FC<WeatherContainerProps> = ({
     placeDetails
 }) => {

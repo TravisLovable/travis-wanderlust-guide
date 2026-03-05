@@ -62,40 +62,49 @@ const getSeasonalContext = (region: string, temp: number): string => {
   return 'Moderate';
 };
 
-export const useWeatherData = (placeDetails?: { latitude?: number; longitude?: number; name?: string; formatted_address?: string }, userCountry?: any) => {
+type PlaceDetailsLike = { latitude?: number; longitude?: number; name?: string; formatted_address?: string };
+
+export const useWeatherData = (placeDetails?: PlaceDetailsLike | string, userCountry?: any) => {
   const [weatherData, setWeatherData] = useState<WeatherData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
+  const isStringInput = typeof placeDetails === 'string';
+
   useEffect(() => {
     const fetchWeatherData = async () => {
-      if (!placeDetails) return;
+      if (placeDetails == null || (isStringInput && !placeDetails.trim())) return;
 
       setIsLoading(true);
       setError(null);
 
       try {
-        const locationName = placeDetails.name || placeDetails.formatted_address || 'Unknown';
+        let locationName: string;
+        let requestBody: { days: number; location?: string; latitude?: number; longitude?: number };
 
-        console.log(`🌤️ Fetching weather data for:`, {
-          location: locationName,
-          coordinates: placeDetails.latitude && placeDetails.longitude ?
-            [placeDetails.latitude, placeDetails.longitude] : null
-        });
+        if (isStringInput) {
+          locationName = placeDetails as string;
+          requestBody = { days: 7, location: locationName };
+          console.log(`🌤️ Fetching weather data for (location name):`, locationName);
+        } else {
+          const p = placeDetails as PlaceDetailsLike;
+          locationName = p.name || p.formatted_address || 'Unknown';
+          requestBody = { days: 7 };
+          if (p.latitude != null && p.longitude != null) {
+            requestBody.latitude = p.latitude;
+            requestBody.longitude = p.longitude;
+            requestBody.location = locationName;
+          } else {
+            requestBody.location = locationName;
+          }
+          console.log(`🌤️ Fetching weather data for:`, {
+            location: locationName,
+            coordinates: p.latitude && p.longitude ? [p.latitude, p.longitude] : null
+          });
+        }
 
         if (userCountry) {
           console.log(`👤 User country context:`, userCountry);
-        }
-
-        // Prepare request body - prefer coordinates over location string
-        const requestBody: any = { days: 7 };
-
-        if (placeDetails.latitude && placeDetails.longitude) {
-          requestBody.latitude = placeDetails.latitude;
-          requestBody.longitude = placeDetails.longitude;
-          requestBody.location = locationName; // Still include for naming purposes
-        } else {
-          requestBody.location = locationName;
         }
 
         const { data, error: functionError } = await supabase.functions.invoke('get-weather-low-tier', {
@@ -161,7 +170,7 @@ export const useWeatherData = (placeDetails?: { latitude?: number; longitude?: n
     };
 
     fetchWeatherData();
-  }, [placeDetails?.latitude, placeDetails?.longitude, placeDetails?.name, placeDetails?.formatted_address]);
+  }, [placeDetails]);
 
   return { weatherData, isLoading, error };
 };

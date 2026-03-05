@@ -20,16 +20,20 @@ import HealthEntryCard from '@/components/HealthEntryCard';
 import PharmacyIntelCard from '@/components/PharmacyIntelCard';
 import {
   CulturalContainer,
-  WeatherContainer,
+  // WeatherContainer, // current implementation (commented out – client's WeatherWidget used below)
   TimeZoneContainer,
   CurrencyContainer,
   VisaContainer,
   HolidayContainer,
   UberAvailabilityWidget,
 } from '@/components/widgets';
+import WeatherWidget from '@/components/widgets/WeatherWidget';
+import WeatherContainer from '@/components/widgets/containers/WeatherContainer';
+import type { Destination } from '@/types/destination';
 import { InsightLine } from '@/components/InsightLine';
 import { InsightsProvider } from '@/contexts/InsightsContext';
 import { useTravisInsights } from '@/hooks/useTravisInsights';
+import WeatherIntelWidget from '@/components/WeatherIntelWidget';
 import { toLocalMidnight } from '@/lib/dates';
 
 interface ResultsPageProps {
@@ -57,10 +61,22 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const [checkoutOpen, setCheckoutOpen] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [isHeaderMinimized, setIsHeaderMinimized] = useState(false);
+  const [tempUnit, setTempUnit] = useState<'C' | 'F'>('C');
   const searchInputRef = useRef<HTMLInputElement>(null);
   const lastScrollY = useRef(0);
   const isHeaderMinimizedRef = useRef(false);
   isHeaderMinimizedRef.current = isHeaderMinimized;
+
+  // Client's weather widget expects a Destination (kept for commented implementation)
+  const weatherDestination: Destination = {
+    id: placeDetails?.place_id ?? 'dest',
+    displayName: destinationName || destination,
+    shortName: destinationName || destination.split(',')[0] || 'Destination',
+    fullName: destination,
+    addressComponents: { country: countryName ?? undefined, countryCode: countryCode ?? undefined },
+    source: { type: 'geocoded' },
+    createdAt: new Date(),
+  };
 
   const tripDuration = differenceInDays(toLocalMidnight(dates.checkout), toLocalMidnight(dates.checkin));
 
@@ -359,10 +375,35 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
           {/* ROW 1 — ENVIRONMENTAL CONTEXT (real data from Edge Functions) */}
 
+          {/* Weather Widget — Open-Meteo historical for checkin–checkout dates when lat/lng present */}
+          <WeatherIntelWidget
+            destination={destination}
+            dates={dates}
+            latitude={placeDetails?.latitude}
+            longitude={placeDetails?.longitude}
+            insight={insights?.weather}
+            insightLoading={insightsLoading}
+          />
+
+          {/* My implementation (commented out):
           <div className="animate-slide-up">
             <WeatherContainer placeDetails={placeDetails} />
             <InsightLine insight={insights?.weather} loading={insightsLoading} />
           </div>
+          */}
+         
+
+          {/* Client's WeatherWidget (commented out):
+          <div className="animate-slide-up">
+            <WeatherWidget
+              destination={weatherDestination}
+              currentLocation="Current Location"
+              tempUnit={tempUnit}
+              onTempUnitToggle={() => setTempUnit((u) => (u === 'C' ? 'F' : 'C'))}
+            />
+            <InsightLine insight={insights?.weather} loading={insightsLoading} />
+          </div>
+          */}
 
           <div className="animate-slide-up" style={{ animationDelay: '0.08s' }}>
             <TimeZoneContainer placeDetails={placeDetails} />

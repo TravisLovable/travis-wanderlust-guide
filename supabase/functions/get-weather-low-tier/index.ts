@@ -30,17 +30,30 @@ serve(async (req) => {
 
         console.log(`🌤️ Weather request for: ${location || `${latitude},${longitude}`}, days: ${days}`)
 
-        const apiKey = Deno.env.get('WEATHERAPI_KEY') || 'demo_key'
-        const baseUrl = 'http://api.weatherapi.com/v1'
+        const apiKey = Deno.env.get('WEATHERAPI_KEY') ?? ''
+        if (!apiKey) {
+            console.error('WEATHERAPI_KEY is not set in Edge Function secrets')
+            return new Response(
+                JSON.stringify({
+                    error: 'Weather API key not configured',
+                    message: 'Set WEATHERAPI_KEY in Supabase Dashboard → Edge Functions → get-weather-low-tier → Secrets (get key from weatherapi.com/my)',
+                }),
+                { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            )
+        }
+
+        const baseUrl = 'https://api.weatherapi.com/v1'
 
         // Build query parameter - WeatherAPI supports both coordinates and location names
         let queryParam: string
-        if (latitude && longitude) {
+        if (latitude != null && longitude != null) {
             queryParam = `${latitude},${longitude}`
             console.log(`🎯 Using coordinates: ${latitude}, ${longitude}`)
-        } else {
+        } else if (location) {
             queryParam = encodeURIComponent(location)
             console.log(`📍 Using location name: ${location}`)
+        } else {
+            throw new Error('Either location or coordinates (latitude/longitude) are required')
         }
 
         // WeatherAPI.com has a single endpoint for current + forecast
@@ -88,14 +101,17 @@ serve(async (req) => {
             }
         }).slice(0, days)
 
+        const apiLat = weatherData.location?.lat
+        const apiLon = weatherData.location?.lon
+        const useApiCoords = apiLat != null && apiLon != null && (apiLat !== 0 || apiLon !== 0)
         const processedWeatherData = {
             current,
             forecast,
             location: weatherData.location?.name || location || 'Unknown Location',
             country: weatherData.location?.country || 'Unknown',
             coordinates: {
-                lat: weatherData.location?.lat || latitude || 0,
-                lon: weatherData.location?.lon || longitude || 0
+                lat: useApiCoords ? apiLat : (latitude ?? 0),
+                lon: useApiCoords ? apiLon : (longitude ?? 0)
             }
         }
 
@@ -114,7 +130,7 @@ serve(async (req) => {
     } catch (error) {
         console.error('❌ Weather function error:', error)
 
-        // Return fallback data if API fails
+        // Fallback uses the requested location/coordinates so the UI shows the right place even when API fails
         const fallbackData = {
             current: {
                 temp: 22,
@@ -140,7 +156,10 @@ serve(async (req) => {
             }),
             location: location || 'Unknown Location',
             country: 'Unknown',
-            coordinates: { lat: 0, lon: 0 }
+            coordinates: {
+                lat: latitude ?? 0,
+                lon: longitude ?? 0
+            }
         }
 
         return new Response(
