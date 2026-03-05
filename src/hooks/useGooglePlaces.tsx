@@ -89,14 +89,16 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
 
   // Initialise: either load Google SDK (when key in env) or mark ready for Edge Function path
   useEffect(() => {
-    console.log('[places] init effect — apiKey:', apiKey ? 'present' : 'MISSING', 'useEdgeFunction:', useEdgeFunction);
+    const keyPreview = apiKey ? `${apiKey.slice(0, 6)}...` : 'MISSING';
+    console.log('[places] init —', { apiKeyPreview: keyPreview, useEdgeFunction, willFetchSuggestions: 'when query.length >= 2 && enabled' });
     if (useEdgeFunction) {
-      console.log('[places] using Supabase Edge Functions for Places (key in secrets)');
+      console.log('[places] using Supabase Edge Function for autocomplete (no client key)');
       setReady(true);
       return;
     }
 
     let cancelled = false;
+    console.log('[places] loading Google Maps script (libraries=places)...');
 
     loadGooglePlacesScript(apiKey!)
       .then(() => {
@@ -104,7 +106,7 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
           console.log('[places] script loaded but effect was cancelled (strict mode)');
           return;
         }
-        console.log('[places] Google Places SDK ready');
+        console.log('[places] Google Places SDK ready — AutocompleteService & PlacesService created');
         autocompleteRef.current = new google.maps.places.AutocompleteService();
         sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
         if (!dummyDivRef.current) {
@@ -114,7 +116,7 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
         setReady(true);
       })
       .catch((err) => {
-        console.error('[places] script load failed:', err);
+        console.error('[places] script load failed:', err?.message ?? err);
         if (!cancelled) setHasApiAccess(false);
       });
 
@@ -123,16 +125,19 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
 
   // Fetch predictions with 300ms debounce (SDK or Edge Function)
   useEffect(() => {
-    console.log('[places] predictions effect —', { ready, query, enabled, queryLen: query?.length, useEdgeFunction });
+    const skipReason = !ready ? 'not ready' : !query ? 'no query' : query.length < 2 ? 'query too short' : !enabled ? 'disabled' : null;
+    console.log('[places] predictions effect —', { ready, query: query ?? '', queryLen: query?.length ?? 0, enabled, useEdgeFunction, skipReason: skipReason ?? 'none (will fetch)' });
     if (!ready || !query || query.length < 2 || !enabled) {
+      if (skipReason) console.log('[places] skipping autocomplete:', skipReason);
       setSuggestions([]);
       return;
     }
 
     setIsLoading(true);
-
     const timeoutId = setTimeout(async () => {
       if (useEdgeFunction) {
+        const url = `${import.meta.env.VITE_SUPABASE_URL ?? ''}/functions/v1/google-places-autocomplete`;
+        console.log('[places] edge autocomplete REQUEST —', { input: query, url });
         try {
           const { data, error } = await supabase.functions.invoke<{
             predictions?: Array<{
@@ -143,7 +148,21 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
             status?: string;
           }>('google-places-autocomplete', { body: { input: query } });
           setIsLoading(false);
-          if (error || data?.status !== 'OK') {
+
+          console.log('[places] edge autocomplete RESPONSE —', {
+            status: data?.status,
+            error: error ? { message: error.message, name: error.name } : null,
+            predictionsCount: data?.predictions?.length ?? 0,
+            rawDataKeys: data ? Object.keys(data) : [],
+          });
+
+          if (error) {
+            console.warn('[places] edge autocomplete error:', error);
+            setSuggestions([]);
+            return;
+          }
+          if (data?.status !== 'OK') {
+            console.warn('[places] edge autocomplete non-OK status:', data?.status, data);
             setSuggestions([]);
             return;
           }
@@ -158,28 +177,35 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
               },
             }))
           );
-        } catch {
+          console.log('[places] edge autocomplete SUCCESS —', preds.length, 'suggestions');
+        } catch (err) {
           setIsLoading(false);
+          console.error('[places] edge autocomplete EXCEPTION:', err);
           setSuggestions([]);
         }
         return;
       }
 
       if (!autocompleteRef.current) {
-        console.warn('[places] autocompleteRef is null');
+        console.warn('[places] autocompleteRef is null — cannot call getPlacePredictions');
         setIsLoading(false);
         return;
       }
 
-      console.log('[places] calling getPlacePredictions:', query);
+      const request = { input: query, types: ['(cities)'] as const, sessionToken: sessionTokenRef.current! };
+      console.log('[places] SDK getPlacePredictions REQUEST —', request);
       autocompleteRef.current.getPlacePredictions(
-        {
-          input: query,
-          types: ['(cities)'],
-          sessionToken: sessionTokenRef.current!,
-        },
+        request,
         (predictions, status) => {
-          console.log('[places] predictions callback — status:', status, 'count:', predictions?.length);
+          const statusStr = typeof status === 'string' ? status : (status as unknown as string);
+          console.log('[places] SDK getPlacePredictions RESPONSE —', {
+            status: statusStr,
+            count: predictions?.length ?? 0,
+            sample: predictions?.[0] ? { place_id: predictions[0].place_id, description: predictions[0].description?.slice(0, 50) } : null,
+          });
+          if (statusStr !== 'OK' && statusStr !== 'ZERO_RESULTS') {
+            console.warn('[places] SDK autocomplete non-OK status (check API key, billing, restrictions):', statusStr);
+          }
           setIsLoading(false);
 
           if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
@@ -193,6 +219,7 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
                 },
               }))
             );
+            console.log('[places] SDK autocomplete SUCCESS —', predictions.length, 'suggestions');
           } else {
             setSuggestions([]);
           }
@@ -207,6 +234,8 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
 
   const getPlaceDetails = useCallback(
     async (placeId: string): Promise<SelectedPlace | null> => {
+      console.log('[places] getPlaceDetails REQUEST —', { placeId, useEdgeFunction });
+
       if (useEdgeFunction) {
         try {
           const { data, error } = await supabase.functions.invoke<{
@@ -219,7 +248,22 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
             };
             status?: string;
           }>('google-place-details', { body: { place_id: placeId } });
-          if (error || data?.status !== 'OK' || !data?.result?.geometry?.location) return null;
+
+          console.log('[places] edge place-details RESPONSE —', {
+            status: data?.status,
+            error: error ? { message: error.message } : null,
+            hasResult: !!data?.result,
+            hasGeometry: !!data?.result?.geometry?.location,
+          });
+
+          if (error) {
+            console.warn('[places] edge place-details error:', error);
+            return null;
+          }
+          if (data?.status !== 'OK' || !data?.result?.geometry?.location) {
+            console.warn('[places] edge place-details missing OK/geometry:', data?.status);
+            return null;
+          }
           const r = data.result;
           const loc = r.geometry!.location!;
           const countryComponent = r.address_components?.find((c) => c.types.includes('country'));
@@ -235,23 +279,29 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
             region: regionComponent?.long_name,
             place_id: r.place_id ?? placeId,
           };
-        } catch {
+        } catch (err) {
+          console.error('[places] edge place-details EXCEPTION:', err);
           return null;
         }
       }
 
-      if (!placesServiceRef.current) return null;
+      if (!placesServiceRef.current) {
+        console.warn('[places] getPlaceDetails: placesServiceRef is null');
+        return null;
+      }
 
       return new Promise((resolve) => {
+        const request = { placeId, fields: ['geometry', 'formatted_address', 'name', 'address_components', 'place_id'], sessionToken: sessionTokenRef.current! };
+        console.log('[places] SDK getDetails REQUEST —', request);
         placesServiceRef.current!.getDetails(
-          {
-            placeId,
-            fields: ['geometry', 'formatted_address', 'name', 'address_components', 'place_id'],
-            sessionToken: sessionTokenRef.current!,
-          },
+          request,
           (place, status) => {
-            // Rotate session token after each details call
             sessionTokenRef.current = new google.maps.places.AutocompleteSessionToken();
+            const statusStr = typeof status === 'string' ? status : (status as unknown as string);
+            console.log('[places] SDK getDetails RESPONSE —', { status: statusStr, hasPlace: !!place, hasGeometry: !!place?.geometry?.location });
+            if (statusStr !== 'OK') {
+              console.warn('[places] SDK getDetails non-OK status:', statusStr);
+            }
 
             if (
               status === google.maps.places.PlacesServiceStatus.OK &&
