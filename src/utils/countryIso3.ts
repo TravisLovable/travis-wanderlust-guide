@@ -55,7 +55,7 @@ const nameToCca3: Record<string, string> = {
   'hungary': 'HUN', 'romania': 'ROU', 'bulgaria': 'BGR', 'croatia': 'HRV',
   'slovenia': 'SVN', 'slovakia': 'SVK', 'serbia': 'SRB',
   'sweden': 'SWE', 'norway': 'NOR', 'denmark': 'DNK', 'finland': 'FIN', 'iceland': 'ISL',
-  'ireland': 'IRL', 'scotland': 'GBR',
+  'ireland': 'IRL',
   'turkey': 'TUR', 'russia': 'RUS', 'ukraine': 'UKR',
   'uae': 'ARE', 'united arab emirates': 'ARE', 'dubai': 'ARE',
   'saudi arabia': 'SAU', 'qatar': 'QAT', 'kuwait': 'KWT', 'oman': 'OMN',
