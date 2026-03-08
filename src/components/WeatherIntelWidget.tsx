@@ -3,12 +3,7 @@ import { Sun, Cloud, CloudRain } from 'lucide-react';
 import { getMockWeather } from '@/utils/mockData';
 import { useTripWindow } from '@/hooks/useTripWindow';
 import { InsightLine } from '@/components/InsightLine';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+
 
 const OPEN_METEO_HISTORICAL_URL = 'https://historical-forecast-api.open-meteo.com/v1/forecast';
 const OPEN_METEO_FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
@@ -77,9 +72,6 @@ export default function WeatherIntelWidget({
   const [weather, setWeather] = useState<WeatherData | null>(null);
   const [weatherLoading, setWeatherLoading] = useState(true);
   const [weatherError, setWeatherError] = useState<string | null>(null);
-  const [currentWeekForecast, setCurrentWeekForecast] = useState<WeatherDay[] | null>(null);
-  const [currentWeekLoading, setCurrentWeekLoading] = useState(false);
-  const [currentWeekError, setCurrentWeekError] = useState<string | null>(null);
 
   const t = (c: number) => (useFahrenheit ? Math.round((c * 9) / 5 + 32) : c);
   const unit = useFahrenheit ? '°F' : '°C';
@@ -234,8 +226,6 @@ export default function WeatherIntelWidget({
   const displayWeather = weather ?? mockToWeatherData(mockWeather);
   const tripWindow = useTripWindow(dates.checkin, dates.checkout);
   const hasForecast = displayWeather.forecast.length > 0;
-  const nowSectionForecast = currentWeekForecast ?? (currentWeekError ? displayWeather.forecast.slice(0, 7) : []);
-  const hasNowSection = nowSectionForecast.length > 0 || currentWeekLoading;
 
   const getWeatherIcon = (condition: string) => {
     const lower = condition.toLowerCase();
@@ -295,95 +285,19 @@ export default function WeatherIntelWidget({
             </div>
           )}
 
-          {(hasForecast || hasNowSection) && (
-            <Accordion
-              type="single"
-              collapsible={false}
-              defaultValue={hasForecast ? 'historical' : 'now'}
-              className="w-full"
-            >
-              {hasForecast && (
-                <AccordionItem value="historical" className="border-b border-border/50">
-                  <AccordionTrigger className="py-2 text-xs font-medium text-muted-foreground hover:no-underline hover:text-foreground [&[data-state=open]>svg]:rotate-180">
-                    Historical 14-day forecast
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-2 pt-0">
-                    <div className="relative">
-                      <div
-                        className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide forecast-scroll"
-                        onScroll={(e) => {
-                          const el = e.currentTarget;
-                          const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-                          if (atEnd) el.setAttribute('data-scrolled-end', '');
-                          else el.removeAttribute('data-scrolled-end');
-                        }}
-                      >
-                        {displayWeather.forecast.map((day, i) => (
-                          <div
-                            key={`hist-${day.date}-${i}`}
-                            className="flex-shrink-0 text-center p-2.5 rounded-xl bg-secondary/30 min-w-[58px]"
-                          >
-                            <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
-                            <p className="text-[10px] text-muted-foreground/80 mb-0.5">{formatShortDate(day.date)}</p>
-                            <div className="mb-0.5">{getWeatherIcon(day.condition)}</div>
-                            <p className="text-sm font-medium">{t(day.high)}{unit}</p>
-                            <p className="text-xs text-muted-foreground/[0.62]">{t(day.low)}{unit}</p>
-                          </div>
-                        ))}
-                      </div>
-                      <div className="forecast-fade pointer-events-none" />
-                    </div>
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-
-              {hasNowSection && (
-                <AccordionItem value="now" className={hasForecast ? 'border-b-0' : ''}>
-                  <AccordionTrigger className="py-2 text-xs font-medium text-muted-foreground hover:no-underline hover:text-foreground [&[data-state=open]>svg]:rotate-180">
-                    Now · This week
-                    {currentWeekLoading && (
-                      <span className="ml-1.5 inline-block h-3 w-3 rounded-full border-2 border-amber-500/30 border-t-amber-500 animate-spin" />
-                    )}
-                  </AccordionTrigger>
-                  <AccordionContent className="pb-2 pt-0">
-                    {currentWeekLoading && nowSectionForecast.length === 0 ? (
-                      <div className="flex items-center justify-center py-6">
-                        <div className="animate-spin rounded-full h-6 w-6 border-2 border-amber-500/30 border-t-amber-500" />
-                      </div>
-                    ) : (
-                      <div className="relative">
-                        <div
-                          className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide forecast-scroll"
-                          onScroll={(e) => {
-                            const el = e.currentTarget;
-                            const atEnd = el.scrollLeft + el.clientWidth >= el.scrollWidth - 8;
-                            if (atEnd) el.setAttribute('data-scrolled-end', '');
-                            else el.removeAttribute('data-scrolled-end');
-                          }}
-                        >
-                          {nowSectionForecast.map((day, i) => (
-                            <div
-                              key={`now-${day.date}-${i}`}
-                              className="flex-shrink-0 text-center p-2.5 rounded-xl bg-secondary/30 min-w-[58px]"
-                            >
-                              <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
-                              <p className="text-[10px] text-muted-foreground/80 mb-0.5">{formatShortDate(day.date)}</p>
-                              <div className="mb-0.5">{getWeatherIcon(day.condition)}</div>
-                              <p className="text-sm font-medium">{t(day.high)}{unit}</p>
-                              <p className="text-xs text-muted-foreground/[0.62]">{t(day.low)}{unit}</p>
-                            </div>
-                          ))}
-                        </div>
-                        <div className="forecast-fade pointer-events-none" />
-                        {currentWeekError && (
-                          <p className="text-[10px] text-muted-foreground/80 mt-1.5">Using fallback for this week</p>
-                        )}
-                      </div>
-                    )}
-                  </AccordionContent>
-                </AccordionItem>
-              )}
-            </Accordion>
+          {hasForecast && (
+            <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
+              {displayWeather.forecast.map((day, i) => (
+                <div
+                  key={`fc-${day.date}-${i}`}
+                  className="flex-shrink-0 text-center px-1.5 py-1.5 rounded-lg bg-secondary/30 min-w-[44px]"
+                >
+                  <p className="text-[10px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
+                  <p className="text-xs font-semibold">{t(day.high)}°</p>
+                  <p className="text-[10px] text-muted-foreground/[0.62]">{t(day.low)}°</p>
+                </div>
+              ))}
+            </div>
           )}
         </>
       )}
