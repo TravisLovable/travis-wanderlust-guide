@@ -161,8 +161,8 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
     const isVisaFree = typeof visaRequired === 'boolean' && !visaRequired;
 
     // Shared min-height to prevent layout jitter when switching loading → streaming → content
-    const cardClassName = 'travis-card h-full';
-    const contentMinHeight = '';
+    const cardClassName = 'travis-card h-full min-h-[300px]';
+    const contentMinHeight = 'min-h-[220px]';
 
     // Show loading state
     if (isLoading) {

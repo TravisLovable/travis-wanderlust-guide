@@ -54,7 +54,7 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
     if (isLoading) {
         return (
             <Card className="travis-card travis-interactive group">
-                <CardHeader className="p-0 pb-2">
+                <CardHeader className="p-5 pb-2">
                     <div className="widget-header">
                         <div className="widget-icon bg-amber-500/10 text-amber-500">
                             <Thermometer className="w-5 h-5" />
@@ -74,7 +74,7 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
     if (error) {
         return (
             <Card className="travis-card travis-interactive group">
-                <CardHeader className="p-0 pb-2">
+                <CardHeader className="p-5 pb-2">
                     <div className="widget-header">
                         <div className="widget-icon bg-amber-500/10 text-amber-500">
                             <Thermometer className="w-5 h-5" />
@@ -93,7 +93,7 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
 
     return (
         <Card className="travis-card travis-interactive group h-full flex flex-col">
-            <CardHeader className="p-0 pb-2">
+            <CardHeader className="p-5 pb-2">
                 <div className="widget-header">
                     <div className="widget-icon bg-amber-500/10 text-amber-500">
                         <Thermometer className="w-5 h-5" />
@@ -111,7 +111,7 @@ const WeatherPresenter: React.FC<WeatherPresenterProps> = ({
                     </Button>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1 p-0 pt-0">
+            <CardContent className="space-y-4 flex-1 p-5 pt-0">
                 {/* User's Home Country Context */}
                 {homeWeather && (
                     <div className="p-2 bg-blue-500/10 border border-blue-500/20 rounded-lg">
