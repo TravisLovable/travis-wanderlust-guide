@@ -1,11 +1,9 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { Sun, Cloud, CloudRain } from 'lucide-react';
 import { getMockWeather } from '@/utils/mockData';
-import { useTripWindow } from '@/hooks/useTripWindow';
 import { InsightLine } from '@/components/InsightLine';
 
 
-const OPEN_METEO_HISTORICAL_URL = 'https://historical-forecast-api.open-meteo.com/v1/forecast';
 const OPEN_METEO_FORECAST_URL = 'https://api.open-meteo.com/v1/forecast';
 const DAY_NAMES = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
@@ -28,11 +26,6 @@ function formatDayLabel(dateStr: string): string {
   return DAY_NAMES[d.getDay()];
 }
 
-function formatShortDate(dateStr: string): string {
-  const d = new Date(dateStr + 'T12:00:00');
-  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-}
-
 function mockToWeatherData(mock: ReturnType<typeof getMockWeather>): WeatherData {
   return {
     current: {
@@ -41,7 +34,7 @@ function mockToWeatherData(mock: ReturnType<typeof getMockWeather>): WeatherData
       humidity: mock.current.humidity,
       condition: mock.current.condition,
     },
-    forecast: mock.forecast.slice(0, 14).map((d) => ({
+    forecast: mock.forecast.slice(0, 7).map((d) => ({
       date: d.date,
       day: d.day,
       high: d.high,
@@ -78,67 +71,14 @@ export default function WeatherIntelWidget({
 
   const mockWeather = useMemo(() => getMockWeather(destination), [destination]);
 
-  // Fetch current-week forecast (next 7 days from today) — separate from historical data
-  useEffect(() => {
-    const hasCoords = latitude != null && longitude != null && !Number.isNaN(latitude) && !Number.isNaN(longitude);
-    if (!hasCoords) {
-      setCurrentWeekForecast(null);
-      setCurrentWeekError(null);
-      return;
-    }
-    let cancelled = false;
-    setCurrentWeekLoading(true);
-    setCurrentWeekError(null);
-    const params = new URLSearchParams({
-      latitude: String(latitude),
-      longitude: String(longitude),
-      daily: 'temperature_2m_max,temperature_2m_min',
-      forecast_days: '7',
-      timezone: 'auto',
-    });
-    fetch(`${OPEN_METEO_FORECAST_URL}?${params.toString()}`)
-      .then((res) => {
-        if (!res.ok) throw new Error(`Open-Meteo forecast: ${res.status}`);
-        return res.json();
-      })
-      .then((data: { daily?: { time?: string[]; temperature_2m_max?: number[]; temperature_2m_min?: number[] } }) => {
-        if (cancelled) return;
-        const daily = data.daily;
-        if (!daily?.time?.length || !daily.temperature_2m_max || !daily.temperature_2m_min) {
-          setCurrentWeekForecast(null);
-          return;
-        }
-        const forecast: WeatherDay[] = daily.time.map((dateStr, i) => ({
-          date: dateStr,
-          day: formatDayLabel(dateStr),
-          high: daily.temperature_2m_max![i] ?? 0,
-          low: daily.temperature_2m_min![i] ?? 0,
-          condition: 'Partly Cloudy',
-        }));
-        setCurrentWeekForecast(forecast);
-        setCurrentWeekError(null);
-      })
-      .catch((err) => {
-        if (!cancelled) {
-          setCurrentWeekError(err instanceof Error ? err.message : 'Failed to load current week');
-          setCurrentWeekForecast(null);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setCurrentWeekLoading(false);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [latitude, longitude]);
-
+  // Fetch 7-day forecast from Open-Meteo
   useEffect(() => {
     const hasCoords = latitude != null && longitude != null && !Number.isNaN(latitude) && !Number.isNaN(longitude);
     const fallback = () => {
       setWeather(mockToWeatherData(getMockWeather(destination)));
       setWeatherLoading(false);
     };
-    if (!hasCoords || !dates.checkin || !dates.checkout) {
+    if (!hasCoords) {
       fallback();
       setWeatherError(null);
       return;
@@ -148,34 +88,15 @@ export default function WeatherIntelWidget({
     setWeatherLoading(true);
     setWeatherError(null);
 
-    const formatFor14DayHistoricalForecast = (dates: { checkin: string; checkout: string }): { checkin: string; checkout: string } => {
-      // Parse ISO or YYYY-MM-DD; use previous year for historical API; add 14 days to end date; return YYYY-MM-DD
-      const startDate = new Date(dates.checkin);
-      const endDate = new Date(dates.checkout);
-
-      const historicalStartDate = new Date(startDate.getFullYear() - 1, startDate.getMonth(), startDate.getDate());
-      const historicalEndDate = new Date(endDate.getFullYear() - 1, endDate.getMonth(), endDate.getDate());
-      historicalEndDate.setDate(historicalEndDate.getDate() + 14);
-
-      const toYYYYMMDD = (d: Date) =>
-        `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-      return {
-        checkin: toYYYYMMDD(historicalStartDate),
-        checkout: toYYYYMMDD(historicalEndDate),
-      };
-    };
-    const formattedDates = formatFor14DayHistoricalForecast(dates);
     const params = new URLSearchParams({
       latitude: String(latitude),
       longitude: String(longitude),
-      start_date: formattedDates.checkin,
-      end_date: formattedDates.checkout,
       daily: 'temperature_2m_max,temperature_2m_min',
+      forecast_days: '7',
+      timezone: 'auto',
     });
 
-    
-
-    fetch(`${OPEN_METEO_HISTORICAL_URL}?${params.toString()}`)
+    fetch(`${OPEN_METEO_FORECAST_URL}?${params.toString()}`)
       .then((res) => {
         if (!res.ok) throw new Error(`Open-Meteo: ${res.status}`);
         return res.json();
@@ -221,10 +142,9 @@ export default function WeatherIntelWidget({
     return () => {
       cancelled = true;
     };
-  }, [latitude, longitude, dates.checkin, dates.checkout, destination]);
+  }, [latitude, longitude, destination]);
 
   const displayWeather = weather ?? mockToWeatherData(mockWeather);
-  const tripWindow = useTripWindow(dates.checkin, dates.checkout);
   const hasForecast = displayWeather.forecast.length > 0;
 
   const getWeatherIcon = (condition: string) => {
@@ -267,23 +187,18 @@ export default function WeatherIntelWidget({
         </div>
       ) : (
         <>
-          {tripWindow.isTripWithin14DayForecastWindow && (
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <p className="widget-value">
-                  {t(displayWeather.current.temp)}{unit}
-                  {tripWindow.isTodayWithinTrip && (
-                    <span className="text-sm font-normal text-muted-foreground/[0.62] ml-1.5">· Today</span>
-                  )}
-                </p>
-                <p className="text-sm text-muted-foreground">{displayWeather.current.condition}</p>
-              </div>
-              <div className="text-right text-xs text-muted-foreground/[0.62]">
-                <p>Feels like {t(displayWeather.current.feelsLike)}{unit}</p>
-                <p>Humidity {displayWeather.current.humidity}%</p>
-              </div>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <p className="widget-value">
+                {t(displayWeather.current.temp)}{unit}
+              </p>
+              <p className="text-sm text-muted-foreground">{displayWeather.current.condition}</p>
             </div>
-          )}
+            <div className="text-right text-xs text-muted-foreground/[0.62]">
+              <p>Feels like {t(displayWeather.current.feelsLike)}{unit}</p>
+              <p>Humidity {displayWeather.current.humidity}%</p>
+            </div>
+          </div>
 
           {hasForecast && (
             <div className="flex gap-1.5 overflow-x-auto pb-1 scrollbar-hide">
