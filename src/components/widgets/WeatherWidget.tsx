@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Thermometer, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Separator } from '@/components/ui/separator';
@@ -20,7 +20,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
   const { weatherData: currentWeather, isLoading: currentLoading, error: currentError } = useWeatherData(currentLocation);
 
   const convertTemp = (temp: number) => {
-    return tempUnit === 'F' ? Math.round((temp * 9/5) + 32) : Math.round(temp);
+    return tempUnit === 'F' ? Math.round((temp * 9 / 5) + 32) : Math.round(temp);
   };
 
   const getWeatherEmoji = (condition: string) => {
@@ -87,16 +87,18 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   if (destinationLoading && currentLoading) {
     return (
-      <Card className="bg-black border-border shadow-xl w-full col-span-full rounded-2xl max-w-4xl mx-auto">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center text-lg font-semibold">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mr-3 shadow-lg">
-              <Thermometer className="w-5 h-5 text-primary-foreground" />
+      <Card className="travis-card w-full col-span-full max-w-4xl mx-auto">
+        <CardHeader className="p-0 pb-2">
+          <div className="widget-header">
+            <div className="widget-icon bg-amber-500/10 text-amber-500">
+              <Thermometer className="w-5 h-5" />
             </div>
-            Weather Intel
-          </CardTitle>
+            <div className="flex-1">
+              <h3 className="widget-title">Weather Intel</h3>
+            </div>
+          </div>
         </CardHeader>
-        <CardContent className="flex justify-center items-center p-6">
+        <CardContent className="flex justify-center items-center p-6 pt-0">
           <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-primary"></div>
         </CardContent>
       </Card>
@@ -105,24 +107,26 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
 
   return (
     <TooltipProvider>
-      <Card className="bg-black border-border shadow-xl w-full col-span-full rounded-2xl max-w-4xl mx-auto">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center text-lg font-semibold">
-            <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center mr-3 shadow-lg">
-              <Thermometer className="w-5 h-5 text-primary-foreground" />
+      <Card className="travis-card w-full col-span-full max-w-4xl mx-auto">
+        <CardHeader className="p-0 pb-2">
+          <div className="widget-header">
+            <div className="widget-icon bg-amber-500/10 text-amber-500">
+              <Thermometer className="w-5 h-5" />
             </div>
-            Weather Intel
+            <div className="flex-1">
+              <h3 className="widget-title">Weather Intel</h3>
+            </div>
             <Button
               onClick={onTempUnitToggle}
               variant="outline"
               size="sm"
-              className="ml-auto bg-background border-border hover:bg-muted text-foreground hover:text-foreground font-semibold px-3 py-1 rounded-lg transition-all duration-300 hover:scale-105 hover:shadow-md text-xs"
+              className="bg-secondary/60 hover:bg-secondary border-border font-semibold px-2.5 py-1 rounded-full text-xs"
             >
               °{tempUnit} ⇄ °{tempUnit === 'C' ? 'F' : 'C'}
             </Button>
-          </CardTitle>
+          </div>
         </CardHeader>
-        <CardContent className="space-y-5">
+        <CardContent className="space-y-5 p-0 pt-0">
           {/* Current Weather Comparison */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
@@ -130,23 +134,23 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
               <div className="flex-1 h-px bg-border"></div>
             </div>
             <div className="grid grid-cols-2 gap-4">
-              <WeatherCard 
-                weather={currentWeather} 
+              <WeatherCard
+                weather={currentWeather}
                 location={currentLocation}
                 isLoading={currentLoading}
                 error={currentError}
               />
-              <WeatherCard 
-                weather={destinationWeather} 
+              <WeatherCard
+                weather={destinationWeather}
                 location={destination.displayName}
                 isLoading={destinationLoading}
                 error={destinationError}
               />
             </div>
           </div>
-          
+
           <Separator className="bg-border" />
-          
+
           {/* 7-Day Forecast */}
           {destinationWeather && destinationWeather.forecast && destinationWeather.forecast.length > 0 && (
             <div className="space-y-3">

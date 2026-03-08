@@ -1,6 +1,14 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, Zap } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Clock, Sunrise, Sunset } from 'lucide-react';
+
+interface SunData {
+    sunrise: string;
+    sunset: string;
+    currentHour: number;
+    sunriseHour: number;
+    sunsetHour: number;
+}
 
 interface TimeZoneData {
     origin: {
@@ -16,6 +24,8 @@ interface TimeZoneData {
     timeDifferenceText: string;
     isLoading: boolean;
     destinationName: string;
+    destinationTimeZone?: string | null;
+    sunData?: SunData;
 }
 
 interface TimeZonePresenterProps {
@@ -23,73 +33,106 @@ interface TimeZonePresenterProps {
 }
 
 const TimeZonePresenter: React.FC<TimeZonePresenterProps> = ({ data }) => {
-    const { origin, destination, timeDifferenceText, isLoading, destinationName } = data;
+    const { origin, destination, timeDifferenceText, isLoading, destinationName, destinationTimeZone, sunData } = data;
+
+    // Sun position on arc: 0 = sunrise (left), 1 = sunset (right). Quadratic path M 0 20 Q 50 0 100 20.
+    let sunProgress = sunData
+        ? Math.max(0, Math.min(1, (sunData.currentHour - sunData.sunriseHour) / (sunData.sunsetHour - sunData.sunriseHour || 1)))
+        : 0.5;
+
+    const sunX = sunProgress * 100;
+    const sunY = 20 * (1 - 2 * sunProgress + 2 * sunProgress * sunProgress);
+    sunProgress = 0.5;
 
     if (isLoading) {
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-                <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center text-lg font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-2">
-                            <Clock className="w-4 h-4 text-white" />
+            <Card className="travis-card travis-interactive group">
+                <CardHeader className="p-0 pb-2">
+                    <div className="widget-header">
+                        <div className="widget-icon bg-blue-500/10 text-blue-500">
+                            <Clock className="w-5 h-5" />
                         </div>
-                        Time Zone
-                        <Zap className="w-3 h-3 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
-                    </CardTitle>
+                        <div className="flex-1">
+                            <h3 className="widget-title">Local Time</h3>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="flex justify-center items-center p-4">
+                <CardContent className="flex justify-center items-center p-0 pt-0">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-400"></div>
                 </CardContent>
             </Card>
         );
     }
 
+    const locationLabel = destinationTimeZone || destinationName;
+
     return (
-        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 h-full flex flex-col">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center text-lg font-semibold mb-8">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center mr-2">
-                        <Clock className="w-4 h-4 text-white" />
+        <Card className="travis-card travis-interactive group lg:col-span-2 xl:col-span-2">
+            <CardHeader className="p-0 pb-2">
+                <div className="widget-header">
+                    <div className="widget-icon bg-blue-500/10 text-blue-500">
+                        <Clock className="w-5 h-5" />
                     </div>
-                    Time Zone
-                    <Zap className="w-3 h-3 ml-auto text-blue-400 group-hover:scale-110 transition-transform" />
-                </CardTitle>
+                    <div className="flex-1 min-w-0">
+                        <h3 className="widget-title">Local Time</h3>
+                        <p className="text-xs text-muted-foreground/80 truncate mt-0.5">
+                            {locationLabel}
+                        </p>
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent className="space-y-3 flex-1">
-                <div className="grid grid-cols-2 gap-2">
-                    <div className="text-center gip-2 bg-blue-500/10 border border-blue-500/20 rounded-xl p-2">
-                        <div className="text-xs text-muted-foreground mb-1 font-medium">YOUR TIME</div>
-                        <div className="text-lg font-bold text-blue-400">
-                            {origin.time12}
-                        </div>
-                        <div className="text-xs text-muted-foreground opacity-75">
-                            {origin.time}
-                        </div>
-                        <div className="text-xs text-muted-foreground font-mono mt-1">
-                            {origin.abbreviation}
-                        </div>
+            <CardContent className="p-0 pt-0 space-y-3">
+                {/* Destination time — hero */}
+                <div>
+                    <div className="text-3xl font-bold tracking-tight text-foreground">
+                        {destination.time12}
                     </div>
-                    <div className="text-center p-2 bg-blue-500/20 border border-blue-500/30 rounded-xl">
-                        <div className="text-xs text-muted-foreground mb-1 font-medium uppercase">
-                            {destinationName}
-                        </div>
-                        <div className="text-lg font-bold text-blue-300">
-                            {destination.time12}
-                        </div>
-                        <div className="text-xs text-muted-foreground opacity-75">
-                            {destination.time}
-                        </div>
-                        <div className="text-xs text-muted-foreground font-mono mt-1">
-                            {destination.abbreviation}
-                        </div>
-                    </div>
+                    <p className="text-xs text-muted-foreground mt-1">
+                        {destination.abbreviation}
+                        {destination.time !== destination.time12 && (
+                            <span className="ml-1.5 opacity-80">· {destination.time}</span>
+                        )}
+                    </p>
                 </div>
-                <div className="flex items-center justify-center p-2 bg-blue-500/10 border border-blue-500/20 rounded-xl">
-                    <Clock className="w-3 h-3 mr-1 text-blue-400" />
-                    <span className="text-xs text-blue-400 font-medium">
-                        {timeDifferenceText}
+
+                {/* Your time + difference — compact */}
+                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+                    <span>
+                        Your time: <span className="font-medium text-foreground/90">{origin.time12}</span>
+                        <span className="ml-1 font-mono opacity-90">{origin.abbreviation}</span>
                     </span>
+                    <span className="text-muted-foreground/70">·</span>
+                    <span className="text-blue-400/90 font-medium">{timeDifferenceText}</span>
                 </div>
+
+                {/* Daylight cycle — compact arc */}
+                {sunData && (
+                    <div className="mt-2">
+                        <svg viewBox="0 0 100 16" className="w-full h-5 text-sky-400/40 dark:text-sky-500/30" preserveAspectRatio="none">
+                            <path
+                                d="M 0 14 Q 50 0 100 14"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="1.2"
+                                strokeLinecap="round"
+                            />
+                            <g className="transition-all duration-500 ease-out">
+                                <circle cx={sunX} cy={sunY * 14 / 20} r="2.4" fill="rgb(251 191 36 / 0.4)" />
+                                <circle cx={sunX} cy={sunY * 14 / 20} r="1.4" fill="rgb(253 224 71)" stroke="rgb(254 243 199 / 0.8)" strokeWidth="0.4" />
+                            </g>
+                        </svg>
+                        <div className="flex justify-between items-center mt-1 text-[10px] text-muted-foreground/80">
+                            <span className="flex items-center gap-0.5">
+                                <Sunrise className="w-3 h-3 text-sky-500/70" strokeWidth={1.5} />
+                                {sunData.sunrise}
+                            </span>
+                            <span className="flex items-center gap-0.5">
+                                {sunData.sunset}
+                                <Sunset className="w-3 h-3 text-sky-500/70" strokeWidth={1.5} />
+                            </span>
+                        </div>
+                    </div>
+                )}
             </CardContent>
         </Card>
     );

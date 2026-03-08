@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -10,40 +9,30 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { User, Settings, LogOut, Sparkles, Star } from 'lucide-react';
-import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
 import ProfileSettingsModal from './ProfileSettingsModal';
 import SettingsModal from './SettingsModal';
 
 interface UserProfileDropdownProps {
-  user: any;
-  userProfile: any;
   isDarkMode: boolean;
   toggleTheme: () => void;
-  currentLanguage: string;
-  setCurrentLanguage: (language: string) => void;
-  onProfileUpdate: (profile: any) => void;
 }
 
 const UserProfileDropdown = ({
-  user,
-  userProfile,
   isDarkMode,
   toggleTheme,
-  currentLanguage,
-  setCurrentLanguage,
-  onProfileUpdate
 }: UserProfileDropdownProps) => {
+  const { user, userProfile, signOut, updateProfile } = useAuth();
   const { toast } = useToast();
   const [isProfileSettingsOpen, setIsProfileSettingsOpen] = useState(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  console.log('userProfile', userProfile);
   const [isHovered, setIsHovered] = useState(false);
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut();
-      if (error) throw error;
-
+      await signOut();
       toast({
         title: "Signed out successfully",
         description: "You've been signed out of your account.",
@@ -64,20 +53,26 @@ const UserProfileDropdown = ({
   };
 
   const getDisplayName = () => {
-    return user?.user_metadata?.full_name || userProfile?.full_name || 'User';
+    return user?.user_metadata?.full_name || userProfile?.full_name || user?.email || 'User';
   };
+
+  // Blob URLs (e.g. from local file preview) don't persist; only use http(s) URLs for avatar
+  const avatarSrc =
+    userProfile?.profile_photo_url?.startsWith('http://') || userProfile?.profile_photo_url?.startsWith('https://')
+      ? userProfile.profile_photo_url
+      : undefined;
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
-        <Button 
-          variant="ghost" 
+        <Button
+          variant="ghost"
           className="relative h-10 w-10 rounded-full interactive-scale"
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
         >
           <Avatar className="h-10 w-10 transition-all duration-300 hover:animate-bounce-gentle">
-            <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
+            <AvatarImage src={avatarSrc} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           {isHovered && (
@@ -90,7 +85,7 @@ const UserProfileDropdown = ({
       <DropdownMenuContent className="w-80 animate-slide-in-up" align="end" forceMount>
         <div className="flex items-center space-x-2 p-3 relative">
           <Avatar className="h-8 w-8 hover:animate-bounce-gentle transition-all duration-300">
-            <AvatarImage src={userProfile?.profile_photo_url} alt="Profile" />
+            <AvatarImage src={avatarSrc} alt="Profile" />
             <AvatarFallback>{getInitials()}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col space-y-1">
@@ -114,15 +109,15 @@ const UserProfileDropdown = ({
           </>
         )}
 
-        {/* Enhanced Menu Items */}
-        <DropdownMenuItem 
+        {/* Menu Items */}
+        <DropdownMenuItem
           onClick={() => setIsProfileSettingsOpen(true)}
           className="transition-all duration-200 hover:animate-slide-in-left"
         >
           <User className="mr-2 h-4 w-4 transition-all duration-300 hover:animate-bounce-gentle" />
           Profile Settings
         </DropdownMenuItem>
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={() => setIsSettingsOpen(true)}
           className="transition-all duration-200 hover:animate-slide-in-left"
         >
@@ -130,7 +125,7 @@ const UserProfileDropdown = ({
           Settings
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem 
+        <DropdownMenuItem
           onClick={handleSignOut}
           className="transition-all duration-200 hover:animate-slide-in-left text-red-600 dark:text-red-400"
         >
@@ -144,7 +139,7 @@ const UserProfileDropdown = ({
         onClose={() => setIsProfileSettingsOpen(false)}
         user={user}
         userProfile={userProfile}
-        onProfileUpdate={onProfileUpdate}
+        onProfileUpdate={updateProfile}
       />
 
       <SettingsModal
@@ -152,8 +147,8 @@ const UserProfileDropdown = ({
         onClose={() => setIsSettingsOpen(false)}
         isDarkMode={isDarkMode}
         toggleTheme={toggleTheme}
-        currentLanguage={currentLanguage}
-        setCurrentLanguage={setCurrentLanguage}
+        currentLanguage="en"
+        setCurrentLanguage={() => {}}
       />
     </DropdownMenu>
   );

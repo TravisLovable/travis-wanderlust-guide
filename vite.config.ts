@@ -8,6 +8,13 @@ export default defineConfig(({ mode }) => ({
   server: {
     host: "::",
     port: 8080,
+    proxy: {
+      '/api/who': {
+        target: 'https://ghoapi.azureedge.net',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/who/, '/api'),
+      },
+    },
   },
   plugins: [
     react(),

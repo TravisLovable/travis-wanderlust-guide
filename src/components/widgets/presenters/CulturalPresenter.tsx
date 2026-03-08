@@ -1,127 +1,95 @@
-import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Globe, Church, Heart, Utensils } from 'lucide-react';
-import { Destination } from '@/types/destination';
+import React, { useState } from 'react';
+import { Globe, ChevronDown } from 'lucide-react';
 
-interface CulturalData {
-    language: {
-        primary: string;
-        secondary: string;
-    };
-    religion: {
-        primary: string;
-        secondary: string;
-    };
-    etiquette: string[];
-    customs: string[];
+export interface CulturalData {
+  religion: string;
+  dressCode: string;
+  greetingsTipping: string;
+  sensitivities: string[];
 }
 
 interface CulturalPresenterProps {
-    data: CulturalData | null;
-    destination: Destination;
+  data: CulturalData;
+  animationDelay?: string;
 }
 
-const CulturalPresenter: React.FC<CulturalPresenterProps> = ({ data, destination }) => {
-    if (!data) {
-        return (
-            <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-                <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center text-xl font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center mr-2">
-                            <Globe className="w-4 h-4 text-white" />
-                        </div>
-                        Cultural Insights
-                    </CardTitle>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                    <div className="text-center py-8">
-                        <div className="w-12 h-12 mx-auto mb-4 rounded-xl bg-gradient-to-br from-gray-500 to-gray-600 flex items-center justify-center">
-                            <Globe className="w-6 h-6 text-white" />
-                        </div>
-                        <h3 className="text-lg font-semibold mb-2">Cultural insights are currently unavailable for this destination.</h3>
-                        <p className="text-muted-foreground">
-                            We're working to expand our cultural database to include more destinations.
-                            Check back soon for detailed cultural insights for {destination.displayName}.
-                        </p>
-                    </div>
-                </CardContent>
-            </Card>
-        );
-    }
+const CulturalPresenter: React.FC<CulturalPresenterProps> = ({
+  data,
+  animationDelay = '0.4s',
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
 
-    return (
-        <Card className="travis-card bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-            <CardHeader className="pb-3">
-                <CardTitle className="flex items-center text-xl font-semibold">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center mr-2">
-                        <Globe className="w-4 h-4 text-white" />
-                    </div>
-                    Cultural Insights
-                </CardTitle>
-            </CardHeader>
-            <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                    {/* Language */}
-                    <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-blue-500 to-cyan-600 flex items-center justify-center">
-                                <Globe className="w-3 h-3 text-white" />
-                            </div>
-                            <h3 className="font-semibold text-sm text-blue-700">Language</h3>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-xs"><span className="font-medium">Primary:</span> {data.language.primary}</p>
-                            <p className="text-xs"><span className="font-medium">Secondary:</span> {data.language.secondary}</p>
-                        </div>
-                    </div>
+  return (
+    <div className="widget-card animate-slide-up md:col-span-2" style={{ animationDelay }}>
+      {/* Collapsible header */}
+      <button
+        onClick={() => setIsExpanded(!isExpanded)}
+        className="w-full flex items-center justify-between"
+      >
+        <div className="flex items-center gap-3">
+          <div className="widget-icon bg-indigo-500/10 text-indigo-500">
+            <Globe className="w-5 h-5" />
+          </div>
+          <div className="text-left">
+            <h3 className="widget-title">Cultural Insights</h3>
+            <p className="widget-subtitle">Customs &amp; etiquette</p>
+          </div>
+        </div>
+        <ChevronDown
+          className={`w-4 h-4 text-muted-foreground transition-transform duration-300 ${isExpanded ? 'rotate-180' : ''}`}
+        />
+      </button>
 
-                    {/* Religion */}
-                    <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-purple-500 to-violet-600 flex items-center justify-center">
-                                <Church className="w-3 h-3 text-white" />
-                            </div>
-                            <h3 className="font-semibold text-sm text-purple-700">Religion</h3>
-                        </div>
-                        <div className="space-y-1">
-                            <p className="text-xs"><span className="font-medium">Primary:</span> {data.religion.primary}</p>
-                            <p className="text-xs"><span className="font-medium">Other:</span> {data.religion.secondary}</p>
-                        </div>
-                    </div>
+      {/* Expanded content — 4-column grid */}
+      {isExpanded && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 pt-4 mt-4 border-t border-border/30">
+          {/* Religion */}
+          <div className="flex flex-col min-w-0">
+            <h4 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50 mb-2">
+              Religion
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {data.religion}
+            </p>
+          </div>
 
-                    {/* Cultural Etiquette */}
-                    <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center">
-                                <Heart className="w-3 h-3 text-white" />
-                            </div>
-                            <h3 className="font-semibold text-sm text-green-700">Etiquette</h3>
-                        </div>
-                        <div className="space-y-1">
-                            {data.etiquette.slice(0, 3).map((rule, idx) => (
-                                <p key={idx} className="text-xs text-muted-foreground">• {rule}</p>
-                            ))}
-                        </div>
-                    </div>
+          {/* Dress Code */}
+          <div className="flex flex-col min-w-0">
+            <h4 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50 mb-2">
+              Dress Code
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {data.dressCode}
+            </p>
+          </div>
 
-                    {/* Local Customs */}
-                    <div className="space-y-2">
-                        <div className="flex items-center space-x-2">
-                            <div className="w-6 h-6 rounded-lg bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center">
-                                <Utensils className="w-3 h-3 text-white" />
-                            </div>
-                            <h3 className="font-semibold text-sm text-orange-700">Customs</h3>
-                        </div>
-                        <div className="space-y-1">
-                            {data.customs.slice(0, 3).map((custom, idx) => (
-                                <p key={idx} className="text-xs text-muted-foreground">• {custom}</p>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            </CardContent>
-        </Card>
-    );
+          {/* Greetings & Tipping */}
+          <div className="flex flex-col min-w-0">
+            <h4 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50 mb-2">
+              Greetings &amp; Tipping
+            </h4>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {data.greetingsTipping}
+            </p>
+          </div>
+
+          {/* Sensitivities */}
+          <div className="flex flex-col min-w-0">
+            <h4 className="text-[10px] font-medium uppercase tracking-widest text-muted-foreground/50 mb-2">
+              Sensitivities
+            </h4>
+            <ul className="space-y-1">
+              {data.sensitivities.map((item, i) => (
+                <li key={i} className="text-xs text-muted-foreground leading-snug">
+                  • {item}
+                </li>
+              ))}
+            </ul>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 export default CulturalPresenter;

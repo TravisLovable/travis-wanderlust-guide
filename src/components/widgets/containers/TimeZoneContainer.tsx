@@ -1,10 +1,13 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import TimeZonePresenter from '../presenters/TimeZonePresenter';
 import { invokeFunction } from '@/integrations/supabase/client';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { getMockSunData } from '@/utils/mockData';
 
 interface TimeZoneContainerProps {
   placeDetails: SelectedPlace | null;
+  /** Destination string (same as WeatherIntelWidget) for sun data / datasource alignment */
+  destination: string;
 }
 
 interface WorldClockData {
@@ -30,9 +33,12 @@ interface WorldClockData {
   timeDifferenceText: string;
 }
 
-const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) => {
+const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails, destination }) => {
   const [worldClockData, setWorldClockData] = useState<WorldClockData | null>(null);
   const [isLoading, setIsLoading] = useState(false);
+
+  // Sun animation data from same datasource as WeatherIntelWidget (destination-based)
+  const sunData = useMemo(() => getMockSunData(destination || 'Unknown'), [destination]);
 
   console.log('TimeZoneContainer render - worldClockData:', worldClockData, 'isLoading:', isLoading);
   console.log('TimeZoneContainer render - placeDetails:', placeDetails);
@@ -252,7 +258,15 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails }) =
     },
     timeDifferenceText: worldClockData?.timeDifferenceText || 'Same time',
     isLoading,
-    destinationName: placeDetails?.formatted_address || placeDetails?.name || 'Unknown'
+    destinationName: placeDetails?.formatted_address || placeDetails?.name || destination || 'Unknown',
+    destinationTimeZone: (worldClockData?.destination as { timeZone?: string } | undefined)?.timeZone ?? null,
+    sunData: {
+      sunrise: sunData.sunrise,
+      sunset: sunData.sunset,
+      currentHour: sunData.currentHour,
+      sunriseHour: sunData.sunriseHour,
+      sunsetHour: sunData.sunsetHour,
+    },
   };
 
   console.log('Final transformed data being passed to presenter:', transformedData);

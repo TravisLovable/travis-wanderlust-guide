@@ -1,0 +1,15 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  # Vite/React app — skip Next.js plugin
+  NETLIFY_NEXT_PLUGIN_SKIP = "true"
+  # Allow client-side API keys (e.g. Google Places) in build output; they're protected by referrer/API restrictions
+  SECRETS_SCAN_SMART_DETECTION_ENABLED = "false"
+
+# SPA: serve index.html for all routes so React Router can mount
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

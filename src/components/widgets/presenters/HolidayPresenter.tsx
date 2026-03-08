@@ -1,6 +1,6 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Gift, Calendar } from 'lucide-react';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
+import { Gift } from 'lucide-react';
 import { Destination } from '@/types/destination';
 
 interface HolidayData {
@@ -57,16 +57,18 @@ const HolidayPresenter: React.FC<HolidayPresenterProps> = ({
 
     if (isLoading) {
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-                <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center text-lg font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-2">
-                            <Gift className="w-4 h-4 text-white" />
+            <Card className="travis-card travis-interactive group">
+                <CardHeader className="p-0 pb-2">
+                    <div className="widget-header">
+                        <div className="widget-icon bg-amber-500/10 text-amber-500">
+                            <Gift className="w-5 h-5" />
                         </div>
-                        Holidays
-                    </CardTitle>
+                        <div className="flex-1">
+                            <h3 className="widget-title">Holidays</h3>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="flex justify-center items-center p-4">
+                <CardContent className="flex justify-center items-center p-0 pt-0">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-yellow-400"></div>
                 </CardContent>
             </Card>
@@ -74,16 +76,18 @@ const HolidayPresenter: React.FC<HolidayPresenterProps> = ({
     }
 
     return (
-        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 h-full flex flex-col">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center text-lg font-semibold">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-yellow-500 to-orange-600 flex items-center justify-center mr-2">
-                        <Gift className="w-4 h-4 text-white" />
+        <Card className="travis-card travis-interactive group h-full flex flex-col">
+            <CardHeader className="p-0 pb-2">
+                <div className="widget-header">
+                    <div className="widget-icon bg-amber-500/10 text-amber-500">
+                        <Gift className="w-5 h-5" />
                     </div>
-                    Holidays
-                </CardTitle>
+                    <div className="flex-1">
+                        <h3 className="widget-title">Holidays</h3>
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent className="space-y-3 flex-1">
+            <CardContent className="space-y-3 flex-1 p-0 pt-0">
                 {hasData ? (
                     <>
                         <div className="text-center p-2 bg-yellow-500/10 border border-yellow-500/20 rounded-xl">

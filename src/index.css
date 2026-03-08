@@ -35,34 +35,35 @@
     --radius: 0.75rem;
   }
 
+  /* Dark theme — navy/indigo blue (client reference) */
   .dark {
-    --background: 225 15% 6%;
+    --background: 228 30% 7%;
     --foreground: 210 20% 98%;
 
-    --card: 225 15% 8%;
+    --card: 228 24% 10%;
     --card-foreground: 210 20% 98%;
 
-    --popover: 225 15% 8%;
+    --popover: 228 24% 10%;
     --popover-foreground: 210 20% 98%;
 
-    --primary: 220 90% 60%;
+    --primary: 217 91% 60%;
     --primary-foreground: 220 20% 10%;
 
-    --secondary: 220 15% 15%;
+    --secondary: 228 22% 14%;
     --secondary-foreground: 210 20% 98%;
 
-    --muted: 220 15% 15%;
-    --muted-foreground: 220 10% 60%;
+    --muted: 228 22% 14%;
+    --muted-foreground: 220 12% 65%;
 
-    --accent: 220 15% 15%;
+    --accent: 228 22% 14%;
     --accent-foreground: 210 20% 98%;
 
     --destructive: 0 70% 45%;
     --destructive-foreground: 210 20% 98%;
 
-    --border: 220 15% 18%;
-    --input: 220 15% 18%;
-    --ring: 220 90% 60%;
+    --border: 228 20% 18%;
+    --input: 228 20% 18%;
+    --ring: 217 91% 60%;
   }
 }
 
@@ -83,8 +84,9 @@
 
 /* Card Styles */
 .widget-card {
-  @apply bg-card/80 backdrop-blur-sm border border-border/50 rounded-2xl p-6
+  @apply bg-card/80 backdrop-blur-sm border border-border/50 p-5
          transition-all duration-300 ease-out;
+  border-radius: 0.875rem; /* 14px — tighter than rounded-2xl (16px) */
 }
 
 .widget-card:hover {
@@ -232,6 +234,7 @@
   animation: slideUp 0.6s ease-out forwards;
 }
 
+
 /* Slide In Left/Right */
 @keyframes slideInLeft {
   from { opacity: 0; transform: translateX(-24px); }
@@ -311,21 +314,34 @@
   animation: textFadeCycle 3s ease-in-out;
 }
 
+/* Slow 3D showcase rotation for product imagery */
+@keyframes slowHalfTurn {
+  0%   { transform: perspective(600px) rotateY(0deg); }
+  50%  { transform: perspective(600px) rotateY(180deg); }
+  100% { transform: perspective(600px) rotateY(0deg); }
+}
+
+.animate-slow-turn {
+  animation: slowHalfTurn 18s ease-in-out infinite;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
 /* ============================================
    Background Effects
    ============================================ */
 
-/* Gradient Background */
+/* Gradient Background (aligned with .dark CSS variables) */
 .bg-gradient-dark {
   background: linear-gradient(180deg,
-    hsl(225 15% 6%) 0%,
-    hsl(225 15% 4%) 100%);
+    hsl(228 28% 7%) 0%,
+    hsl(228 28% 5%) 100%);
 }
 
 .bg-gradient-radial {
   background: radial-gradient(ellipse at top,
-    hsl(225 20% 12%) 0%,
-    hsl(225 15% 6%) 60%);
+    hsl(228 24% 12%) 0%,
+    hsl(228 28% 7%) 60%);
 }
 
 /* Subtle Grid Pattern */
@@ -402,24 +418,26 @@
    ============================================ */
 
 .widget-header {
-  @apply flex items-center gap-3 mb-4;
+  @apply flex items-center gap-2.5 mb-3;
 }
 
 .widget-icon {
-  @apply w-10 h-10 rounded-xl flex items-center justify-center
+  @apply w-8 h-8 rounded-xl flex items-center justify-center
          bg-primary/10 text-primary;
 }
 
 .widget-title {
-  @apply text-lg font-semibold text-foreground;
+  @apply text-[15px] font-semibold text-foreground leading-tight;
 }
 
 .widget-subtitle {
-  @apply text-sm text-muted-foreground;
+  @apply text-xs text-muted-foreground/70;
 }
 
 .widget-value {
-  @apply text-3xl font-semibold text-foreground;
+  @apply text-2xl text-foreground;
+  font-weight: 720;
+  letter-spacing: -0.03em;
 }
 
 .widget-label {
@@ -442,7 +460,7 @@
   font-weight: 400;
   line-height: 1.4;
   letter-spacing: 0em;
-  color: #7A879B;
+  color: hsl(var(--foreground) / 0.7);
   text-align: center;
 }
 
@@ -544,4 +562,48 @@
 .bg-grid-pattern {
   @apply bg-grid;
 }
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+
+/* Forecast scroll fade indicator */
+.forecast-fade {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  width: 32px;
+  background: linear-gradient(to right, transparent, hsl(var(--card)));
+  transition: opacity 0.2s ease-out;
+}
+
+.forecast-scroll:not([data-scrolled-end]) ~ .forecast-fade {
+  opacity: 1;
+}
+
+.forecast-scroll[data-scrolled-end] ~ .forecast-fade {
+  opacity: 0;
+}
+
+/* Sun position indicator */
+.sun-indicator {
+  will-change: left, opacity;
+}
+
+@keyframes sunGlowPulse {
+  0%, 100% { box-shadow: 0 0 6px rgba(251, 191, 36, 0.35); }
+  50%      { box-shadow: 0 0 10px rgba(251, 191, 36, 0.55); }
+}
+
+.sun-glow-pulse {
+  animation: sunGlowPulse 3s ease-in-out infinite;
+}
+
 

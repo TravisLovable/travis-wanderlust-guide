@@ -25,29 +25,44 @@ serve(async (req) => {
       );
     }
 
-    const timeAndDateApiKey = '6NbsuamveP';
-    const timeAndDateSecretKey = 'O2Uiz1iGOVbcMAEr5EuE'; // You'll need to provide the actual secret key
-
+    // Time and Date API: https://dev.timeanddate.com/docs/holidays/
+    // Set TIMEANDDATE_ACCESS_KEY and TIMEANDDATE_SECRET_KEY in Supabase Dashboard → Edge Functions → get-holidays → Secrets
+    const timeAndDateApiKey = Deno.env.get('TIMEANDDATE_ACCESS_KEY') ?? '';
+    const timeAndDateSecretKey = Deno.env.get('TIMEANDDATE_SECRET_KEY') ?? '';
     // Use current year if not provided
     const targetYear = year || new Date().getFullYear();
+    // API expects lowercase 2-letter country code (e.g. "no", "ro"); see Available countries in docs
+    const countryParam = typeof country === 'string' ? country.trim().toLowerCase() : String(country).toLowerCase();
 
-    console.log(`Fetching holidays for country: ${country}, year: ${targetYear}`);
+    console.log(`Fetching holidays for country: ${countryParam}, year: ${targetYear}`);
 
-    // Call Time and Date Holidays API - Updated to use correct endpoint with both accesskey and secretkey
-    const holidayUrl = `https://api.xmltime.com/holidays?version=3&accesskey=${timeAndDateApiKey}&secretkey=${timeAndDateSecretKey}&country=${country}&year=${targetYear}`;
+    let response: Response | null = null;
+    if (timeAndDateApiKey && timeAndDateSecretKey) {
+      // Per docs: version=3, accesskey, secretkey, country, year, types=federal,federallocal,religious
+      const params = new URLSearchParams({
+        version: '3',
+        accesskey: timeAndDateApiKey,
+        secretkey: timeAndDateSecretKey,
+        country: countryParam,
+        year: String(targetYear),
+        types: 'federal,federallocal,religious',
+      });
+      const holidayUrl = `https://api.xmltime.com/holidays?${params.toString()}`;
+      response = await fetch(holidayUrl, {
+        method: 'GET',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } else {
+      console.log('Time and Date keys not set; using fallback API');
+    }
 
-    const response = await fetch(holidayUrl, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    });
+    if (!response || !response.ok) {
+      if (response) {
+        console.error(`Time and Date API error: ${response.status} ${response.statusText}`);
+      }
 
-    if (!response.ok) {
-      console.error(`Time and Date API error: ${response.status} ${response.statusText}`);
-
-      // Fallback to nager.at API if Time and Date API fails
-      const fallbackUrl = `https://date.nager.at/api/v3/PublicHolidays/${targetYear}/${country}`;
+      // Fallback to nager.at API if Time and Date API fails or keys not set (expects ISO 3166-1 alpha-2 uppercase, e.g. US, AT)
+      const fallbackUrl = `https://date.nager.at/api/v3/PublicHolidays/${targetYear}/${countryParam.toUpperCase()}`;
       console.log(`Falling back to nager.at API: ${fallbackUrl}`);
 
       const fallbackResponse = await fetch(fallbackUrl, {
@@ -60,10 +75,10 @@ serve(async (req) => {
       if (!fallbackResponse.ok) {
         return new Response(
           JSON.stringify({
-            error: `Failed to fetch holidays from both APIs: ${response.status} ${response.statusText}`
+            error: `Failed to fetch holidays: ${response ? `${response.status} ${response.statusText}` : 'Time and Date keys not set'}; fallback also failed: ${fallbackResponse.status}`
           }),
           {
-            status: response.status,
+            status: fallbackResponse.status,
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );

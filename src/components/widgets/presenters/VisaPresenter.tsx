@@ -160,18 +160,26 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
 
     const isVisaFree = typeof visaRequired === 'boolean' && !visaRequired;
 
+    // Shared min-height to prevent layout jitter when switching loading → streaming → content
+    const cardClassName = 'travis-card h-full';
+    const contentMinHeight = '';
+
     // Show loading state
     if (isLoading) {
         return (
-            <Card className="h-full">
-                <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center text-lg">
-                        <Shield className="w-5 h-5 mr-2 text-red-500" />
-                        Visa & Entry
-                    </CardTitle>
+            <Card className={cardClassName}>
+                <CardHeader className="p-0 pb-2">
+                    <div className="widget-header">
+                        <div className="widget-icon bg-red-500/10 text-red-500">
+                            <Shield className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="widget-title">Visa & Entry</h3>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent>
-                    <div className="flex items-center justify-center py-8">
+                <CardContent className={`p-0 pt-0 flex flex-col ${contentMinHeight}`}>
+                    <div className="flex items-center justify-center flex-1 py-8">
                         <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-red-500"></div>
                         <span className="ml-2 text-sm text-muted-foreground">Checking requirements...</span>
                     </div>
@@ -194,18 +202,22 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
         });
 
         return (
-            <Card className="h-full">
-                <CardHeader className="pb-3">
-                    <CardTitle className="flex items-center text-lg">
-                        <Shield className="w-5 h-5 mr-2 text-red-500" />
-                        Visa & Entry
-                        <div className="ml-auto flex items-center space-x-1">
+            <Card className={cardClassName}>
+                <CardHeader className="p-0 pb-2">
+                    <div className="widget-header">
+                        <div className="widget-icon bg-red-500/10 text-red-500">
+                            <Shield className="w-5 h-5" />
+                        </div>
+                        <div className="flex-1">
+                            <h3 className="widget-title">Visa & Entry</h3>
+                        </div>
+                        <div className="flex items-center space-x-1">
                             {hasDbData && <Database className="w-3 h-3 text-green-400" />}
                             <Bot className={`w-3 h-3 text-blue-400 ${isStreaming ? 'animate-pulse' : ''}`} />
                         </div>
-                    </CardTitle>
+                    </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className={`space-y-4 p-0 pt-0 ${contentMinHeight}`}>
                     {/* Main visa status with icon */}
                     <div className="flex items-center space-x-2">
                         {parsedData?.isVisaFree ? (
@@ -311,18 +323,22 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
 
     // Show structured data (legacy format)
     return (
-        <Card className="h-full">
-            <CardHeader className="pb-3">
-                <CardTitle className="flex items-center text-lg">
-                    <Shield className="w-5 h-5 mr-2 text-red-500" />
-                    Visa & Entry
-                    <div className="ml-auto flex items-center space-x-1">
+        <Card className={cardClassName}>
+            <CardHeader className="p-0 pb-2">
+                <div className="widget-header">
+                    <div className="widget-icon bg-red-500/10 text-red-500">
+                        <Shield className="w-5 h-5" />
+                    </div>
+                    <div className="flex-1">
+                        <h3 className="widget-title">Visa & Entry</h3>
+                    </div>
+                    <div className="flex items-center space-x-1">
                         {hasDbData && <Database className="w-3 h-3 text-green-400" />}
                         <Bot className="w-3 h-3 text-blue-400" />
                     </div>
-                </CardTitle>
+                </div>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className={`space-y-4 p-0 pt-0 ${contentMinHeight}`}>
                 {error && (
                     <div className="flex items-center space-x-2">
                         <AlertCircle className="w-5 h-5 text-red-500" />

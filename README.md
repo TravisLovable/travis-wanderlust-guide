@@ -118,6 +118,18 @@ supabase/
    supabase secrets set OPENAI_API_KEY=your_openai_key
    ```
 
+## Client: Resolving API Key & Subscription Errors
+
+If the app shows API-related errors (e.g. 401, “not licensed”, or missing data), complete these steps so each service has a valid key and subscription where required.
+
+| Service | Action | Notes |
+|--------|--------|--------|
+| **Weather API** | [weatherapi.com/my](https://www.weatherapi.com/my/) | **$4 payment required.** Use account: `hello@poweredbytravis.com`. Add payment method, then copy the API key into the project (env or Supabase secrets as configured). |
+| **OpenAI** | [platform.openai.com/login](https://platform.openai.com/login) | **Generate an API key** and **add payment info** (billing required for API usage). Create the key under API keys, then set it in Supabase Edge Function secrets (e.g. `OPENAI_API_KEY`) for the visa/insights functions. |
+| **Time and Date (Holidays)** | [dev.timeanddate.com/holidays/pricing](https://dev.timeanddate.com/holidays/pricing) | **Active subscription required.** If you see “not licensed for the service holidays” but already have credits, the account may have credits without an active Holidays subscription. Follow up with Time and Date support to clarify and activate the Holidays service. The app can use the free [Nager.Date](https://date.nager.at) API for holidays in the meantime. |
+
+After updating keys or subscriptions, redeploy any affected Edge Functions and restart the app if needed.
+
 ## Key Features
 
 **Mobile-First Design:** Responsive grid system, touch-optimized interface, progressive web app capabilities
@@ -156,7 +168,7 @@ supabase/
 ## Next Steps
 
 - **Migrate GoDaddy DNS to Netlify** - Transfer domain management for improved deployment workflow
-- **Purchase tokens from [Time and Date API](https://dev.timeanddate.com/)** - Obtain secret key for holiday data integration
+- **Resolve API keys & subscriptions** - See [Client: Resolving API Key & Subscription Errors](#client-resolving-api-key--subscription-errors) (Weather API, OpenAI, Time and Date).
 - **Design audit and revision** - Comprehensive UI/UX review and optimization 
 
 ## License & Usage

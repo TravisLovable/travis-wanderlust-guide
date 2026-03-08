@@ -67,11 +67,13 @@ serve(async (req) => {
         )
 
     } catch (error) {
+        const message = error instanceof Error ? error.message : String(error)
         console.error('Error checking visa requirements:', error)
 
         return new Response(
             JSON.stringify({
                 error: 'Failed to check visa requirements',
+                detail: message,
                 visaRequired: 'unknown',
                 recommendation: 'Contact embassy or consulate for current requirements'
             }),

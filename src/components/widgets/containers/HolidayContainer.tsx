@@ -125,17 +125,9 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
             try {
                 const destinationName = placeDetails?.formatted_address || placeDetails?.name || 'Unknown';
 
-                // Get country code for destination using user country context and smart parsing
-                const getCountryCodeForDestination = (dest: string, userCountryData?: any): string => {
-
-                    // First, try to extract country from destination string
-                    const parts = dest.split(',').map(part => part.trim());
-                    const lastPart = parts[parts.length - 1];
-
-                    // Check if destination contains common country indicators
+                // Prefer placeDetails.country_code (from map/place API); otherwise parse destination string
+                const getCountryCodeForDestination = (dest: string): string => {
                     const lowerDest = dest.toLowerCase();
-
-                    // Priority 1: Direct country matches
                     const countryMatches: { [key: string]: string } = {
                         'brazil': 'BR', 'peru': 'PE', 'united states': 'US', 'usa': 'US',
                         'united kingdom': 'GB', 'uk': 'GB', 'france': 'FR', 'germany': 'DE',
@@ -146,47 +138,27 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
                         'belgium': 'BE', 'portugal': 'PT', 'greece': 'GR', 'poland': 'PL',
                         'czech republic': 'CZ', 'hungary': 'HU', 'romania': 'RO', 'bulgaria': 'BG',
                         'croatia': 'HR', 'slovenia': 'SI', 'slovakia': 'SK', 'lithuania': 'LT',
-                        'latvia': 'LV', 'estonia': 'EE', 'iceland': 'IS', 'ireland': 'IE'
+                        'latvia': 'LV', 'estonia': 'EE', 'iceland': 'IS', 'ireland': 'IE',
+                        'thailand': 'TH', 'vietnam': 'VN', 'india': 'IN', 'china': 'CN', 'south korea': 'KR',
+                        'indonesia': 'ID', 'malaysia': 'MY', 'singapore': 'SG', 'new zealand': 'NZ'
                     };
 
                     for (const [countryName, countryCode] of Object.entries(countryMatches)) {
-                        if (lowerDest.includes(countryName)) {
-                            console.log(`✅ Found country match: ${countryName} -> ${countryCode}`);
-                            return countryCode;
-                        }
+                        if (lowerDest.includes(countryName)) return countryCode;
                     }
 
-                    // Priority 2: Check if last part of destination is a country
-                    if (countryMatches[lastPart.toLowerCase()]) {
-                        console.log(`✅ Found country in last part: ${lastPart} -> ${countryMatches[lastPart.toLowerCase()]}`);
+                    const parts = dest.split(',').map(part => part.trim());
+                    const lastPart = parts[parts.length - 1];
+                    if (lastPart && countryMatches[lastPart.toLowerCase()]) {
                         return countryMatches[lastPart.toLowerCase()];
                     }
 
-                    // Priority 3: Use user's home country as context for similar regions
-                    if (userCountryData?.code) {
-                        console.log(`🌍 Using user's home country as context: ${userCountryData.code}`);
-
-                        // If user is from a specific region, suggest similar countries
-                        const regionSuggestions: { [key: string]: string[] } = {
-                            'Americas': ['US', 'CA', 'MX', 'BR', 'AR', 'CL', 'CO', 'PE'],
-                            'Europe': ['GB', 'FR', 'DE', 'IT', 'ES', 'NL', 'SE', 'NO', 'DK', 'FI'],
-                            'Asia': ['JP', 'KR', 'CN', 'IN', 'TH', 'SG', 'MY', 'ID', 'VN'],
-                            'Oceania': ['AU', 'NZ', 'FJ', 'PG']
-                        };
-
-                        const userRegion = userCountryData.region;
-                        if (regionSuggestions[userRegion]) {
-                            console.log(`🌍 User is from ${userRegion}, suggesting similar countries`);
-                            // For now, return user's country as fallback
-                            return userCountryData.code;
-                        }
-                    }
-
-                    // Priority 4: Default to US if no match found
                     return 'US';
                 };
 
-                const countryCode = getCountryCodeForDestination(destinationName, userCountry);
+                const countryCode = (placeDetails?.country_code?.toUpperCase() && placeDetails.country_code.length === 2)
+                    ? placeDetails.country_code.toUpperCase()
+                    : getCountryCodeForDestination(destinationName);
                 const checkinDate = new Date(dates.checkin);
                 const checkoutDate = new Date(dates.checkout);
                 const startYear = checkinDate.getFullYear();
@@ -307,7 +279,7 @@ const HolidayContainer: React.FC<HolidayContainerProps> = ({
     return (
         <HolidayPresenter
             data={transformedData}
-            destination={destinationName}
+            destination={{ name: destinationName }}
             dates={dates}
         />
     );

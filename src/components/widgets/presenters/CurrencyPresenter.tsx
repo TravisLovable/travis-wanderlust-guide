@@ -1,8 +1,8 @@
 import React from 'react';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { CreditCard, TrendingUp } from 'lucide-react';
+import { CreditCard } from 'lucide-react';
 import { User } from '@supabase/supabase-js';
 
 interface CurrencyData {
@@ -36,17 +36,18 @@ const CurrencyPresenter: React.FC<CurrencyPresenterProps> = ({ data, userLoading
 
     if (isLoading) {
         return (
-            <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20">
-                <CardHeader className="pb-2">
-                    <CardTitle className="flex items-center text-lg font-semibold">
-                        <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-2">
-                            <CreditCard className="w-4 h-4 text-white" />
+            <Card className="travis-card travis-interactive group">
+                <CardHeader className="p-0 pb-2">
+                    <div className="widget-header">
+                        <div className="widget-icon bg-green-500/10 text-green-500">
+                            <CreditCard className="w-5 h-5" />
                         </div>
-                        Currency
-                        <TrendingUp className="w-3 h-3 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
-                    </CardTitle>
+                        <div className="flex-1">
+                            <h3 className="widget-title">Currency</h3>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="flex justify-center items-center p-4">
+                <CardContent className="flex justify-center items-center p-0 pt-0">
                     <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-green-400"></div>
                 </CardContent>
             </Card>
@@ -54,17 +55,18 @@ const CurrencyPresenter: React.FC<CurrencyPresenterProps> = ({ data, userLoading
     }
 
     return (
-        <Card className="travis-card travis-interactive group bg-black dark:bg-black border-gray-600 dark:border-gray-600 shadow-lg dark:shadow-gray-500/20 lg:col-span-2 xl:col-span-2 h-full flex flex-col">
-            <CardHeader className="pb-2">
-                <CardTitle className="flex items-center text-lg font-semibold">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-green-500 to-emerald-600 flex items-center justify-center mr-2">
-                        <CreditCard className="w-4 h-4 text-white" />
+        <Card className="travis-card travis-interactive group lg:col-span-2 xl:col-span-2 h-full flex flex-col">
+            <CardHeader className="p-0 pb-2">
+                <div className="widget-header">
+                    <div className="widget-icon bg-green-500/10 text-green-500">
+                        <CreditCard className="w-5 h-5" />
                     </div>
-                    Currency
-                    <TrendingUp className="w-3 h-3 ml-auto text-green-400 group-hover:scale-110 transition-transform" />
-                </CardTitle>
+                    <div className="flex-1">
+                        <h3 className="widget-title">Currency</h3>
+                    </div>
+                </div>
             </CardHeader>
-            <CardContent className="space-y-4 flex-1">
+            <CardContent className="space-y-4 flex-1 p-0 pt-0">
                 {/* Base Currency Input */}
                 <div className="space-y-2">
                     <label className="text-sm font-medium text-muted-foreground">Amount in {baseCurrency}</label>

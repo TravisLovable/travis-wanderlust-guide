@@ -1,4 +1,4 @@
-import { Sun, Moon, Globe, ChevronDown } from 'lucide-react';
+import { Sun, Moon, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import {
     DropdownMenu,
@@ -7,7 +7,7 @@ import {
     DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import UserProfileDropdown from './UserProfileDropdown';
-import { User } from '@supabase/supabase-js';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const languages = [
@@ -19,32 +19,20 @@ const languages = [
 ];
 
 interface HeaderProps {
-    user: User;
-    userProfile: any;
     isDarkMode: boolean;
     toggleTheme: () => void;
-    setIsAuthModalOpen: (open: boolean) => void;
-    onProfileUpdate: (profile: any) => void;
     currentLanguage?: string;
     setCurrentLanguage?: (lang: string) => void;
 }
 
-
-
 export default function Header({
-    user,
-    userProfile,
     isDarkMode,
     toggleTheme,
-    setIsAuthModalOpen,
-    onProfileUpdate,
     currentLanguage = 'en',
     setCurrentLanguage
 }: HeaderProps) {
     const navigate = useNavigate();
-
-    const currentLang = languages.find(l => l.code === currentLanguage);
-    const currentLangLabel = currentLang?.label || 'English';
+    const { user, openAuthModal } = useAuth();
 
     return (
         <header className="px-4 py-3 border-b border-border/30 backdrop-blur-sm relative z-10">
@@ -57,19 +45,26 @@ export default function Header({
                     Travis
                 </button>
                 <div className="flex items-center space-x-1 mr-1">
+                    {/* Theme Toggle */}
+                    <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={toggleTheme}
+                        className="rounded-full text-foreground/70 hover:text-foreground"
+                    >
+                        {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
+                    </Button>
+
                     {/* Language Selector */}
                     <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                             <Button
                                 variant="ghost"
-                                size="sm"
-                                className="rounded-full px-2.5 gap-1.5 hover:opacity-70 transition-opacity duration-150"
-                                style={{ color: '#2B2B2B' }}
+                                size="icon"
+                                className="rounded-full text-foreground/70 hover:text-foreground"
                                 title="Language"
                             >
-                                <Globe className="w-3.5 h-3.5" strokeWidth={1.5} />
-                                <span className="text-xs">Language</span>
-                                <ChevronDown className="w-3 h-3 opacity-70" />
+                                <Globe className="w-5 h-5" strokeWidth={1.5} />
                             </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent align="end" className="min-w-[120px]">
@@ -85,32 +80,18 @@ export default function Header({
                         </DropdownMenuContent>
                     </DropdownMenu>
 
-                    {/* Theme Toggle */}
-                    <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={toggleTheme}
-                        className="rounded-full"
-                    >
-                        {isDarkMode ? <Sun className="w-5 h-5" strokeWidth={1.5} /> : <Moon className="w-5 h-5" strokeWidth={1.5} />}
-                    </Button>
-
                     {user ? (
                         <UserProfileDropdown
-                            user={user}
-                            userProfile={userProfile}
                             isDarkMode={isDarkMode}
                             toggleTheme={toggleTheme}
-                            onProfileUpdate={onProfileUpdate}
                         />
                     ) : (
-                        <Button
-                            onClick={() => setIsAuthModalOpen(true)}
-                            variant="outline"
-                            className="ml-1"
+                        <button
+                            onClick={openAuthModal}
+                            className="ml-2 text-sm text-muted-foreground hover:text-foreground transition-colors duration-200"
                         >
-                            Log In / Sign Up
-                        </Button>
+                            Sign in
+                        </button>
                     )}
                 </div>
             </div>

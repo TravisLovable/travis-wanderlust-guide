@@ -25,7 +25,8 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
     preferredAirline: '',
     travelType: '',
     countryData: null as CountryData | null, // New comprehensive country data
-    profilePhotoUrl: ''
+    profilePhotoUrl: '',
+    profilePhotoFile: null as File | null // Keep file for upload; blob URL is only for preview
   });
   const { toast } = useToast();
   const { countries, isLoading: countriesLoading, error: countriesError } = useCountryData();
@@ -57,15 +58,29 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
   const handleComplete = async () => {
     setIsLoading(true);
     try {
+      let profilePhotoUrl: string | null = null;
+      if (onboardingData.profilePhotoFile) {
+        const bucket = 'avatars';
+        const path = `${user.id}/avatar`;
+        const { error: uploadError } = await supabase.storage
+          .from(bucket)
+          .upload(path, onboardingData.profilePhotoFile, { upsert: true, contentType: onboardingData.profilePhotoFile.type });
+        if (uploadError) {
+          console.warn('Avatar upload failed, saving without photo:', uploadError.message);
+        } else {
+          const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
+          profilePhotoUrl = urlData.publicUrl;
+        }
+      }
+
       const upsertData: Database['public']['Tables']['users']['Insert'] = {
         auth_id: user.id,
         email: user.email,
         full_name: user.user_metadata?.full_name || '',
         preferred_airline: onboardingData.preferredAirline,
-
         travel_type: onboardingData.travelType,
         country_data: onboardingData.countryData,
-        profile_photo_url: onboardingData.profilePhotoUrl,
+        profile_photo_url: (profilePhotoUrl ?? onboardingData.profilePhotoUrl) || null,
         onboarding_completed: true
       };
 
@@ -91,14 +106,21 @@ const OnboardingModal = ({ isOpen, onClose, user }: OnboardingModalProps) => {
     setIsLoading(false);
   };
 
+  const MAX_AVATAR_SIZE_BYTES = 1 * 1024 * 1024; // 1MB, match Supabase bucket limit
+
   const handlePhotoUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
-    if (file) {
-      // For now, we'll just create a preview URL
-      // In a real implementation, you'd upload to Supabase Storage
-      const url = URL.createObjectURL(file);
-      setOnboardingData(prev => ({ ...prev, profilePhotoUrl: url }));
+    if (!file) return;
+    if (file.size > MAX_AVATAR_SIZE_BYTES) {
+      toast({
+        title: "File too large",
+        description: "Please choose an image under 1 MB.",
+        variant: "destructive",
+      });
+      return;
     }
+    const url = URL.createObjectURL(file); // Preview only; we upload the file on Complete
+    setOnboardingData(prev => ({ ...prev, profilePhotoUrl: url, profilePhotoFile: file }));
   };
 
   const canProceed = () => {
