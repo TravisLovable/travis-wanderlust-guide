@@ -20,7 +20,7 @@ const AirportPresenter: React.FC<AirportPresenterProps> = ({ data }) => {
 
     return (
         <Card className="travis-card travis-interactive group lg:col-span-2 xl:col-span-2 h-full flex flex-col">
-            <CardHeader className="p-5 pb-2">
+            <CardHeader className="p-0 pb-2">
                 <div className="widget-header">
                     <div className="widget-icon bg-purple-500/10 text-purple-500">
                         <Plane className="w-5 h-5" />
@@ -30,7 +30,7 @@ const AirportPresenter: React.FC<AirportPresenterProps> = ({ data }) => {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-3 flex-1 p-5 pt-0">
+            <CardContent className="space-y-3 flex-1 p-0 pt-0">
                 <div className="p-2 bg-purple-500/10 border border-purple-500/20 rounded-xl">
                     <div className="font-bold text-lg text-purple-700">{code}</div>
                     <div className="text-sm font-medium">{name}</div>

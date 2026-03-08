@@ -88,7 +88,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
   if (destinationLoading && currentLoading) {
     return (
       <Card className="travis-card w-full col-span-full max-w-4xl mx-auto">
-        <CardHeader className="p-5 pb-2">
+        <CardHeader className="p-0 pb-2">
           <div className="widget-header">
             <div className="widget-icon bg-amber-500/10 text-amber-500">
               <Thermometer className="w-5 h-5" />
@@ -108,7 +108,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
   return (
     <TooltipProvider>
       <Card className="travis-card w-full col-span-full max-w-4xl mx-auto">
-        <CardHeader className="p-5 pb-2">
+        <CardHeader className="p-0 pb-2">
           <div className="widget-header">
             <div className="widget-icon bg-amber-500/10 text-amber-500">
               <Thermometer className="w-5 h-5" />
@@ -126,7 +126,7 @@ const WeatherWidget = ({ destination, currentLocation = 'Current Location', temp
             </Button>
           </div>
         </CardHeader>
-        <CardContent className="space-y-5 p-5 pt-0">
+        <CardContent className="space-y-5 p-0 pt-0">
           {/* Current Weather Comparison */}
           <div className="space-y-3">
             <div className="flex items-center gap-2">
