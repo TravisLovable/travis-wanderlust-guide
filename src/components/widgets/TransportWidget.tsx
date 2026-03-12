@@ -17,7 +17,7 @@ interface TransportWidgetProps {
 const TransportWidget: React.FC<TransportWidgetProps> = ({ transportData }) => {
     return (
         <Card className="travis-card travis-interactive group h-full flex flex-col">
-            <CardHeader className="p-0 pb-2">
+            <CardHeader className="p-5 pb-2">
                 <div className="widget-header">
                     <div className="widget-icon bg-indigo-500/10 text-indigo-500">
                         <Car className="w-5 h-5" />
@@ -27,7 +27,7 @@ const TransportWidget: React.FC<TransportWidgetProps> = ({ transportData }) => {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-3 flex-1 p-0 pt-0">
+            <CardContent className="space-y-3 flex-1 p-5 pt-0">
                 <div className="grid grid-cols-2 gap-2">
                     <div className="p-2 bg-indigo-500/10 border border-indigo-500/20 rounded-lg text-center">
                         <div className="font-medium text-indigo-700 text-sm">{transportData.primary}</div>

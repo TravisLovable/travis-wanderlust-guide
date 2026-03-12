@@ -422,7 +422,7 @@
 }
 
 .widget-icon {
-  @apply w-8 h-8 rounded-xl flex items-center justify-center
+  @apply w-9 h-9 rounded-xl flex items-center justify-center
          bg-primary/10 text-primary;
 }
 
