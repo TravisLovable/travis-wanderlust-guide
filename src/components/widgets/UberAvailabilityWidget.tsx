@@ -73,7 +73,7 @@ const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) =
 
   if (isLoading) {
     return (
-      <Card className="travis-card h-full">
+      <Card className="travis-card">
         <CardHeader className="p-0 pb-2">
           <div className="widget-header">
             <div className="widget-icon bg-blue-500/10 text-blue-500">
@@ -96,7 +96,7 @@ const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) =
 
   if (!uberData) {
     return (
-      <Card className="travis-card h-full">
+      <Card className="travis-card">
         <CardHeader className="p-0 pb-2">
           <div className="widget-header">
             <div className="widget-icon bg-blue-500/10 text-blue-500">
@@ -118,7 +118,7 @@ const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) =
   }
 
   return (
-    <Card className="travis-card h-full">
+    <Card className="travis-card">
       <CardHeader className="p-0 pb-2">
         <div className="widget-header">
           <div className="widget-icon bg-blue-500/10 text-blue-500">

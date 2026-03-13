@@ -160,9 +160,8 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
 
     const isVisaFree = typeof visaRequired === 'boolean' && !visaRequired;
 
-    // Shared min-height to prevent layout jitter when switching loading → streaming → content
-    const cardClassName = 'travis-card h-full min-h-[300px]';
-    const contentMinHeight = 'min-h-[220px]';
+    const cardClassName = 'travis-card';
+    const contentMinHeight = '';
 
     // Show loading state
     if (isLoading) {
@@ -174,7 +173,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                             <Shield className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="widget-title">Visa & Entry</h3>
+                            <h3 className="widget-title">Entry Requirements</h3>
                         </div>
                     </div>
                 </CardHeader>
@@ -209,7 +208,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                             <Shield className="w-5 h-5" />
                         </div>
                         <div className="flex-1">
-                            <h3 className="widget-title">Visa & Entry</h3>
+                            <h3 className="widget-title">Entry Requirements</h3>
                         </div>
                         <div className="flex items-center space-x-1">
                             {hasDbData && <Database className="w-3 h-3 text-green-400" />}
@@ -217,105 +216,32 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className={`space-y-4 p-0 pt-0 ${contentMinHeight}`}>
-                    {/* Main visa status with icon */}
-                    <div className="flex items-center space-x-2">
+                <CardContent className="space-y-3 p-0 pt-0 flex-1 overflow-hidden">
+                    {/* Primary signal */}
+                    <div className="flex items-center gap-2">
                         {parsedData?.isVisaFree ? (
-                            <>
-                                <CheckCircle className="w-5 h-5 text-green-500" />
-                                <span className="font-medium">Visa-Free Entry</span>
-                                <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                    No Visa Required
-                                </Badge>
-                            </>
+                            <CheckCircle className="w-5 h-5 text-emerald-500" />
                         ) : (
-                            <>
-                                <XCircle className="w-5 h-5 text-red-500" />
-                                <span className="font-medium">Visa Required</span>
-                                <Badge variant="secondary" className="bg-red-100 text-red-800">
-                                    Apply Required
-                                </Badge>
-                            </>
+                            <XCircle className="w-5 h-5 text-red-500" />
                         )}
+                        <span className="text-base font-semibold text-foreground">
+                            {parsedData?.isVisaFree ? 'Visa-free entry' : 'Visa required'}
+                        </span>
                     </div>
 
-                    {/* Key requirements with icons */}
-                    <div className="space-y-3">
+                    {/* Requirements list */}
+                    <div className="space-y-2 text-sm text-muted-foreground">
                         {(parsedData?.maxStay || maxStay) && (
-                            <div className="flex items-center space-x-2 text-sm">
-                                <Clock className="w-4 h-4 text-blue-500" />
-                                <span>Max stay: {parsedData?.maxStay || maxStay}</span>
-                            </div>
+                            <p>Max stay: <span className="text-foreground/90">{parsedData?.maxStay || maxStay}</span></p>
                         )}
-
                         {(parsedData?.passportValidity || passportValidity) && (
-                            <div className="flex items-center space-x-2 text-sm">
-                                <Shield className="w-4 h-4 text-blue-500" />
-                                <span>Passport: {parsedData?.passportValidity || passportValidity}</span>
-                            </div>
+                            <p>Passport validity: <span className="text-foreground/90">{parsedData?.passportValidity || passportValidity}</span></p>
                         )}
-
-                        {(parsedData?.healthRequirements || yellowFever) && (
-                            <div className="flex items-center space-x-2 text-sm">
-                                <AlertCircle className="w-4 h-4 text-yellow-500" />
-                                <span>Health: {parsedData?.healthRequirements || yellowFever}</span>
-                            </div>
-                        )}
+                        <p>Health requirements: <span className="text-foreground/90">{parsedData?.healthRequirements || yellowFever || 'None'}</span></p>
                     </div>
 
-                    {/* Additional notes */}
-                    {(parsedData?.notes || notes) && (
-                        <div className="pt-2 border-t border-border">
-                            <p className="text-xs text-muted-foreground text-red-600">{parsedData?.notes || notes}</p>
-                        </div>
-                    )}
-
-                    {/* Debug: Show raw content if parsing failed */}
-                    {streamingContent && !parsedData?.visaStatus && (
-                        <div className="pt-2 border-t border-border">
-                            <p className="text-xs text-muted-foreground font-mono bg-gray-100 p-2 rounded">
-                                Debug - Raw AI content:<br />
-                                {streamingContent.substring(0, 200)}...
-                            </p>
-                        </div>
-                    )}
-
-                    {/* Data source */}
-                    {(dataSource || lastUpdated) && (
-                        <div className="pt-2 border-t border-border">
-                            <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                <div className="flex items-center space-x-1">
-                                    {hasDbData ? (
-                                        <>
-                                            <Database className="w-3 h-3" />
-                                            <span>Source: {dataSource}</span>
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Bot className="w-3 h-3" />
-                                            <span>AI Analysis</span>
-                                        </>
-                                    )}
-                                </div>
-                                {lastUpdated && (
-                                    <span>Updated: {new Date(lastUpdated).toLocaleDateString()}</span>
-                                )}
-                            </div>
-                        </div>
-                    )}
-
-                    {/* Official sources link */}
-                    <div className="pt-2 border-t border-border">
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="w-full text-xs"
-                            onClick={() => window.open('https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages.html', '_blank')}
-                        >
-                            <ExternalLink className="w-3 h-3 mr-1" />
-                            Official Visa Information
-                        </Button>
-                    </div>
+                    {/* Nationality context */}
+                    <p className="text-xs text-red-400/80">For US passport holders</p>
                 </CardContent>
             </Card>
         );
@@ -338,105 +264,55 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className={`space-y-4 p-0 pt-0 ${contentMinHeight}`}>
+            <CardContent className="space-y-2 p-0 pt-0 flex-1 overflow-hidden">
                 {error && (
                     <div className="flex items-center space-x-2">
-                        <AlertCircle className="w-5 h-5 text-red-500" />
-                        <span className="font-medium text-red-500">Error</span>
-                        <Badge variant="secondary" className="bg-red-100 text-red-800">
-                            Failed
-                        </Badge>
+                        <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                        <span className="text-sm font-medium text-red-500">Error loading data</span>
                     </div>
                 )}
 
-                {/* Main visa status with icon */}
+                {/* Main visa status */}
                 <div className="flex items-center space-x-2">
                     {isVisaFree ? (
                         <>
-                            <CheckCircle className="w-5 h-5 text-green-500" />
-                            <span className="font-medium">Visa-Free Entry</span>
-                            <Badge variant="secondary" className="bg-green-100 text-green-800">
-                                No Visa Required
-                            </Badge>
+                            <CheckCircle className="w-4 h-4 text-green-500 flex-shrink-0" />
+                            <span className="text-sm font-medium">Visa-Free Entry</span>
                         </>
                     ) : (
                         <>
-                            <XCircle className="w-5 h-5 text-red-500" />
-                            <span className="font-medium">Visa Required</span>
-                            <Badge variant="secondary" className="bg-red-100 text-red-800">
-                                Apply Required
-                            </Badge>
+                            <XCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
+                            <span className="text-sm font-medium">Visa Required</span>
                         </>
                     )}
                 </div>
 
-                {/* Key requirements with icons */}
-                <div className="space-y-3">
+                {/* Key requirements */}
+                <div className="space-y-1.5">
                     {maxStay && (
-                        <div className="flex items-center space-x-2 text-sm">
-                            <Clock className="w-4 h-4 text-blue-500" />
+                        <div className="flex items-center space-x-2 text-xs">
+                            <Clock className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
                             <span>Max stay: {maxStay}</span>
                         </div>
                     )}
-
                     {passportValidity && (
-                        <div className="flex items-center space-x-2 text-sm">
-                            <Shield className="w-4 h-4 text-blue-500" />
+                        <div className="flex items-center space-x-2 text-xs">
+                            <Shield className="w-3.5 h-3.5 text-blue-500 flex-shrink-0" />
                             <span>Passport: {passportValidity}</span>
                         </div>
                     )}
-
                     {yellowFever && (
-                        <div className="flex items-center space-x-2 text-sm">
-                            <AlertCircle className="w-4 h-4 text-yellow-500" />
+                        <div className="flex items-center space-x-2 text-xs">
+                            <AlertCircle className="w-3.5 h-3.5 text-yellow-500 flex-shrink-0" />
                             <span>Yellow fever: {yellowFever}</span>
                         </div>
                     )}
                 </div>
 
-                {/* Additional notes */}
+                {/* Notes — truncated */}
                 {notes && (
-                    <div className="pt-2 border-t border-border">
-                        <p className="text-xs text-muted-foreground">{notes}</p>
-                    </div>
+                    <p className="text-[11px] text-muted-foreground/70 line-clamp-2">{notes}</p>
                 )}
-
-                {/* Data source */}
-                {(dataSource || lastUpdated) && (
-                    <div className="pt-2 border-t border-border">
-                        <div className="flex items-center justify-between text-xs text-muted-foreground">
-                            <div className="flex items-center space-x-1">
-                                {hasDbData ? (
-                                    <>
-                                        <Database className="w-3 h-3" />
-                                        <span>Source: {dataSource}</span>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Bot className="w-3 h-3" />
-                                        <span>AI Analysis</span>
-                                    </>
-                                )}
-                            </div>
-                            {lastUpdated && (
-                                <span>Updated: {new Date(lastUpdated).toLocaleDateString()}</span>
-                            )}
-                        </div>
-                    </div>
-                )}
-
-                {/* Official sources link */}
-                <div className="pt-2 border-t border-border">
-                    <Button
-                        variant="outline"
-                        size="sm"
-                        className="w-full text-xs"
-                        onClick={() => window.open('https://travel.state.gov/content/travel/en/international-travel/International-Travel-Country-Information-Pages.html', '_blank')}
-                    >
-                        <ExternalLink className="w-3 h-3 mr-1" />
-                        Official Visa Information
-                    </Button>
-                </div>
             </CardContent>
         </Card>
     );

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Gift } from 'lucide-react';
+import { Gift, Calendar } from 'lucide-react';
 import { Destination } from '@/types/destination';
 
 interface HolidayData {
@@ -76,7 +76,7 @@ const HolidayPresenter: React.FC<HolidayPresenterProps> = ({
     }
 
     return (
-        <Card className="travis-card travis-interactive group h-full flex flex-col">
+        <Card className="travis-card travis-interactive group">
             <CardHeader className="p-0 pb-2">
                 <div className="widget-header">
                     <div className="widget-icon bg-amber-500/10 text-amber-500">

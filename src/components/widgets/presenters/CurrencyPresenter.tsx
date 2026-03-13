@@ -55,7 +55,7 @@ const CurrencyPresenter: React.FC<CurrencyPresenterProps> = ({ data, userLoading
     }
 
     return (
-        <Card className="travis-card travis-interactive group lg:col-span-2 xl:col-span-2 h-full flex flex-col">
+        <Card className="travis-card travis-interactive group">
             <CardHeader className="p-0 pb-2">
                 <div className="widget-header">
                     <div className="widget-icon bg-green-500/10 text-green-500">

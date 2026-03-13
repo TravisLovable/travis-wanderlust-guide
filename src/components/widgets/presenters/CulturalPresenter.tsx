@@ -20,7 +20,7 @@ const CulturalPresenter: React.FC<CulturalPresenterProps> = ({
   const [isExpanded, setIsExpanded] = useState(false);
 
   return (
-    <div className="widget-card animate-slide-up md:col-span-2" style={{ animationDelay }}>
+    <div className="widget-card animate-slide-up md:col-span-2" style={{ animationDelay, height: 'auto', minHeight: 'auto', maxHeight: 'none' }}>
       {/* Collapsible header */}
       <button
         onClick={() => setIsExpanded(!isExpanded)}
