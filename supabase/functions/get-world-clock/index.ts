@@ -183,8 +183,8 @@ serve(async (req) => {
       timeDifferenceText: diffHours === 0
         ? 'Same time'
         : diffHours > 0
-          ? `${Math.abs(Math.round(diffHours))}h ahead`
-          : `${Math.abs(Math.round(diffHours))}h behind`
+          ? `${Math.abs(Math.round(diffHours))}h behind`
+          : `${Math.abs(Math.round(diffHours))}h ahead`
     }
 
     console.log('World clock data fetched successfully:', result)
