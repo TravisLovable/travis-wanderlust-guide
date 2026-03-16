@@ -341,7 +341,7 @@ const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
     };
 
     return (
-        <VisaPresenter data={visaData} />
+        <VisaPresenter data={visaData} nationality={userNationality} onNationalityChange={setUserNationality} />
     );
 };
 

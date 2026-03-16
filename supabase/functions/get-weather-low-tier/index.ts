@@ -46,7 +46,7 @@ serve(async (req) => {
 
         // Build query parameter - WeatherAPI supports both coordinates and location names
         let queryParam: string
-        if (latitude != null && longitude != null) {
+        if (latitude != null && longitude != null && (latitude !== 0 || longitude !== 0)) {
             queryParam = `${latitude},${longitude}`
             console.log(`🎯 Using coordinates: ${latitude}, ${longitude}`)
         } else if (location) {
@@ -57,7 +57,7 @@ serve(async (req) => {
         }
 
         // WeatherAPI.com has a single endpoint for current + forecast
-        const weatherUrl = `${baseUrl}/forecast.json?key=${apiKey}&q=${queryParam}&days=${Math.min(days, 10)}&aqi=no&alerts=no`
+        const weatherUrl = `${baseUrl}/forecast.json?key=${apiKey}&q=${queryParam}&days=${Math.min(days, 14)}&aqi=no&alerts=no`
         console.log('🌐 WeatherAPI URL:', weatherUrl)
 
         const weatherResponse = await fetch(weatherUrl)

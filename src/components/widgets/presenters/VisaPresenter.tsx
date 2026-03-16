@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
-import { Shield, Database, Bot, ExternalLink, CheckCircle, XCircle, Clock, AlertCircle } from 'lucide-react';
+import { Shield, Database, Bot, ExternalLink, CheckCircle, XCircle, Clock, AlertCircle, ChevronDown, Search } from 'lucide-react';
 
 // Add CSS for smooth cursor animation
 const cursorStyles = `
@@ -19,6 +19,45 @@ if (typeof document !== 'undefined' && !document.getElementById('visa-cursor-sty
     styleElement.textContent = cursorStyles;
     document.head.appendChild(styleElement);
 }
+
+const PASSPORT_COUNTRIES = [
+  { code: 'US', name: 'United States' },
+  { code: 'GB', name: 'United Kingdom' },
+  { code: 'CA', name: 'Canada' },
+  { code: 'AU', name: 'Australia' },
+  { code: 'DE', name: 'Germany' },
+  { code: 'FR', name: 'France' },
+  { code: 'JP', name: 'Japan' },
+  { code: 'KR', name: 'South Korea' },
+  { code: 'BR', name: 'Brazil' },
+  { code: 'MX', name: 'Mexico' },
+  { code: 'IN', name: 'India' },
+  { code: 'CN', name: 'China' },
+  { code: 'ZA', name: 'South Africa' },
+  { code: 'NG', name: 'Nigeria' },
+  { code: 'AE', name: 'United Arab Emirates' },
+  { code: 'SG', name: 'Singapore' },
+  { code: 'NZ', name: 'New Zealand' },
+  { code: 'IE', name: 'Ireland' },
+  { code: 'IT', name: 'Italy' },
+  { code: 'ES', name: 'Spain' },
+  { code: 'NL', name: 'Netherlands' },
+  { code: 'SE', name: 'Sweden' },
+  { code: 'CH', name: 'Switzerland' },
+  { code: 'NO', name: 'Norway' },
+  { code: 'DK', name: 'Denmark' },
+  { code: 'PT', name: 'Portugal' },
+  { code: 'PL', name: 'Poland' },
+  { code: 'AR', name: 'Argentina' },
+  { code: 'CL', name: 'Chile' },
+  { code: 'CO', name: 'Colombia' },
+  { code: 'PH', name: 'Philippines' },
+  { code: 'TH', name: 'Thailand' },
+  { code: 'IL', name: 'Israel' },
+  { code: 'EG', name: 'Egypt' },
+  { code: 'KE', name: 'Kenya' },
+  { code: 'GH', name: 'Ghana' },
+];
 
 interface VisaData {
     visaRequired: boolean | string;
@@ -37,6 +76,8 @@ interface VisaData {
 
 interface VisaPresenterProps {
     data: VisaData;
+    nationality?: string;
+    onNationalityChange?: (nationality: string) => void;
 }
 
 // Helper function to parse AI response and extract structured data
@@ -126,7 +167,7 @@ const renderMarkdown = (text: string) => {
     // Convert ### Headers
     rendered = rendered.replace(/^### (.*$)/gim, '<h3 class="text-base font-semibold text-foreground mt-3 mb-1">$1</h3>');
 
-    // Convert ## Headers  
+    // Convert ## Headers
     rendered = rendered.replace(/^## (.*$)/gim, '<h2 class="text-lg font-bold text-foreground mt-3 mb-1">$1</h2>');
 
     // Convert bullet points
@@ -142,7 +183,7 @@ const renderMarkdown = (text: string) => {
     return rendered;
 };
 
-const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
+const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data, nationality = 'US', onNationalityChange }) => {
     const {
         visaRequired,
         maxStay,
@@ -159,6 +200,89 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
     } = data;
 
     const isVisaFree = typeof visaRequired === 'boolean' && !visaRequired;
+
+    const [dropdownOpen, setDropdownOpen] = useState(false);
+    const [searchQuery, setSearchQuery] = useState('');
+    const dropdownRef = useRef<HTMLDivElement>(null);
+    const searchInputRef = useRef<HTMLInputElement>(null);
+
+    const currentCountry = PASSPORT_COUNTRIES.find(c => c.code === nationality || c.name === nationality) || { code: 'US', name: 'United States' };
+
+    const filteredCountries = PASSPORT_COUNTRIES.filter(c =>
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.code.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+
+    useEffect(() => {
+        if (dropdownOpen && searchInputRef.current) {
+            searchInputRef.current.focus();
+        }
+    }, [dropdownOpen]);
+
+    useEffect(() => {
+        const handleClickOutside = (e: MouseEvent) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+                setDropdownOpen(false);
+                setSearchQuery('');
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, []);
+
+    const handleSelect = (country: typeof PASSPORT_COUNTRIES[0]) => {
+        onNationalityChange?.(country.code);
+        setDropdownOpen(false);
+        setSearchQuery('');
+    };
+
+    const PassportSelector = () => (
+        <div className="relative mb-2" ref={dropdownRef}>
+            <button
+                onClick={() => setDropdownOpen(!dropdownOpen)}
+                className="flex items-center gap-1 text-[11px] text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors"
+            >
+                <span className="tracking-wide">Passport:</span>
+                <span className="text-foreground/70 font-medium">{currentCountry.name}</span>
+                <ChevronDown className={`w-2.5 h-2.5 text-muted-foreground/30 transition-transform duration-200 ${dropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
+            {dropdownOpen && (
+                <div className="absolute top-full left-0 mt-1 w-48 overflow-hidden bg-card/95 backdrop-blur-sm border border-border/40 rounded-lg shadow-2xl z-50">
+                    <div className="px-2 pt-2 pb-1.5">
+                        <div className="flex items-center gap-1.5 px-1.5 py-1 bg-secondary/20 rounded-md">
+                            <Search className="w-3 h-3 text-muted-foreground/30" />
+                            <input
+                                ref={searchInputRef}
+                                type="text"
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                placeholder="Search..."
+                                className="bg-transparent text-[11px] text-foreground placeholder:text-muted-foreground/25 outline-none w-full"
+                            />
+                        </div>
+                    </div>
+                    <div className="overflow-y-auto max-h-36 pb-1">
+                        {filteredCountries.map((country) => (
+                            <button
+                                key={country.code}
+                                onClick={() => handleSelect(country)}
+                                className={`w-full text-left px-3 py-1.5 text-[11px] transition-colors ${
+                                    country.code === currentCountry.code
+                                        ? 'text-foreground/90 font-medium bg-secondary/30'
+                                        : 'text-muted-foreground/50 hover:text-foreground/70 hover:bg-secondary/15'
+                                }`}
+                            >
+                                {country.name}
+                            </button>
+                        ))}
+                        {filteredCountries.length === 0 && (
+                            <p className="px-3 py-2 text-[10px] text-muted-foreground/30">No countries found</p>
+                        )}
+                    </div>
+                </div>
+            )}
+        </div>
+    );
 
     const cardClassName = 'travis-card';
     const contentMinHeight = '';
@@ -216,7 +340,8 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="space-y-3 p-0 pt-0 flex-1 overflow-hidden">
+                <CardContent className={`space-y-3 p-0 pt-0 ${contentMinHeight}`}>
+                    <PassportSelector />
                     {/* Primary signal */}
                     <div className="flex items-center gap-2">
                         {parsedData?.isVisaFree ? (
@@ -239,9 +364,6 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                         )}
                         <p>Health requirements: <span className="text-foreground/90">{parsedData?.healthRequirements || yellowFever || 'None'}</span></p>
                     </div>
-
-                    {/* Nationality context */}
-                    <p className="text-xs text-red-400/80">For US passport holders</p>
                 </CardContent>
             </Card>
         );
@@ -264,7 +386,8 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data }) => {
                     </div>
                 </div>
             </CardHeader>
-            <CardContent className="space-y-2 p-0 pt-0 flex-1 overflow-hidden">
+            <CardContent className={`space-y-3 p-0 pt-0 ${contentMinHeight}`}>
+                <PassportSelector />
                 {error && (
                     <div className="flex items-center space-x-2">
                         <AlertCircle className="w-4 h-4 text-red-500 flex-shrink-0" />
