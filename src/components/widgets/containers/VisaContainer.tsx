@@ -5,6 +5,7 @@ import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 
 interface VisaContainerProps {
     placeDetails: SelectedPlace | null;
+    passport?: string;
 }
 
 interface VisaData {
@@ -28,9 +29,14 @@ interface VisaData {
     hasDbData?: boolean;
 }
 
-const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails }) => {
+const VisaContainer: React.FC<VisaContainerProps> = ({ placeDetails, passport }) => {
     const [visaData, setVisaData] = useState<VisaData>({ visaRequired: 'unknown', isLoading: true });
-    const [userNationality, setUserNationality] = useState<string>('US');
+    const [userNationality, setUserNationality] = useState<string>(passport || 'US');
+
+    // Sync with global passport context
+    useEffect(() => {
+        if (passport) setUserNationality(passport);
+    }, [passport]);
 
     useEffect(() => {
         console.log('🔄 VisaContainer useEffect triggered with:', { placeDetails, userNationality });

@@ -106,12 +106,12 @@
   flex-direction: column;
 }
 
-/* Sub-grid cards (nested grids) — fill their cell instead of using fixed height */
+/* Sub-grid cards — same fixed height, no exceptions */
 .grid .grid .widget-card,
 .grid .grid .travis-card {
-  height: 100%;
-  min-height: 0;
-  max-height: none;
+  height: var(--results-card-height);
+  min-height: var(--results-card-height);
+  max-height: var(--results-card-height);
 }
 
 .widget-card:hover {

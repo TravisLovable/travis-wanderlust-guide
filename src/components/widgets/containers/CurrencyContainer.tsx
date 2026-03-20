@@ -15,25 +15,28 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ placeDetails }) =
 
     useEffect(() => {
         const fetchUserCountry = async () => {
-            const { data: { user } } = await supabase.auth.getUser()
-            if (user) {
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                if (!user) {
+                    setUserLoading(false);
+                    return;
+                }
+                const { data: userCountry } = await supabase
+                    .from('users')
+                    .select('country_data')
+                    .eq('auth_id', user.id);
+
+                if (userCountry?.[0]?.country_data?.currency) {
+                    setBaseCurrency(userCountry[0].country_data.currency);
+                }
+            } catch {
+                // Keep defaults
+            } finally {
                 setUserLoading(false);
             }
-            let { data: userCountry, error } = await supabase
-                .from('users')
-                .select('country_data')
-                .eq('auth_id', user.id);
-
-
-            if (userCountry && userCountry[0]?.country_data?.currency) {
-                setBaseCurrency(userCountry[0].country_data.currency);
-            } else {
-                setBaseCurrency('USD'); // Fallback to USD
-            }
-        }
-
+        };
         fetchUserCountry();
-    }, [])
+    }, []);
 
     // Use real currency exchange data with place details (includes country_code)
     const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, placeDetails);

@@ -443,7 +443,7 @@ export default function WeatherIntelWidget({
               <div className="animate-spin rounded-full h-8 w-8 border-2 border-amber-500/30 border-t-amber-500" />
             </div>
           ) : historicalData ? (
-            <div className={`${isHybridMode ? 'space-y-3' : 'mt-1 space-y-4'}`}>
+            <div className={`flex-1 min-h-0 overflow-hidden ${isHybridMode ? 'space-y-2.5' : 'mt-1 space-y-3'}`}>
               {/* Horizontal month selector — underline system */}
               <div className="relative -mx-1">
                 <div className="flex gap-0 overflow-x-auto px-1 scrollbar-hide border-t border-border/20">
@@ -468,30 +468,27 @@ export default function WeatherIntelWidget({
 
               {/* Data rows */}
               {selectedMonthData ? (
-                <div className="space-y-3 transition-opacity duration-200">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground/60">Highs</span>
-                    <span className="text-xl font-semibold tracking-tight text-foreground">
+                <div className="space-y-2.5 transition-opacity duration-200">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[13px] text-muted-foreground/60">Highs</span>
+                    <span className="text-lg font-semibold tracking-tight text-foreground">
                       {t(selectedMonthData.highRange.min)}°–{t(selectedMonthData.highRange.max)}°
                       <span className="text-[11px] font-normal text-muted-foreground/40 ml-1.5">(avg {t(selectedMonthData.avgHigh)}°)</span>
                     </span>
                   </div>
                   <div className="h-px bg-border/30" />
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm text-muted-foreground/60">Lows</span>
-                    <span className="text-xl font-semibold tracking-tight text-foreground">
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[13px] text-muted-foreground/60">Lows</span>
+                    <span className="text-lg font-semibold tracking-tight text-foreground">
                       {t(selectedMonthData.lowRange.min)}°–{t(selectedMonthData.lowRange.max)}°
                       <span className="text-[11px] font-normal text-muted-foreground/40 ml-1.5">(avg {t(selectedMonthData.avgLow)}°)</span>
                     </span>
                   </div>
                   <div className="h-px bg-border/20" />
-                  <div className="flex items-center justify-between pt-0.5">
-                    <span className="text-sm text-muted-foreground/60">Conditions</span>
-                    <span className="text-sm text-muted-foreground/70">{selectedMonthData.conditionLabel}</span>
+                  <div className="flex items-baseline justify-between">
+                    <span className="text-[13px] text-muted-foreground/60">Conditions</span>
+                    <span className="text-[13px] text-muted-foreground/70">{selectedMonthData.conditionLabel}</span>
                   </div>
-                  <p className="text-[10px] text-muted-foreground/25 mt-2">
-                    Historical climate averages · WeatherAPI
-                  </p>
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground/40 py-4 text-center">No data for this month</p>
@@ -510,6 +507,11 @@ export default function WeatherIntelWidget({
       )}
 
       <InsightLine insight={insight} loading={insightLoading} />
+      {showHistoricalView && (
+        <p className="text-[10px] text-muted-foreground/25 hover:text-muted-foreground/40 transition-colors cursor-default mt-auto pt-1">
+          Historical climate averages · WeatherAPI
+        </p>
+      )}
     </div>
   );
 }

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState, useEffect } from 'react';
 import { Clock, Sunrise, Sunset, Camera, Moon } from 'lucide-react';
 
 interface SunData {
@@ -91,6 +91,29 @@ const computeTimeDiffLabel = (destinationTimeZone: string | null | undefined): s
 
 const TimeZonePresenter: React.FC<TimeZonePresenterProps> = ({ data }) => {
     const { origin, destination, timeDifferenceText, isLoading, destinationName, destinationCountryCode, tzAbbreviation, destinationTimeZone, sunData } = data;
+
+    // Live clock — ticks every second using the destination IANA timezone
+    const [liveTime, setLiveTime] = useState<string | null>(null);
+    useEffect(() => {
+        if (!destinationTimeZone) return;
+        const tick = () => {
+            try {
+                const now = new Date();
+                const formatted = now.toLocaleTimeString('en-US', {
+                    timeZone: destinationTimeZone,
+                    hour: 'numeric',
+                    minute: '2-digit',
+                    hour12: true,
+                });
+                setLiveTime(formatted);
+            } catch {
+                // Invalid timezone — fall back to API time
+            }
+        };
+        tick();
+        const interval = setInterval(tick, 10000);
+        return () => clearInterval(interval);
+    }, [destinationTimeZone]);
 
     const isDaytime = sunData
         ? sunData.currentHour >= sunData.sunriseHour && sunData.currentHour <= sunData.sunsetHour
@@ -252,7 +275,7 @@ const TimeZonePresenter: React.FC<TimeZonePresenterProps> = ({ data }) => {
             {/* Hero time */}
             <div className="mt-3">
                 <p className="text-3xl font-bold tracking-tight text-foreground leading-none">
-                    {destination.time12.replace(/^0/, '')}
+                    {liveTime || destination.time12.replace(/^0/, '')}
                 </p>
                 <p className="text-sm text-muted-foreground/70 mt-1" style={{ whiteSpace: 'nowrap' }}>
                     {(() => {
@@ -361,7 +384,7 @@ const TimeZonePresenter: React.FC<TimeZonePresenterProps> = ({ data }) => {
 
                     {/* Moon info (night only) */}
                     {!isDaytime && moonInfo && (
-                        <div className="flex items-center gap-1.5 mt-2">
+                        <div className="flex items-center gap-1.5 mt-5">
                             <Moon className="w-3 h-3 text-indigo-300/50" strokeWidth={1.5} />
                             <span className="text-[10px] text-indigo-300/40">{moonInfo}</span>
                         </div>
