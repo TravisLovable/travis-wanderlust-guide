@@ -2,16 +2,18 @@ import React from 'react';
 import { Info, GlassWater } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { useWaterSafety } from '@/hooks/useWaterSafety';
-import { useHomeCountry } from '@/hooks/useHomeCountry';
 import { resolveIso3 } from '@/utils/countryIso3';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { InsightLine } from '@/components/InsightLine';
 import { useInsights } from '@/contexts/InsightsContext';
+import { useTravelContext } from '@/contexts/TravelContext';
 
 interface WaterSafetyWidgetProps {
   placeDetails: SelectedPlace | null;
   animationDelay?: string;
 }
+
+const GLOBAL_AVG = 74;
 
 const WaterSafetyWidget: React.FC<WaterSafetyWidgetProps> = ({
   placeDetails,
@@ -24,9 +26,9 @@ const WaterSafetyWidget: React.FC<WaterSafetyWidgetProps> = ({
 
   const { data, isLoading, error } = useWaterSafety(iso3);
   const { insights, loading: insightsLoading } = useInsights();
-  const { homeCountry } = useHomeCountry();
-  const homeIso3 = homeCountry && homeCountry.iso3 !== iso3 ? homeCountry.iso3 : null;
-  const { data: homeData } = useWaterSafety(homeIso3);
+
+  // Read IP-detected country from shared context (for debug visibility)
+  const { ipDetectedCountry, baselineState } = useTravelContext();
 
   const hasValue = data?.value_pct != null;
   const roundedValue = hasValue ? Math.round(data!.value_pct!) : null;
@@ -48,7 +50,6 @@ const WaterSafetyWidget: React.FC<WaterSafetyWidgetProps> = ({
           <p className="widget-subtitle">Drinking-water services</p>
         </div>
 
-        {/* Info popover */}
         <Popover>
           <PopoverTrigger asChild>
             <button
@@ -93,29 +94,20 @@ const WaterSafetyWidget: React.FC<WaterSafetyWidgetProps> = ({
         <div className="space-y-1.5">
           <p className="widget-value text-foreground" style={{ letterSpacing: '-0.03em' }}>{roundedValue}%</p>
           {(() => {
-            const GLOBAL_AVG = 74;
-            const useHome = homeData?.value_pct != null && homeIso3;
-            const baseline = useHome ? Math.round(homeData!.value_pct!) : GLOBAL_AVG;
-            const diff = Math.round(roundedValue! - baseline);
-            const label = useHome ? homeCountry!.name : 'global average';
-            const text = diff > 1 ? `${diff} percentage points higher than ${label}` : diff < -1 ? `${Math.abs(diff)} percentage points lower than ${label}` : `In line with ${label}`;
+            const diff = Math.round(roundedValue! - GLOBAL_AVG);
+            const text = diff > 1
+              ? `${diff} percentage points higher than global average`
+              : diff < -1
+                ? `${Math.abs(diff)} percentage points lower than global average`
+                : 'In line with global average';
             return <p className="text-xs text-muted-foreground">{text}</p>;
           })()}
-          <p className="text-[10px] text-muted-foreground/[0.38]">
-            Source:{' '}
-            <a
-              href={sourceUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hover:text-muted-foreground/[0.58] transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring rounded-sm"
-            >
-              WHO/UNICEF JMP
-            </a>
-            {' '}&#8599;
-          </p>
         </div>
       )}
       <InsightLine insight={insights?.waterSafety} loading={insightsLoading} />
+      <p className="text-[10px] text-muted-foreground/[0.38] mt-auto pt-1">
+        Source: WHO/UNICEF JMP
+      </p>
     </div>
   );
 };

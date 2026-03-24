@@ -1,8 +1,7 @@
 import React from 'react';
 import { Info, Plug } from 'lucide-react';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useHomeCountry } from '@/hooks/useHomeCountry';
-import { cca2ToIso3 } from '@/utils/countryIso3';
+import { useTravelContext } from '@/contexts/TravelContext';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { InsightLine } from '@/components/InsightLine';
 import { useInsights } from '@/contexts/InsightsContext';
@@ -187,8 +186,8 @@ const PowerAdaptorWidget: React.FC<PowerAdaptorWidgetProps> = ({
   const destCc2 = placeDetails?.country_code?.toUpperCase() || null;
   const power = getDestPower(destCc2 ?? undefined);
 
-  const { homeCountry } = useHomeCountry();
-  const homeCc2 = homeCountry ? iso3ToCc2(homeCountry.iso3) : null;
+  const { resolvedBaselineCountry } = useTravelContext();
+  const homeCc2 = resolvedBaselineCountry?.code ?? null;
   const adaptor = needsAdaptor(homeCc2 ?? undefined, destCc2 ?? undefined);
 
   return (
@@ -283,8 +282,8 @@ const PowerAdaptorWidget: React.FC<PowerAdaptorWidgetProps> = ({
             {adaptor !== null && (
               <p className="text-xs text-muted-foreground">
                 {adaptor
-                  ? `Adaptor needed from ${homeCountry!.name}`
-                  : `Compatible with ${homeCountry!.name} plugs`}
+                  ? `Adaptor needed from ${resolvedBaselineCountry!.name}`
+                  : `Compatible with ${resolvedBaselineCountry!.name} plugs`}
               </p>
             )}
           </div>
