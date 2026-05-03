@@ -39,7 +39,7 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ placeDetails }) =
     }, []);
 
     // Use real currency exchange data with place details (includes country_code)
-    const { currencyData, multiCurrencyData, isLoading, error } = useCurrencyExchange(baseCurrency, placeDetails);
+    const { currencyData, multiCurrencyData, targetCurrency, isLoading, error } = useCurrencyExchange(baseCurrency, placeDetails);
 
     // Data transformation logic
     const transformedData = {
@@ -49,6 +49,7 @@ const CurrencyContainer: React.FC<CurrencyContainerProps> = ({ placeDetails }) =
         onBaseCurrencyChange: setBaseCurrency,
         currencyData,
         multiCurrencyData,
+        targetCurrency,
         isLoading,
         error
     };

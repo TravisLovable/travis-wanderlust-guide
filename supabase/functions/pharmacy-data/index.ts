@@ -53,57 +53,49 @@ Help the user confidently identify what to look for or ask for in a pharmacy, wi
 CORE LOGIC — for each medication:
 
 1. DETERMINE USER INTENT
-Identify the real-world purpose (pain relief, allergy relief, congestion, stomach relief, sleep aid).
+Identify the real-world purpose (pain relief, allergy relief, congestion, stomach relief).
 
 2. MATCH BEHAVIOR (CRITICAL)
 Only return options that produce a similar real-world effect.
 DO NOT:
-- Substitute drowsy for non-drowsy medications without labeling it
-- Swap fundamentally different treatment types (e.g., anti-diarrheal vs stomach coating)
+- Substitute drowsy for non-drowsy medications without noting it in status
+- Swap fundamentally different treatment types
 - Provide misleading or technically-correct-but-behaviorally-wrong matches
-If no true equivalent exists, return the closest available option AND clearly label it as an alternative.
 
 3. PRIORITIZE RECOGNITION
-Select destination_name using this order:
+Select equivalent using this order:
   1. Same recognizable brand sold in destination
   2. Most common local brand a traveler would see
   3. Common pharmacy term used locally
   4. Ingredient name ONLY if necessary
 
-4. SECONDARY NAME (OPTIONAL)
-Include ONLY if it improves recognition — ingredient name or alternate label. One short line max.
+4. STATUS (REQUIRED)
+Short access label. Use one of: "OTC", "Restricted", "Rx"
 
-5. ACCESS LEVEL (REQUIRED)
-Assign one: "OTC", "Restricted", or "Prescription"
-
-6. CONTEXT (STRICT RULE — MINIMAL USE)
-Only include a context line if it PREVENTS A BAD DECISION.
-Valid: "Drowsy", "Non-drowsy alternative", "Less effective than original", "Original version may be restricted"
-DO NOT include vague explanations, general education, redundant descriptions, or anything that does not change what the user buys.
-If the note does not influence the purchase, leave context empty.
-
-7. ACCURACY RULES
+5. ACCURACY RULES
 - Do NOT incorrectly match medications with different effects
 - Do NOT assume availability without confidence
-- If uncertain, choose a safer, more general option
 - Do NOT provide dosage or medical instructions
 
 Return ONLY valid JSON matching this exact schema. No extra text, no markdown.
 
 {
-  "items": [
+  "medications": [
     {
-      "home_name": "string",
-      "destination_name": "string",
-      "secondary_name": "string or empty",
-      "access": "OTC | Restricted | Prescription",
-      "context": "string or empty"
+      "source": "string",
+      "equivalent": "string",
+      "status": "string"
     }
   ],
-  "footer_note": "string"
+  "summary": "string"
 }
 
-Include exactly 4 medications: pain relief, allergy, cold/sinus, stomach.`
+Rules:
+- medications: exactly 4 items (pain relief, allergy, cold/sinus, stomach)
+- source: concise home-country name (e.g. "Tylenol", "Zyrtec", "Pepto" NOT "Pepto-Bismol")
+- equivalent: concise destination name (e.g. "Panadol", "Cetirizina")
+- status: short (OTC, Restricted, Rx)
+- summary: exactly 1 line, max 12 words, always present`
           },
           {
             role: "user",

@@ -1,17 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Clock, CheckCircle, AlertTriangle, XCircle } from 'lucide-react';
+import { Car } from 'lucide-react';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { InsightLine } from '@/components/InsightLine';
-import { useInsights } from '@/contexts/InsightsContext';
 import { useTravelContext } from '@/contexts/TravelContext';
 
-interface RideShareData {
-  primary_provider: string;
-  status: 'Active' | 'Limited' | 'Unavailable';
-  airport_to_city_time: string;
-  available_services: string[];
-  local_alternatives: string[];
-  insight: string;
+interface AirportEntry {
+  code: string;
+  time: string;
+}
+
+interface LocalData {
+  train_metro: string;
+  bus: string;
+  taxi: string;
+}
+
+interface TransportData {
+  ride_share: string;
+  airports: AirportEntry[];
+  local: LocalData;
   error?: string;
 }
 
@@ -19,17 +25,10 @@ interface UberAvailabilityWidgetProps {
   placeDetails: SelectedPlace | null;
 }
 
-const statusConfig = {
-  Active: { icon: CheckCircle, color: 'text-emerald-500', bg: 'bg-emerald-500/10', label: 'Active' },
-  Limited: { icon: AlertTriangle, color: 'text-amber-500', bg: 'bg-amber-500/10', label: 'Limited' },
-  Unavailable: { icon: XCircle, color: 'text-red-400', bg: 'bg-red-400/10', label: 'Unavailable' },
-};
-
 const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) => {
-  const [data, setData] = useState<RideShareData | null>(null);
+  const [data, setData] = useState<TransportData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const { insights, loading: insightsLoading } = useInsights();
   const { passport } = useTravelContext();
 
   const destination = placeDetails?.formatted_address || placeDetails?.name || '';
@@ -49,86 +48,102 @@ const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) =
       body: JSON.stringify({ destination, origin: passport }),
     })
       .then((res) => { if (!res.ok) throw new Error(`Ride API: ${res.status}`); return res.json(); })
-      .then((result) => { if (!cancelled) { if (result.error) throw new Error(result.error); setData(result); } })
+      .then((result) => {
+        if (!cancelled) {
+          if (result.error) throw new Error(result.error);
+          // Normalize old schema
+          if (result.primary_provider && !result.airports) {
+            result = {
+              ride_share: result.status === 'Unavailable' ? 'Not available' : 'Available',
+              airports: [{ code: 'Main', time: result.airport_to_city_time || 'Varies' }],
+              local: {
+                train_metro: 'Available',
+                bus: 'Available',
+                taxi: 'Available',
+              },
+            };
+          }
+          setData(result);
+        }
+      })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed'); })
       .finally(() => { if (!cancelled) setLoading(false); });
 
     return () => { cancelled = true; };
   }, [destination, passport]);
 
-  const status = data ? statusConfig[data.status] || statusConfig.Unavailable : null;
-  const StatusIcon = status?.icon || AlertTriangle;
-
   return (
     <div className="widget-card animate-slide-up" style={{ animationDelay: '0.26s' }}>
-      <div className="widget-header">
+      {/* Header */}
+      <div className="flex items-center gap-3">
         <div className="widget-icon bg-blue-500/10 text-blue-500">
           <Car className="w-5 h-5" />
         </div>
-        <div className="flex-1">
-          <h3 className="widget-title">Ride Share</h3>
-          <p className="widget-subtitle">App-based transport</p>
+        <div>
+          <h3 className="widget-title">Transportation</h3>
+          <p className="widget-subtitle">Airport transfer + local transit</p>
         </div>
       </div>
 
-      <div className="mt-1" />
-
-      {loading ? (
-        <div className="space-y-2">
-          <div className="h-6 w-28 rounded bg-secondary/40 animate-pulse" />
-          <div className="h-4 w-36 rounded bg-secondary/40 animate-pulse" />
-          <div className="h-4 w-24 rounded bg-secondary/40 animate-pulse" />
-        </div>
-      ) : error || !data ? (
-        <p className="text-xs text-muted-foreground">Unable to load ride-share data</p>
-      ) : (
-        <div className="space-y-2.5">
-          {/* Provider + Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-1.5">
-              <StatusIcon className={`w-4 h-4 ${status!.color}`} />
-              <span className="text-sm font-medium text-foreground">{data.primary_provider}</span>
-            </div>
-            <span className={`text-[10px] font-medium px-1.5 py-0.5 rounded-full ${status!.bg} ${status!.color}`}>
-              {status!.label}
-            </span>
+      <div className="flex-1 min-h-0 flex flex-col mt-3 overflow-hidden">
+        {loading ? (
+          <div className="space-y-1.5">
+            <div className="h-4 w-36 rounded bg-secondary/40 animate-pulse" />
+            <div className="h-3.5 w-28 rounded bg-secondary/40 animate-pulse mt-2" />
+            <div className="h-3.5 w-32 rounded bg-secondary/40 animate-pulse" />
+            <div className="h-px w-full bg-secondary/20 my-1.5" />
+            <div className="h-3.5 w-24 rounded bg-secondary/40 animate-pulse" />
+            <div className="h-3.5 w-20 rounded bg-secondary/40 animate-pulse" />
           </div>
-
-          {/* Airport → City Center */}
-          {data.airport_to_city_time && (
-            <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-              <Clock className="w-3.5 h-3.5" />
-              <span>Airport → City: {data.airport_to_city_time}</span>
-            </div>
-          )}
-
-          {/* Services */}
-          {data.available_services && data.available_services.length > 0 && (
-            <div className="flex flex-wrap gap-1">
-              {data.available_services.map((svc, i) => (
-                <span key={i} className="text-[10px] px-1.5 py-0.5 rounded-full bg-secondary/50 text-muted-foreground">
-                  {svc}
+        ) : error || !data ? (
+          <p className="text-xs text-muted-foreground">Unable to load transportation data</p>
+        ) : (
+          <>
+            {/* Primary — Ride share + airports */}
+            <div className="space-y-1">
+              <p className="text-[12px] text-muted-foreground/75">
+                <span className="text-muted-foreground/40 font-medium">Ride share:</span>{' '}
+                <span className={data.ride_share === 'Available' ? 'text-emerald-500/90' : 'text-muted-foreground/75'}>
+                  {data.ride_share}
                 </span>
+              </p>
+              {data.airports.slice(0, 3).map((ap, i) => (
+                <p key={i} className="text-[12px] text-muted-foreground/75 whitespace-nowrap overflow-hidden text-ellipsis">
+                  <span className="text-muted-foreground/40 font-medium">{ap.code}:</span>{' '}
+                  {ap.time}
+                </p>
               ))}
             </div>
-          )}
 
-          {/* Alternatives */}
-          {data.local_alternatives && data.local_alternatives.length > 0 && (
-            <div>
-              <p className="text-[10px] text-muted-foreground/50 mb-0.5">Alternatives</p>
-              <p className="text-xs text-muted-foreground">{data.local_alternatives.join(' · ')}</p>
+            {/* Divider */}
+            <div className="border-t border-border/10 my-2" />
+
+            {/* Secondary — Local transport */}
+            <div className="space-y-1">
+              <p className="text-[10px] text-muted-foreground/25 font-medium uppercase tracking-wider mb-0.5">Local transport</p>
+              <p className="text-[12px] text-muted-foreground/60 whitespace-nowrap">
+                <span className="text-muted-foreground/30 font-medium">Train/Metro:</span>{' '}
+                {data.local.train_metro}
+              </p>
+              <p className="text-[12px] text-muted-foreground/60 whitespace-nowrap">
+                <span className="text-muted-foreground/30 font-medium">Bus:</span>{' '}
+                {data.local.bus}
+              </p>
+              <p className="text-[12px] text-muted-foreground/60 whitespace-nowrap">
+                <span className="text-muted-foreground/30 font-medium">Taxi:</span>{' '}
+                {data.local.taxi}
+              </p>
             </div>
-          )}
 
-          {/* Insight */}
-          {data.insight && (
-            <p className="text-[10px] text-muted-foreground/60 leading-snug">{data.insight}</p>
-          )}
-        </div>
-      )}
-
-      <InsightLine insight={insights?.transportation} loading={insightsLoading} />
+            {/* Insight placeholder */}
+            <div className="mt-auto pt-2 border-t border-border/10">
+              <p className="text-[10px] text-muted-foreground/20 italic h-[14px]">
+                Travis insight — Coming soon
+              </p>
+            </div>
+          </>
+        )}
+      </div>
     </div>
   );
 };

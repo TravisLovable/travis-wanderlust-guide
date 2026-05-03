@@ -417,7 +417,7 @@ export default function WeatherIntelWidget({
                     {displayWeather.forecast.map((day, i) => (
                       <div
                         key={`fc-${day.date}-${i}`}
-                        className={`flex-shrink-0 text-center p-2 rounded-xl min-w-[54px] ${i === 0 ? 'bg-secondary/50 border border-border/30' : 'bg-secondary/30'}`}
+                        className={`flex-shrink-0 text-center p-2 rounded-xl min-w-[54px] ${i === 0 ? 'bg-secondary/50 border border-blue-400/25 shadow-[0_0_12px_rgba(96,165,250,0.15),0_0_4px_rgba(96,165,250,0.1)]' : 'bg-secondary/30'}`}
                       >
                         <p className="text-[11px] text-muted-foreground/[0.62] mb-0.5">{day.day}</p>
                         <div className="flex justify-center mb-0.5">{getWeatherIcon(day.condition)}</div>

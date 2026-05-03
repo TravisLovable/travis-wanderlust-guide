@@ -117,12 +117,22 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', placeDetails?:
 
         setError(err instanceof Error ? err.message : 'Failed to fetch exchange rates');
 
-        // Fallback to mock data if API fails
+        // Fallback to approximate rates if API fails (USD base)
+        const fallbackRates: Record<string, number> = {
+          USD: 1, EUR: 0.92, GBP: 0.79, JPY: 154, CAD: 1.36, AUD: 1.53,
+          CHF: 0.88, CNY: 7.24, MXN: 17.15, BRL: 5.15, KRW: 1330, INR: 83.5,
+          SGD: 1.34, NZD: 1.64, THB: 35.5, PEN: 3.72, COP: 3950, ARS: 870,
+          CLP: 950, ZAR: 18.6, AED: 3.67, SAR: 3.75, ILS: 3.65, TRY: 32.5,
+          NOK: 10.7, SEK: 10.5, DKK: 6.88, PHP: 56.5, IDR: 15700, MYR: 4.72,
+          VND: 24500, EGP: 48.5, NGN: 1550, KES: 153,
+        };
+        const baseToUsd = fallbackRates[baseCurrency] ? 1 / fallbackRates[baseCurrency] : 1;
+        const usdToTarget = fallbackRates[targetCurrency] || 1;
         const fallbackData = {
-          rate: targetCurrency === 'BRL' ? 5.15 : 1.0,
+          rate: baseToUsd * usdToTarget,
           symbol: targetCurrencyInfo.symbol,
           name: targetCurrencyInfo.name,
-          lastUpdated: 'API Error - Using fallback'
+          lastUpdated: 'Approximate rate'
         };
         setCurrencyData(fallbackData);
       } finally {
@@ -141,6 +151,7 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', placeDetails?:
   return {
     currencyData,
     multiCurrencyData,
+    targetCurrency,
     isLoading,
     error,
     refetch: () => window.location.reload()

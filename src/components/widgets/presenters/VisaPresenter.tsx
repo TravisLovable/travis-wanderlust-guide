@@ -72,6 +72,21 @@ const formatRequirementValue = (value: string | undefined | null): string => {
     return trimmed;
 };
 
+// Convert a day-based stay limit to include months breakdown
+const formatStayLimit = (value: string | undefined | null): string => {
+    const base = formatRequirementValue(value);
+    const match = base.match(/^(\d+)\s*days?$/i);
+    if (!match) return base;
+    const totalDays = parseInt(match[1], 10);
+    if (totalDays < 30) return base;
+    const months = Math.floor(totalDays / 30);
+    const remaining = totalDays % 30;
+    const parts: string[] = [];
+    parts.push(`${months}mo`);
+    if (remaining > 0) parts.push(`${remaining}d`);
+    return `${totalDays} days (${parts.join(' ')})`;
+};
+
 interface VisaData {
     visaRequired: boolean | string;
     maxStay?: string;
@@ -522,7 +537,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data, national
                         {(parsedData?.maxStay || maxStay) && (
                             <p className="text-[12px]">
                                 <span className="text-muted-foreground/35">Stay limit: </span>
-                                <span className="text-foreground/90">{formatRequirementValue(parsedData?.maxStay || maxStay)}</span>
+                                <span className="text-foreground/90">{formatStayLimit(parsedData?.maxStay || maxStay)}</span>
                             </p>
                         )}
                         {(parsedData?.passportValidity || passportValidity) && (
@@ -582,7 +597,7 @@ const VisaPresenter: React.FC<VisaPresenterProps> = React.memo(({ data, national
                     {maxStay && (
                         <p className="text-[12px]">
                             <span className="text-muted-foreground/35">Stay limit: </span>
-                            <span className="text-foreground/90">{formatRequirementValue(maxStay)}</span>
+                            <span className="text-foreground/90">{formatStayLimit(maxStay)}</span>
                         </p>
                     )}
                     {passportValidity && (

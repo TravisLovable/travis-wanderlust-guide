@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { Pill } from 'lucide-react';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { InsightLine } from '@/components/InsightLine';
-import { useInsights } from '@/contexts/InsightsContext';
 import { useTravelContext } from '@/contexts/TravelContext';
 
-interface PharmacyItem {
-  home_name: string;
-  destination_name: string;
-  secondary_name: string;
-  access: 'OTC' | 'Restricted' | 'Prescription';
-  context: string;
+interface Medication {
+  source: string;
+  equivalent: string;
+  status: string;
 }
 
 interface PharmacyResponse {
-  items: PharmacyItem[];
-  footer_note: string;
+  medications: Medication[];
+  summary: string;
   error?: string;
 }
 
@@ -24,17 +20,16 @@ interface PharmacyIntelCardProps {
   animationDelay?: string;
 }
 
-const accessColor: Record<string, string> = {
+const statusColor: Record<string, string> = {
   OTC: 'text-emerald-500',
   Restricted: 'text-amber-500',
-  Prescription: 'text-red-400',
+  Rx: 'text-red-400',
 };
 
 const PharmacyIntelCard: React.FC<PharmacyIntelCardProps> = ({
   placeDetails,
   animationDelay = '0.22s',
 }) => {
-  const { insights, loading: insightsLoading } = useInsights();
   const { passport } = useTravelContext();
 
   const [data, setData] = useState<PharmacyResponse | null>(null);
@@ -58,7 +53,29 @@ const PharmacyIntelCard: React.FC<PharmacyIntelCardProps> = ({
       body: JSON.stringify({ destination, origin: passport }),
     })
       .then((res) => { if (!res.ok) throw new Error(`Pharmacy API: ${res.status}`); return res.json(); })
-      .then((result) => { if (!cancelled) { if (result.error) throw new Error(result.error); setData(result); } })
+      .then((result) => {
+        if (!cancelled) {
+          if (result.error) throw new Error(result.error);
+          // Normalize old schema (items) to new schema (medications)
+          if (result.items && !result.medications) {
+            result.medications = result.items.map((item: any) => ({
+              source: item.home_name,
+              equivalent: item.destination_name,
+              status: item.access === 'Prescription' ? 'Rx' : item.access,
+            }));
+            result.summary = result.footer_note || '';
+          }
+          // Clean up known display names
+          if (result.medications) {
+            result.medications = result.medications.map((med: Medication) => ({
+              ...med,
+              source: med.source.replace(/Pepto-Bismol/gi, 'Pepto'),
+              equivalent: med.equivalent.replace(/Pepto-Bismol/gi, 'Pepto'),
+            }));
+          }
+          setData(result);
+        }
+      })
       .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed'); })
       .finally(() => { if (!cancelled) setLoading(false); });
 
@@ -77,50 +94,35 @@ const PharmacyIntelCard: React.FC<PharmacyIntelCardProps> = ({
         </div>
       </div>
 
-      <div className="mt-1" />
+      <div className="mt-3" />
 
       {loading ? (
-        <div className="space-y-2">
+        <div className="space-y-2.5 pb-1">
           {[0, 1, 2, 3].map(i => (
-            <div key={i} className="flex justify-between">
-              <div className="h-4 w-16 rounded bg-secondary/40 animate-pulse" />
-              <div className="h-4 w-24 rounded bg-secondary/40 animate-pulse" />
+            <div key={i} className="flex items-center gap-1.5">
+              <div className="h-3.5 w-14 rounded bg-secondary/40 animate-pulse" />
+              <div className="h-3.5 w-3 rounded bg-secondary/20 animate-pulse" />
+              <div className="h-3.5 w-20 rounded bg-secondary/40 animate-pulse" />
+              <div className="h-3.5 w-8 rounded bg-secondary/30 animate-pulse ml-auto" />
             </div>
           ))}
         </div>
-      ) : error || !data?.items ? (
+      ) : error || !data?.medications ? (
         <p className="text-xs text-muted-foreground">Unable to load pharmacy data</p>
       ) : (
-        <>
-          <div className="space-y-2">
-            {data.items.map((item, i) => (
-              <div key={i} className="space-y-0">
-                <div className="flex items-center justify-between text-xs gap-2">
-                  <span className="text-muted-foreground truncate">{item.home_name}</span>
-                  <span className="text-muted-foreground/40 shrink-0">&rarr;</span>
-                  <span className="font-medium text-right truncate text-foreground">
-                    {item.destination_name}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  {item.secondary_name ? (
-                    <span className="text-[10px] text-muted-foreground/40">{item.secondary_name}</span>
-                  ) : <span />}
-                  <span className={`text-[10px] font-medium ${accessColor[item.access] || 'text-muted-foreground'}`}>
-                    {item.access}
-                  </span>
-                </div>
-                {item.context && (
-                  <p className="text-[10px] text-muted-foreground/50 leading-snug">{item.context}</p>
-                )}
-              </div>
-            ))}
-          </div>
-
-        </>
+        <div className="space-y-2.5 pb-1">
+          {data.medications.slice(0, 4).map((med, i) => (
+            <div key={i} className="flex items-center text-[11px] leading-none gap-1">
+              <span className="text-muted-foreground/70 truncate shrink-0 max-w-[35%]">{med.source}</span>
+              <span className="text-muted-foreground/40 shrink-0 text-[10px]">&rarr;</span>
+              <span className="text-foreground/70 truncate min-w-0 flex-1">{med.equivalent}</span>
+              <span className={`text-[10px] font-medium shrink-0 pl-2 tabular-nums ${statusColor[med.status] || 'text-muted-foreground'}`}>
+                {med.status}
+              </span>
+            </div>
+          ))}
+        </div>
       )}
-
-      <InsightLine insight={insights?.pharmacyIntel} loading={insightsLoading} />
     </div>
   );
 };

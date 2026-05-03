@@ -46,49 +46,41 @@ serve(async (req) => {
 
 Return ONLY valid JSON matching this exact schema. No extra text, no markdown.
 
-IMPORTANT STYLE RULES for summary fields:
-- health_clearance: This is ONLY about mandatory entry requirements. NEVER a recommendation.
-  It must answer: "Is anything REQUIRED to enter this country?"
-  GOOD: "No mandatory health requirements"
-  GOOD: "Yellow fever vaccination required for entry"
-  GOOD: "COVID vaccination required"
-  GOOD: "No vaccines or tests required for entry"
-  BAD: "Routine vaccinations recommended" (this is a recommendation, not a requirement)
-  BAD: "Ensure vaccinations are up to date" (this is advice, not a requirement)
-  BAD: "Consider malaria prophylaxis" (this is a suggestion, not a requirement)
-  If nothing is mandatory, always say: "No mandatory health requirements"
-- key_action: One short, actionable sentence. No filler.
-  GOOD: "Keep routine vaccinations up to date"
-  GOOD: "Get yellow fever vaccination before travel"
-  BAD: "Ensure that all routine vaccinations are current and up to date before departure"
-
 {
-  "summary": {
-    "health_clearance": "string — ONLY mandatory entry requirements, never recommendations",
-    "risk_level": "low | moderate | high",
-    "key_action": "string — one short actionable sentence"
-  },
-  "required_for_entry": {
-    "covid_vaccination": true | false | null,
-    "covid_test": true | false | null,
-    "health_declaration_form": true | false | null,
-    "quarantine": true | false | null,
-    "entry_screening": true | false | null
-  },
-  "recommended": {
-    "vaccines": ["string array of recommended vaccines, empty if none"],
-    "malaria_prophylaxis": true | false | "regional",
-    "mosquito_protection": true | false,
-    "food_water_precautions": true | false
-  },
-  "regional_risks": {
-    "malaria_risk_areas": "string or null — describe regions if applicable",
-    "mosquito_borne_illness": "string or null — dengue, Zika, etc.",
-    "other_advisories": "string or null — altitude, water quality, etc."
-  },
-  "source": "string — primary source name",
-  "last_updated": "YYYY-MM or 'Current'"
-}`
+  "status": "string",
+  "details": [
+    { "label": "string", "value": "string" },
+    { "label": "string", "value": "string" },
+    { "label": "string", "value": "string" }
+  ],
+  "summary": "string"
+}
+
+RULES:
+
+status:
+- 1 line only, no explanation
+- Must answer: "Is anything REQUIRED to enter this country?"
+- GOOD: "No mandatory health requirements"
+- GOOD: "Yellow fever vaccination required for entry"
+- GOOD: "COVID vaccination required"
+- BAD: "Routine vaccinations recommended" (recommendation, not requirement)
+- BAD: "Ensure vaccinations are up to date" (advice, not requirement)
+- If nothing is mandatory, always say: "No mandatory health requirements"
+
+details:
+- Max 3 items
+- Each item is single-line
+- Short labels only (e.g., Recommended, Regional risk, Documentation)
+- Values must be concise (12 words max)
+- No paragraphs, no categories, no line breaks
+
+summary:
+- Exactly 1 sentence
+- 12 words max
+- Concise takeaway for an experienced traveler
+
+Do not return anything outside this JSON.`
           },
           {
             role: "user",
