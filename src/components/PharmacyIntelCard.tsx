@@ -1,50 +1,86 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Pill } from 'lucide-react';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { InsightLine } from '@/components/InsightLine';
-import { useInsights } from '@/contexts/InsightsContext';
+import { useTravelContext } from '@/contexts/TravelContext';
 
-// TODO: Replace pharmacy data with destination-specific data from API/Claude
+interface Medication {
+  source: string;
+  equivalent: string;
+  status: string;
+}
+
+interface PharmacyResponse {
+  medications: Medication[];
+  summary: string;
+  error?: string;
+}
 
 interface PharmacyIntelCardProps {
   placeDetails: SelectedPlace | null;
   animationDelay?: string;
 }
 
-interface MedEquivalent {
-  us: string;
-  local: string;
-  restricted: boolean;
-}
-
-interface PharmacyData {
-  equivalents: MedEquivalent[];
-  restriction: string;
-  pharmacies: { name: string; note: string }[];
-}
-
-function getMockPharmacy(_destination: string): PharmacyData {
-  return {
-    equivalents: [
-      { us: 'Tylenol', local: 'Paracetamol', restricted: false },
-      { us: 'Advil', local: 'Ibuprofen', restricted: false },
-      { us: 'Benadryl', local: 'Diphenhydramine', restricted: false },
-      { us: 'Sudafed', local: 'Pseudoephedrine', restricted: true },
-    ],
-    restriction: 'Carry prescriptions for controlled substances.',
-    pharmacies: [
-      { name: 'Clicks Pharmacy', note: 'nationwide' },
-      { name: 'Dis-Chem', note: 'major cities' },
-    ],
-  };
-}
+const statusColor: Record<string, string> = {
+  OTC: 'text-emerald-500',
+  Restricted: 'text-amber-500',
+  Rx: 'text-red-400',
+};
 
 const PharmacyIntelCard: React.FC<PharmacyIntelCardProps> = ({
   placeDetails,
   animationDelay = '0.22s',
 }) => {
-  const data = getMockPharmacy(placeDetails?.formatted_address || '');
-  const { insights, loading: insightsLoading } = useInsights();
+  const { passport } = useTravelContext();
+
+  const [data, setData] = useState<PharmacyResponse | null>(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const destination = placeDetails?.formatted_address || placeDetails?.name || '';
+
+  useEffect(() => {
+    if (!destination || !passport) { setLoading(false); return; }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
+
+    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/pharmacy-data`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ destination, origin: passport }),
+    })
+      .then((res) => { if (!res.ok) throw new Error(`Pharmacy API: ${res.status}`); return res.json(); })
+      .then((result) => {
+        if (!cancelled) {
+          if (result.error) throw new Error(result.error);
+          // Normalize old schema (items) to new schema (medications)
+          if (result.items && !result.medications) {
+            result.medications = result.items.map((item: any) => ({
+              source: item.home_name,
+              equivalent: item.destination_name,
+              status: item.access === 'Prescription' ? 'Rx' : item.access,
+            }));
+            result.summary = result.footer_note || '';
+          }
+          // Clean up known display names
+          if (result.medications) {
+            result.medications = result.medications.map((med: Medication) => ({
+              ...med,
+              source: med.source.replace(/Pepto-Bismol/gi, 'Pepto'),
+              equivalent: med.equivalent.replace(/Pepto-Bismol/gi, 'Pepto'),
+            }));
+          }
+          setData(result);
+        }
+      })
+      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
+
+    return () => { cancelled = true; };
+  }, [destination, passport]);
 
   return (
     <div className="widget-card animate-slide-up" style={{ animationDelay }}>
@@ -58,38 +94,35 @@ const PharmacyIntelCard: React.FC<PharmacyIntelCardProps> = ({
         </div>
       </div>
 
-      <div className="mt-1" />
+      <div className="mt-3" />
 
-      {/* Equivalents */}
-      <div className="space-y-1.5">
-        {data.equivalents.map((eq, i) => (
-          <div key={i} className="flex items-center justify-between text-xs gap-2">
-            <span className="text-muted-foreground truncate">{eq.us}</span>
-            <span className="text-muted-foreground/40 shrink-0">&rarr;</span>
-            <span className={`font-medium text-right truncate ${eq.restricted ? 'text-amber-500' : 'text-foreground'}`}>
-              {eq.local}
-            </span>
-          </div>
-        ))}
-      </div>
-
-      {/* Restriction notice */}
-      <div className="border-t border-border/30 mt-2.5 pt-2">
-        <p className="text-[10px] text-muted-foreground/50 leading-relaxed">
-          {data.restriction}
-        </p>
-      </div>
-
-      {/* Pharmacies */}
-      <div className="mt-2 space-y-0.5">
-        {data.pharmacies.map((ph, i) => (
-          <p key={i} className="text-[10px] text-muted-foreground/50">
-            <span className="text-muted-foreground/30 mr-1">&#x2022;</span>
-            {ph.name} <span className="text-muted-foreground/30">({ph.note})</span>
-          </p>
-        ))}
-      </div>
-      <InsightLine insight={insights?.pharmacyIntel} loading={insightsLoading} />
+      {loading ? (
+        <div className="space-y-2.5 pb-1">
+          {[0, 1, 2, 3].map(i => (
+            <div key={i} className="flex items-center gap-1.5">
+              <div className="h-3.5 w-14 rounded bg-secondary/40 animate-pulse" />
+              <div className="h-3.5 w-3 rounded bg-secondary/20 animate-pulse" />
+              <div className="h-3.5 w-20 rounded bg-secondary/40 animate-pulse" />
+              <div className="h-3.5 w-8 rounded bg-secondary/30 animate-pulse ml-auto" />
+            </div>
+          ))}
+        </div>
+      ) : error || !data?.medications ? (
+        <p className="text-xs text-muted-foreground">Unable to load pharmacy data</p>
+      ) : (
+        <div className="space-y-2.5 pb-1">
+          {data.medications.slice(0, 4).map((med, i) => (
+            <div key={i} className="flex items-center text-[11px] leading-none gap-1">
+              <span className="text-muted-foreground/70 truncate shrink-0 max-w-[35%]">{med.source}</span>
+              <span className="text-muted-foreground/40 shrink-0 text-[10px]">&rarr;</span>
+              <span className="text-foreground/70 truncate min-w-0 flex-1">{med.equivalent}</span>
+              <span className={`text-[10px] font-medium shrink-0 pl-2 tabular-nums ${statusColor[med.status] || 'text-muted-foreground'}`}>
+                {med.status}
+              </span>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 };

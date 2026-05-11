@@ -200,15 +200,26 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails, des
 
   // Fetch astronomy data from WeatherAPI.com
   useEffect(() => {
-    const fetchAstronomy = async () => {
-      if (!placeDetails?.latitude || !placeDetails?.longitude) return;
+    const hasCoords = placeDetails?.latitude && placeDetails?.longitude
+      && placeDetails.latitude !== 0 && placeDetails.longitude !== 0;
+    const locationQuery = hasCoords ? null : (destination || placeDetails?.name || placeDetails?.formatted_address);
 
+    console.log('🔍 ASTRONOMY fetch:', {
+      hasCoords,
+      lat: placeDetails?.latitude,
+      lng: placeDetails?.longitude,
+      locationQuery,
+      destination,
+    });
+
+    if (!hasCoords && !locationQuery) return;
+
+    const fetchAstronomy = async () => {
       try {
         const { data, error } = await supabase.functions.invoke('get-astronomy', {
-          body: {
-            latitude: placeDetails.latitude,
-            longitude: placeDetails.longitude,
-          },
+          body: hasCoords
+            ? { latitude: placeDetails!.latitude, longitude: placeDetails!.longitude }
+            : { location: locationQuery },
         });
 
         if (error) {
@@ -217,6 +228,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails, des
         }
 
         if (data && !data.error) {
+          console.log('🔍 ASTRONOMY result:', { timezone: data.timezone, sunrise: data.sunrise, sunset: data.sunset });
           setAstronomyData(data);
         }
       } catch (err) {
@@ -225,22 +237,48 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails, des
     };
 
     fetchAstronomy();
-  }, [placeDetails?.latitude, placeDetails?.longitude]);
+  }, [placeDetails?.latitude, placeDetails?.longitude, destination]);
 
   // Fetch world clock data — waits for astronomy to provide the correct timezone,
   // falls back to coordinate lookup only if astronomy hasn't returned one
   useEffect(() => {
     const fetchWorldClockData = async () => {
+      console.log('🔍 WORLD CLOCK placeDetails check:', {
+        lat: placeDetails?.latitude,
+        lng: placeDetails?.longitude,
+        latType: typeof placeDetails?.latitude,
+        lngType: typeof placeDetails?.longitude,
+      });
       if (placeDetails?.latitude === undefined || placeDetails?.latitude === null ||
         placeDetails?.longitude === undefined || placeDetails?.longitude === null) {
         return;
       }
 
+      // Prefer astronomy-provided timezone (accurate)
+      // If coordinates are 0,0 and astronomy hasn't loaded, wait
+      const hasRealCoords = placeDetails.latitude !== 0 || placeDetails.longitude !== 0;
+      const destinationTimezone = astronomyData?.timezone
+        || (hasRealCoords ? getTimezoneFromCoordinates(placeDetails.latitude, placeDetails.longitude) : null);
+
+      if (!destinationTimezone) {
+        console.log('🕐 Skipping world clock — waiting for astronomy timezone');
+        setIsLoading(false);
+        return;
+      }
+
+      console.log('🕐 TIMEZONE SOURCE:', {
+        astronomyTz: astronomyData?.timezone || 'not yet loaded',
+        coordinateFallback: getTimezoneFromCoordinates(placeDetails.latitude, placeDetails.longitude),
+        using: destinationTimezone,
+        lat: placeDetails.latitude,
+        lng: placeDetails.longitude,
+      });
+
       setIsLoading(true);
       try {
         const originTimezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
-        // Prefer astronomy-provided timezone (accurate), fall back to coordinate guess
-        const destinationTimezone = astronomyData?.timezone || getTimezoneFromCoordinates(placeDetails.latitude, placeDetails.longitude);
+
+        console.log('🕐 WORLD CLOCK CALL:', { origin: originTimezone, destination: destinationTimezone });
 
         const data = await invokeFunction<Record<string, unknown>>('get-world-clock', {
           originTimeZone: originTimezone,
@@ -254,6 +292,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails, des
         const hasExpectedShape = payload && typeof payload === 'object' && 'origin' in payload && 'destination' in payload && 'timeDifferenceText' in payload;
 
         if (hasExpectedShape && !isErrorResponse) {
+          console.log('🕐 WORLD CLOCK RESULT:', payload);
           setWorldClockData(payload as WorldClockData);
         } else if (isErrorResponse) {
           console.error('World clock API returned error:', (payload as { error: string }).error);
@@ -267,7 +306,7 @@ const TimeZoneContainer: React.FC<TimeZoneContainerProps> = ({ placeDetails, des
     };
 
     fetchWorldClockData();
-  }, [placeDetails, astronomyData]);
+  }, [placeDetails, astronomyData?.timezone]);
 
   // Compute current hour in destination timezone
   const getCurrentHourInDestination = (): number => {

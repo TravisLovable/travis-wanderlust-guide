@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,20 +13,27 @@ serve(async (req) => {
   }
 
   try {
-    const { destination, origin } = await req.json()
+    let destination: string | null = null;
+    try {
+      const text = await req.text();
+      if (text) {
+        const body = JSON.parse(text);
+        destination = body?.destination ?? null;
+      }
+    } catch (_) { /* ignore */ }
 
     if (!destination) {
       return new Response(
         JSON.stringify({ error: 'destination is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     if (!OPENAI_API_KEY) {
       return new Response(
         JSON.stringify({ error: 'OPENAI_API_KEY not configured' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -41,38 +48,32 @@ serve(async (req) => {
         input: [
           {
             role: "system",
-            content: `You are a structured transportation data API for a travel app called Travis.
+            content: `You are a structured emergency contacts API for a premium travel app called Travis.
 
-Return clean, reliable transport context for the destination.
+You provide essential emergency phone numbers for travelers visiting a specific destination.
 
 Return ONLY valid JSON matching this exact schema. No extra text, no markdown.
 
 {
-  "ride_share": "Available" | "Not available",
-  "airports": [
-    { "code": "string", "time": "string" }
+  "contacts": [
+    {
+      "label": "string",
+      "number": "string"
+    }
   ],
-  "local": {
-    "train_metro": "string",
-    "bus": "string",
-    "taxi": "string"
-  }
+  "summary": "string"
 }
 
 Rules:
-- ride_share: whether app-based ride share (Uber, Bolt, etc.) is commonly available in the city. One of: "Available", "Not available"
-- airports: array of the major airports serving the destination city (1–3 max)
-  - code: IATA airport code (e.g. "JFK", "CDG", "NRT")
-  - time: average travel time range to city center by car (e.g. "35–60 min")
-  - only include primary/major international airports, not regional
-- local.train_metro: one of "Primary", "Available", "Limited", "None"
-- local.bus: one of "Common", "Available", "Limited"
-- local.taxi: one of "Available", "Common", "Limited"
-- do not include explanations or anything outside JSON`
+- contacts: exactly 4 items in this order: Police, Ambulance, Fire, Tourist Police (or Embassy Hotline if no tourist police exists)
+- label: short service name (e.g. "Police", "Ambulance", "Fire", "Tourist Police")
+- number: the actual local emergency number (e.g. "110", "911", "112")
+- If a single number covers multiple services (e.g. 112 in EU), still list each service separately with that number
+- summary: exactly 1 line, max 12 words, practical tip about emergency calls in that country`
           },
           {
             role: "user",
-            content: `Ride-share intelligence for ${destination}${origin ? ` for a traveler from ${origin}` : ''}. Return the JSON.`
+            content: `Emergency contact numbers for travelers in ${destination}. Return the JSON.`
           }
         ]
       })
@@ -80,37 +81,37 @@ Rules:
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('[uber-availability] OpenAI API error:', response.status, errText);
+      console.error('[emergency-contacts] OpenAI API error:', response.status, errText);
       return new Response(
         JSON.stringify({ error: 'AI service unavailable', status: response.status }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     const data = await response.json();
 
-    let rideData: unknown = data;
+    let result: unknown = data;
     try {
       const text = data?.output?.[0]?.content?.[0]?.text;
       if (text) {
         const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-        rideData = JSON.parse(cleaned);
+        result = JSON.parse(cleaned);
       }
     } catch {
-      console.warn('[uber-availability] Could not extract structured content, forwarding raw');
+      console.warn('[emergency-contacts] Could not extract structured content, forwarding raw');
     }
 
-    console.log(`[uber-availability] ${destination}: OK`);
+    console.log(`[emergency-contacts] ${destination}: OK`);
 
-    return new Response(JSON.stringify(rideData), {
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
 
   } catch (error) {
-    console.error('[uber-availability] Error:', error);
+    console.error('[emergency-contacts] Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   }
-})
+});

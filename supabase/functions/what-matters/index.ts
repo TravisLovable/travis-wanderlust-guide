@@ -1,4 +1,4 @@
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,20 +13,21 @@ serve(async (req) => {
   }
 
   try {
-    const { destination, origin } = await req.json()
+    const body = await req.json();
+    const { destination, origin } = body;
 
     if (!destination) {
       return new Response(
         JSON.stringify({ error: 'destination is required' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     if (!OPENAI_API_KEY) {
       return new Response(
         JSON.stringify({ error: 'OPENAI_API_KEY not configured' }),
         { status: 503, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     const response = await fetch("https://api.openai.com/v1/responses", {
@@ -41,38 +42,31 @@ serve(async (req) => {
         input: [
           {
             role: "system",
-            content: `You are a structured transportation data API for a travel app called Travis.
+            content: `You are a structured travel intelligence API for a premium travel app called Travis.
 
-Return clean, reliable transport context for the destination.
+You produce a "What Matters" briefing — the 3 most important things a traveler should know before arriving at a destination. These are not tips or cultural trivia. They are the things that would catch a traveler off guard, cost them money, or change how they plan their day.
+
+Think: what would a well-traveled local tell a friend visiting for the first time?
+
+RULES:
+- Return exactly 3 items
+- Each item must be a single sentence, max 15 words
+- Be specific to the destination, not generic travel advice
+- Prioritize: safety, logistics, money, timing, local norms
+- Do not repeat information available in weather, visa, currency, or health widgets
+- Do not include greetings, hedging, or filler
+- summary: exactly 1 line, max 10 words, always present
 
 Return ONLY valid JSON matching this exact schema. No extra text, no markdown.
 
 {
-  "ride_share": "Available" | "Not available",
-  "airports": [
-    { "code": "string", "time": "string" }
-  ],
-  "local": {
-    "train_metro": "string",
-    "bus": "string",
-    "taxi": "string"
-  }
-}
-
-Rules:
-- ride_share: whether app-based ride share (Uber, Bolt, etc.) is commonly available in the city. One of: "Available", "Not available"
-- airports: array of the major airports serving the destination city (1–3 max)
-  - code: IATA airport code (e.g. "JFK", "CDG", "NRT")
-  - time: average travel time range to city center by car (e.g. "35–60 min")
-  - only include primary/major international airports, not regional
-- local.train_metro: one of "Primary", "Available", "Limited", "None"
-- local.bus: one of "Common", "Available", "Limited"
-- local.taxi: one of "Available", "Common", "Limited"
-- do not include explanations or anything outside JSON`
+  "items": ["string", "string", "string"],
+  "summary": "string"
+}`
           },
           {
             role: "user",
-            content: `Ride-share intelligence for ${destination}${origin ? ` for a traveler from ${origin}` : ''}. Return the JSON.`
+            content: `What matters most for a traveler ${origin ? `from ${origin} ` : ''}visiting ${destination}? Return the JSON.`
           }
         ]
       })
@@ -80,37 +74,37 @@ Rules:
 
     if (!response.ok) {
       const errText = await response.text();
-      console.error('[uber-availability] OpenAI API error:', response.status, errText);
+      console.error('[what-matters] OpenAI API error:', response.status, errText);
       return new Response(
         JSON.stringify({ error: 'AI service unavailable', status: response.status }),
         { status: 502, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-      )
+      );
     }
 
     const data = await response.json();
 
-    let rideData: unknown = data;
+    let result: unknown = data;
     try {
       const text = data?.output?.[0]?.content?.[0]?.text;
       if (text) {
         const cleaned = text.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '').trim();
-        rideData = JSON.parse(cleaned);
+        result = JSON.parse(cleaned);
       }
     } catch {
-      console.warn('[uber-availability] Could not extract structured content, forwarding raw');
+      console.warn('[what-matters] Could not extract structured content, forwarding raw');
     }
 
-    console.log(`[uber-availability] ${destination}: OK`);
+    console.log(`[what-matters] ${origin || 'unknown'} -> ${destination}: OK`);
 
-    return new Response(JSON.stringify(rideData), {
+    return new Response(JSON.stringify(result), {
       headers: { ...corsHeaders, "Content-Type": "application/json" }
     });
 
   } catch (error) {
-    console.error('[uber-availability] Error:', error);
+    console.error('[what-matters] Error:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Internal error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    )
+    );
   }
-})
+});

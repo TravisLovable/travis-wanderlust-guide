@@ -1,236 +1,150 @@
 import React, { useState, useEffect } from 'react';
-import { Car, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
-import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { supabase } from '@/integrations/supabase/client';
+import { Car } from 'lucide-react';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { useTravelContext } from '@/contexts/TravelContext';
+
+interface AirportEntry {
+  code: string;
+  time: string;
+}
+
+interface LocalData {
+  train_metro: string;
+  bus: string;
+  taxi: string;
+}
+
+interface TransportData {
+  ride_share: string;
+  airports: AirportEntry[];
+  local: LocalData;
+  error?: string;
+}
 
 interface UberAvailabilityWidgetProps {
   placeDetails: SelectedPlace | null;
 }
 
-interface UberData {
-  available: boolean;
-  city?: string;
-  country?: string;
-  services?: string[];
-  estimatedWaitTime?: string;
-  popularAlternatives?: string[];
-  alternatives?: string[];
-  localApps?: string[];
-  publicTransport?: string;
-  notes?: string;
-}
-
 const UberAvailabilityWidget = ({ placeDetails }: UberAvailabilityWidgetProps) => {
-  const [uberData, setUberData] = useState<UberData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
+  const [data, setData] = useState<TransportData | null>(null);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const { passport } = useTravelContext();
+
+  const destination = placeDetails?.formatted_address || placeDetails?.name || '';
 
   useEffect(() => {
-    const checkUberAvailability = async () => {
-      if (!placeDetails) {
-        setIsLoading(false);
-        return;
-      }
+    if (!destination) { setLoading(false); return; }
+    let cancelled = false;
+    setLoading(true);
+    setError(null);
 
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const destinationName = placeDetails.formatted_address || placeDetails.name;
-
-        const { data, error: functionError } = await supabase.functions.invoke('uber-availability', {
-          body: {
-            destination: destinationName
+    fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/uber-availability`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+      },
+      body: JSON.stringify({ destination, origin: passport }),
+    })
+      .then((res) => { if (!res.ok) throw new Error(`Ride API: ${res.status}`); return res.json(); })
+      .then((result) => {
+        if (!cancelled) {
+          if (result.error) throw new Error(result.error);
+          // Normalize old schema
+          if (result.primary_provider && !result.airports) {
+            result = {
+              ride_share: result.status === 'Unavailable' ? 'Not available' : 'Available',
+              airports: [{ code: 'Main', time: result.airport_to_city_time || 'Varies' }],
+              local: {
+                train_metro: 'Available',
+                bus: 'Available',
+                taxi: 'Available',
+              },
+            };
           }
-        });
-
-        if (functionError) {
-          console.error('Uber availability function error:', functionError);
-          throw functionError;
+          setData(result);
         }
+      })
+      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed'); })
+      .finally(() => { if (!cancelled) setLoading(false); });
 
-        setUberData(data);
-
-      } catch (error) {
-        console.error('Error checking Uber availability:', error);
-        setError(error instanceof Error ? error.message : 'Failed to check Uber availability');
-
-        // Set fallback data
-        setUberData({
-          available: false,
-          alternatives: ['Local taxi services', 'Public transportation'],
-          notes: 'Unable to verify Uber availability - check locally'
-        });
-      } finally {
-        setIsLoading(false);
-      }
-    };
-
-    checkUberAvailability();
-  }, [placeDetails]);
-
-  if (isLoading) {
-    return (
-      <Card className="travis-card">
-        <CardHeader className="p-0 pb-2">
-          <div className="widget-header">
-            <div className="widget-icon bg-blue-500/10 text-blue-500">
-              <Car className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h3 className="widget-title">Ride Sharing</h3>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0 pt-0">
-          <div className="flex items-center justify-center py-8">
-            <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-500"></div>
-            <span className="ml-2 text-sm text-muted-foreground">Checking availability...</span>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!uberData) {
-    return (
-      <Card className="travis-card">
-        <CardHeader className="p-0 pb-2">
-          <div className="widget-header">
-            <div className="widget-icon bg-blue-500/10 text-blue-500">
-              <Car className="w-5 h-5" />
-            </div>
-            <div className="flex-1">
-              <h3 className="widget-title">Ride Sharing</h3>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="p-0 pt-0">
-          <div className="text-center py-8">
-            <AlertCircle className="w-8 h-8 mx-auto mb-2 text-muted-foreground" />
-            <p className="text-sm text-muted-foreground">Unable to load ride-sharing information</p>
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
+    return () => { cancelled = true; };
+  }, [destination, passport]);
 
   return (
-    <Card className="travis-card">
-      <CardHeader className="p-0 pb-2">
-        <div className="widget-header">
-          <div className="widget-icon bg-blue-500/10 text-blue-500">
-            <Car className="w-5 h-5" />
-          </div>
-          <div className="flex-1">
-            <h3 className="widget-title">Ride Sharing</h3>
-          </div>
+    <div className="widget-card animate-slide-up" style={{ animationDelay: '0.26s' }}>
+      {/* Header */}
+      <div className="flex items-center gap-3">
+        <div className="widget-icon bg-blue-500/10 text-blue-500">
+          <Car className="w-5 h-5" />
         </div>
-      </CardHeader>
-      <CardContent className="space-y-4 p-0 pt-0">
-        {uberData.available ? (
-          <>
-            {/* Uber Available */}
-            <div className="flex items-center space-x-2">
-              <CheckCircle className="w-5 h-5 text-green-500" />
-              <span className="font-medium">Uber Available</span>
-              <Badge variant="secondary" className="bg-green-100 text-green-800">
-                Active
-              </Badge>
-            </div>
+        <div>
+          <h3 className="widget-title">Transportation</h3>
+          <p className="widget-subtitle">Airport transfer + local transit</p>
+        </div>
+      </div>
 
-            {/* Wait Time */}
-            {uberData.estimatedWaitTime && (
-              <div className="flex items-center space-x-2 text-sm">
-                <Clock className="w-4 h-4 text-blue-500" />
-                <span>Estimated wait: {uberData.estimatedWaitTime}</span>
-              </div>
-            )}
-
-            {/* Available Services */}
-            {uberData.services && uberData.services.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2">Available Services:</p>
-                <div className="flex flex-wrap gap-1">
-                  {uberData.services.map((service, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {service}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            {/* Alternatives */}
-            {uberData.popularAlternatives && uberData.popularAlternatives.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2">Popular Alternatives:</p>
-                <div className="text-sm text-muted-foreground">
-                  {uberData.popularAlternatives.join(', ')}
-                </div>
-              </div>
-            )}
-          </>
+      <div className="flex-1 min-h-0 flex flex-col mt-3 overflow-hidden">
+        {loading ? (
+          <div className="space-y-1.5">
+            <div className="h-4 w-36 rounded bg-secondary/40 animate-pulse" />
+            <div className="h-3.5 w-28 rounded bg-secondary/40 animate-pulse mt-2" />
+            <div className="h-3.5 w-32 rounded bg-secondary/40 animate-pulse" />
+            <div className="h-px w-full bg-secondary/20 my-1.5" />
+            <div className="h-3.5 w-24 rounded bg-secondary/40 animate-pulse" />
+            <div className="h-3.5 w-20 rounded bg-secondary/40 animate-pulse" />
+          </div>
+        ) : error || !data ? (
+          <p className="text-xs text-muted-foreground">Unable to load transportation data</p>
         ) : (
           <>
-            {/* Uber Not Available */}
-            <div className="flex items-center space-x-2">
-              <XCircle className="w-5 h-5 text-red-500" />
-              <span className="font-medium">Uber Not Available</span>
-              <Badge variant="secondary" className="bg-red-100 text-red-800">
-                Unavailable
-              </Badge>
+            {/* Primary — Ride share + airports */}
+            <div className="space-y-1">
+              <p className="text-[12px] text-muted-foreground/75">
+                <span className="text-muted-foreground/40 font-medium">Ride share:</span>{' '}
+                <span className={data.ride_share === 'Available' ? 'text-emerald-500/90' : 'text-muted-foreground/75'}>
+                  {data.ride_share}
+                </span>
+              </p>
+              {data.airports.slice(0, 3).map((ap, i) => (
+                <p key={i} className="text-[12px] text-muted-foreground/75 whitespace-nowrap overflow-hidden text-ellipsis">
+                  <span className="text-muted-foreground/40 font-medium">{ap.code}:</span>{' '}
+                  {ap.time}
+                </p>
+              ))}
             </div>
 
-            {/* Local Alternatives */}
-            {uberData.alternatives && uberData.alternatives.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2">Transportation Options:</p>
-                <div className="space-y-1">
-                  {uberData.alternatives.map((alternative, index) => (
-                    <div key={index} className="flex items-center space-x-2 text-sm">
-                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span>{alternative}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Divider */}
+            <div className="border-t border-border/10 my-2" />
 
-            {/* Local Apps */}
-            {uberData.localApps && uberData.localApps.length > 0 && (
-              <div>
-                <p className="text-sm font-medium mb-2">Local Ride-Sharing Apps:</p>
-                <div className="flex flex-wrap gap-1">
-                  {uberData.localApps.map((app, index) => (
-                    <Badge key={index} variant="outline" className="text-xs">
-                      {app}
-                    </Badge>
-                  ))}
-                </div>
-              </div>
-            )}
+            {/* Secondary — Local transport */}
+            <div className="space-y-1">
+              <p className="text-[10px] text-muted-foreground/25 font-medium uppercase tracking-wider mb-0.5">Local transport</p>
+              <p className="text-[12px] text-muted-foreground/60 whitespace-nowrap">
+                <span className="text-muted-foreground/30 font-medium">Train/Metro:</span>{' '}
+                {data.local.train_metro}
+              </p>
+              <p className="text-[12px] text-muted-foreground/60 whitespace-nowrap">
+                <span className="text-muted-foreground/30 font-medium">Bus:</span>{' '}
+                {data.local.bus}
+              </p>
+              <p className="text-[12px] text-muted-foreground/60 whitespace-nowrap">
+                <span className="text-muted-foreground/30 font-medium">Taxi:</span>{' '}
+                {data.local.taxi}
+              </p>
+            </div>
 
-            {/* Public Transport */}
-            {uberData.publicTransport && (
-              <div>
-                <p className="text-sm font-medium mb-2">Public Transport:</p>
-                <p className="text-sm text-muted-foreground">{uberData.publicTransport}</p>
-              </div>
-            )}
+            {/* Insight placeholder */}
+            <div className="mt-auto pt-2 border-t border-border/10">
+              <p className="text-[10px] text-muted-foreground/20 italic h-[14px]">
+                Travis insight — Coming soon
+              </p>
+            </div>
           </>
         )}
-
-        {/* Notes */}
-        {uberData.notes && (
-          <div className="pt-2 border-t border-border">
-            <p className="text-xs text-muted-foreground">{uberData.notes}</p>
-          </div>
-        )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 };
 

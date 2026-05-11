@@ -14,10 +14,13 @@ serve(async (req) => {
   try {
     const url = new URL(req.url)
     let input = url.searchParams.get('input')
-    if (!input && req.method === 'POST') {
+    if (!input) {
       try {
-        const body = await req.json()
-        input = body?.input ?? body?.query ?? null
+        const text = await req.text()
+        if (text) {
+          const body = JSON.parse(text)
+          input = body?.input ?? body?.query ?? null
+        }
       } catch (_) { /* ignore */ }
     }
 

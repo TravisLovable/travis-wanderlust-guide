@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { ArrowLeft, Calendar, Pin, Search, MapPin } from 'lucide-react';
+import { createPortal } from 'react-dom';
+import { ArrowLeft, ArrowUp, Calendar, Pin, Search, MapPin, Pencil, X } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -12,12 +13,12 @@ import { format, differenceInDays } from 'date-fns';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
 import { useGooglePlaces } from '@/hooks/useGooglePlaces';
 import { usePinnedLocations, PinnedLocation } from '@/hooks/usePinnedLocations';
-import LocalEventsCard from '@/components/LocalEventsCard';
 import WaterSafetyWidget from '@/components/WaterSafetyWidget';
 import PowerAdaptorWidget from '@/components/PowerAdaptorWidget';
 import UVIndexCard from '@/components/UVIndexCard';
 import HealthEntryCard from '@/components/HealthEntryCard';
 import PharmacyIntelCard from '@/components/PharmacyIntelCard';
+import EmergencyContactsCard from '@/components/EmergencyContactsCard';
 import {
   CulturalContainer,
   // WeatherContainer, // current implementation (commented out – client's WeatherWidget used below)
@@ -34,7 +35,9 @@ import { InsightLine } from '@/components/InsightLine';
 import { InsightsProvider } from '@/contexts/InsightsContext';
 import { useTravisInsights } from '@/hooks/useTravisInsights';
 import WeatherIntelWidget from '@/components/WeatherIntelWidget';
+import WhatMattersCard from '@/components/WhatMattersCard';
 import { toLocalMidnight } from '@/lib/dates';
+import { useTravelContext, COUNTRIES } from '@/contexts/TravelContext';
 
 interface ResultsPageProps {
   placeDetails: SelectedPlace | null;
@@ -47,9 +50,39 @@ interface ResultsPageProps {
 }
 
 const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPageProps) => {
+  const { passport, origin, setPassport, setOrigin } = useTravelContext();
+  const [travelModalOpen, setTravelModalOpen] = useState(false);
+  const [editPassport, setEditPassport] = useState(passport);
+  const [editOrigin, setEditOrigin] = useState(origin);
+  const [updateConfirmed, setUpdateConfirmed] = useState(false);
+  const [widgetKey, setWidgetKey] = useState(0);
+  const [originQuery, setOriginQuery] = useState('');
+  const [originSuggestions, setOriginSuggestions] = useState<{ place_name: string }[]>([]);
+  const [showOriginSuggestions, setShowOriginSuggestions] = useState(false);
+  const originDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const fetchOriginSuggestions = (query: string) => {
+    if (originDebounceRef.current) clearTimeout(originDebounceRef.current);
+    if (query.length < 2) { setOriginSuggestions([]); return; }
+    originDebounceRef.current = setTimeout(async () => {
+      try {
+        const token = import.meta.env.VITE_MAPBOX_TOKEN;
+        const res = await fetch(
+          `https://api.mapbox.com/geocoding/v5/mapbox.places/${encodeURIComponent(query)}.json?types=place,country,region&limit=5&access_token=${token}`
+        );
+        const data = await res.json();
+        setOriginSuggestions(data.features || []);
+        setShowOriginSuggestions(true);
+      } catch {
+        setOriginSuggestions([]);
+      }
+    }, 250);
+  };
+
   const destination = placeDetails?.formatted_address || placeDetails?.name || 'Unknown Destination';
-  const destinationName = placeDetails?.name || destination.split(',')[0];
-  const countryName = destination.includes(',') ? destination.split(',').pop()!.trim() : null;
+  const destinationParts = destination.split(',').map((s: string) => s.trim());
+  const destinationName = destinationParts[0];
+  const countryName = destinationParts.length > 1 ? destinationParts[destinationParts.length - 1] : null;
   const countryCode = placeDetails?.country_code?.toUpperCase() || null;
   const flagUrl = countryCode ? `https://flagcdn.com/w40/${countryCode.toLowerCase()}.png` : null;
 
@@ -67,6 +100,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
   const isHeaderMinimizedRef = useRef(false);
   const scrollTick = useRef<number | null>(null);
   const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 768);
+  const [showScrollTop, setShowScrollTop] = useState(false);
   const effectiveMinimized = isHeaderMinimized && !isMobile;
   isHeaderMinimizedRef.current = isHeaderMinimized;
 
@@ -121,7 +155,10 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
       const currentScrollY = window.scrollY;
       const prevScrollY = lastScrollY.current;
-      const scrollingDown = currentScrollY > prevScrollY;
+      const delta = currentScrollY - prevScrollY;
+      // Dead zone: ignore tiny scroll movements to prevent flicker
+      if (Math.abs(delta) < 3) { scrollTick.current = null; return; }
+      const scrollingDown = delta > 0;
       lastScrollY.current = currentScrollY;
 
       const shouldMinimize = currentScrollY > MIN_SCROLL_TO_MINIMIZE && scrollingDown;
@@ -133,6 +170,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
         isHeaderMinimizedRef.current = nextMinimized;
         setIsHeaderMinimized(nextMinimized);
       }
+      setShowScrollTop(currentScrollY > 400);
       scrollTick.current = null;
     };
 
@@ -230,12 +268,12 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
       <div className="min-h-screen bg-background">
         {/* Header */}
         <header
-          className={`sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border/60 transition-[padding] duration-300 ${effectiveMinimized ? 'py-1.5' : 'py-3'}`}
-          style={{ contain: 'layout style' }}
+          className={`sticky top-0 z-40 bg-background border-b border-border/60 transition-[padding] duration-300 ${effectiveMinimized ? 'py-1.5' : 'py-3'}`}
+          style={{ contain: 'layout style paint', willChange: 'transform' }}
         >
           <div className="max-w-6xl mx-auto px-4">
             {/* Top Row */}
-            <div className="flex items-center justify-between mb-2">
+            <div className={`flex items-center justify-start ${effectiveMinimized ? 'mb-1' : 'mb-2'}`}>
               <div className="flex items-center gap-3">
                 <Button
                   variant="ghost"
@@ -246,7 +284,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                   <ArrowLeft className="w-5 h-5" />
                 </Button>
 
-                <div className={`transition-all duration-300 ${effectiveMinimized ? 'hidden' : 'block'}`}>
+                <div className={`transition-all duration-300 overflow-hidden ${effectiveMinimized ? 'max-h-0 opacity-0 pointer-events-none' : 'max-h-40 opacity-100'}`}>
                   {insights?.greeting && (
                     <p className="text-sm text-muted-foreground/70 italic mb-0.5">{insights.greeting}</p>
                   )}
@@ -273,10 +311,153 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                   <p className="text-xs text-muted-foreground/80">
                     {format(toLocalMidnight(dates.checkin), 'MMM d')} - {format(toLocalMidnight(dates.checkout), 'MMM d, yyyy')} · {tripDuration} days
                   </p>
+                  <button
+                    onClick={() => { setEditPassport(passport); setEditOrigin(origin); setOriginQuery(''); setShowOriginSuggestions(false); setTravelModalOpen(true); }}
+                    className="text-[11px] text-muted-foreground/50 hover:text-muted-foreground/70 transition-colors mt-0.5 flex items-center gap-1"
+                  >
+                    {origin ? `From ${origin}` : 'Set origin'} · {passport} passport
+                    <Pencil className="w-2.5 h-2.5" />
+                  </button>
                 </div>
 
+                {/* Travel context modal */}
+                {travelModalOpen && createPortal(
+                  <div
+                    className="fixed inset-0 flex items-center justify-center"
+                    style={{ zIndex: 99999, background: 'rgba(0,0,0,0.6)' }}
+                    onClick={() => setTravelModalOpen(false)}
+                  >
+                    <div
+                      onClick={(e) => e.stopPropagation()}
+                      style={{
+                        width: 340,
+                        background: '#121215',
+                        borderRadius: 16,
+                        border: '1px solid rgba(255,255,255,0.08)',
+                        boxShadow: '0 24px 64px rgba(0,0,0,0.6)',
+                        padding: '24px',
+                      }}
+                    >
+                      <div className="flex items-center justify-between mb-5">
+                        <h3 className="text-[15px] font-medium text-foreground">Travel details</h3>
+                        <button onClick={() => setTravelModalOpen(false)} className="text-muted-foreground/40 hover:text-muted-foreground/70 transition-colors">
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      <div className="space-y-4">
+                        <div>
+                          <label className="text-[11px] text-muted-foreground/40 tracking-wide block mb-1.5">Passport</label>
+                          <select
+                            value={editPassport}
+                            onChange={(e) => setEditPassport(e.target.value)}
+                            className="w-full text-[13px] text-foreground/90 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 outline-none focus:border-white/[0.12] transition-colors"
+                          >
+                            {COUNTRIES.map(c => <option key={c} value={c}>{c}</option>)}
+                          </select>
+                        </div>
+
+                        <div className="relative">
+                          <label className="text-[11px] text-muted-foreground/40 tracking-wide block mb-1.5">Traveling from</label>
+                          <input
+                            type="text"
+                            value={originQuery || editOrigin}
+                            onChange={(e) => {
+                              setOriginQuery(e.target.value);
+                              setEditOrigin(e.target.value);
+                              fetchOriginSuggestions(e.target.value);
+                            }}
+                            onFocus={() => { if (originSuggestions.length > 0) setShowOriginSuggestions(true); }}
+                            placeholder="City or country"
+                            className="w-full text-[13px] text-foreground/90 bg-white/[0.04] border border-white/[0.06] rounded-lg px-3 py-2 outline-none focus:border-white/[0.12] transition-colors placeholder:text-muted-foreground/25"
+                          />
+                          {showOriginSuggestions && originSuggestions.length > 0 && (
+                            <div
+                              style={{
+                                position: 'absolute',
+                                top: '100%',
+                                left: 0,
+                                right: 0,
+                                marginTop: 4,
+                                background: '#1a1a1f',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: 10,
+                                boxShadow: '0 12px 32px rgba(0,0,0,0.5)',
+                                overflow: 'hidden',
+                                zIndex: 10,
+                              }}
+                            >
+                              {originSuggestions.map((s, i) => (
+                                <button
+                                  key={i}
+                                  onClick={() => {
+                                    setEditOrigin(s.place_name);
+                                    setOriginQuery('');
+                                    setShowOriginSuggestions(false);
+                                    setOriginSuggestions([]);
+                                  }}
+                                  style={{
+                                    display: 'block',
+                                    width: '100%',
+                                    textAlign: 'left',
+                                    padding: '8px 12px',
+                                    fontSize: 12,
+                                    color: 'rgba(255,255,255,0.7)',
+                                    background: 'transparent',
+                                    border: 'none',
+                                    cursor: 'pointer',
+                                    transition: 'background 100ms, color 100ms',
+                                  }}
+                                  onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'rgba(255,255,255,0.9)'; }}
+                                  onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'rgba(255,255,255,0.7)'; }}
+                                >
+                                  {s.place_name}
+                                </button>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <button
+                        disabled={updateConfirmed}
+                        onClick={() => {
+                          setUpdateConfirmed(true);
+                          // Brief loading phase, then confirm
+                          setTimeout(() => {
+                            setPassport(editPassport);
+                            setOrigin(editOrigin);
+                            setWidgetKey(k => k + 1);
+                          }, 600);
+                          setTimeout(() => {
+                            setUpdateConfirmed(false);
+                            setTravelModalOpen(false);
+                          }, 1400);
+                        }}
+                        className={`w-full mt-5 text-[13px] font-medium rounded-lg py-2.5 transition-all duration-300 flex items-center justify-center gap-2 ${
+                          updateConfirmed
+                            ? 'bg-emerald-500 text-white'
+                            : 'text-background bg-foreground/90 hover:bg-foreground'
+                        }`}
+                      >
+                        {updateConfirmed ? (
+                          <>
+                            <div className="w-3.5 h-3.5 rounded-full border-2 border-white/30 border-t-white animate-spin" />
+                            Updating...
+                          </>
+                        ) : 'Update'}
+                      </button>
+
+                      <p className="text-[10px] text-muted-foreground/25 text-center mt-3">
+                        Requirements based on {editPassport} passport traveling from {editOrigin || 'your location'}
+                      </p>
+                    </div>
+                  </div>,
+                  document.body
+                )}
+
                 {/* Minimized title */}
-                <div className={`transition-all duration-300 flex items-center ${effectiveMinimized ? 'flex' : 'hidden'}`}>
+                <div className={`transition-all duration-300 flex items-center overflow-hidden ${effectiveMinimized ? 'max-h-10 opacity-100' : 'max-h-0 opacity-0 pointer-events-none'}`}>
                   <span className="font-medium text-foreground">{destinationName}{countryName && <>,<span className="font-normal text-muted-foreground"> {countryName}</span></>}</span>
                   {flagUrl && (
                     <img
@@ -338,7 +519,7 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
                   )}
                 </div>
 
-                <div className={`flex items-center gap-1 transition-all duration-300 ${effectiveMinimized ? 'hidden md:flex' : 'flex'}`}>
+                <div className={`flex items-center gap-1 transition-all duration-300 ${effectiveMinimized ? 'md:flex hidden' : 'flex'}`}>
                   <Popover open={checkinOpen} onOpenChange={setCheckinOpen}>
                     <PopoverTrigger asChild>
                       <Button variant="ghost" className="h-10 px-3 text-sm font-normal">
@@ -411,102 +592,73 @@ const ResultsPage = ({ placeDetails, dates, onBack, onNewSearch }: ResultsPagePr
 
         {/* Main Content */}
         <main className="max-w-6xl mx-auto px-4 py-4">
-          {/* Widgets Grid — Cognitive priority: Culture → Environment → Permission → Economics → Context */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+          <div key={widgetKey} className="grid grid-cols-1 md:grid-cols-2 gap-3">
 
-            {/* ROW 0 — CULTURAL CONTEXT (full width, collapsible) */}
-            <CulturalContainer destination={destination} animationDelay="0.04s" />
+            <WhatMattersCard destination={destination} animationDelay="0s" />
 
-            {/* ROW 1 — ENVIRONMENTAL CONTEXT (real data from Edge Functions) */}
+            <div style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
+              <WeatherIntelWidget
+                destination={destination}
+                dates={dates}
+                latitude={placeDetails?.latitude}
+                longitude={placeDetails?.longitude}
+                insight={insights?.weather}
+                insightLoading={insightsLoading}
+              />
+            </div>
 
-            {/* Weather Widget — Open-Meteo historical for checkin–checkout dates when lat/lng present */}
-            <WeatherIntelWidget
-              destination={destination}
-              dates={dates}
-              latitude={placeDetails?.latitude}
-              longitude={placeDetails?.longitude}
-              insight={insights?.weather}
-              insightLoading={insightsLoading}
-            />
-
-            {/* My implementation (commented out):
-          <div className="animate-slide-up">
-            <WeatherContainer placeDetails={placeDetails} />
-            <InsightLine insight={insights?.weather} loading={insightsLoading} />
-          </div>
-          */}
-
-
-            {/* Client's WeatherWidget (commented out):
-          <div className="animate-slide-up">
-            <WeatherWidget
-              destination={weatherDestination}
-              currentLocation="Current Location"
-              tempUnit={tempUnit}
-              onTempUnitToggle={() => setTempUnit((u) => (u === 'C' ? 'F' : 'C'))}
-            />
-            <InsightLine insight={insights?.weather} loading={insightsLoading} />
-          </div>
-          */}
-
-            <div className="animate-slide-up" style={{ animationDelay: '0.08s' }}>
+            <div className="animate-slide-up" style={{ animationDelay: '0.04s', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
               <TimeZoneContainer placeDetails={placeDetails} destination={destination} />
               <InsightLine insight={insights?.localTime} loading={insightsLoading} />
             </div>
 
-            {/* ROW 2 — TRIP GATE / COMPLIANCE */}
-
-            {/* Visa + Health Entry */}
-            <div className="grid grid-rows-2 gap-3">
-              <div className="animate-slide-up" style={{ animationDelay: '0.14s' }}>
-                <VisaContainer placeDetails={placeDetails} />
-                <InsightLine insight={insights?.visa} loading={insightsLoading} />
-              </div>
-              <HealthEntryCard destination={destination} animationDelay="0.16s" />
+            <div className="animate-slide-up" style={{ animationDelay: '0.08s', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
+              <VisaContainer placeDetails={placeDetails} passport={passport} />
+              <InsightLine insight={insights?.visa} loading={insightsLoading} />
             </div>
 
-            {/* Utility 2×2 — Water Safety, UV Index, Pharmacy Intel, Power Adaptor */}
-            <div className="grid grid-cols-2 grid-rows-2 gap-3">
-              <WaterSafetyWidget placeDetails={placeDetails} animationDelay="0.18s" />
-              <UVIndexCard placeDetails={placeDetails} animationDelay="0.2s" />
-              <PharmacyIntelCard placeDetails={placeDetails} animationDelay="0.22s" />
-              <PowerAdaptorWidget placeDetails={placeDetails} animationDelay="0.24s" />
+            <div style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
+              <HealthEntryCard destination={destination} passport={passport} animationDelay="0.1s" />
             </div>
 
-            {/* ROW 3 — ECONOMICS + EXECUTION (real data from Edge Functions) */}
-
-            <div className="animate-slide-up" style={{ animationDelay: '0.2s' }}>
-              <CurrencyContainer placeDetails={placeDetails} />
-              <InsightLine insight={insights?.currency} loading={insightsLoading} />
-            </div>
-
-            <div className="animate-slide-up" style={{ animationDelay: '0.26s' }}>
+            <div className="animate-slide-up" style={{ animationDelay: '0.12s' }}>
               <UberAvailabilityWidget placeDetails={placeDetails} />
               <InsightLine insight={insights?.transportation} loading={insightsLoading} />
             </div>
 
-            {/* ROW 4 — CONTEXTUAL SIGNALS */}
-
-            <div className="animate-slide-up" style={{ animationDelay: '0.32s' }}>
-              <HolidayContainer placeDetails={placeDetails} dates={dates} />
-              <InsightLine insight={insights?.localHolidays} loading={insightsLoading} />
+            <div className="animate-slide-up" style={{ animationDelay: '0.14s' }}>
+              <CurrencyContainer placeDetails={placeDetails} />
+              <InsightLine insight={insights?.currency} loading={insightsLoading} />
             </div>
 
-            {/* Local Events Widget */}
-            <LocalEventsCard
-              destination={destination}
-              startDate={dates.checkin}
-              endDate={dates.checkout}
-              animationDelay="0.38s"
-            />
+            <CulturalContainer destination={destination} animationDelay="0.16s" />
+
+            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-[1fr_1fr_2fr] gap-3">
+              <WaterSafetyWidget placeDetails={placeDetails} animationDelay="0.18s" />
+              <UVIndexCard placeDetails={placeDetails} animationDelay="0.2s" />
+              <EmergencyContactsCard placeDetails={placeDetails} animationDelay="0.26s" />
+              <PharmacyIntelCard placeDetails={placeDetails} animationDelay="0.22s" />
+              <PowerAdaptorWidget placeDetails={placeDetails} animationDelay="0.24s" />
+              <div className="animate-slide-up" style={{ animationDelay: '0.28s' }}>
+                <HolidayContainer placeDetails={placeDetails} dates={dates} />
+                <InsightLine insight={insights?.localHolidays} loading={insightsLoading} />
+              </div>
+            </div>
 
           </div>
 
-          {/* Footer Note */}
-          <div className="mt-6 text-center text-xs text-muted-foreground/60">
-            <p>Weather, currency, time zone, visa, holidays, and transport use live data from our APIs.</p>
-          </div>
         </main>
+
+        {/* Return to top */}
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className={`fixed bottom-6 right-6 z-50 h-10 w-10 rounded-full bg-foreground/80 text-background flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-foreground ${
+            showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
+          }`}
+          aria-label="Return to top"
+        >
+          <ArrowUp className="w-4 h-4" />
+        </button>
       </div>
     </InsightsProvider>
   );

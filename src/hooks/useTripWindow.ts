@@ -27,7 +27,7 @@ export function computeTripWindow(checkin: string, checkout: string): TripWindow
 
   // Forecastable if: trip starts before the forecast boundary OR trip already started
   const isTripWithin14DayForecastWindow =
-    tripStart.getTime() < forecastEnd.getTime() || isTodayWithinTrip;
+    tripStart.getTime() <= forecastEnd.getTime() || isTodayWithinTrip;
 
   return { tripStart, tripEnd, today, forecastEnd, isTodayWithinTrip, isTripWithin14DayForecastWindow };
 }

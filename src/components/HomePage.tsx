@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
-import { ArrowRight, Calendar, MapPin, Compass } from 'lucide-react';
+import { ArrowRight, Calendar, MapPin } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import {
@@ -23,49 +23,6 @@ interface HomePageProps {
   toggleTheme?: () => void;
 }
 
-// Surprise Me destinations with compelling insights and hero images
-const surpriseDestinations = [
-  {
-    name: 'Paris, France',
-    insight: 'The City of Light has 37 bridges crossing the Seine, each with its own romantic story spanning centuries of history.',
-    image: 'https://images.unsplash.com/photo-1502602898657-3e91760cbb34?w=1200&h=800&fit=crop&q=80'
-  },
-  {
-    name: 'Tokyo, Japan',
-    insight: 'Where ancient temples stand beside neon-lit streets, and 13 million people navigate the world\'s most punctual transit system.',
-    image: 'https://images.unsplash.com/photo-1540959733332-eab4deabeeaf?w=1200&h=800&fit=crop&q=80'
-  },
-  {
-    name: 'Barcelona, Spain',
-    insight: 'Gaudí\'s Sagrada Família has been under construction for over 140 years—longer than the Egyptian pyramids took to build.',
-    image: 'https://images.unsplash.com/photo-1583422409516-2895a77efded?w=1200&h=800&fit=crop&q=80'
-  },
-  {
-    name: 'Bali, Indonesia',
-    insight: 'The Island of the Gods is home to over 10,000 temples and celebrates more religious ceremonies than anywhere else on Earth.',
-    image: 'https://images.unsplash.com/photo-1537996194471-e657df975ab4?w=1200&h=800&fit=crop&q=80'
-  },
-  {
-    name: 'Reykjavik, Iceland',
-    insight: 'The northernmost capital city, where summer brings 24 hours of daylight and winter offers nature\'s greatest light show.',
-    image: 'https://images.unsplash.com/photo-1504829857797-ddff29c27927?w=1200&h=800&fit=crop&q=80'
-  },
-  {
-    name: 'Cusco, Peru',
-    insight: 'The ancient Incan capital sits at 11,152 feet elevation, serving as the gateway to Machu Picchu and the Sacred Valley.',
-    image: 'https://images.unsplash.com/photo-1526392060635-9d6019884377?w=1200&h=800&fit=crop&q=80'
-  },
-  {
-    name: 'Marrakech, Morocco',
-    insight: 'The Red City\'s medina has remained virtually unchanged for 1,000 years, with over 600 riads hidden behind unassuming doors.',
-    image: 'https://images.unsplash.com/photo-1597212618440-806262de4f6b?w=1200&h=800&fit=crop&q=80'
-  },
-  {
-    name: 'Cape Town, South Africa',
-    insight: 'Where two oceans meet beneath Table Mountain, creating one of the world\'s most biodiverse marine environments.',
-    image: 'https://images.unsplash.com/photo-1580060839134-75a5edca2e99?w=1200&h=800&fit=crop&q=80'
-  },
-];
 
 const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggleTheme }: HomePageProps) => {
   const [destination, setDestination] = useState('');
@@ -86,9 +43,6 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
   const [isTermsModalOpen, setIsTermsModalOpen] = useState(false);
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
 
-  // Surprise Me state
-  const [surpriseState, setSurpriseState] = useState<'idle' | 'thinking' | 'revealed'>('idle');
-  const [surpriseDestination, setSurpriseDestination] = useState<typeof surpriseDestinations[0] | null>(null);
 
   const navigate = useNavigate();
   const destinationInputRef = useRef<HTMLInputElement>(null);
@@ -198,30 +152,6 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
     }
   }, [isSearchEnabled, handleSearch]);
 
-  const handleSurpriseMe = () => {
-    setSurpriseState('thinking');
-
-    setTimeout(() => {
-      const randomIndex = Math.floor(Math.random() * surpriseDestinations.length);
-      setSurpriseDestination(surpriseDestinations[randomIndex]);
-      setSurpriseState('revealed');
-    }, 1500);
-  };
-
-  const handleSurpriseSelect = () => {
-    if (surpriseDestination) {
-      setDestination(surpriseDestination.name);
-      setSelectedPlace(null);
-      setSurpriseState('idle');
-      setSurpriseDestination(null);
-      setTimeout(() => setCheckinOpen(true), 100);
-    }
-  };
-
-  const handleSurpriseClose = () => {
-    setSurpriseState('idle');
-    setSurpriseDestination(null);
-  };
 
   const toggleTheme = () => propToggleTheme?.();
 
@@ -240,84 +170,6 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
 
   return (
     <div className="min-h-screen bg-background relative overflow-hidden">
-      {/* Surprise Me Overlay */}
-      {surpriseState !== 'idle' && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm transition-all duration-300"
-          onClick={surpriseState === 'revealed' ? handleSurpriseClose : undefined}
-        >
-          {surpriseState === 'thinking' && (
-            <div className="text-center">
-              <div className="flex items-center justify-center gap-2 mb-4">
-                <div className="w-3 h-3 rounded-full bg-primary animate-pulse" style={{ animationDelay: '0ms' }} />
-                <div className="w-3 h-3 rounded-full bg-primary animate-pulse" style={{ animationDelay: '200ms' }} />
-                <div className="w-3 h-3 rounded-full bg-primary animate-pulse" style={{ animationDelay: '400ms' }} />
-              </div>
-              <p className="text-lg text-muted-foreground">Travis is thinking...</p>
-            </div>
-          )}
-
-          {surpriseState === 'revealed' && surpriseDestination && (
-            <div
-              className="w-full max-w-2xl mx-4 bg-card border border-border rounded-3xl shadow-2xl animate-fade-in overflow-hidden"
-              onClick={(e) => e.stopPropagation()}
-            >
-              {/* Hero Image */}
-              <div className="relative w-full h-64 sm:h-80 overflow-hidden">
-                <img
-                  src={surpriseDestination.image}
-                  alt={surpriseDestination.name}
-                  className="w-full h-full object-cover"
-                />
-                {/* Gradient overlay for text readability */}
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-
-                {/* Destination label overlay */}
-                <div className="absolute bottom-0 left-0 right-0 p-6">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Compass className="w-4 h-4 text-white/80" />
-                    <span className="text-sm text-white/80 font-medium">Your destination</span>
-                  </div>
-                  <h2 className="text-3xl sm:text-4xl font-semibold text-white tracking-tight">
-                    {surpriseDestination.name}
-                  </h2>
-                </div>
-              </div>
-
-              {/* Content */}
-              <div className="p-6 sm:p-8">
-                <p className="text-muted-foreground leading-relaxed text-base sm:text-lg mb-6">
-                  {surpriseDestination.insight}
-                </p>
-
-                <div className="flex gap-3">
-                  <Button
-                    onClick={handleSurpriseSelect}
-                    className="flex-1 h-11"
-                  >
-                    Let's go
-                  </Button>
-                  <Button
-                    onClick={handleSurpriseMe}
-                    variant="outline"
-                    className="flex-1 h-11"
-                  >
-                    Try another
-                  </Button>
-                </div>
-
-                <button
-                  onClick={handleSurpriseClose}
-                  className="w-full mt-4 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  Cancel
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
-
       {/* Main Content */}
       <main className="relative z-10 min-h-screen flex flex-col">
         {/* Hero Section - Responsive positioning with optical lift */}
@@ -329,8 +181,8 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
             </h1>
 
             {/* Subtext */}
-            <p className="ti-secondary mb-6">
-              Travel Intelligence for the modern explorer
+            <p className="ti-secondary mb-6 text-center mx-auto">
+              Everything that matters before you travel.
             </p>
 
             {/* Search Bar */}
@@ -464,28 +316,6 @@ const HomePage = ({ onSearch, isDarkMode: propIsDarkMode, toggleTheme: propToggl
               </form>
             </div>
 
-            {/* Surprise Me Link */}
-            <div className="mt-6">
-              <button
-                onClick={handleSurpriseMe}
-                className="ti-secondary group no-underline"
-                style={{ fontSize: '14px' }}
-              >
-                <span
-                  className="inline-block mr-[0.3em] opacity-0 group-hover:opacity-100 group-focus-visible:opacity-100 transition-all duration-150 ease-out"
-                  style={{ transform: 'translateX(2px)' }}
-                  aria-hidden="true"
-                >
-                  <span className="inline-block group-hover:translate-x-0.5 group-focus-visible:translate-x-0.5 transition-transform duration-150 ease-out">
-                    &rarr;
-                  </span>
-                </span>
-                Not sure where to go?{' '}
-                <span>
-                  Surprise me.
-                </span>
-              </button>
-            </div>
           </div>
         </div>
 

@@ -1,11 +1,7 @@
 import React from 'react';
-import { Info, Plug } from 'lucide-react';
-import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
-import { useHomeCountry } from '@/hooks/useHomeCountry';
-import { cca2ToIso3 } from '@/utils/countryIso3';
+import { Plug, CheckCircle, AlertTriangle } from 'lucide-react';
+import { useTravelContext } from '@/contexts/TravelContext';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { InsightLine } from '@/components/InsightLine';
-import { useInsights } from '@/contexts/InsightsContext';
 
 interface PowerAdaptorWidgetProps {
   placeDetails: SelectedPlace | null;
@@ -179,118 +175,81 @@ function iso3ToCc2(iso3: string): string | null {
   return null;
 }
 
+const TOTAL_ROWS = 3;
+
 const PowerAdaptorWidget: React.FC<PowerAdaptorWidgetProps> = ({
   placeDetails,
   animationDelay = '0.2s',
 }) => {
-  const { insights, loading: insightsLoading } = useInsights();
   const destCc2 = placeDetails?.country_code?.toUpperCase() || null;
   const power = getDestPower(destCc2 ?? undefined);
 
-  const { homeCountry } = useHomeCountry();
-  const homeCc2 = homeCountry ? iso3ToCc2(homeCountry.iso3) : null;
+  const { resolvedBaselineCountry } = useTravelContext();
+  const homeCc2 = resolvedBaselineCountry?.code ?? null;
   const adaptor = needsAdaptor(homeCc2 ?? undefined, destCc2 ?? undefined);
 
+  const needed = adaptor === true;
+  const statusText = adaptor === null
+    ? 'Compatibility unknown'
+    : needed
+      ? 'Adapter needed'
+      : 'No adapter needed';
+
+  const rows: { label: string; value: string }[] = power
+    ? [
+        { label: 'Plug type', value: `Type ${power.plugTypes.join(', ')}` },
+        { label: 'Voltage', value: `${power.voltage}V` },
+        { label: 'Frequency', value: `${power.frequency}Hz` },
+      ]
+    : [];
+
   return (
-    <div
-      className="widget-card animate-slide-up"
-      style={{ animationDelay }}
-    >
+    <div className="widget-card animate-slide-up" style={{ animationDelay }}>
       {/* Header */}
-      <div className="widget-header">
+      <div className="flex items-center gap-3">
         <div className="widget-icon bg-amber-500/10 text-amber-600">
           <Plug className="w-5 h-5" />
         </div>
-        <div className="flex-1">
+        <div>
           <h3 className="widget-title">Power Adaptor</h3>
-          <p className="widget-subtitle">Plug type & voltage</p>
+          <p className="widget-subtitle">Plug type &amp; voltage</p>
         </div>
-
-        <Popover>
-          <PopoverTrigger asChild>
-            <button
-              className="text-muted-foreground/60 hover:text-muted-foreground transition-colors rounded-full p-1 -mr-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
-              aria-label="What this means"
-            >
-              <Info className="w-4 h-4" />
-            </button>
-          </PopoverTrigger>
-          <PopoverContent align="end" className="w-80 text-sm">
-            <p className="text-foreground leading-relaxed">
-              Electrical outlet standards at your destination. Plug types indicate the physical shape of the outlet.
-              Voltage and frequency affect whether your devices will work without a converter.
-            </p>
-          </PopoverContent>
-        </Popover>
       </div>
 
-      {/* Main content */}
-      <div className="mt-1" />
-      {!power ? (
-        <div>
-          <p className="text-sm font-medium text-muted-foreground">Data unavailable</p>
-          {destCc2 && (
-            <p className="text-xs text-muted-foreground/[0.62]">
-              No data for {destCc2}
-            </p>
+      {/* Body */}
+      <div className="flex-1 min-h-0 flex flex-col mt-4 overflow-hidden">
+
+        {/* Primary status */}
+        <div className="flex items-center gap-2 mb-3">
+          {needed ? (
+            <AlertTriangle className="w-4 h-4 text-amber-400 flex-shrink-0" />
+          ) : (
+            <CheckCircle className="w-4 h-4 text-emerald-500 flex-shrink-0" />
           )}
+          <span className="text-[14px] font-medium text-foreground truncate">
+            {statusText}
+          </span>
         </div>
-      ) : (
-        <div className="flex items-center gap-3">
-          {/* Adaptor illustration */}
-          <svg className="shrink-0 animate-slow-turn" width="72" height="88" viewBox="0 0 72 88" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-            <defs>
-              <linearGradient id="adpt-body" x1="16" y1="24" x2="56" y2="80" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stopColor="#e8e8e8" />
-                <stop offset="0.5" stopColor="#d4d4d4" />
-                <stop offset="1" stopColor="#b0b0b0" />
-              </linearGradient>
-              <linearGradient id="adpt-top" x1="20" y1="18" x2="52" y2="30" gradientUnits="userSpaceOnUse">
-                <stop offset="0" stopColor="#f5f5f5" />
-                <stop offset="1" stopColor="#dcdcdc" />
-              </linearGradient>
-              <linearGradient id="adpt-pin" x1="0" y1="0" x2="1" y2="1">
-                <stop offset="0" stopColor="#c0c0c0" />
-                <stop offset="0.4" stopColor="#e8e8e8" />
-                <stop offset="1" stopColor="#999" />
-              </linearGradient>
-              <filter id="adpt-shadow" x="-4" y="2" width="80" height="92" filterUnits="userSpaceOnUse">
-                <feDropShadow dx="0" dy="2" stdDeviation="3" floodColor="#000" floodOpacity="0.12" />
-              </filter>
-            </defs>
-            <g filter="url(#adpt-shadow)">
-              <rect x="14" y="24" width="44" height="52" rx="6" fill="url(#adpt-body)" />
-              <rect x="14" y="24" width="3" height="52" rx="1.5" fill="#f0f0f0" opacity="0.5" />
-              <rect x="55" y="24" width="3" height="52" rx="1.5" fill="#999" opacity="0.2" />
-              <rect x="16" y="22" width="40" height="8" rx="3" fill="url(#adpt-top)" />
-              <rect x="16" y="72" width="40" height="3" rx="1.5" fill="#a0a0a0" />
-              <rect x="26" y="38" width="3" height="14" rx="1.5" fill="#555" />
-              <rect x="43" y="38" width="3" height="14" rx="1.5" fill="#555" />
-              <circle cx="36" cy="60" r="2.5" fill="#555" />
-              <rect x="28" y="6" width="3" height="18" rx="1" fill="url(#adpt-pin)" />
-              <rect x="41" y="6" width="3" height="18" rx="1" fill="url(#adpt-pin)" />
-              <rect x="20" y="32" width="32" height="38" rx="3" stroke="#bbb" strokeWidth="0.5" fill="none" />
-            </g>
-          </svg>
-          {/* Text */}
-          <div className="space-y-1.5">
-            <p className="widget-value text-foreground" style={{ letterSpacing: '-0.03em' }}>
-              Type {power.plugTypes.join(', ')}
-            </p>
-            <p className="text-xs text-muted-foreground">
-              {power.voltage}V / {power.frequency}Hz
-            </p>
-            {adaptor !== null && (
-              <p className="text-xs text-muted-foreground">
-                {adaptor
-                  ? `Adaptor needed from ${homeCountry!.name}`
-                  : `Compatible with ${homeCountry!.name} plugs`}
-              </p>
-            )}
-          </div>
+
+        {/* Supporting rows */}
+        <div className="flex-1 min-h-0 space-y-1.5">
+          {Array.from({ length: TOTAL_ROWS }).map((_, i) => {
+            const row = rows[i];
+            return (
+              <div key={i} className="min-w-0">
+                {row ? (
+                  <p className="text-[12px] text-muted-foreground/75 whitespace-nowrap overflow-hidden text-ellipsis">
+                    <span className="text-muted-foreground/40 font-medium">{row.label}:</span>{' '}
+                    {row.value}
+                  </p>
+                ) : (
+                  <div className="h-[18px]" />
+                )}
+              </div>
+            );
+          })}
         </div>
-      )}
-      <InsightLine insight={insights?.powerAdapter} loading={insightsLoading} />
+      </div>
     </div>
   );
 };
