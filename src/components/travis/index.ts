@@ -17,5 +17,7 @@ export { DestinationSheet } from "./DestinationSheet";
 export { CalendarSheet, formatRange, toISO } from "./CalendarSheet";
 export type { CalDate } from "./CalendarSheet";
 export { MonitoringList } from "./MonitoringList";
+export { Resolve } from "./Resolve";
+export { RouteGlobe, GlobePanel } from "./Globe";
 
 export * from "./native";
