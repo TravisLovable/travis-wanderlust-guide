@@ -19,5 +19,7 @@ export type { CalDate } from "./CalendarSheet";
 export { MonitoringList } from "./MonitoringList";
 export { Resolve } from "./Resolve";
 export { RouteGlobe, GlobePanel } from "./Globe";
+export { ResultsHeader } from "./results/ResultsHeader";
+export { BriefBlock } from "./results/BriefBlock";
 
 export * from "./native";

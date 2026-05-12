@@ -1,21 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import Header from '@/components/Header';
 import ResultsPage from '@/components/ResultsPage';
 import { Resolve } from '@/components/travis/Resolve';
 import { SelectedPlace } from '@/hooks/useGooglePlaces';
-import { useTheme } from '@/hooks/useTheme';
 import { useAuth } from '@/contexts/AuthContext';
 
 const SearchResults = () => {
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const { isDarkMode, toggleTheme } = useTheme();
     const { userProfile } = useAuth();
     const [showLoading, setShowLoading] = useState(false);
     const [placeDetails, setPlaceDetails] = useState<SelectedPlace | null>(null);
     const [dates, setDates] = useState({ checkin: '', checkout: '' });
-    const [currentLanguage, setCurrentLanguage] = useState('en');
 
     // Parse URL parameters on component mount
     useEffect(() => {
@@ -110,20 +106,12 @@ const SearchResults = () => {
     }
 
     return (
-        <div className="min-h-screen w-full bg-background text-foreground">
-            <Header
-                isDarkMode={isDarkMode}
-                toggleTheme={toggleTheme}
-                setCurrentLanguage={setCurrentLanguage}
-                currentLanguage={currentLanguage}
-            />
-            <ResultsPage
-                placeDetails={placeDetails}
-                dates={dates}
-                onBack={handleBack}
-                onNewSearch={handleNewSearch}
-            />
-        </div>
+        <ResultsPage
+            placeDetails={placeDetails}
+            dates={dates}
+            onBack={handleBack}
+            onNewSearch={handleNewSearch}
+        />
     );
 };
 
