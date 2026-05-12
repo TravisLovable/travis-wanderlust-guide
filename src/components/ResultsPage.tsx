@@ -1,30 +1,17 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
 import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import WaterSafetyWidget from '@/components/WaterSafetyWidget';
-import PowerAdaptorWidget from '@/components/PowerAdaptorWidget';
-import UVIndexCard from '@/components/UVIndexCard';
-import HealthEntryCard from '@/components/HealthEntryCard';
-import PharmacyIntelCard from '@/components/PharmacyIntelCard';
-import EmergencyContactsCard from '@/components/EmergencyContactsCard';
-import {
-  CulturalContainer,
-  TimeZoneContainer,
-  CurrencyContainer,
-  VisaContainer,
-  HolidayContainer,
-  UberAvailabilityWidget,
-} from '@/components/widgets';
-import { InsightLine } from '@/components/InsightLine';
 import { InsightsProvider } from '@/contexts/InsightsContext';
 import { useTravisInsights } from '@/hooks/useTravisInsights';
-import WeatherIntelWidget from '@/components/WeatherIntelWidget';
-import WhatMattersCard from '@/components/WhatMattersCard';
 import { useTravelContext } from '@/contexts/TravelContext';
 import { Topbar } from '@/components/travis/Topbar';
 import { ContextPicker } from '@/components/travis/ContextPicker';
 import { ResultsHeader } from '@/components/travis/results/ResultsHeader';
 import { BriefBlock } from '@/components/travis/results/BriefBlock';
+import { MustKnowSection } from '@/components/travis/results/MustKnowSection';
+import { LogisticsSection } from '@/components/travis/results/LogisticsSection';
+import { ContextSection } from '@/components/travis/results/ContextSection';
+import { DetailsSection } from '@/components/travis/results/DetailsSection';
 
 interface ResultsPageProps {
   placeDetails: SelectedPlace | null;
@@ -108,62 +95,44 @@ const ResultsPage = ({ placeDetails, dates, onBack }: ResultsPageProps) => {
 
         <BriefBlock insights={insights} loading={insightsLoading} />
 
-        {/* Legacy widget grid — redesigned in step 6 into Must Know / Logistics / Context sections. */}
-        <main className="max-w-6xl mx-auto px-4 py-4">
-          <div key={widgetKey} className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <main key={widgetKey} className="px-5 md:px-8 pb-16">
+          <MustKnowSection
+            placeDetails={placeDetails}
+            dates={dates}
+            destination={destination}
+            passport={passport}
+            insights={insights}
+            insightsLoading={insightsLoading}
+          />
 
-            <WhatMattersCard destination={destination} animationDelay="0s" />
+          <LogisticsSection
+            placeDetails={placeDetails}
+            insights={insights}
+            insightsLoading={insightsLoading}
+          />
 
-            <div style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
-              <WeatherIntelWidget
-                destination={destination}
-                dates={dates}
-                latitude={placeDetails?.latitude}
-                longitude={placeDetails?.longitude}
-                insight={insights?.weather}
-                insightLoading={insightsLoading}
-              />
-            </div>
+          <ContextSection
+            placeDetails={placeDetails}
+            dates={dates}
+            destination={destination}
+            insights={insights}
+            insightsLoading={insightsLoading}
+          />
 
-            <div className="animate-slide-up" style={{ animationDelay: '0.04s', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
-              <TimeZoneContainer placeDetails={placeDetails} destination={destination} />
-              <InsightLine insight={insights?.localTime} loading={insightsLoading} />
-            </div>
+          <DetailsSection placeDetails={placeDetails} />
 
-            <div className="animate-slide-up" style={{ animationDelay: '0.08s', boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
-              <VisaContainer placeDetails={placeDetails} passport={passport} />
-              <InsightLine insight={insights?.visa} loading={insightsLoading} />
-            </div>
-
-            <div style={{ boxShadow: '0 0 0 1px rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.25)', borderRadius: 'var(--radius)' }}>
-              <HealthEntryCard destination={destination} passport={passport} animationDelay="0.1s" />
-            </div>
-
-            <div className="animate-slide-up" style={{ animationDelay: '0.12s' }}>
-              <UberAvailabilityWidget placeDetails={placeDetails} />
-              <InsightLine insight={insights?.transportation} loading={insightsLoading} />
-            </div>
-
-            <div className="animate-slide-up" style={{ animationDelay: '0.14s' }}>
-              <CurrencyContainer placeDetails={placeDetails} />
-              <InsightLine insight={insights?.currency} loading={insightsLoading} />
-            </div>
-
-            <CulturalContainer destination={destination} animationDelay="0.16s" />
-
-            <div className="md:col-span-2 grid grid-cols-2 md:grid-cols-[1fr_1fr_2fr] gap-3">
-              <WaterSafetyWidget placeDetails={placeDetails} animationDelay="0.18s" />
-              <UVIndexCard placeDetails={placeDetails} animationDelay="0.2s" />
-              <EmergencyContactsCard placeDetails={placeDetails} animationDelay="0.26s" />
-              <PharmacyIntelCard placeDetails={placeDetails} animationDelay="0.22s" />
-              <PowerAdaptorWidget placeDetails={placeDetails} animationDelay="0.24s" />
-              <div className="animate-slide-up" style={{ animationDelay: '0.28s' }}>
-                <HolidayContainer placeDetails={placeDetails} dates={dates} />
-                <InsightLine insight={insights?.localHolidays} loading={insightsLoading} />
-              </div>
-            </div>
-
-          </div>
+          <footer
+            className="max-w-[1180px] mx-auto w-full mt-16 md:mt-20 pt-5 border-t flex flex-col md:flex-row md:justify-between gap-2 font-travis-mono uppercase"
+            style={{
+              borderColor: 'var(--hair)',
+              fontSize: 10.5,
+              letterSpacing: '0.12em',
+              color: 'var(--ink-4)',
+            }}
+          >
+            <span>Travis will re-verify before departure</span>
+            <span>Not a booking tool</span>
+          </footer>
         </main>
 
         <ContextPicker

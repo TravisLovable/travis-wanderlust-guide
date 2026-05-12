@@ -21,5 +21,10 @@ export { Resolve } from "./Resolve";
 export { RouteGlobe, GlobePanel } from "./Globe";
 export { ResultsHeader } from "./results/ResultsHeader";
 export { BriefBlock } from "./results/BriefBlock";
+export { SectionHeader } from "./results/SectionHeader";
+export { MustKnowSection } from "./results/MustKnowSection";
+export { LogisticsSection } from "./results/LogisticsSection";
+export { ContextSection } from "./results/ContextSection";
+export { DetailsSection } from "./results/DetailsSection";
 
 export * from "./native";
