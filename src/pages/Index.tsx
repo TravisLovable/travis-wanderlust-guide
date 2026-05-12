@@ -1,18 +1,15 @@
-import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import HomePage from '@/components/HomePage';
-import Header from '@/components/Header';
 import { SelectedPlace } from '@/hooks/useGooglePlaces';
-import { useTheme } from '@/hooks/useTheme';
+import { Home } from '@/components/travis/Home';
 
 const Index = () => {
   const navigate = useNavigate();
-  const { isDarkMode, toggleTheme } = useTheme();
-  const [currentLanguage, setCurrentLanguage] = useState('en');
 
-  const handleSearch = (placeDetails: SelectedPlace | null, dates: { checkin: string; checkout: string }, skipTransition = false) => {
-    if (!placeDetails) return;
-
+  const handleSearch = (
+    placeDetails: SelectedPlace,
+    dates: { checkin: string; checkout: string },
+    skipTransition = false,
+  ) => {
     const searchParams = new URLSearchParams({
       destination: placeDetails.formatted_address,
       name: placeDetails.name,
@@ -23,27 +20,13 @@ const Index = () => {
       ...(placeDetails.country_code && { country: placeDetails.country_code }),
       ...(placeDetails.region && { region: placeDetails.region }),
       ...(placeDetails.place_id && { placeId: placeDetails.place_id }),
-      ...(!skipTransition && { loading: 'true' })
+      ...(!skipTransition && { loading: 'true' }),
     });
 
     navigate(`/search?${searchParams.toString()}`);
   };
 
-  return (
-    <div className="min-h-screen w-full bg-background text-foreground">
-      <Header
-        isDarkMode={isDarkMode}
-        toggleTheme={toggleTheme}
-        setCurrentLanguage={setCurrentLanguage}
-        currentLanguage={currentLanguage}
-      />
-      <HomePage
-        onSearch={(placeDetails, dates) => handleSearch(placeDetails, dates, false)}
-        isDarkMode={isDarkMode}
-        toggleTheme={toggleTheme}
-      />
-    </div>
-  );
+  return <Home onSearch={(place, dates) => handleSearch(place, dates, false)} />;
 };
 
 export default Index;
