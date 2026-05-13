@@ -34,6 +34,8 @@ export { EntryCard } from "./results/EntryCard";
 export { HealthCard } from "./results/HealthCard";
 export { WeatherCard } from "./results/WeatherCard";
 export { TimeCard } from "./results/TimeCard";
+export { TransitCard } from "./results/TransitCard";
+export { CurrencyCard } from "./results/CurrencyCard";
 export { SectionErrorBoundary } from "./results/SectionErrorBoundary";
 
 export * from "./native";
