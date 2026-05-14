@@ -1,5 +1,6 @@
 import * as React from "react";
 import { SectionHeader } from "./SectionHeader";
+import { SectionErrorBoundary } from "./SectionErrorBoundary";
 import WaterSafetyWidget from "@/components/WaterSafetyWidget";
 import UVIndexCard from "@/components/UVIndexCard";
 import PharmacyIntelCard from "@/components/PharmacyIntelCard";
@@ -14,9 +15,10 @@ type DetailsSectionProps = {
 /**
  * Section 04 — Details.
  *
- * Houses the widgets that don't have a slot in the design's three core
- * sections. Decision 4 in the plan: keep them, render below Context,
- * restyled with section chrome. Internals unchanged.
+ * Houses the five widgets that have no slot in the design's three core
+ * sections (Decision 4). Each widget was restyled in place during
+ * Checkpoint D to use SubcardFrame + KeyValueRow + Travis tokens — they
+ * own their own card chrome now, so this section is a plain responsive grid.
  */
 export function DetailsSection({ placeDetails }: DetailsSectionProps) {
   return (
@@ -26,58 +28,17 @@ export function DetailsSection({ placeDetails }: DetailsSectionProps) {
         title="Details"
         sub="What else Travis monitors."
       />
-      <div className="max-w-[1180px] mx-auto w-full px-5 md:px-0">
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
-          <Cell label="Water safety">
-            <WaterSafetyWidget placeDetails={placeDetails} animationDelay="0s" />
-          </Cell>
-          <Cell label="UV index">
-            <UVIndexCard placeDetails={placeDetails} animationDelay="0.04s" />
-          </Cell>
-          <Cell label="Pharmacy">
-            <PharmacyIntelCard placeDetails={placeDetails} animationDelay="0.08s" />
-          </Cell>
-          <Cell label="Power adapter">
-            <PowerAdaptorWidget placeDetails={placeDetails} animationDelay="0.12s" />
-          </Cell>
-          <Cell label="Emergency">
-            <EmergencyContactsCard placeDetails={placeDetails} animationDelay="0.16s" />
-          </Cell>
+      <SectionErrorBoundary label="Details">
+        <div className="max-w-[1180px] mx-auto w-full px-5 md:px-0">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+            <WaterSafetyWidget placeDetails={placeDetails} />
+            <UVIndexCard placeDetails={placeDetails} />
+            <PharmacyIntelCard placeDetails={placeDetails} />
+            <PowerAdaptorWidget placeDetails={placeDetails} />
+            <EmergencyContactsCard placeDetails={placeDetails} />
+          </div>
         </div>
-      </div>
+      </SectionErrorBoundary>
     </>
-  );
-}
-
-function Cell({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div
-      className="overflow-hidden"
-      style={{
-        border: "1px solid var(--hair)",
-        borderRadius: 6,
-        background: "var(--bg-inset)",
-      }}
-    >
-      <div
-        className="font-travis-mono uppercase"
-        style={{
-          fontSize: 10,
-          letterSpacing: "0.16em",
-          color: "var(--ink)",
-          padding: "12px 16px",
-          borderBottom: "1px solid var(--hair)",
-        }}
-      >
-        {label}
-      </div>
-      <div className="p-3">{children}</div>
-    </div>
   );
 }
