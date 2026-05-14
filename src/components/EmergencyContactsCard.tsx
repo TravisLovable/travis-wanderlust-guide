@@ -1,16 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { Phone } from 'lucide-react';
-import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import * as React from "react";
+import { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import { SubcardFrame } from "@/components/travis/results/SubcardFrame";
+import { KeyValueRow } from "@/components/travis/results/KeyValueRow";
 
 interface Contact {
-  label: string;
-  number: string;
+  label?: unknown;
+  number?: unknown;
 }
 
 interface EmergencyResponse {
-  contacts: Contact[];
-  summary: string;
-  error?: string;
+  contacts?: Contact[];
+  summary?: unknown;
+  error?: unknown;
 }
 
 interface EmergencyContactsCardProps {
@@ -18,82 +19,97 @@ interface EmergencyContactsCardProps {
   animationDelay?: string;
 }
 
-const EmergencyContactsCard: React.FC<EmergencyContactsCardProps> = ({
-  placeDetails,
-  animationDelay = '0.28s',
-}) => {
-  const [data, setData] = useState<EmergencyResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+const asString = (v: unknown): string | undefined => {
+  if (typeof v !== "string") return undefined;
+  const t = v.trim();
+  return t.length > 0 ? t : undefined;
+};
 
-  const destination = placeDetails?.formatted_address || placeDetails?.name || '';
+const EmergencyContactsCard: React.FC<EmergencyContactsCardProps> = ({ placeDetails }) => {
+  const [data, setData] = React.useState<EmergencyResponse | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  useEffect(() => {
-    if (!destination) { setLoading(false); return; }
+  const destination = placeDetails?.formatted_address || placeDetails?.name || "";
+
+  React.useEffect(() => {
+    if (!destination) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
 
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/emergency-contacts`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({ destination }),
     })
-      .then((res) => { if (!res.ok) throw new Error(`Emergency API: ${res.status}`); return res.json(); })
-      .then((result) => {
-        if (!cancelled) {
-          if (result.error) throw new Error(result.error);
-          setData(result);
-        }
+      .then((res) => {
+        if (!res.ok) throw new Error(`Emergency API: ${res.status}`);
+        return res.json();
       })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed'); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .then((result: EmergencyResponse) => {
+        if (cancelled) return;
+        if (asString(result?.error)) throw new Error(String(result.error));
+        setData(result);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [destination]);
 
+  const contacts = Array.isArray(data?.contacts)
+    ? data!.contacts!.slice(0, 4)
+    : [];
+  const summary = asString(data?.summary);
+
   return (
-    <div className="widget-card animate-slide-up" style={{ animationDelay }}>
-      <div className="widget-header">
-        <div className="widget-icon bg-red-500/10 text-red-500">
-          <Phone className="w-5 h-5" />
-        </div>
-        <div className="flex-1">
-          <h3 className="widget-title">Emergency Contacts</h3>
-          <p className="widget-subtitle">Local emergency numbers</p>
-        </div>
+    <SubcardFrame
+      label="Emergency"
+      footnote={summary ?? "Dial the listed number from any local phone."}
+    >
+      <div style={{ padding: "12px 20px" }}>
+        {loading && contacts.length === 0 && (
+          <div
+            className="font-travis"
+            style={{ color: "var(--ink-3)", fontSize: 13, padding: "8px 0" }}
+          >
+            Resolving contacts…
+          </div>
+        )}
+        {!loading && (error || contacts.length === 0) && (
+          <div
+            className="font-travis"
+            style={{ color: "var(--ink-4)", fontSize: 13, padding: "8px 0" }}
+          >
+            —
+          </div>
+        )}
+        {contacts.map((contact, i) => {
+          const isLast = i === contacts.length - 1;
+          return (
+            <KeyValueRow
+              key={i}
+              label={asString(contact?.label) ?? "—"}
+              value={asString(contact?.number)}
+              noBorder={isLast}
+            />
+          );
+        })}
       </div>
-
-      <div className="mt-3" />
-
-      {loading ? (
-        <div className="space-y-2.5 pb-1">
-          {[0, 1, 2, 3].map(i => (
-            <div key={i} className="flex items-center gap-1.5">
-              <div className="h-3.5 w-16 rounded bg-secondary/40 animate-pulse" />
-              <div className="h-3.5 w-12 rounded bg-secondary/40 animate-pulse ml-auto" />
-            </div>
-          ))}
-        </div>
-      ) : error || !data?.contacts ? (
-        <p className="text-xs text-muted-foreground">Unable to load emergency contacts</p>
-      ) : (
-        <div className="space-y-2.5 pb-1">
-          {data.contacts.slice(0, 4).map((contact, i) => (
-            <div key={i} className="flex items-center text-[11px] leading-none gap-1">
-              <span className="text-muted-foreground/70 truncate shrink-0">{contact.label}</span>
-              <span className="text-foreground/70 font-medium ml-auto tabular-nums">{contact.number}</span>
-            </div>
-          ))}
-          {data.summary && (
-            <p className="text-[10px] text-muted-foreground/50 pt-1 leading-snug">{data.summary}</p>
-          )}
-        </div>
-      )}
-    </div>
+    </SubcardFrame>
   );
 };
 

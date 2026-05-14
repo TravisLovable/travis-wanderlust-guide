@@ -19,9 +19,26 @@ export default {
 		},
 		extend: {
 			fontFamily: {
+				travis: ['var(--sans)', 'Archivo', 'system-ui', 'sans-serif'],
+				'travis-display': ['var(--display)', 'Archivo Narrow', 'Archivo', 'system-ui', 'sans-serif'],
+				'travis-mono': ['var(--mono)', 'Space Mono', 'ui-monospace', 'monospace'],
 				unbounded: ['Unbounded', 'sans-serif'],
 			},
 			colors: {
+				travis: {
+					bg: 'var(--bg)',
+					'bg-raised': 'var(--bg-raised)',
+					'bg-inset': 'var(--bg-inset)',
+					hair: 'var(--hair)',
+					'hair-strong': 'var(--hair-strong)',
+					ink: 'var(--ink)',
+					'ink-2': 'var(--ink-2)',
+					'ink-3': 'var(--ink-3)',
+					'ink-4': 'var(--ink-4)',
+					'signal-ok': 'var(--signal-ok)',
+					'signal-warn': 'var(--signal-warn)',
+					'signal-stop': 'var(--signal-stop)',
+				},
 				border: 'hsl(var(--border))',
 				input: 'hsl(var(--input))',
 				ring: 'hsl(var(--ring))',

@@ -1,7 +1,7 @@
-import React, { useState, useEffect } from 'react';
-import { Pill } from 'lucide-react';
-import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
-import { useTravelContext } from '@/contexts/TravelContext';
+import * as React from "react";
+import { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import { useTravelContext } from "@/contexts/TravelContext";
+import { SubcardFrame } from "@/components/travis/results/SubcardFrame";
 
 interface Medication {
   source: string;
@@ -10,9 +10,18 @@ interface Medication {
 }
 
 interface PharmacyResponse {
-  medications: Medication[];
-  summary: string;
-  error?: string;
+  medications?: Medication[];
+  // Actual Edge Function shape (captured 2026-05-14):
+  items?: Array<{
+    home_name?: unknown;
+    destination_name?: unknown;
+    secondary_name?: unknown;
+    access?: unknown;
+    context?: unknown;
+  }>;
+  footer_note?: unknown;
+  summary?: unknown;
+  error?: unknown;
 }
 
 interface PharmacyIntelCardProps {
@@ -20,110 +29,185 @@ interface PharmacyIntelCardProps {
   animationDelay?: string;
 }
 
-const statusColor: Record<string, string> = {
-  OTC: 'text-emerald-500',
-  Restricted: 'text-amber-500',
-  Rx: 'text-red-400',
+const asString = (v: unknown): string | undefined => {
+  if (typeof v !== "string") return undefined;
+  const t = v.trim();
+  return t.length > 0 ? t : undefined;
 };
 
-const PharmacyIntelCard: React.FC<PharmacyIntelCardProps> = ({
-  placeDetails,
-  animationDelay = '0.22s',
-}) => {
+function statusKind(status: string): "ok" | "warn" | "stop" | "neutral" {
+  const s = status.toLowerCase();
+  if (s === "otc") return "ok";
+  if (s === "restricted") return "warn";
+  if (s === "rx" || s === "prescription") return "stop";
+  return "neutral";
+}
+
+function statusColor(kind: ReturnType<typeof statusKind>): string {
+  if (kind === "ok") return "var(--signal-ok)";
+  if (kind === "warn") return "var(--signal-warn)";
+  if (kind === "stop") return "var(--signal-stop)";
+  return "var(--ink-3)";
+}
+
+function normalizeMedications(data: PharmacyResponse | null): Medication[] {
+  if (!data) return [];
+  // Prefer the new shape if present.
+  if (Array.isArray(data.medications)) {
+    return data.medications
+      .map((m) => ({
+        source: asString(m?.source) ?? "",
+        equivalent: asString(m?.equivalent) ?? "",
+        status: asString(m?.status) ?? "",
+      }))
+      .filter((m) => m.source || m.equivalent);
+  }
+  // Fall back to the Edge Function's current shape: `items` array.
+  if (Array.isArray(data.items)) {
+    return data.items
+      .map((it) => {
+        const access = asString(it?.access);
+        const status = access === "Prescription" ? "Rx" : (access ?? "");
+        return {
+          source: (asString(it?.home_name) ?? "").replace(/Pepto-Bismol/gi, "Pepto"),
+          equivalent: (asString(it?.destination_name) ?? "").replace(/Pepto-Bismol/gi, "Pepto"),
+          status,
+        };
+      })
+      .filter((m) => m.source || m.equivalent);
+  }
+  return [];
+}
+
+const PharmacyIntelCard: React.FC<PharmacyIntelCardProps> = ({ placeDetails }) => {
   const { passport } = useTravelContext();
+  const [data, setData] = React.useState<PharmacyResponse | null>(null);
+  const [loading, setLoading] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
 
-  const [data, setData] = useState<PharmacyResponse | null>(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const destination = placeDetails?.formatted_address || placeDetails?.name || "";
 
-  const destination = placeDetails?.formatted_address || placeDetails?.name || '';
-
-  useEffect(() => {
-    if (!destination || !passport) { setLoading(false); return; }
+  React.useEffect(() => {
+    if (!destination || !passport) {
+      setLoading(false);
+      return;
+    }
     let cancelled = false;
     setLoading(true);
     setError(null);
 
     fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/pharmacy-data`, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
       },
       body: JSON.stringify({ destination, origin: passport }),
     })
-      .then((res) => { if (!res.ok) throw new Error(`Pharmacy API: ${res.status}`); return res.json(); })
-      .then((result) => {
-        if (!cancelled) {
-          if (result.error) throw new Error(result.error);
-          // Normalize old schema (items) to new schema (medications)
-          if (result.items && !result.medications) {
-            result.medications = result.items.map((item: any) => ({
-              source: item.home_name,
-              equivalent: item.destination_name,
-              status: item.access === 'Prescription' ? 'Rx' : item.access,
-            }));
-            result.summary = result.footer_note || '';
-          }
-          // Clean up known display names
-          if (result.medications) {
-            result.medications = result.medications.map((med: Medication) => ({
-              ...med,
-              source: med.source.replace(/Pepto-Bismol/gi, 'Pepto'),
-              equivalent: med.equivalent.replace(/Pepto-Bismol/gi, 'Pepto'),
-            }));
-          }
-          setData(result);
-        }
+      .then((res) => {
+        if (!res.ok) throw new Error(`Pharmacy API: ${res.status}`);
+        return res.json();
       })
-      .catch((err) => { if (!cancelled) setError(err instanceof Error ? err.message : 'Failed'); })
-      .finally(() => { if (!cancelled) setLoading(false); });
+      .then((result: PharmacyResponse) => {
+        if (cancelled) return;
+        if (asString(result?.error)) throw new Error(String(result.error));
+        setData(result);
+      })
+      .catch((err) => {
+        if (!cancelled) setError(err instanceof Error ? err.message : "Failed");
+      })
+      .finally(() => {
+        if (!cancelled) setLoading(false);
+      });
 
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+    };
   }, [destination, passport]);
 
+  const meds = normalizeMedications(data).slice(0, 4);
+  const footnote =
+    asString(data?.footer_note) ??
+    asString(data?.summary) ??
+    "Availability varies by pharmacy.";
+
   return (
-    <div className="widget-card animate-slide-up" style={{ animationDelay }}>
-      <div className="widget-header">
-        <div className="widget-icon bg-emerald-500/10 text-emerald-600">
-          <Pill className="w-5 h-5" />
-        </div>
-        <div className="flex-1">
-          <h3 className="widget-title">Pharmacy Intel</h3>
-          <p className="widget-subtitle">Medication equivalents</p>
-        </div>
-      </div>
-
-      <div className="mt-3" />
-
-      {loading ? (
-        <div className="space-y-2.5 pb-1">
-          {[0, 1, 2, 3].map(i => (
-            <div key={i} className="flex items-center gap-1.5">
-              <div className="h-3.5 w-14 rounded bg-secondary/40 animate-pulse" />
-              <div className="h-3.5 w-3 rounded bg-secondary/20 animate-pulse" />
-              <div className="h-3.5 w-20 rounded bg-secondary/40 animate-pulse" />
-              <div className="h-3.5 w-8 rounded bg-secondary/30 animate-pulse ml-auto" />
-            </div>
-          ))}
-        </div>
-      ) : error || !data?.medications ? (
-        <p className="text-xs text-muted-foreground">Unable to load pharmacy data</p>
-      ) : (
-        <div className="space-y-2.5 pb-1">
-          {data.medications.slice(0, 4).map((med, i) => (
-            <div key={i} className="flex items-center text-[11px] leading-none gap-1">
-              <span className="text-muted-foreground/70 truncate shrink-0 max-w-[35%]">{med.source}</span>
-              <span className="text-muted-foreground/40 shrink-0 text-[10px]">&rarr;</span>
-              <span className="text-foreground/70 truncate min-w-0 flex-1">{med.equivalent}</span>
-              <span className={`text-[10px] font-medium shrink-0 pl-2 tabular-nums ${statusColor[med.status] || 'text-muted-foreground'}`}>
-                {med.status}
+    <SubcardFrame label="Pharmacy · Medication equivalents" footnote={footnote}>
+      <div style={{ padding: "12px 20px" }}>
+        {loading && meds.length === 0 && (
+          <div
+            className="font-travis"
+            style={{ color: "var(--ink-3)", fontSize: 13, padding: "8px 0" }}
+          >
+            Resolving equivalents…
+          </div>
+        )}
+        {!loading && (error || meds.length === 0) && (
+          <div
+            className="font-travis"
+            style={{ color: "var(--ink-4)", fontSize: 13, padding: "8px 0" }}
+          >
+            —
+          </div>
+        )}
+        {meds.map((med, i) => {
+          const isLast = i === meds.length - 1;
+          const kind = statusKind(med.status);
+          return (
+            <div
+              key={i}
+              className="grid items-baseline"
+              style={{
+                gridTemplateColumns: "1fr 14px 1fr auto",
+                gap: 10,
+                padding: "10px 0",
+                borderBottom: isLast ? "none" : "1px dashed var(--hair)",
+              }}
+            >
+              <span
+                className="font-travis truncate"
+                style={{
+                  color: "var(--ink-3)",
+                  fontSize: 12,
+                  letterSpacing: "-0.005em",
+                }}
+                title={med.source}
+              >
+                {asString(med.source) ?? "—"}
+              </span>
+              <span
+                className="font-travis-mono"
+                style={{ color: "var(--ink-4)", fontSize: 10, textAlign: "center" }}
+              >
+                →
+              </span>
+              <span
+                className="font-travis truncate"
+                style={{
+                  color: "var(--ink)",
+                  fontSize: 12.5,
+                  fontWeight: 500,
+                  letterSpacing: "-0.005em",
+                }}
+                title={med.equivalent}
+              >
+                {asString(med.equivalent) ?? "—"}
+              </span>
+              <span
+                className="font-travis-mono uppercase"
+                style={{
+                  fontSize: 9.5,
+                  letterSpacing: "0.12em",
+                  color: statusColor(kind),
+                }}
+              >
+                {asString(med.status) ?? "—"}
               </span>
             </div>
-          ))}
-        </div>
-      )}
-    </div>
+          );
+        })}
+      </div>
+    </SubcardFrame>
   );
 };
 
