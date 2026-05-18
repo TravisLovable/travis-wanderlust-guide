@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react';
-import { generateInsights } from '@/lib/claude';
-import { TravisInsights, InsightRequest } from '@/types/insights';
+import { TravisInsights } from '@/types/insights';
 
 interface UseTravisInsightsProps {
   destination: {
@@ -13,8 +12,43 @@ interface UseTravisInsightsProps {
     start: string;
     end: string;
   };
-  widgetData: Record<string, any>;
+  widgetData: Record<string, unknown>;
   enabled?: boolean;
+}
+
+const asString = (v: unknown): string | null => {
+  if (typeof v !== 'string') return null;
+  const t = v.trim();
+  return t.length > 0 ? t : null;
+};
+
+const asStringArray = (v: unknown): string[] | null => {
+  if (!Array.isArray(v)) return null;
+  const cleaned = v
+    .map((x) => (typeof x === 'string' ? x.trim() : ''))
+    .filter((x) => x.length > 0);
+  return cleaned.length > 0 ? cleaned : null;
+};
+
+function normalize(raw: unknown): TravisInsights {
+  const r = (raw ?? {}) as Record<string, unknown>;
+  return {
+    greeting: asString(r.greeting),
+    weather: asString(r.weather),
+    localTime: asString(r.localTime),
+    waterSafety: asString(r.waterSafety),
+    uvIndex: asString(r.uvIndex),
+    pharmacyIntel: asString(r.pharmacyIntel),
+    powerAdapter: asString(r.powerAdapter),
+    currency: asString(r.currency),
+    visa: asString(r.visa),
+    healthEntry: asString(r.healthEntry),
+    transportation: asString(r.transportation),
+    localHolidays: asString(r.localHolidays),
+    localEvents: asString(r.localEvents),
+    culturalInsights: asString(r.culturalInsights),
+    insiderAsides: asStringArray(r.insiderAsides),
+  };
 }
 
 export function useTravisInsights({
@@ -28,38 +62,57 @@ export function useTravisInsights({
   const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
-    console.log('[Travis] useTravisInsights effect:', { city: destination.city, country: destination.country, enabled });
     if (!enabled || !destination.city) return;
+    let cancelled = false;
 
     const fetchInsights = async () => {
       setLoading(true);
       setError(null);
 
       try {
-        // TODO: Get actual user data from auth context
-        const request: InsightRequest = {
-          destination,
-          dates,
-          user: {
-            firstName: 'Traveler',
-            originCity: 'New York',
-            originCountry: 'United States',
+        const res = await fetch(
+          `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/travis-insights`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_ANON_KEY}`,
+            },
+            body: JSON.stringify({
+              destination,
+              dates,
+              user: {
+                firstName: 'Traveler',
+                originCity: 'New York',
+                originCountry: 'United States',
+              },
+              widgetData,
+            }),
           },
-          widgetData,
-        };
+        );
 
-        const result = await generateInsights(request);
-        console.log('[Travis] Insights set:', result);
-        setInsights(result);
+        if (!res.ok) throw new Error(`travis-insights: ${res.status}`);
+        const raw: unknown = await res.json();
+        if (cancelled) return;
+        if ((raw as { error?: unknown })?.error) {
+          throw new Error(String((raw as { error: unknown }).error));
+        }
+        setInsights(normalize(raw));
       } catch (err) {
-        setError(err as Error);
-        console.error('[Travis] Failed to fetch insights:', err);
+        if (!cancelled) {
+          setError(err as Error);
+          setInsights(null);
+        }
       } finally {
-        setLoading(false);
+        if (!cancelled) setLoading(false);
       }
     };
 
     fetchInsights();
+
+    return () => {
+      cancelled = true;
+    };
     // Only re-fetch when destination or dates change — not when widgetData reference changes
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [destination.city, destination.country, dates.start, dates.end, enabled]);
