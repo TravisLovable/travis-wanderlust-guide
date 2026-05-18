@@ -13,6 +13,7 @@ export interface TravisInsights {
   localHolidays: string | null;
   localEvents: string | null;
   culturalInsights: string | null;
+  insiderAsides: string[] | null;
 }
 
 export interface InsightRequest {
