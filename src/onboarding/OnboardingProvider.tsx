@@ -1,0 +1,167 @@
+// Step 7 — Onboarding state container (Checkpoint B scaffolding).
+//
+// Responsibilities:
+//  - hold step index + captured data
+//  - localStorage buffer so a refresh / tab-close resumes in place
+//  - progressive, debounced upsert to public.users (real sessions only)
+//  - completion: flip onboarding_completed and clear the buffer
+//
+// NOTE (Checkpoint B): screens are placeholders, so `data` is effectively
+// empty here. The persistence pipeline is real and fully wired; Checkpoints
+// C/D populate `data`, Checkpoint E consumes it. `mapDataToUsersRow` already
+// targets the columns added in Checkpoint A.
+
+import React, { createContext, useCallback, useContext, useEffect, useRef, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
+import { useAuth } from '@/contexts/AuthContext';
+import type { Database } from '@/integrations/supabase/types';
+import { FIRST_WIZARD_INDEX, LAST_WIZARD_INDEX, clampStep } from './steps';
+
+const STEP_KEY = 'travis:onboard:step';
+const DATA_KEY = 'travis:onboard:data';
+const DEBOUNCE_MS = 800;
+
+/** Captured onboarding data. All optional — populated across Checkpoints C/D. */
+export interface OnboardingData {
+  fullName?: string;
+  phone?: string;
+  phoneCountryCode?: string;
+  homeCity?: string;
+  passportCountry?: string;
+  airlines?: string[];
+  travelStyles?: string[];
+  travelFrequency?: string;
+  travelPace?: string;
+  alertPreferences?: Record<string, boolean>;
+}
+
+type UsersUpdate = Database['public']['Tables']['users']['Update'];
+
+/** Map captured data → public.users columns (Checkpoint A schema). */
+function mapDataToUsersRow(d: OnboardingData): UsersUpdate {
+  const row: UsersUpdate = {};
+  if (d.fullName !== undefined) row.full_name = d.fullName || null;
+  if (d.phone !== undefined) row.phone = d.phone || null;
+  if (d.phoneCountryCode !== undefined) row.phone_country_code = d.phoneCountryCode || null;
+  if (d.homeCity !== undefined) row.home_city = d.homeCity || null;
+  if (d.passportCountry !== undefined) row.passport_country = d.passportCountry || null;
+  if (d.airlines !== undefined) row.airlines = d.airlines.length ? d.airlines : null;
+  if (d.travelStyles !== undefined) row.travel_styles = d.travelStyles.length ? d.travelStyles : null;
+  if (d.travelFrequency !== undefined) row.travel_frequency = d.travelFrequency || null;
+  if (d.travelPace !== undefined) row.travel_pace = d.travelPace || null;
+  if (d.alertPreferences !== undefined) row.alert_preferences = d.alertPreferences;
+  return row;
+}
+
+interface OnboardingContextValue {
+  stepIdx: number;
+  data: OnboardingData;
+  /** 'idle' | 'saving' | 'saved' | 'local-only' — surfaced in the toolbar. */
+  saveState: 'idle' | 'saving' | 'saved' | 'local-only';
+  patch: (p: Partial<OnboardingData>) => void;
+  next: () => void;
+  back: () => void;
+  goTo: (i: number) => void;
+  complete: () => Promise<{ ok: boolean; error?: string }>;
+}
+
+const OnboardingContext = createContext<OnboardingContextValue | undefined>(undefined);
+
+function readStep(): number {
+  try {
+    const raw = localStorage.getItem(STEP_KEY);
+    return raw == null ? FIRST_WIZARD_INDEX : clampStep(Number(raw));
+  } catch {
+    return FIRST_WIZARD_INDEX;
+  }
+}
+function readData(): OnboardingData {
+  try {
+    const raw = localStorage.getItem(DATA_KEY);
+    return raw ? (JSON.parse(raw) as OnboardingData) : {};
+  } catch {
+    return {};
+  }
+}
+
+export function OnboardingProvider({ children }: { children: React.ReactNode }) {
+  const { user, session, updateProfile, userProfile } = useAuth();
+
+  const [stepIdx, setStepIdx] = useState<number>(readStep);
+  const [data, setData] = useState<OnboardingData>(readData);
+  const [saveState, setSaveState] = useState<OnboardingContextValue['saveState']>('idle');
+  const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // A real Supabase session (not the dev-bypass mock) is required for RLS-safe DB writes.
+  const canPersistDb = !!session?.access_token && !!user?.id && user.id !== 'dev-bypass-user-id';
+  const authId = user?.id ?? null;
+
+  // localStorage buffer — always on, survives refresh/close.
+  useEffect(() => {
+    try { localStorage.setItem(STEP_KEY, String(stepIdx)); } catch { /* quota / private mode */ }
+  }, [stepIdx]);
+  useEffect(() => {
+    try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch { /* quota / private mode */ }
+  }, [data]);
+
+  // Progressive debounced DB upsert (real sessions only).
+  useEffect(() => {
+    if (!canPersistDb || !authId) {
+      setSaveState('local-only');
+      return;
+    }
+    if (timer.current) clearTimeout(timer.current);
+    setSaveState('saving');
+    timer.current = setTimeout(async () => {
+      const { error } = await supabase
+        .from('users')
+        .upsert(
+          { auth_id: authId, onboarding_completed: false, ...mapDataToUsersRow(data) },
+          { onConflict: 'auth_id' },
+        );
+      setSaveState(error ? 'idle' : 'saved');
+    }, DEBOUNCE_MS);
+    return () => { if (timer.current) clearTimeout(timer.current); };
+  }, [data, canPersistDb, authId]);
+
+  const patch = useCallback((p: Partial<OnboardingData>) => {
+    setData((d) => ({ ...d, ...p }));
+  }, []);
+  const next = useCallback(() => setStepIdx((i) => clampStep(i + 1)), []);
+  const back = useCallback(() => setStepIdx((i) => clampStep(i - 1)), []);
+  const goTo = useCallback((i: number) => setStepIdx(clampStep(i)), []);
+
+  const complete = useCallback(async (): Promise<{ ok: boolean; error?: string }> => {
+    if (canPersistDb && authId) {
+      const { error } = await supabase
+        .from('users')
+        .upsert(
+          { auth_id: authId, onboarding_completed: true, ...mapDataToUsersRow(data) },
+          { onConflict: 'auth_id' },
+        );
+      if (error) return { ok: false, error: error.message };
+      updateProfile({ ...(userProfile ?? {}), onboarding_completed: true });
+    } else {
+      // Dev-bypass / no real session: reflect completion in context only.
+      updateProfile({ ...(userProfile ?? {}), onboarding_completed: true });
+    }
+    try {
+      localStorage.removeItem(STEP_KEY);
+      localStorage.removeItem(DATA_KEY);
+    } catch { /* ignore */ }
+    return { ok: true };
+  }, [canPersistDb, authId, data, updateProfile, userProfile]);
+
+  const value: OnboardingContextValue = {
+    stepIdx, data, saveState, patch, next, back, goTo, complete,
+  };
+  return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;
+}
+
+export function useOnboarding(): OnboardingContextValue {
+  const ctx = useContext(OnboardingContext);
+  if (!ctx) throw new Error('useOnboarding must be used within an OnboardingProvider');
+  return ctx;
+}
+
+export { FIRST_WIZARD_INDEX, LAST_WIZARD_INDEX };

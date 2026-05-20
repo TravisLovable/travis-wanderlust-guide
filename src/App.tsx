@@ -8,6 +8,8 @@ import { TravelProvider } from "@/contexts/TravelContext";
 import Index from "./pages/Index";
 import SearchResults from "./pages/SearchResults";
 import NotFound from "./pages/NotFound";
+import Onboarding from "./pages/Onboarding";
+import { RequireOnboarding } from "@/onboarding/RequireOnboarding";
 
 const queryClient = new QueryClient();
 
@@ -21,8 +23,23 @@ const App = () => (
         <AuthProvider>
         <TravelProvider>
           <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/search" element={<SearchResults />} />
+            <Route path="/onboarding" element={<Onboarding />} />
+            <Route
+              path="/"
+              element={
+                <RequireOnboarding>
+                  <Index />
+                </RequireOnboarding>
+              }
+            />
+            <Route
+              path="/search"
+              element={
+                <RequireOnboarding>
+                  <SearchResults />
+                </RequireOnboarding>
+              }
+            />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </TravelProvider>

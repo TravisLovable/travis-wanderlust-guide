@@ -2,7 +2,8 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import AuthModal from '@/components/AuthModal';
-import OnboardingModal from '@/components/OnboardingModal';
+// OnboardingModal retired in step 7 (replaced by the /onboarding route).
+// File intentionally left in place for deletion in Checkpoint E.
 
 const isDevBypassEnabled =
   import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
@@ -42,7 +43,11 @@ interface AuthContextValue {
   session: Session | null;
   userProfile: any;
   loading: boolean;
+  /** True once the profile fetch has resolved for the current user (or no user). */
+  profileLoaded: boolean;
   isAuthenticated: boolean;
+  /** Authenticated, profile resolved, and onboarding not yet completed. */
+  needsOnboarding: boolean;
   isAuthModalOpen: boolean;
   isDevBypassEnabled: boolean;
   openAuthModal: () => void;
@@ -60,7 +65,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [userProfile, setUserProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isOnboardingOpen, setIsOnboardingOpen] = useState(false);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
   useEffect(() => {
     // Get initial session
@@ -69,6 +74,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUser(session?.user ?? null);
       if (session?.user) {
         fetchProfile(session.user.id);
+      } else {
+        setProfileLoaded(true);
       }
       setLoading(false);
     });
@@ -80,9 +87,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setUser(session?.user ?? null);
 
         if (session?.user) {
+          setProfileLoaded(false);
           fetchProfile(session.user.id);
         } else {
           setUserProfile(null);
+          setProfileLoaded(true);
         }
       }
     );
@@ -98,10 +107,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       .single();
 
     setUserProfile(profile);
-
-    if (!profile || !profile.onboarding_completed) {
-      setIsOnboardingOpen(true);
-    }
+    setProfileLoaded(true);
+    // Onboarding is now driven by the /onboarding route + RequireOnboarding
+    // guard (which read `needsOnboarding`), not a modal opened from here.
   };
 
   const signOut = async () => {
@@ -119,6 +127,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setSession(mockSession);
     setUser(mockUser);
     setUserProfile(mockProfile);
+    setProfileLoaded(true);
     setIsAuthModalOpen(false);
   };
 
@@ -127,7 +136,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     session,
     userProfile,
     loading,
+    profileLoaded,
     isAuthenticated: !!user,
+    needsOnboarding: !!user && profileLoaded && (!userProfile || !userProfile.onboarding_completed),
     isAuthModalOpen,
     isDevBypassEnabled: !!isDevBypassEnabled,
     openAuthModal: () => setIsAuthModalOpen(true),
@@ -143,11 +154,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
-      />
-      <OnboardingModal
-        isOpen={isOnboardingOpen}
-        onClose={() => setIsOnboardingOpen(false)}
-        user={user}
       />
     </AuthContext.Provider>
   );
