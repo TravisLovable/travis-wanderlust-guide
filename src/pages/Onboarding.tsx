@@ -8,13 +8,59 @@
 // Content is PLACEHOLDER only. Real screens land in Checkpoints C/D; this
 // proves the shell, navigation, persistence and guard wiring.
 
-import type { CSSProperties } from 'react';
+import type { CSSProperties, ComponentType } from 'react';
 import { Navigate, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { OnboardingProvider, useOnboarding } from '@/onboarding/OnboardingProvider';
+import {
+  OnboardingProvider,
+  useOnboarding,
+  type OnboardingData,
+} from '@/onboarding/OnboardingProvider';
 import { OnboardingLayout } from '@/onboarding/OnboardingLayout';
 import { STEPS, FIRST_WIZARD_INDEX, LAST_WIZARD_INDEX } from '@/onboarding/steps';
+import IdentityStep from '@/onboarding/steps/IdentityStep';
+import PassportStep from '@/onboarding/steps/PassportStep';
+import AirlineStep from '@/onboarding/steps/AirlineStep';
+
+// Real content screens (Checkpoint C). Steps 06–08 stay placeholders until D.
+const STEP_BODY: Record<string, ComponentType> = {
+  identity: IdentityStep,
+  passport: PassportStep,
+  airline: AirlineStep,
+};
+
+// Heading chrome per real step: bold clause + a muted continuation, matching
+// the rail's "Travis works better when it knows you." treatment.
+const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> = {
+  identity: {
+    strong: 'The basics,',
+    muted: 'first.',
+    sub: 'Your name, a number we can reach you on, and where you fly out of.',
+  },
+  passport: {
+    strong: 'Which passport',
+    muted: 'do you carry?',
+    sub: 'It drives every visa, entry, and border-rule call Travis makes for you.',
+  },
+  airline: {
+    strong: 'Who do',
+    muted: 'you fly?',
+    sub: 'Pick up to three carriers and Travis prioritizes their fares, alerts, and lounges.',
+  },
+};
+
+/** Whether the current step's required fields are filled (gates Continue). */
+function isStepComplete(stepId: string, data: OnboardingData): boolean {
+  if (stepId === 'identity') {
+    return Boolean(
+      data.firstName?.trim() && data.lastName?.trim() && data.phone?.trim() && data.homeCity?.trim(),
+    );
+  }
+  if (stepId === 'passport') return Boolean(data.passportCountry);
+  // Airline is optional; placeholder steps (06–08) are unrestricted.
+  return true;
+}
 
 function btn(primary: boolean, disabled = false): CSSProperties {
   return {
@@ -31,12 +77,16 @@ function btn(primary: boolean, disabled = false): CSSProperties {
 }
 
 function Wizard() {
-  const { stepIdx, next, back, complete } = useOnboarding();
+  const { stepIdx, data, next, back, complete } = useOnboarding();
   const navigate = useNavigate();
   const { toast } = useToast();
   const step = STEPS[stepIdx];
   const isFirst = stepIdx === FIRST_WIZARD_INDEX;
   const isLast = stepIdx === LAST_WIZARD_INDEX;
+
+  const Body = STEP_BODY[step.id];
+  const copy = STEP_COPY[step.id];
+  const canContinue = isStepComplete(step.id, data);
 
   const onFinish = async () => {
     const res = await complete();
@@ -56,15 +106,31 @@ function Wizard() {
         >
           {String(stepIdx + 1).padStart(2, '0')} · {step.label}
         </div>
-        <h2 className="font-travis" style={{ fontSize: 'clamp(34px, 5vw, 56px)', fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.05, margin: '0 0 20px' }}>
-          {step.label}{' '}
-          <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}>placeholder.</span>
-        </h2>
-        <p style={{ fontSize: 15, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: 560, margin: 0 }}>
-          Step {String(stepIdx + 1).padStart(2, '0')} — “{step.label}” content arrives in{' '}
-          {step.kind === 'summary' ? 'Checkpoint D' : 'Checkpoint C/D'}. Scaffolding only:
-          navigation, localStorage + DB persistence, and the route guard are live.
-        </p>
+
+        {Body && copy ? (
+          <>
+            <h2 className="font-travis" style={{ fontSize: 'clamp(34px, 5vw, 56px)', fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.05, margin: '0 0 18px' }}>
+              {copy.strong}{' '}
+              <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}>{copy.muted}</span>
+            </h2>
+            <p style={{ fontSize: 15, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: 560, margin: '0 0 38px' }}>
+              {copy.sub}
+            </p>
+            <Body />
+          </>
+        ) : (
+          <>
+            <h2 className="font-travis" style={{ fontSize: 'clamp(34px, 5vw, 56px)', fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.05, margin: '0 0 20px' }}>
+              {step.label}{' '}
+              <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}>placeholder.</span>
+            </h2>
+            <p style={{ fontSize: 15, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: 560, margin: 0 }}>
+              Step {String(stepIdx + 1).padStart(2, '0')} — “{step.label}” content arrives in{' '}
+              {step.kind === 'summary' ? 'Checkpoint D' : 'Checkpoint C/D'}. Scaffolding only:
+              navigation, localStorage + DB persistence, and the route guard are live.
+            </p>
+          </>
+        )}
 
         <div
           className="flex justify-between items-center"
@@ -82,7 +148,12 @@ function Wizard() {
               FINISH →
             </button>
           ) : (
-            <button className="font-travis-mono" style={btn(true)} onClick={next}>
+            <button
+              className="font-travis-mono"
+              style={btn(true, !canContinue)}
+              disabled={!canContinue}
+              onClick={() => canContinue && next()}
+            >
               CONTINUE →
             </button>
           )}

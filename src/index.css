@@ -1,5 +1,6 @@
 @import './design-system/tokens.css';
 @import './design-system/animations.css';
+@import './onboarding/onboarding.css';
 
 @tailwind base;
 @tailwind components;

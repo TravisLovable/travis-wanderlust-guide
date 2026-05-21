@@ -23,6 +23,9 @@ const DEBOUNCE_MS = 800;
 
 /** Captured onboarding data. All optional — populated across Checkpoints C/D. */
 export interface OnboardingData {
+  /** Composed into full_name on save (there are no first/last columns). */
+  firstName?: string;
+  lastName?: string;
   fullName?: string;
   phone?: string;
   phoneCountryCode?: string;
@@ -40,7 +43,15 @@ type UsersUpdate = Database['public']['Tables']['users']['Update'];
 /** Map captured data → public.users columns (Checkpoint A schema). */
 function mapDataToUsersRow(d: OnboardingData): UsersUpdate {
   const row: UsersUpdate = {};
-  if (d.fullName !== undefined) row.full_name = d.fullName || null;
+  // No first_name/last_name columns exist (Checkpoint A added none), so the
+  // Identity step's two inputs compose full_name. Fall back to a pre-set
+  // fullName if first/last were never captured.
+  if (d.firstName !== undefined || d.lastName !== undefined) {
+    const full = [d.firstName, d.lastName].map((s) => (s ?? '').trim()).filter(Boolean).join(' ');
+    row.full_name = full || null;
+  } else if (d.fullName !== undefined) {
+    row.full_name = d.fullName || null;
+  }
   if (d.phone !== undefined) row.phone = d.phone || null;
   if (d.phoneCountryCode !== undefined) row.phone_country_code = d.phoneCountryCode || null;
   if (d.homeCity !== undefined) row.home_city = d.homeCity || null;
