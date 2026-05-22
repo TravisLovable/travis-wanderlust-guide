@@ -3,7 +3,7 @@
 // Responsibilities:
 //  - hold step index + captured data
 //  - localStorage buffer so a refresh / tab-close resumes in place
-//  - progressive, debounced upsert to public.users (real sessions only)
+//  - progressive, debounced write to public.users (real sessions only)
 //  - completion: flip onboarding_completed and clear the buffer
 //
 // NOTE (Checkpoint B): screens are placeholders, so `data` is effectively
@@ -115,7 +115,11 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     try { localStorage.setItem(DATA_KEY, JSON.stringify(data)); } catch { /* quota / private mode */ }
   }, [data]);
 
-  // Progressive debounced DB upsert (real sessions only).
+  // Progressive debounced DB write (real sessions only). Uses UPDATE-or-INSERT
+  // rather than .upsert({ onConflict: 'auth_id' }): the auth_id unique index is
+  // partial (... WHERE auth_id IS NOT NULL), which PostgREST's onConflict can't
+  // target, so the upsert 400s (see complete()). Errors only flip saveState to
+  // 'idle' — this is a background op, so no toast.
   useEffect(() => {
     if (!canPersistDb || !authId) {
       setSaveState('local-only');
@@ -124,12 +128,20 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     if (timer.current) clearTimeout(timer.current);
     setSaveState('saving');
     timer.current = setTimeout(async () => {
-      const { error } = await supabase
+      const row = { onboarding_completed: false, ...mapDataToUsersRow(data) };
+      const { data: updated, error: updateError } = await supabase
         .from('users')
-        .upsert(
-          { auth_id: authId, onboarding_completed: false, ...mapDataToUsersRow(data) },
-          { onConflict: 'auth_id' },
-        );
+        .update(row)
+        .eq('auth_id', authId)
+        .select()
+        .maybeSingle();
+      let error = updateError;
+      if (!updateError && !updated) {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({ auth_id: authId, ...row });
+        error = insertError;
+      }
       setSaveState(error ? 'idle' : 'saved');
     }, DEBOUNCE_MS);
     return () => { if (timer.current) clearTimeout(timer.current); };
@@ -144,13 +156,27 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
 
   const complete = useCallback(async (): Promise<{ ok: boolean; error?: string }> => {
     if (canPersistDb && authId) {
-      const { error } = await supabase
+      // The unique index on auth_id is PARTIAL (... WHERE auth_id IS NOT NULL),
+      // so PostgREST's .upsert({ onConflict: 'auth_id' }) has no arbiter index
+      // to target and 400s ("no unique or exclusion constraint matching the
+      // ON CONFLICT specification"). Do a constraint-free UPDATE ... WHERE
+      // auth_id = uid instead, falling back to INSERT when no row exists yet
+      // (RLS permits both for the owner). .maybeSingle() so "no row matched"
+      // returns null rather than erroring.
+      const row = { onboarding_completed: true, ...mapDataToUsersRow(data) };
+      const { data: updated, error: updateError } = await supabase
         .from('users')
-        .upsert(
-          { auth_id: authId, onboarding_completed: true, ...mapDataToUsersRow(data) },
-          { onConflict: 'auth_id' },
-        );
-      if (error) return { ok: false, error: error.message };
+        .update(row)
+        .eq('auth_id', authId)
+        .select()
+        .maybeSingle();
+      if (updateError) return { ok: false, error: updateError.message };
+      if (!updated) {
+        const { error: insertError } = await supabase
+          .from('users')
+          .insert({ auth_id: authId, ...row });
+        if (insertError) return { ok: false, error: insertError.message };
+      }
       updateProfile({ ...(userProfile ?? {}), onboarding_completed: true });
     } else {
       // Dev-bypass / no real session: reflect completion in context only.

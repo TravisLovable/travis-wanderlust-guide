@@ -1,33 +1,38 @@
-// Step 7 — /onboarding route (Checkpoint B scaffolding).
+// Step 7 — /onboarding route.
 //
 // Access rules (no redirect loops):
 //   - not authenticated            -> bounce to / (sign-in lives there)
 //   - authenticated, already done  -> bounce to / (RequireOnboarding lets / through)
 //   - authenticated, needs it      -> render the wizard
 //
-// Content is PLACEHOLDER only. Real screens land in Checkpoints C/D; this
-// proves the shell, navigation, persistence and guard wiring.
+// Screens 03–07 are forms; 08 (Complete) is a terminal recap that owns its own
+// ENTER TRAVIS action and renders no Back/Continue footer.
 
 import type { CSSProperties, ComponentType } from 'react';
-import { Navigate, useNavigate } from 'react-router-dom';
+import { Navigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
-import { useToast } from '@/hooks/use-toast';
 import {
   OnboardingProvider,
   useOnboarding,
   type OnboardingData,
 } from '@/onboarding/OnboardingProvider';
 import { OnboardingLayout } from '@/onboarding/OnboardingLayout';
-import { STEPS, FIRST_WIZARD_INDEX, LAST_WIZARD_INDEX } from '@/onboarding/steps';
+import { STEPS, FIRST_WIZARD_INDEX } from '@/onboarding/steps';
 import IdentityStep from '@/onboarding/steps/IdentityStep';
 import PassportStep from '@/onboarding/steps/PassportStep';
 import AirlineStep from '@/onboarding/steps/AirlineStep';
+import TravelStyleStep from '@/onboarding/steps/TravelStyleStep';
+import SignalStep from '@/onboarding/steps/SignalStep';
+import CompleteStep from '@/onboarding/steps/CompleteStep';
 
-// Real content screens (Checkpoint C). Steps 06–08 stay placeholders until D.
+// Real content screens. Step 08 (complete) is handled separately below — it has
+// no standard footer — so it is intentionally absent from this map.
 const STEP_BODY: Record<string, ComponentType> = {
   identity: IdentityStep,
   passport: PassportStep,
   airline: AirlineStep,
+  style: TravelStyleStep,
+  signal: SignalStep,
 };
 
 // Heading chrome per real step: bold clause + a muted continuation, matching
@@ -48,6 +53,16 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
     muted: 'you fly?',
     sub: 'Pick up to three carriers and Travis prioritizes their fares, alerts, and lounges.',
   },
+  style: {
+    strong: 'How do',
+    muted: 'you move?',
+    sub: 'Frequency, pace, and the kind of trips that pull you in.',
+  },
+  signal: {
+    strong: 'What should we',
+    muted: 'ping you about?',
+    sub: 'Travis only sends signals you opt into. Change these anytime.',
+  },
 };
 
 /** Whether the current step's required fields are filled (gates Continue). */
@@ -58,7 +73,8 @@ function isStepComplete(stepId: string, data: OnboardingData): boolean {
     );
   }
   if (stepId === 'passport') return Boolean(data.passportCountry);
-  // Airline is optional; placeholder steps (06–08) are unrestricted.
+  if (stepId === 'style') return Boolean(data.travelFrequency && data.travelPace);
+  // Airline and signal are optional; complete has its own CTA, not Continue.
   return true;
 }
 
@@ -77,25 +93,14 @@ function btn(primary: boolean, disabled = false): CSSProperties {
 }
 
 function Wizard() {
-  const { stepIdx, data, next, back, complete } = useOnboarding();
-  const navigate = useNavigate();
-  const { toast } = useToast();
+  const { stepIdx, data, next, back } = useOnboarding();
   const step = STEPS[stepIdx];
   const isFirst = stepIdx === FIRST_WIZARD_INDEX;
-  const isLast = stepIdx === LAST_WIZARD_INDEX;
+  const isComplete = step.id === 'complete';
 
   const Body = STEP_BODY[step.id];
   const copy = STEP_COPY[step.id];
   const canContinue = isStepComplete(step.id, data);
-
-  const onFinish = async () => {
-    const res = await complete();
-    if (res.ok) {
-      navigate('/', { replace: true });
-    } else {
-      toast({ title: 'Could not finish onboarding', description: res.error, variant: 'destructive' });
-    }
-  };
 
   return (
     <OnboardingLayout>
@@ -107,47 +112,37 @@ function Wizard() {
           {String(stepIdx + 1).padStart(2, '0')} · {step.label}
         </div>
 
-        {Body && copy ? (
-          <>
-            <h2 className="font-travis" style={{ fontSize: 'clamp(34px, 5vw, 56px)', fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.05, margin: '0 0 18px' }}>
-              {copy.strong}{' '}
-              <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}>{copy.muted}</span>
-            </h2>
-            <p style={{ fontSize: 15, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: 560, margin: '0 0 38px' }}>
-              {copy.sub}
-            </p>
-            <Body />
-          </>
+        {isComplete ? (
+          // Terminal screen: owns its heading + ENTER TRAVIS CTA, no footer.
+          <CompleteStep />
         ) : (
-          <>
-            <h2 className="font-travis" style={{ fontSize: 'clamp(34px, 5vw, 56px)', fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.05, margin: '0 0 20px' }}>
-              {step.label}{' '}
-              <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}>placeholder.</span>
-            </h2>
-            <p style={{ fontSize: 15, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: 560, margin: 0 }}>
-              Step {String(stepIdx + 1).padStart(2, '0')} — “{step.label}” content arrives in{' '}
-              {step.kind === 'summary' ? 'Checkpoint D' : 'Checkpoint C/D'}. Scaffolding only:
-              navigation, localStorage + DB persistence, and the route guard are live.
-            </p>
-          </>
+          Body &&
+          copy && (
+            <>
+              <h2 className="font-travis" style={{ fontSize: 'clamp(34px, 5vw, 56px)', fontWeight: 600, letterSpacing: '-0.025em', lineHeight: 1.05, margin: '0 0 18px' }}>
+                {copy.strong}{' '}
+                <span style={{ fontWeight: 400, color: 'var(--ink-3)' }}>{copy.muted}</span>
+              </h2>
+              <p style={{ fontSize: 15, color: 'var(--ink-3)', lineHeight: 1.5, maxWidth: 560, margin: '0 0 38px' }}>
+                {copy.sub}
+              </p>
+              <Body />
+            </>
+          )
         )}
 
-        <div
-          className="flex justify-between items-center"
-          style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid var(--hair)' }}
-        >
-          <div>
-            {!isFirst && (
-              <button className="font-travis-mono" style={btn(false)} onClick={back}>
-                ← BACK
-              </button>
-            )}
-          </div>
-          {isLast ? (
-            <button className="font-travis-mono" style={btn(true)} onClick={onFinish}>
-              FINISH →
-            </button>
-          ) : (
+        {!isComplete && (
+          <div
+            className="flex justify-between items-center"
+            style={{ marginTop: 48, paddingTop: 24, borderTop: '1px solid var(--hair)' }}
+          >
+            <div>
+              {!isFirst && (
+                <button className="font-travis-mono" style={btn(false)} onClick={back}>
+                  ← BACK
+                </button>
+              )}
+            </div>
             <button
               className="font-travis-mono"
               style={btn(true, !canContinue)}
@@ -156,8 +151,8 @@ function Wizard() {
             >
               CONTINUE →
             </button>
-          )}
-        </div>
+          </div>
+        )}
       </div>
     </OnboardingLayout>
   );
