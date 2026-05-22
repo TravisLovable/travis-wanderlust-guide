@@ -36,3 +36,27 @@ export const AIRLINES: Airline[] = [
 /** Friendly name for an IATA code; falls back to the code for unknown values. */
 export const airlineName = (code: string): string =>
   AIRLINES.find((a) => a.code === code)?.name ?? code;
+
+export interface FrequentFlyerTier {
+  /** Stable key — the stored value (users.frequent_flyer_status). */
+  key: string;
+  /** Chip label. */
+  label: string;
+}
+
+export const FREQUENT_FLYER_OPTIONS: FrequentFlyerTier[] = [
+  { key: 'none', label: 'None' },
+  { key: 'silver', label: 'Silver' },
+  { key: 'gold', label: 'Gold' },
+  { key: 'platinum', label: 'Platinum' },
+  { key: 'diamond', label: 'Diamond / Executive' },
+];
+
+/**
+ * Recap label for a tier key (shortens "Diamond / Executive" to "Diamond" for
+ * the Complete summary); em-dash when unset. Mirrors paceShort().
+ */
+export const frequentFlyerLabel = (key?: string | null): string => {
+  if (key === 'diamond') return 'Diamond';
+  return FREQUENT_FLYER_OPTIONS.find((o) => o.key === key)?.label ?? '—';
+};

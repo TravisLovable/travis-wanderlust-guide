@@ -1,21 +1,16 @@
 // Step 7 — Step 05 Airline (Checkpoint C).
 //
-// Optional multi-select: up to 3 preferred carriers. Chips show the carrier
-// name; the stored value is the IATA code, per the users.airlines column
-// comment ("up to 3 preferred airline codes, e.g. AA, UA"). Continue stays
-// enabled with nothing selected — this is optional info, unlike Identity.
+// Two optional fields: up to 3 preferred carriers (multi-select; chips show the
+// carrier name but the IATA code is stored, per the users.airlines column
+// comment) and frequent-flyer status (single-select; stored as a stable key in
+// users.frequent_flyer_status). Both optional — Continue stays enabled with
+// nothing selected, unlike Identity.
 
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
 import { Field, Chip } from './fields';
-import { AIRLINES } from '@/onboarding/airlines';
+import { AIRLINES, FREQUENT_FLYER_OPTIONS } from '@/onboarding/airlines';
 
 const MAX = 3;
-
-// TODO(Checkpoint D / schema): frequent_flyer_status is intentionally omitted.
-// Checkpoint A added `airlines text[]` but no frequent-flyer column, and
-// `travel_styles` is reserved for the Travel Style step. Add a dedicated column
-// (e.g. frequent_flyer jsonb / text) before capturing elite status here; do not
-// overload travel_styles.
 
 export default function AirlineStep() {
   const { data, patch } = useOnboarding();
@@ -57,6 +52,23 @@ export default function AirlineStep() {
           Optional — skip if you're not loyal to a carrier.
         </span>
       </div>
+
+      <Field label="Frequent flyer status">
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
+          {FREQUENT_FLYER_OPTIONS.map((o) => (
+            <Chip
+              key={o.key}
+              selected={data.frequentFlyerStatus === o.key}
+              onClick={() => patch({ frequentFlyerStatus: o.key })}
+            >
+              {o.label}
+            </Chip>
+          ))}
+        </div>
+        <p style={{ fontSize: 13, color: 'var(--ink-3)', lineHeight: 1.5, margin: '14px 0 0', maxWidth: 520 }}>
+          If your top airline has tiers, pick the highest you currently hold.
+        </p>
+      </Field>
     </div>
   );
 }

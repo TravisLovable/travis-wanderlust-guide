@@ -11,7 +11,7 @@ import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
 import { useToast } from '@/hooks/use-toast';
 import { paceShort } from '@/onboarding/travelStyle';
-import { airlineName } from '@/onboarding/airlines';
+import { airlineName, frequentFlyerLabel } from '@/onboarding/airlines';
 
 // Mirrors Onboarding.tsx's primary btn(true). Kept in sync by hand — it's one
 // button, and importing across the page/step boundary would be circular.
@@ -41,6 +41,7 @@ export default function CompleteStep() {
     { label: 'From', value: data.homeCity || '—' },
     { label: 'Passport', value: data.passportCountry || '—' },
     { label: 'Carriers', value: carriers || '—' },
+    { label: 'Status', value: frequentFlyerLabel(data.frequentFlyerStatus) },
     { label: 'Pace', value: paceShort(data.travelPace) },
   ];
 
