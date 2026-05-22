@@ -9,6 +9,7 @@
 import { useEffect } from 'react';
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
 import { Field, TextField, SelectField, type SelectOption } from './fields';
+import { CityAutocomplete } from '@/onboarding/CityAutocomplete';
 
 // Minimum required set per the spec, value = E.164 dial code.
 const DIAL_CODES: SelectOption[] = [
@@ -82,11 +83,10 @@ export default function IdentityStep() {
       </Field>
 
       <Field label="Home city" htmlFor="onb-city">
-        <TextField
+        <CityAutocomplete
           id="onb-city"
-          autoComplete="address-level2"
           value={data.homeCity ?? ''}
-          placeholder="New York, NY"
+          placeholder="Start typing a city…"
           onChange={(v) => patch({ homeCity: v })}
         />
       </Field>
