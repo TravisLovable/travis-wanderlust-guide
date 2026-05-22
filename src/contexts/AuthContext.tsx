@@ -2,8 +2,6 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import AuthModal from '@/components/AuthModal';
-// OnboardingModal retired in step 7 (replaced by the /onboarding route).
-// File intentionally left in place for deletion in Checkpoint E.
 
 const isDevBypassEnabled =
   import.meta.env.DEV && import.meta.env.VITE_DEV_AUTH_BYPASS === 'true';
