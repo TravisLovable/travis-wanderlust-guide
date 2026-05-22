@@ -8,6 +8,11 @@ export interface SelectedPlace {
   latitude: number;
   longitude: number;
   region?: string;
+  // Added for the onboarding Home City field: admin-area short code (e.g. "NY")
+  // and country long name (e.g. "Portugal"), so it can render "City, NY" (US) /
+  // "City, Country" (non-US). Optional — destination consumers ignore them.
+  region_code?: string;
+  country?: string;
   place_id: string;
 }
 
@@ -277,6 +282,8 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
             latitude: loc.lat,
             longitude: loc.lng,
             region: regionComponent?.long_name,
+            region_code: regionComponent?.short_name,
+            country: countryComponent?.long_name,
             place_id: r.place_id ?? placeId,
           };
         } catch (err) {
@@ -321,6 +328,8 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
                 latitude: place.geometry.location.lat(),
                 longitude: place.geometry.location.lng(),
                 region: regionComponent?.long_name,
+                region_code: regionComponent?.short_name,
+                country: countryComponent?.long_name,
                 place_id: place.place_id || placeId,
               });
             } else {

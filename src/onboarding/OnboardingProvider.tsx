@@ -32,6 +32,7 @@ export interface OnboardingData {
   homeCity?: string;
   passportCountry?: string;
   airlines?: string[];
+  frequentFlyerStatus?: string | null;
   travelStyles?: string[];
   travelFrequency?: string;
   travelPace?: string;
@@ -57,6 +58,7 @@ function mapDataToUsersRow(d: OnboardingData): UsersUpdate {
   if (d.homeCity !== undefined) row.home_city = d.homeCity || null;
   if (d.passportCountry !== undefined) row.passport_country = d.passportCountry || null;
   if (d.airlines !== undefined) row.airlines = d.airlines.length ? d.airlines : null;
+  if (d.frequentFlyerStatus !== undefined) row.frequent_flyer_status = d.frequentFlyerStatus || null;
   if (d.travelStyles !== undefined) row.travel_styles = d.travelStyles.length ? d.travelStyles : null;
   if (d.travelFrequency !== undefined) row.travel_frequency = d.travelFrequency || null;
   if (d.travelPace !== undefined) row.travel_pace = d.travelPace || null;
