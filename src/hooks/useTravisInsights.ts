@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { TravisInsights } from '@/types/insights';
+import { useAuth } from '@/contexts/AuthContext';
 
 interface UseTravisInsightsProps {
   destination: {
@@ -61,8 +62,18 @@ export function useTravisInsights({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
 
+  // Personalize from the captured onboarding profile (public.users row).
+  const { userProfile } = useAuth();
+  const profileReady = !!userProfile;
+  const fullName = asString(userProfile?.full_name);
+  const firstName = fullName ? fullName.split(/\s+/)[0] : 'Traveler';
+  const originCity = asString(userProfile?.home_city) ?? '';
+  const originCountry = asString(userProfile?.passport_country) ?? '';
+
   useEffect(() => {
-    if (!enabled || !destination.city) return;
+    // Wait for the profile to load before firing — never request with stand-in
+    // identity. RequireOnboarding keeps un-onboarded users off this page.
+    if (!enabled || !destination.city || !profileReady) return;
     let cancelled = false;
 
     const fetchInsights = async () => {
@@ -82,9 +93,9 @@ export function useTravisInsights({
               destination,
               dates,
               user: {
-                firstName: 'Traveler',
-                originCity: 'New York',
-                originCountry: 'United States',
+                firstName,
+                originCity,
+                originCountry,
               },
               widgetData,
             }),
@@ -113,9 +124,21 @@ export function useTravisInsights({
     return () => {
       cancelled = true;
     };
-    // Only re-fetch when destination or dates change — not when widgetData reference changes
+    // Re-fetch when the destination, dates, or resolved profile identity change
+    // (the latter so the request fires once userProfile loads) — not when the
+    // widgetData reference changes.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [destination.city, destination.country, dates.start, dates.end, enabled]);
+  }, [
+    destination.city,
+    destination.country,
+    dates.start,
+    dates.end,
+    enabled,
+    profileReady,
+    firstName,
+    originCity,
+    originCountry,
+  ]);
 
   return { insights, loading, error };
 }

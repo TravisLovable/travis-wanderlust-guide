@@ -80,6 +80,10 @@ export type Database = {
       }
       users: {
         Row: {
+          // Manual override: airlines is a Postgres text[] of airline codes.
+          airlines: string[] | null
+          // Manual override: alert_preferences is an object map of alert key -> bool.
+          alert_preferences: { [key: string]: boolean } | null
           // Manual override: auth_id is enforced non-null at the app layer
           // (every public.users row is reconciled with an auth.users row).
           auth_id: string
@@ -89,38 +93,63 @@ export type Database = {
           email: string | null
           frequent_flyer_number: string | null
           full_name: string | null
+          home_city: string | null
           id: string
           onboarding_completed: boolean
+          passport_country: string | null
+          phone: string | null
+          phone_country_code: string | null
           preferred_airline: string | null
           profile_photo_url: string | null
+          travel_frequency: string | null
+          travel_pace: string | null
+          travel_styles: string[] | null
           travel_type: string | null
           updated_at: string
         }
         Insert: {
+          airlines?: string[] | null
+          alert_preferences?: { [key: string]: boolean } | null
           auth_id: string
           country_data?: CountryData | null
           created_at?: string
           email?: string | null
           frequent_flyer_number?: string | null
           full_name?: string | null
+          home_city?: string | null
           id?: string
           onboarding_completed?: boolean
+          passport_country?: string | null
+          phone?: string | null
+          phone_country_code?: string | null
           preferred_airline?: string | null
           profile_photo_url?: string | null
+          travel_frequency?: string | null
+          travel_pace?: string | null
+          travel_styles?: string[] | null
           travel_type?: string | null
           updated_at?: string
         }
         Update: {
+          airlines?: string[] | null
+          alert_preferences?: { [key: string]: boolean } | null
           auth_id?: string
           country_data?: CountryData | null
           created_at?: string
           email?: string | null
           frequent_flyer_number?: string | null
           full_name?: string | null
+          home_city?: string | null
           id?: string
           onboarding_completed?: boolean
+          passport_country?: string | null
+          phone?: string | null
+          phone_country_code?: string | null
           preferred_airline?: string | null
           profile_photo_url?: string | null
+          travel_frequency?: string | null
+          travel_pace?: string | null
+          travel_styles?: string[] | null
           travel_type?: string | null
           updated_at?: string
         }
