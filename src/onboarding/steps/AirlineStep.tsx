@@ -7,27 +7,7 @@
 
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
 import { Field, Chip } from './fields';
-
-const AIRLINES: { code: string; name: string }[] = [
-  { code: 'AA', name: 'American' },
-  { code: 'DL', name: 'Delta' },
-  { code: 'UA', name: 'United' },
-  { code: 'WN', name: 'Southwest' },
-  { code: 'B6', name: 'JetBlue' },
-  { code: 'AS', name: 'Alaska' },
-  { code: 'BA', name: 'British Airways' },
-  { code: 'LH', name: 'Lufthansa' },
-  { code: 'AF', name: 'Air France' },
-  { code: 'KL', name: 'KLM' },
-  { code: 'IB', name: 'Iberia' },
-  { code: 'TP', name: 'TAP Portugal' },
-  { code: 'AZ', name: 'ITA Airways' },
-  { code: 'NH', name: 'ANA' },
-  { code: 'JL', name: 'JAL' },
-  { code: 'AM', name: 'Aeromexico' },
-  { code: 'LA', name: 'LATAM' },
-  { code: 'G3', name: 'GOL' },
-];
+import { AIRLINES } from '@/onboarding/airlines';
 
 const MAX = 3;
 
