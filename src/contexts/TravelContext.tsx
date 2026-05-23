@@ -89,9 +89,9 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
       return;
     }
 
-    // Try ipwhois.is first (fast, no key needed), fall back to ipapi.co
+    // Try ipapi.co first (reliable free tier), fall back to ipwhois.is
     const tryIpwhois = async (): Promise<CountryRef | null> => {
-      console.debug('[TravelContext] Trying ipwhois.is...');
+      console.debug('[TravelContext] Trying ipwhois.is (fallback)...');
       const res = await fetch('https://ipwho.is/', { signal: AbortSignal.timeout(8000) });
       if (!res.ok) throw new Error(`ipwhois returned ${res.status}`);
       const data = await res.json();
@@ -110,7 +110,7 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
     };
 
     const tryIpapi = async (): Promise<CountryRef | null> => {
-      console.debug('[TravelContext] Trying ipapi.co (fallback)...');
+      console.debug('[TravelContext] Trying ipapi.co...');
       const res = await fetch('https://ipapi.co/json/', { signal: AbortSignal.timeout(8000) });
       if (!res.ok) throw new Error(`ipapi.co returned ${res.status}`);
       const data = await res.json();
@@ -128,14 +128,14 @@ export const TravelProvider: React.FC<{ children: React.ReactNode }> = ({ childr
 
     const detectCountry = async () => {
       try {
-        let result = await tryIpwhois().catch((err) => {
-          console.warn('[TravelContext] ipwhois.is failed:', err.message);
+        let result = await tryIpapi().catch((err) => {
+          console.warn('[TravelContext] ipapi.co failed:', err.message);
           return null;
         });
 
         if (!result) {
-          result = await tryIpapi().catch((err) => {
-            console.warn('[TravelContext] ipapi.co also failed:', err.message);
+          result = await tryIpwhois().catch((err) => {
+            console.warn('[TravelContext] ipwhois.is also failed:', err.message);
             return null;
           });
         }
