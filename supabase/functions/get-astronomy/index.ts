@@ -93,26 +93,10 @@ serve(async (req) => {
         )
 
     } catch (error) {
-        console.error('❌ Astronomy function error:', error)
-
-        // Fallback with reasonable defaults
+        console.error('get-astronomy error:', error)
         return new Response(
-            JSON.stringify({
-                sunrise: '6:12 AM',
-                sunset: '6:34 PM',
-                moonrise: '10:00 PM',
-                moonset: '8:00 AM',
-                moonPhase: 'Waxing Crescent',
-                moonIllumination: 25,
-                sunriseHour: 6.2,
-                sunsetHour: 18.567,
-                location: 'Unknown',
-                country: 'Unknown',
-                localtime: null,
-                timezone: null,
-                error: error instanceof Error ? error.message : 'Failed to fetch astronomy data',
-            }),
-            { status: 200, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+            JSON.stringify({ error: error.message ?? 'Astronomy fetch failed' }),
+            { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
         )
     }
 })
