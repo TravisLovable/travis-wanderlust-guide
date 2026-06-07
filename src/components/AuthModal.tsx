@@ -58,14 +58,14 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
       <DialogContent className="sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
-            {isSent ? 'Check your email' : 'Sign in to Travis'}
+            {isSent ? 'Check your email' : 'Sign in or create your account'}
           </DialogTitle>
         </DialogHeader>
 
         {!isSent ? (
           <div className="space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
-              Enter your email and we'll send you a sign-in link.
+              Enter your email — we'll send you a link to sign in or get started.
             </p>
             <div>
               <Label htmlFor="magic-email" className="sr-only">Email</Label>
@@ -100,7 +100,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         ) : (
           <div className="space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
-              We sent a sign-in link to <span className="font-medium text-foreground">{email}</span>. Click the link in your email to continue.
+              We sent a link to <span className="font-medium text-foreground">{email}</span>. Click the link in your email to continue.
             </p>
             <Button variant="outline" onClick={handleClose} className="w-full">
               Done
