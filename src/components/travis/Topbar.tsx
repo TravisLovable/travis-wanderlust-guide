@@ -2,6 +2,7 @@ import * as React from "react";
 import { cn } from "@/lib/utils";
 import { Logo } from "./Logo";
 import { LiveStatus } from "./LiveStatus";
+import { UserMenu } from "./UserMenu";
 import { ChevronDownIcon } from "./IconSet";
 
 type SystemContext = {
@@ -73,6 +74,9 @@ export function Topbar({
         )}
         <LiveStatus />
         {trailing}
+        {/* Self-gates: renders only when useAuth() reports an authenticated user.
+            Lives in Topbar so it appears on every page that uses the bar (/, /search). */}
+        <UserMenu />
       </div>
     </header>
   );

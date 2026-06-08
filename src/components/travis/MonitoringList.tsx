@@ -49,7 +49,7 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
           ) : !isAuthenticated ? (
             <EmptyState
               label="Sign in to track destinations"
-              cta={{ label: "Sign in", onClick: openAuthModal }}
+              cta={{ label: "Get started", onClick: openAuthModal }}
             />
           ) : error ? (
             <StateRow label={`Error · ${error}`} tone="warn" />
