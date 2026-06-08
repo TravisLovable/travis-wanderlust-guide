@@ -14,9 +14,11 @@
   --bg-raised: oklch(0 0 0);
   --bg-inset:  oklch(0 0 0);
 
-  /* Hairlines */
-  --hair:        oklch(1 0 0 / 0.07);
-  --hair-strong: oklch(1 0 0 / 0.14);
+  /* Hairlines — strengthened for flat-black surfaces. With no lightness
+     step between surfaces, these are the only separator, so opacity is
+     raised from 0.07/0.14. Starting values; tune visually on-device. */
+  --hair:        oklch(1 0 0 / 0.11);
+  --hair-strong: oklch(1 0 0 / 0.22);
 
   /* Ink hierarchy */
   --ink:   oklch(0.97 0.003 250);
