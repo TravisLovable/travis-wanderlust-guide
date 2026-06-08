@@ -86,7 +86,7 @@ const InspirationModal: React.FC<InspirationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="bg-travis-bg-raised border-travis-hair-strong font-travis text-travis-ink max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 animate-slide-in-up">
             <Compass className="w-5 h-5 animate-bounce-gentle" />
@@ -108,7 +108,7 @@ const InspirationModal: React.FC<InspirationModalProps> = ({
                 onClick={() => handleDestinationClick(dest.name)}
                 onMouseEnter={() => setHoveredDestination(dest.name)}
                 onMouseLeave={() => setHoveredDestination(null)}
-                className={`text-left p-4 rounded-lg border border-border/50 hover:border-border hover:bg-accent/50 transition-all duration-200 group playful-card animate-slide-in-up ${selectedDestination === dest.name ? 'bg-blue-500/20 border-blue-400' : ''
+                className={`text-left p-4 rounded-lg border border-border/50 hover:border-border hover:bg-white/[0.04] transition-all duration-200 group playful-card animate-slide-in-up ${selectedDestination === dest.name ? 'bg-blue-500/20 border-blue-400' : ''
                   }`}
                 style={{ animationDelay: `${0.1 + index * 0.05}s` }}
               >

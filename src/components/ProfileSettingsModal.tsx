@@ -108,7 +108,7 @@ const ProfileSettingsModal: React.FC<ProfileSettingsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="bg-travis-bg-raised border-travis-hair-strong font-travis text-travis-ink max-w-md max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <User className="w-5 h-5" />

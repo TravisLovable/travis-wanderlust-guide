@@ -82,7 +82,7 @@ const PinnedLocations: React.FC<PinnedLocationsProps> = ({
                     <button
                         key={location.id}
                         onClick={() => handleLocationClick(location)}
-                        className="group w-full flex items-center justify-between p-3 bg-card hover:bg-secondary/50 rounded-lg border border-border/30 transition-all duration-200 hover:shadow-md"
+                        className="group w-full flex items-center justify-between p-3 bg-card hover:bg-white/[0.04] rounded-lg border border-border/30 transition-all duration-200 hover:shadow-md"
                     >
                         <div className="flex items-center space-x-3 flex-1 min-w-0">
                             {getCountryFlag(location) ? (
@@ -129,7 +129,7 @@ const PinnedLocations: React.FC<PinnedLocationsProps> = ({
                 {pinnedLocations.map((location) => (
                     <div
                         key={location.id}
-                        className="group flex items-center justify-between p-4 bg-secondary/30 hover:bg-secondary/50 rounded-lg border border-border/30 transition-all duration-200 hover:shadow-md cursor-pointer"
+                        className="group flex items-center justify-between p-4 bg-white/[0.02] hover:bg-white/[0.04] rounded-lg border border-border/30 transition-all duration-200 hover:shadow-md cursor-pointer"
                         onClick={() => handleLocationClick(location)}
                     >
                         <div className="flex items-center space-x-3 flex-1 min-w-0">

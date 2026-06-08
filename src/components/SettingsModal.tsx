@@ -49,7 +49,7 @@ const SettingsModal: React.FC<SettingsModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="bg-travis-bg-raised border-travis-hair-strong font-travis text-travis-ink max-w-md">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2">
             <span>Settings</span>
