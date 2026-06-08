@@ -86,7 +86,7 @@ const InspirationModal: React.FC<InspirationModalProps> = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+      <DialogContent className="bg-travis-bg-raised border-travis-hair-strong font-travis text-travis-ink max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="flex items-center space-x-2 animate-slide-in-up">
             <Compass className="w-5 h-5 animate-bounce-gentle" />

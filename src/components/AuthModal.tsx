@@ -55,7 +55,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-sm">
+      <DialogContent className="bg-travis-bg-raised border-travis-hair-strong font-travis text-travis-ink sm:max-w-sm">
         <DialogHeader>
           <DialogTitle className="text-lg font-semibold">
             {isSent ? 'Check your email' : 'Sign in or create your account'}
