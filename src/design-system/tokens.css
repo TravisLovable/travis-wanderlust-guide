@@ -7,10 +7,12 @@
  * names here. */
 
 :root {
-  /* Surfaces */
-  --bg:        oklch(0.155 0.006 250);
-  --bg-raised: oklch(0.190 0.006 250);
-  --bg-inset:  oklch(0.135 0.005 250);
+  /* Surfaces — flattened to pure black (no lightness-based hierarchy).
+     Separation between page and raised/inset surfaces is carried entirely
+     by the hairlines below. */
+  --bg:        oklch(0 0 0);
+  --bg-raised: oklch(0 0 0);
+  --bg-inset:  oklch(0 0 0);
 
   /* Hairlines */
   --hair:        oklch(1 0 0 / 0.07);
