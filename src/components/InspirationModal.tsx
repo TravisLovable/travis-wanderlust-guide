@@ -108,7 +108,7 @@ const InspirationModal: React.FC<InspirationModalProps> = ({
                 onClick={() => handleDestinationClick(dest.name)}
                 onMouseEnter={() => setHoveredDestination(dest.name)}
                 onMouseLeave={() => setHoveredDestination(null)}
-                className={`text-left p-4 rounded-lg border border-border/50 hover:border-border hover:bg-accent/50 transition-all duration-200 group playful-card animate-slide-in-up ${selectedDestination === dest.name ? 'bg-blue-500/20 border-blue-400' : ''
+                className={`text-left p-4 rounded-lg border border-border/50 hover:border-border hover:bg-white/[0.04] transition-all duration-200 group playful-card animate-slide-in-up ${selectedDestination === dest.name ? 'bg-blue-500/20 border-blue-400' : ''
                   }`}
                 style={{ animationDelay: `${0.1 + index * 0.05}s` }}
               >
