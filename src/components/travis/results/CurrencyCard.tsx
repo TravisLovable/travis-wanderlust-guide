@@ -37,7 +37,7 @@ export function CurrencyCard({
       }
     : undefined;
 
-  const { currencyData, targetCurrency, isLoading } = useCurrencyExchange(
+  const { currencyData, targetCurrency, isLoading, error } = useCurrencyExchange(
     baseCurrency,
     place,
   );
@@ -58,9 +58,11 @@ export function CurrencyCard({
     ? `Currency · ${baseCurrency}`
     : `Currency · ${baseCurrency} → ${targetCurrency ?? "—"}`;
 
+  // "Live" only on real, error-free data. With the fallback mock removed, a
+  // failure leaves rate undefined + error set → show "Unavailable", never "Live".
   const meta = isLoading ? (
     <span style={{ color: "var(--ink-3)" }}>Loading…</span>
-  ) : rate ? (
+  ) : rate && !error ? (
     <span
       className="inline-flex items-center gap-1.5 font-travis-mono uppercase"
       style={{ fontSize: 10, letterSpacing: "0.12em", color: "var(--signal-ok)" }}
@@ -76,6 +78,13 @@ export function CurrencyCard({
         }}
       />
       Live
+    </span>
+  ) : error ? (
+    <span
+      className="font-travis-mono uppercase"
+      style={{ fontSize: 10, letterSpacing: "0.12em", color: "var(--ink-4)" }}
+    >
+      Unavailable
     </span>
   ) : undefined;
 
