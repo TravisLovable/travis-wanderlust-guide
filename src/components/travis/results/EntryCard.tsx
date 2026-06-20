@@ -10,65 +10,76 @@ type EntryCardProps = {
   isLast?: boolean;
 };
 
+/** Layer 1 — synthesized headline from the visa_requirements cache. */
+interface VisaData {
+  status: string; // provider color category: green | blue | yellow | red
+  statusLabel: string | null; // "eVisa", "Visa not required", "Visa required", "eTA"
+  rule: string | null;
+  maxStayDays: number | null;
+  evisaLink: string | null;
+  registrationNote: string | null; // e.g. "Arrival Card" (TDAC)
+  source: string | null;
+  syncedAt: string | null;
+}
+
+/** Layer 2 — curated official government verification link. */
+interface OfficialSource {
+  url: string;
+  label: string;
+  authority: string | null;
+  language: string | null;
+  notes: string | null;
+}
+
 interface VisaResponse {
-  visaRequired?: boolean | string;
-  maxStay?: string;
-  passportValidity?: string;
-  yellowFever?: string;
-  notes?: string;
-  reason?: string;
-  processingTime?: string;
-  cost?: string;
-  exceptions?: string;
-  requiresETA?: boolean;
-  recommendation?: string;
-  dataSource?: string;
-  lastUpdated?: string;
+  originCountryCode?: string;
+  destinationCountryCode?: string | null;
+  data?: VisaData | null;
+  officialSource?: OfficialSource | null;
 }
 
 /**
- * Entry cell of the Must Know strip.
+ * Entry cell of the Must Know strip — three honest layers:
+ *   1. Headline + stay: synthesized from the visa_requirements cache (Travel
+ *      Buddy AI). Renders "—" on a cache miss; never fabricated.
+ *   2. Official source: an always-present "Verify ↗" link to the destination's
+ *      official government visa page. Shown even when the headline is missing,
+ *      so verification never disappears.
+ *   3. Provenance: source + synced date in the footnote, so users see this is
+ *      synthesized data with a date attached.
  *
- * Fetches from the existing `visa-requirements` Edge Function (same URL,
- * same body as VisaContainer — we don't touch the legacy container). When
- * the response is available, derives a status pip, headline, sub line, and
- * up to 4 detail rows. Missing fields render "—".
+ * Sends destinationCountryCode (ISO alpha-2) from the selected place; the Edge
+ * Function also accepts a legacy free-text destination as a fallback.
  */
 export function EntryCard({ placeDetails, passport, isLast }: EntryCardProps) {
-  const [data, setData] = React.useState<VisaResponse | null>(null);
+  const [resp, setResp] = React.useState<VisaResponse | null>(null);
   const [loading, setLoading] = React.useState(false);
 
   React.useEffect(() => {
     if (!placeDetails) {
-      setData(null);
+      setResp(null);
       setLoading(false);
       return;
     }
     let cancelled = false;
     setLoading(true);
+
+    const destinationCountryCode = placeDetails.country_code
+      ? placeDetails.country_code.toUpperCase()
+      : undefined;
     const destination = placeDetails.formatted_address || placeDetails.name;
-    const nationality = passport || "US";
+    const userNationality = passport || "US";
 
     (async () => {
       try {
-        const { data: resp, error } = await supabase.functions.invoke<VisaResponse>(
+        const { data, error } = await supabase.functions.invoke<VisaResponse>(
           "visa-requirements",
-          {
-            body: {
-              destination,
-              userNationality: nationality,
-              streamResponse: false,
-            },
-          },
+          { body: { destinationCountryCode, destination, userNationality } },
         );
         if (cancelled) return;
-        if (error) {
-          setData(null);
-        } else {
-          setData(resp ?? null);
-        }
+        setResp(error ? null : (data ?? null));
       } catch {
-        if (!cancelled) setData(null);
+        if (!cancelled) setResp(null);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -79,10 +90,12 @@ export function EntryCard({ placeDetails, passport, isLast }: EntryCardProps) {
     };
   }, [placeDetails, passport]);
 
-  const kind = deriveKind(data);
-  const headline = deriveHeadline(data, loading);
-  const sub = deriveSub(data);
-  const footnote = deriveFootnote(data);
+  const visa = resp?.data ?? null;
+  const official = resp?.officialSource ?? null;
+
+  const kind = deriveKind(visa);
+  const headline = loading ? null : (visa?.statusLabel ?? null);
+  const sub = visa?.maxStayDays != null ? `Up to ${visa.maxStayDays} days` : null;
 
   return (
     <MustKnowCard
@@ -91,53 +104,64 @@ export function EntryCard({ placeDetails, passport, isLast }: EntryCardProps) {
       headline={headline}
       sub={sub}
       details={[
-        { label: "Passport validity", value: data?.passportValidity },
-        { label: "Max stay", value: data?.maxStay },
-        { label: "Processing time", value: data?.processingTime },
-        { label: "Cost", value: data?.cost },
+        { label: "Registration", value: visa?.registrationNote ?? undefined },
+        {
+          label: "Official",
+          value: official ? (
+            <ExtLink href={official.url} title={official.notes ?? official.label}>
+              Verify ↗
+            </ExtLink>
+          ) : undefined,
+        },
       ]}
-      footnote={footnote}
+      footnote={deriveFootnote(visa)}
       isLast={isLast}
     />
   );
 }
 
-function deriveKind(data: VisaResponse | null): StatusKind {
-  if (!data) return "note";
-  const req = data.visaRequired;
-  if (req === false) return "cleared";
-  if (req === true) return "attention";
-  return "note";
-}
-
-function deriveHeadline(
-  data: VisaResponse | null,
-  loading: boolean,
-): React.ReactNode {
-  if (loading) return null;
-  if (!data) return null;
-  const req = data.visaRequired;
-  if (req === false) return "Visa-free";
-  if (req === true) {
-    if (data.requiresETA) return "ETA required";
-    return "Visa required";
+function deriveKind(visa: VisaData | null): StatusKind {
+  if (!visa) return "note";
+  switch (visa.status) {
+    case "green":
+      return "cleared"; // visa-free
+    case "blue":
+      return "note"; // eVisa
+    case "yellow":
+      return "note"; // eTA / visa-on-arrival
+    case "red":
+      return "attention"; // visa required — action needed
+    default:
+      return "note";
   }
-  return null;
 }
 
-function deriveSub(data: VisaResponse | null): React.ReactNode {
-  if (!data) return null;
-  if (data.maxStay) return `Up to ${data.maxStay}`;
-  if (data.recommendation) return data.recommendation;
-  return null;
+function deriveFootnote(visa: VisaData | null): React.ReactNode {
+  if (!visa?.source) return null;
+  const synced = visa.syncedAt ? ` · synced ${formatRelative(visa.syncedAt)}` : "";
+  return `${visa.source}${synced}`;
 }
 
-function deriveFootnote(data: VisaResponse | null): React.ReactNode {
-  if (!data) return null;
-  const parts: string[] = [];
-  if (data.dataSource) parts.push(`Source: ${data.dataSource}`);
-  if (data.lastUpdated) parts.push(`synced ${formatRelative(data.lastUpdated)}`);
-  return parts.length ? parts.join(", ") : null;
+function ExtLink({
+  href,
+  title,
+  children,
+}: {
+  href: string;
+  title?: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <a
+      href={href}
+      target="_blank"
+      rel="noopener noreferrer"
+      title={title}
+      style={{ color: "var(--ink-2)", textDecoration: "underline" }}
+    >
+      {children}
+    </a>
+  );
 }
 
 function formatRelative(iso: string): string {
