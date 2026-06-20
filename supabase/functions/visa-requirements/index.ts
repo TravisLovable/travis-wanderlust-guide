@@ -19,7 +19,6 @@
 //   destination             legacy free-text ("Paris, France") — resolved to a
 //                           code via NAME_TO_ISO2 for the deploy window only.
 
-import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2.54.0"
 
 const corsHeaders = {
@@ -71,7 +70,7 @@ function resolveDestCode(body: any): string | null {
   return null
 }
 
-serve(async (req) => {
+Deno.serve(async (req: Request) => {
   if (req.method === 'OPTIONS') return new Response('ok', { headers: corsHeaders })
 
   const body = await req.json().catch(() => ({} as any))
