@@ -53,8 +53,12 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', placeDetails?:
         setIsLoading(true);
         setError(null);
 
-        // Build API URL
-        const apiUrl = `https://v6.exchangerate-api.com/v6/6897784afe683a22eac3ba86/pair/${baseCurrency}/${targetCurrency}`;
+        // Build API URL — key from env (VITE_EXCHANGERATE_KEY); never hardcode.
+        const apiKey = import.meta.env.VITE_EXCHANGERATE_KEY;
+        if (!apiKey) {
+          throw new Error('Exchange rate key not configured (set VITE_EXCHANGERATE_KEY)');
+        }
+        const apiUrl = `https://v6.exchangerate-api.com/v6/${apiKey}/pair/${baseCurrency}/${targetCurrency}`;
         console.log('🌐 API URL:', apiUrl);
 
         // Fetch exchange rate using Exchange Rate API
@@ -117,24 +121,8 @@ export const useCurrencyExchange = (baseCurrency: string = 'USD', placeDetails?:
 
         setError(err instanceof Error ? err.message : 'Failed to fetch exchange rates');
 
-        // Fallback to approximate rates if API fails (USD base)
-        const fallbackRates: Record<string, number> = {
-          USD: 1, EUR: 0.92, GBP: 0.79, JPY: 154, CAD: 1.36, AUD: 1.53,
-          CHF: 0.88, CNY: 7.24, MXN: 17.15, BRL: 5.15, KRW: 1330, INR: 83.5,
-          SGD: 1.34, NZD: 1.64, THB: 35.5, PEN: 3.72, COP: 3950, ARS: 870,
-          CLP: 950, ZAR: 18.6, AED: 3.67, SAR: 3.75, ILS: 3.65, TRY: 32.5,
-          NOK: 10.7, SEK: 10.5, DKK: 6.88, PHP: 56.5, IDR: 15700, MYR: 4.72,
-          VND: 24500, EGP: 48.5, NGN: 1550, KES: 153,
-        };
-        const baseToUsd = fallbackRates[baseCurrency] ? 1 / fallbackRates[baseCurrency] : 1;
-        const usdToTarget = fallbackRates[targetCurrency] || 1;
-        const fallbackData = {
-          rate: baseToUsd * usdToTarget,
-          symbol: targetCurrencyInfo.symbol,
-          name: targetCurrencyInfo.name,
-          lastUpdated: 'Approximate rate'
-        };
-        setCurrencyData(fallbackData);
+        // No fabricated fallback rates — clear data so the UI shows "—" honestly.
+        setCurrencyData(null);
       } finally {
         setIsLoading(false);
       }
