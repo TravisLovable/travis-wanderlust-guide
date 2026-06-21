@@ -36,4 +36,5 @@ VALUES
   ('CH', 'https://www.sem.admin.ch/sem/en/home/themen/einreise.html', 'Switzerland – SEM (entry)', 'en', 'Visa-free for US tourists (Schengen, non-EU). ETIAS expected late 2026, not yet required.', 'immigration_dept', true, '2026-06-20'),
   ('TR', 'https://www.mfa.gov.tr/visa-information-for-foreigners.en.mfa', 'Türkiye MFA – Visa information', 'en', 'US citizens visa-EXEMPT (90 days in 180) since Jan 2024 — do NOT use evisa.gov.tr.', 'foreign_ministry', true, '2026-06-20'),
   ('VN', 'https://evisa.gov.vn/', 'Vietnam – national e-Visa portal', 'en', 'US citizens need an e-Visa. Genuine national portal; many clones exist.', 'evisa_portal', true, '2026-06-20'),
-  ('ID', 'https://evisa.imigrasi.go.id/', 'Indonesia – e-Visa / e-VOA (Imigrasi)', 'en', 'US citizens use e-VOA (visa on arrival). Direct gov portal; a VFS-run variant also exists.', 'evisa_portal', true, '2026-06-20');
+  ('ID', 'https://evisa.imigrasi.go.id/', 'Indonesia – e-Visa / e-VOA (Imigrasi)', 'en', 'US citizens use e-VOA (visa on arrival). Direct gov portal; a VFS-run variant also exists.', 'evisa_portal', true, '2026-06-20')
+ON CONFLICT (destination_country_code, official_url) DO NOTHING;
