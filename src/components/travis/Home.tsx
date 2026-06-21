@@ -220,9 +220,9 @@ export function Home({ onSearch }: HomeProps) {
               onClick={submit}
               disabled={!canSubmit}
               className={cn(
-                "cursor-pointer border-0 font-travis flex items-center justify-center gap-2.5",
+                "w-full md:w-auto cursor-pointer border-0 font-travis flex items-center justify-center gap-2.5",
                 "transition-all",
-                canSubmit ? "travis-cta-ambient" : "opacity-50 cursor-not-allowed",
+                canSubmit ? "travis-cta-ambient" : "cursor-not-allowed",
               )}
               style={{
                 background: "var(--ink)",
