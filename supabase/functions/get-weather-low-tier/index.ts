@@ -128,44 +128,16 @@ serve(async (req) => {
         )
 
     } catch (error) {
-        console.error('❌ Weather function error:', error)
+        const message = error instanceof Error ? error.message : String(error)
+        console.error('❌ Weather function error:', message)
 
-        // Fallback uses the requested location/coordinates so the UI shows the right place even when API fails
-        const fallbackData = {
-            current: {
-                temp: 22,
-                condition: 'Partly Cloudy',
-                humidity: 65,
-                feels_like: 24,
-                wind_speed: 12,
-                pressure: 1013
-            },
-            forecast: Array.from({ length: Math.min(days || 7, 7) }, (_, i) => {
-                const futureDate = new Date()
-                futureDate.setDate(futureDate.getDate() + i)
-                const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
-                return {
-                    date: futureDate.toISOString().split('T')[0],
-                    day: i === 0 ? 'Today' : dayNames[futureDate.getDay()],
-                    temp: 22 + Math.floor(Math.random() * 10) - 5,
-                    high: 25 + Math.floor(Math.random() * 8) - 4,
-                    low: 18 + Math.floor(Math.random() * 8) - 4,
-                    condition: 'Partly Cloudy',
-                    icon: '//cdn.weatherapi.com/weather/64x64/day/116.png'
-                }
-            }),
-            location: location || 'Unknown Location',
-            country: 'Unknown',
-            coordinates: {
-                lat: latitude ?? 0,
-                lon: longitude ?? 0
-            }
-        }
-
+        // No fabricated fallback (was: 22°C "Partly Cloudy" + Math.random() forecast
+        // returned at HTTP 200, indistinguishable from real data). Fail honestly so
+        // the UI shows "—". Mirrors the emergency-contacts / health-data contract.
         return new Response(
-            JSON.stringify(fallbackData),
+            JSON.stringify({ error: 'Failed to fetch weather', detail: message }),
             {
-                status: 200,
+                status: 500,
                 headers: {
                     ...corsHeaders,
                     'Content-Type': 'application/json'
