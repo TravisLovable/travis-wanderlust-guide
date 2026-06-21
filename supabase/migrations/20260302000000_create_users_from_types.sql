@@ -1,26 +1,10 @@
--- Recreate public.users from src/integrations/supabase/types.ts
--- Table: users (Row type in types.ts)
-
-CREATE TABLE IF NOT EXISTS public.users (
-  id uuid NOT NULL DEFAULT gen_random_uuid(),
-  auth_id text NOT NULL,
-  email text,
-  full_name text,
-  profile_photo_url text,
-  country_data jsonb,
-  onboarding_completed boolean NOT NULL DEFAULT false,
-  travel_type text,
-  preferred_airline text,
-  frequent_flyer_number text,
-  created_at timestamptz NOT NULL DEFAULT now(),
-  updated_at timestamptz NOT NULL DEFAULT now(),
-  PRIMARY KEY (id)
-);
-
--- Optional: unique constraint so one profile per auth user
-CREATE UNIQUE INDEX IF NOT EXISTS users_auth_id_key ON public.users (auth_id);
-
--- Optional: RLS (enable if you use Row Level Security)
--- ALTER TABLE public.users ENABLE ROW LEVEL SECURITY;
-
-COMMENT ON TABLE public.users IS 'User profiles; mirrors types.ts public.Tables.users';
+-- SUPERSEDED — intentional no-op.
+--
+-- This migration redefined public.users with auth_id as TEXT, which is wrong:
+-- auth_id is uuid (the RLS policies use auth.uid() = auth_id, see
+-- 20260331000000_enable_users_rls.sql). In practice it always no-opped — a
+-- CREATE TABLE IF NOT EXISTS against the table already created by
+-- 20250108000000_create_public_users_first.sql (the authoritative definition).
+--
+-- Body gutted to remove the auth_id type-conflict footgun. File + ledger entry
+-- retained on purpose — do not delete.
