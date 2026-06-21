@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Topbar } from "./Topbar";
+import { MobileHeader } from "./MobileHeader";
 import { GlobePanel } from "./Globe";
 import { CheckIcon } from "./IconSet";
 
@@ -88,6 +89,9 @@ export function Resolve({
       <Topbar
         context={{ clockLocal: localClock(), passport, home: originCode }}
       />
+
+      {/* Mobile header — same persistent row as the homepage. */}
+      <MobileHeader passport={passport} origin={originCode} />
 
       <div
         className="max-w-[1180px] mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20"
@@ -197,6 +201,43 @@ export function Resolve({
           </div>
 
           <GlobePanel dest={destLatLng} destLabel={`${destCode} · ${city.toUpperCase()}`} size={380} />
+
+          {/* Callout — sits directly under the globe; ledger flows beneath as the tail. */}
+          <div
+            style={{
+              marginTop: 28,
+              padding: "14px 16px",
+              background: "var(--bg-inset)",
+              border: "1px solid var(--hair)",
+              borderRadius: 4,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+            }}
+          >
+            <span
+              className="travis-pulse"
+              style={{
+                width: 6,
+                height: 6,
+                borderRadius: 99,
+                background: "var(--signal-ok)",
+                marginTop: 6,
+                flexShrink: 0,
+              }}
+            />
+            <div
+              className="font-travis"
+              style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.55 }}
+            >
+              Cross-checking with European Commission, Portuguese SEF, and WHO against the rules that
+              applied on{" "}
+              <span className="font-travis-mono" style={{ color: "var(--ink)" }}>
+                {formatShortDate(checkin)}
+              </span>
+              . You'll see conclusions, not a dashboard.
+            </div>
+          </div>
         </div>
 
         {/* Right: ledger */}
@@ -298,42 +339,6 @@ export function Resolve({
                 </div>
               );
             })}
-          </div>
-
-          <div
-            style={{
-              marginTop: 28,
-              padding: "14px 16px",
-              background: "var(--bg-inset)",
-              border: "1px solid var(--hair)",
-              borderRadius: 4,
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 12,
-            }}
-          >
-            <span
-              className="travis-pulse"
-              style={{
-                width: 6,
-                height: 6,
-                borderRadius: 99,
-                background: "var(--signal-ok)",
-                marginTop: 6,
-                flexShrink: 0,
-              }}
-            />
-            <div
-              className="font-travis"
-              style={{ fontSize: 12, color: "var(--ink-2)", lineHeight: 1.55 }}
-            >
-              Cross-checking with European Commission, Portuguese SEF, and WHO against the rules that
-              applied on{" "}
-              <span className="font-travis-mono" style={{ color: "var(--ink)" }}>
-                {formatShortDate(checkin)}
-              </span>
-              . You'll see conclusions, not a dashboard.
-            </div>
           </div>
         </div>
       </div>
