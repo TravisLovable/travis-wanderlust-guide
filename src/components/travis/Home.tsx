@@ -126,7 +126,7 @@ export function Home({ onSearch }: HomeProps) {
         </div>
       </header>
 
-      <main className="px-5 md:px-8 pt-6 md:pt-16">
+      <main className="px-5 md:px-8 pt-10 md:pt-16">
         <div className="travis-rise max-w-[1180px] mx-auto w-full">
           <div
             className="font-travis-mono uppercase"
@@ -134,7 +134,7 @@ export function Home({ onSearch }: HomeProps) {
               fontSize: 11,
               letterSpacing: "0.16em",
               color: "rgba(255,255,255,0.34)",
-              marginBottom: 18,
+              marginBottom: 12,
             }}
           >
             Enter a destination — get what matters.
@@ -144,10 +144,10 @@ export function Home({ onSearch }: HomeProps) {
             className="font-travis-display uppercase"
             style={{
               fontWeight: 500,
-              fontSize: "clamp(56px, 12vw, 124px)",
+              fontSize: "clamp(64px, 19.5vw, 88px)",
               lineHeight: 0.95,
               letterSpacing: "-0.035em",
-              margin: "0 0 clamp(44px, 9vw, 72px) 0",
+              margin: "0 0 clamp(48px, 14vw, 72px) 0",
               color: "rgba(255,255,255,0.92)",
             }}
           >
