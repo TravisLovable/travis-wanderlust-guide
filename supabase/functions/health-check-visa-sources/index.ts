@@ -117,6 +117,15 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Run-summary log for the cron (checkable via the visa_job_runs table).
+  await supabase.from('visa_job_runs').insert({
+    job: 'healthcheck',
+    total: list.length,
+    succeeded: counts.ok,
+    failed: actionable.length,
+    details: { counts, actionable },
+  })
+
   return json({
     mode: 'healthcheck',
     checked: list.length,
