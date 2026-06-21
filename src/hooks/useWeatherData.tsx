@@ -132,31 +132,11 @@ export const useWeatherData = (placeDetails?: PlaceDetailsLike | string, userCou
             } : null
           };
 
-          // Ensure we have exactly 7 days of forecast data
+          // Use only the real forecast days (cap at 7) — no fabricated padding.
           const processedData = {
             ...enhancedData,
             forecast: data.forecast ? data.forecast.slice(0, 7) : []
           };
-
-          // If we have less than 7 days, pad with placeholder data
-          if (processedData.forecast.length < 7) {
-            const currentLength = processedData.forecast.length;
-            for (let i = currentLength; i < 7; i++) {
-              const futureDate = new Date();
-              futureDate.setDate(futureDate.getDate() + i);
-              const dayNames = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-              const dayName = i === 0 ? 'Today' : dayNames[futureDate.getDay()];
-
-              processedData.forecast.push({
-                date: futureDate.toISOString().split('T')[0],
-                day: dayName,
-                high: data.current?.temp || 25,
-                low: (data.current?.temp || 25) - 5,
-                condition: 'Partly Cloudy',
-                icon: '//cdn.weatherapi.com/weather/64x64/day/116.png'
-              });
-            }
-          }
 
           setWeatherData(processedData);
           console.log('🌤️ Weather data fetched successfully:', processedData);
@@ -164,6 +144,8 @@ export const useWeatherData = (placeDetails?: PlaceDetailsLike | string, userCou
       } catch (err) {
         console.error('Error fetching weather data:', err);
         setError(err instanceof Error ? err.message : 'Failed to fetch weather data');
+        // No fake data on failure — clear so the UI shows "—".
+        setWeatherData(null);
       } finally {
         setIsLoading(false);
       }
