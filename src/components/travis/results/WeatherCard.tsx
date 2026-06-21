@@ -21,9 +21,11 @@ type WeatherCardProps = {
  * and lows instead; the row labels reflect what we actually have.
  */
 export function WeatherCard({ placeDetails, isLast }: WeatherCardProps) {
-  const { weatherData, isLoading } = useWeatherData(placeDetails ?? undefined);
-  const current = weatherData?.current ?? null;
-  const forecastDays = weatherData?.forecast ?? [];
+  const { weatherData, isLoading, error } = useWeatherData(placeDetails ?? undefined);
+  // On error the hook clears weatherData; guard defensively so no stale/fake
+  // numbers ever render under a failure.
+  const current = error ? null : (weatherData?.current ?? null);
+  const forecastDays = error ? [] : (weatherData?.forecast ?? []);
 
   const highs = forecastDays
     .map((d) => Number(d?.high))
@@ -64,7 +66,7 @@ export function WeatherCard({ placeDetails, isLast }: WeatherCardProps) {
           value: forecastDays.length || undefined,
         },
       ]}
-      footnote={forecastDays.length ? "Open-Meteo · daily forecast" : undefined}
+      footnote={forecastDays.length ? "WeatherAPI · daily forecast" : undefined}
       isLast={isLast}
     />
   );
