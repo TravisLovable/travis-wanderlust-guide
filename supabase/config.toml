@@ -1,1 +1,19 @@
 project_id = "jmoysndoynjokwrelpfk"
+
+# Edge Function auth posture (verify_jwt defaults to true when undeclared).
+#
+# Hardened to require the anon JWT (PR: edge-auth-hardening) — these are called
+# from the app via supabase.functions.invoke (which sends the anon JWT), and were
+# previously open to unauthenticated abuse of paid upstreams (OpenAI / Google):
+#   emergency-contacts, google-places-autocomplete, google-place-details,
+#   get-holidays  -> verify_jwt = true (default; left implicit).
+#
+# Intentionally verify_jwt = false (cron-invoked via pg_net with x-sync-secret,
+# NOT a JWT). They implement their own shared-secret auth (SYNC_SECRET); flipping
+# these to true would 401 the cron. Declared explicitly so a CLI deploy can't
+# default them back to true.
+[functions.sync-visa-requirements]
+verify_jwt = false
+
+[functions.health-check-visa-sources]
+verify_jwt = false
