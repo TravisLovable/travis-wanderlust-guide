@@ -147,7 +147,7 @@ export function Home({ onSearch }: HomeProps) {
               fontSize: "clamp(56px, 12vw, 124px)",
               lineHeight: 0.95,
               letterSpacing: "-0.035em",
-              margin: "0 0 40px 0",
+              margin: "0 0 clamp(44px, 9vw, 72px) 0",
               color: "rgba(255,255,255,0.92)",
             }}
           >
