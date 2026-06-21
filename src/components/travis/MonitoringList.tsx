@@ -4,14 +4,89 @@ import {
   usePinnedLocationsDb,
   type PinnedLocationRow,
 } from "@/hooks/usePinnedLocationsDb";
+import { ChevronDownIcon } from "./IconSet";
 
 type MonitoringListProps = {
   onPick: (row: PinnedLocationRow) => void;
 };
 
+type StatusKind = "cleared" | "note" | "blocker" | "idle";
+
+const STATUS_COLOR: Record<StatusKind, string> = {
+  cleared: "var(--signal-ok)",
+  note: "var(--signal-warn)",
+  blocker: "var(--signal-stop)",
+  idle: "var(--ink-3)",
+};
+
+/** A single monitored destination as the row renders it. */
+type RowVM = {
+  key: string;
+  flag: string;
+  title: string;
+  /** Mono secondary line — trip date range, or region for real pins. */
+  meta: string;
+  statusKind: StatusKind;
+  statusLabel: string;
+  onPick?: () => void;
+};
+
+/**
+ * Logged-out preview rows. These are illustrative, not real monitoring — the
+ * sign-in CTA below them is the conversion path. Day counts match each range.
+ */
+const MOCK_ROWS: RowVM[] = [
+  {
+    key: "lisbon",
+    flag: "🇵🇹",
+    title: "Lisbon, Portugal",
+    meta: "May 7 → May 21",
+    statusKind: "cleared",
+    statusLabel: "Clear to enter · 14 days",
+  },
+  {
+    key: "tokyo",
+    flag: "🇯🇵",
+    title: "Tokyo, Japan",
+    meta: "Jun 15 → Jun 24",
+    statusKind: "cleared",
+    statusLabel: "Visa-free · 9 days",
+  },
+  {
+    key: "mexico-city",
+    flag: "🇲🇽",
+    title: "Mexico City, Mexico",
+    meta: "Aug 3 → Aug 10",
+    statusKind: "note",
+    statusLabel: "Tourist card · 7 days",
+  },
+  {
+    key: "reykjavik",
+    flag: "🇮🇸",
+    title: "Reykjavik, Iceland",
+    meta: "Sep 12 → Sep 19",
+    statusKind: "note",
+    statusLabel: "ETIAS required · 7 days",
+  },
+];
+
 export function MonitoringList({ onPick }: MonitoringListProps) {
   const { isAuthenticated, loading: authLoading, openAuthModal } = useAuth();
   const { rows, loading, error } = usePinnedLocationsDb();
+  const [collapsed, setCollapsed] = React.useState(false);
+
+  const realRows: RowVM[] = rows.map((row) => ({
+    key: row.id,
+    flag: row.country_code ? countryCodeToFlag(row.country_code) : "📍",
+    title: row.name,
+    meta: row.region ?? row.formatted_address,
+    statusKind: "idle",
+    statusLabel: `Monitored · ${timeSince(row.pinned_at)}`,
+    onPick: () => onPick(row),
+  }));
+
+  const busy = authLoading || loading;
+  const count = busy ? 0 : !isAuthenticated ? MOCK_ROWS.length : realRows.length;
 
   return (
     <section
@@ -20,16 +95,26 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
     >
       <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 md:gap-12">
         <div>
-          <div
-            className="font-travis-mono uppercase"
-            style={{
-              fontSize: 9,
-              letterSpacing: "0.16em",
-              color: "rgba(255,255,255,0.32)",
-            }}
+          <button
+            type="button"
+            onClick={() => setCollapsed((c) => !c)}
+            className="flex items-center gap-1.5 bg-transparent border-0 cursor-pointer font-travis-mono uppercase p-0"
+            style={{ fontSize: 9, letterSpacing: "0.16em" }}
           >
-            Monitoring
-          </div>
+            <span style={{ color: "rgba(255,255,255,0.32)" }}>Monitoring</span>
+            <span style={{ color: "var(--ink-4)" }}>·</span>
+            <span style={{ color: "var(--ink-3)" }}>{count}</span>
+            <span style={{ color: "var(--ink-4)" }}>·</span>
+            <span style={{ color: "var(--ink-3)" }}>{collapsed ? "Show" : "Hide"}</span>
+            <ChevronDownIcon
+              width={9}
+              height={9}
+              style={{
+                color: "var(--ink-3)",
+                transform: collapsed ? "none" : "rotate(180deg)",
+              }}
+            />
+          </button>
           <p
             className="font-travis mt-2.5"
             style={{
@@ -43,139 +128,96 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
           </p>
         </div>
 
-        <div>
-          {authLoading || loading ? (
-            <StateRow label="Loading…" />
-          ) : !isAuthenticated ? (
-            <EmptyState
-              label="Sign in to track destinations"
-              cta={{ label: "Get started", onClick: openAuthModal }}
-            />
-          ) : error ? (
-            <StateRow label={`Error · ${error}`} tone="warn" />
-          ) : rows.length === 0 ? (
-            <EmptyState label="No destinations monitored yet. Search a destination to start." />
-          ) : (
-            <RowList rows={rows} onPick={onPick} />
-          )}
-        </div>
+        {!collapsed && (
+          <div>
+            {busy ? (
+              <StateRow label="Loading…" />
+            ) : !isAuthenticated ? (
+              <>
+                <RowList rows={MOCK_ROWS} />
+                <EmptyState
+                  label="Sign in to track destinations"
+                  cta={{ label: "Get started", onClick: openAuthModal }}
+                />
+              </>
+            ) : error ? (
+              <StateRow label={`Error · ${error}`} tone="warn" />
+            ) : realRows.length === 0 ? (
+              <StateRow label="No destinations monitored yet. Search a destination to start." />
+            ) : (
+              <RowList rows={realRows} />
+            )}
+          </div>
+        )}
       </div>
     </section>
   );
 }
 
-function RowList({
-  rows,
-  onPick,
-}: {
-  rows: PinnedLocationRow[];
-  onPick: (row: PinnedLocationRow) => void;
-}) {
+function RowList({ rows }: { rows: RowVM[] }) {
   return (
     <div>
-      <div
-        className="hidden md:grid font-travis-mono uppercase"
-        style={{
-          gridTemplateColumns: "22px 1.3fr 1fr 1.2fr 0.8fr",
-          gap: 16,
-          padding: "0 0 8px 0",
-          fontSize: 10,
-          letterSpacing: "0.14em",
-          color: "var(--ink-4)",
-          borderBottom: "1px solid var(--hair)",
-        }}
-      >
-        <span />
-        <span>Destination</span>
-        <span>Region</span>
-        <span>Status</span>
-        <span>Pinned</span>
-      </div>
-
       {rows.map((row) => (
-        <RowItem key={row.id} row={row} onClick={() => onPick(row)} />
+        <Row key={row.key} row={row} />
       ))}
     </div>
   );
 }
 
-function RowItem({
-  row,
-  onClick,
-}: {
-  row: PinnedLocationRow;
-  onClick: () => void;
-}) {
-  const flag = row.country_code ? countryCodeToFlag(row.country_code) : "";
+function Row({ row }: { row: RowVM }) {
+  const interactive = !!row.onPick;
+  const Tag = interactive ? "button" : "div";
   return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="w-full text-left cursor-pointer bg-transparent border-0 hover:bg-white/[0.02] transition-colors"
+    <Tag
+      {...(interactive ? { type: "button" as const, onClick: row.onPick } : {})}
+      className={[
+        "w-full text-left bg-transparent border-0 transition-colors",
+        interactive ? "cursor-pointer hover:bg-white/[0.02]" : "",
+      ].join(" ")}
       style={{
-        display: "grid",
-        gridTemplateColumns: "1fr",
-        gap: 4,
+        display: "block",
         padding: "14px 0",
         borderBottom: "1px solid var(--hair)",
       }}
     >
-      <div className="md:hidden flex items-center gap-2">
-        <span style={{ fontSize: 16, opacity: 0.9 }}>{flag}</span>
+      <div className="flex items-center gap-2.5">
+        <span style={{ fontSize: 17, opacity: 0.9, lineHeight: 1 }}>{row.flag}</span>
         <span
-          className="font-travis"
-          style={{ fontSize: 14, color: "var(--ink)", fontWeight: 500 }}
+          className="font-travis flex-1 truncate"
+          style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}
         >
-          {row.name}
+          {row.title}
         </span>
       </div>
-      <div className="md:hidden font-travis flex justify-between" style={{ fontSize: 12, color: "var(--ink-3)" }}>
-        <span className="truncate">{row.region ?? row.formatted_address}</span>
-        <span className="font-travis-mono shrink-0 pl-3" style={{ fontSize: 10, letterSpacing: "0.1em", color: "var(--ink-4)" }}>
-          {timeSince(row.pinned_at)}
-        </span>
-      </div>
-
       <div
-        className="hidden md:grid"
-        style={{
-          gridTemplateColumns: "22px 1.3fr 1fr 1.2fr 0.8fr",
-          gap: 16,
-          alignItems: "center",
-          fontSize: 13,
-        }}
+        className="flex items-center justify-between gap-3 mt-1.5"
+        style={{ paddingLeft: 27 }}
       >
-        <span style={{ fontSize: 15, opacity: 0.9, lineHeight: 1 }}>{flag}</span>
         <span
-          className="font-travis truncate"
-          style={{ color: "var(--ink)", fontWeight: 500, fontSize: 14 }}
+          className="font-travis-mono shrink-0"
+          style={{ fontSize: 11, letterSpacing: "0.04em", color: "var(--ink-3)" }}
         >
-          {row.name}
+          {row.meta}
         </span>
         <span
-          className="font-travis-mono truncate"
-          style={{ color: "var(--ink-2)" }}
+          className="font-travis inline-flex items-center gap-1.5 min-w-0"
+          style={{ fontSize: 11.5, color: "var(--ink-2)" }}
         >
-          {row.region ?? row.formatted_address}
-        </span>
-        <span
-          className="font-travis"
-          style={{ fontSize: 12.5, color: "var(--ink-3)" }}
-        >
-          Monitored · set trip dates to resolve
-        </span>
-        <span
-          className="font-travis-mono"
-          style={{
-            color: "var(--ink-3)",
-            fontSize: 11,
-            letterSpacing: "0.04em",
-          }}
-        >
-          {timeSince(row.pinned_at)}
+          <span
+            aria-hidden
+            className="shrink-0"
+            style={{
+              width: 6,
+              height: 6,
+              borderRadius: 99,
+              background: STATUS_COLOR[row.statusKind],
+              display: "inline-block",
+            }}
+          />
+          <span className="truncate">{row.statusLabel}</span>
         </span>
       </div>
-    </button>
+    </Tag>
   );
 }
 
