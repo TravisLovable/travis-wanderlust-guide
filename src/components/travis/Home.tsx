@@ -159,7 +159,7 @@ export function Home({ onSearch }: HomeProps) {
           {/* Query bar — stacked on mobile, single row on desktop */}
           <div
             className={cn(
-              "border border-travis-hair-strong overflow-visible relative",
+              "border border-travis-hair overflow-visible relative",
               "flex flex-col md:grid md:grid-cols-[1.6fr_1fr_auto]",
             )}
             style={{
@@ -227,8 +227,8 @@ export function Home({ onSearch }: HomeProps) {
               style={{
                 background: "var(--ink)",
                 color: "var(--bg)",
-                padding: "14px 28px",
-                fontSize: 14,
+                padding: "18px 24px",
+                fontSize: 16,
                 fontWeight: 500,
                 letterSpacing: "-0.005em",
                 borderRadius: 8,
@@ -236,14 +236,14 @@ export function Home({ onSearch }: HomeProps) {
               }}
             >
               Get Intel
-              <ArrowIcon width={14} height={14} />
+              <ArrowIcon width={16} height={16} />
             </button>
           </div>
 
           <p
             className="font-travis"
             style={{
-              marginTop: 16,
+              marginTop: 20,
               fontSize: 12.5,
               color: "rgba(255,255,255,0.42)",
               letterSpacing: "-0.005em",
@@ -325,7 +325,7 @@ function FieldButton({
           fontSize: 10,
           letterSpacing: "0.12em",
           color: "var(--ink-4)",
-          marginBottom: 6,
+          marginBottom: 4,
         }}
       >
         {icon}
@@ -336,6 +336,7 @@ function FieldButton({
         style={{
           fontSize: 14.5,
           fontWeight: 500,
+          lineHeight: 1.15,
           color: muted ? "var(--ink-3)" : "rgba(255,255,255,0.98)",
           letterSpacing: "-0.005em",
         }}
