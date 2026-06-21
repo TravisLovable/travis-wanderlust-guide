@@ -276,18 +276,7 @@ export function Home({ onSearch }: HomeProps) {
           />
         </div>
 
-        <footer
-          className="max-w-[1180px] mx-auto w-full flex flex-col md:flex-row md:justify-between md:items-center gap-3 mt-20 md:mt-32 pt-5 pb-8 border-t font-travis-mono uppercase"
-          style={{
-            borderColor: "var(--hair)",
-            fontSize: 10.5,
-            letterSpacing: "0.12em",
-            color: "var(--ink-4)",
-          }}
-        >
-          <span>Travis · v4.2</span>
-          <span>Not a booking tool</span>
-        </footer>
+        <div className="pb-12 md:pb-20" />
       </main>
 
       <ContextPicker
