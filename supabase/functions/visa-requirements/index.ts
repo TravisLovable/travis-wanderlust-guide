@@ -95,7 +95,7 @@ Deno.serve(async (req: Request) => {
   const [cacheRes, srcRes] = await Promise.all([
     supabase
       .from('visa_requirements')
-      .select('status, status_label, rule, max_stay_days, evisa_link, registration_note, source, synced_at')
+      .select('status, status_label, rule, max_stay_days, evisa_link, registration_note, passport_validity, source, synced_at')
       .eq('origin_country_code', origin)
       .eq('destination_country_code', dest)
       .maybeSingle(),
@@ -126,6 +126,7 @@ Deno.serve(async (req: Request) => {
           maxStayDays: c.max_stay_days,
           evisaLink: c.evisa_link,
           registrationNote: c.registration_note,
+          passportValidity: c.passport_validity,
           source: c.source,
           syncedAt: c.synced_at,
         }

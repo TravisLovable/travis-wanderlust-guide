@@ -18,6 +18,7 @@ interface VisaData {
   maxStayDays: number | null;
   evisaLink: string | null;
   registrationNote: string | null; // e.g. "Arrival Card" (TDAC)
+  passportValidity: string | null; // e.g. "6 months", "Valid for period of stay"
   source: string | null;
   syncedAt: string | null;
 }
@@ -104,6 +105,7 @@ export function EntryCard({ placeDetails, passport, isLast }: EntryCardProps) {
       headline={headline}
       sub={sub}
       details={[
+        { label: "Passport validity", value: visa?.passportValidity ?? undefined },
         { label: "Registration", value: visa?.registrationNote ?? undefined },
         {
           label: "Official",
