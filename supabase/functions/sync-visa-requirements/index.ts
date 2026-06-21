@@ -50,6 +50,7 @@ type MappedVisa = {
   max_stay_days: number | null
   evisa_link: string | null
   registration_note: string | null
+  passport_validity: string | null  // e.g. "6 months", "Valid for period of stay"
 }
 
 // Map a Travel Buddy /v2/visa/check response -> our cache row. Confirmed against
@@ -71,6 +72,7 @@ function mapResponse(payload: any): MappedVisa {
     max_stay_days: parseDays(primary?.duration ?? data?.days),
     evisa_link: primary?.link ?? secondary?.link ?? null,
     registration_note: reg ? (typeof reg === 'string' ? reg : (reg?.name ?? reg?.label ?? null)) : null,
+    passport_validity: data?.destination?.passport_validity ?? null,
   }
 }
 
@@ -157,6 +159,7 @@ Deno.serve(async (req: Request) => {
         max_stay_days: m.max_stay_days,
         evisa_link: m.evisa_link,
         registration_note: m.registration_note,
+        passport_validity: m.passport_validity,
         source: 'Travel Buddy AI',
         synced_at: new Date().toISOString(),
       }, { onConflict: 'origin_country_code,destination_country_code' })
