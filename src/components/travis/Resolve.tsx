@@ -3,6 +3,7 @@ import { Topbar } from "./Topbar";
 import { MobileHeader } from "./MobileHeader";
 import { GlobePanel } from "./Globe";
 import { CheckIcon } from "./IconSet";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
 
 type ResolveProps = {
   /** Destination display name, e.g. "Lisbon" or "Lisbon, Portugal". */
@@ -23,14 +24,14 @@ type ResolveProps = {
 };
 
 const STEPS = [
-  { k: "Passport rules",       detail: "Schengen 90/180 · entry window" },
-  { k: "ETIAS enforcement",    detail: "Cross-ref EU rollout schedule" },
-  { k: "CDC + WHO advisories", detail: "Destination + current month" },
-  { k: "Weather patterns",     detail: "Climatology + 14-day forecast" },
-  { k: "Airport transit",      detail: "Ranked options to city center" },
-  { k: "FX mid-market",        detail: "USD pair · 7-day trend" },
-  { k: "Local calendar",       detail: "Holidays, observances, festivals" },
-  { k: "Cultural context",     detail: "Language, etiquette, pace" },
+  "Passport rules",
+  "ETIAS enforcement",
+  "CDC + WHO advisories",
+  "Weather patterns",
+  "Airport transit",
+  "FX mid-market",
+  "Local calendar",
+  "Cultural context",
 ];
 
 const TOTAL_MS = 8600;
@@ -46,6 +47,7 @@ export function Resolve({
   passport = "US",
   onDone,
 }: ResolveProps) {
+  const isDesktop = useMediaQuery("(min-width: 768px)");
   const [t, setT] = React.useState(0);
 
   React.useEffect(() => {
@@ -94,8 +96,7 @@ export function Resolve({
       <MobileHeader passport={passport} origin={originCode} />
 
       <div
-        className="max-w-[1180px] mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-12 md:gap-20"
-        style={{ padding: "60px 24px" }}
+        className="max-w-[1180px] mx-auto w-full grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-20 px-5 md:px-6 pt-4 md:pt-[60px] pb-4 md:pb-[60px]"
       >
         {/* Left: state + progress + globe */}
         <div>
@@ -105,7 +106,7 @@ export function Resolve({
               fontSize: 10,
               letterSpacing: "0.16em",
               color: "var(--ink-4)",
-              marginBottom: 20,
+              marginBottom: 14,
             }}
           >
             Resolving
@@ -118,7 +119,7 @@ export function Resolve({
               fontSize: "clamp(40px, 8vw, 70px)",
               letterSpacing: "-0.035em",
               lineHeight: 0.95,
-              marginBottom: 8,
+              marginBottom: 6,
               color: "rgba(255,255,255,0.92)",
             }}
           >
@@ -138,13 +139,13 @@ export function Resolve({
             style={{
               color: "rgba(255,255,255,0.5)",
               fontSize: 13,
-              marginBottom: 28,
+              marginBottom: 12,
             }}
           >
             {dateRange} · {passport} passport
           </div>
 
-          <div style={{ marginBottom: 24 }}>
+          <div style={{ marginBottom: 12 }}>
             <div
               className="grid font-travis-mono"
               style={{
@@ -200,13 +201,17 @@ export function Resolve({
             </div>
           </div>
 
-          <GlobePanel dest={destLatLng} destLabel={`${destCode} · ${city.toUpperCase()}`} size={380} />
+          <GlobePanel
+            dest={destLatLng}
+            destLabel={`${destCode} · ${city.toUpperCase()}`}
+            size={isDesktop ? 380 : 240}
+          />
 
           {/* Callout — sits directly under the globe; ledger flows beneath as the tail. */}
           <div
             style={{
-              marginTop: 28,
-              padding: "14px 16px",
+              marginTop: 14,
+              padding: "12px 14px",
               background: "var(--bg-inset)",
               border: "1px solid var(--hair)",
               borderRadius: 4,
@@ -245,10 +250,10 @@ export function Resolve({
           <div
             className="font-travis-mono uppercase"
             style={{
-              fontSize: 10,
-              letterSpacing: "0.16em",
-              color: "var(--ink-4)",
-              marginBottom: 20,
+              fontSize: 9,
+              letterSpacing: "0.14em",
+              color: "rgba(255,255,255,0.3)",
+              marginBottom: 12,
             }}
           >
             Resolver ledger
@@ -261,14 +266,14 @@ export function Resolve({
               const isPending = !isDone && !isCurrent;
               return (
                 <div
-                  key={s.k}
+                  key={s}
                   className={isCurrent ? "travis-fade" : ""}
                   style={{
                     display: "grid",
-                    gridTemplateColumns: "28px 1fr auto",
-                    gap: 14,
-                    alignItems: "baseline",
-                    padding: "10px 0",
+                    gridTemplateColumns: "22px 1fr auto",
+                    gap: 12,
+                    alignItems: "center",
+                    padding: "5px 0",
                     borderBottom: "1px solid var(--hair)",
                     opacity: isPending ? 0.3 : 1,
                     transition: "opacity 0.3s",
@@ -277,28 +282,18 @@ export function Resolve({
                   <span style={{ color: "var(--ink-4)", fontSize: 10 }}>
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <span>
-                    <div
-                      style={{
-                        color: isDone
-                          ? "var(--ink-2)"
-                          : isCurrent
-                            ? "var(--ink)"
-                            : "var(--ink-3)",
-                        fontSize: 12.5,
-                      }}
-                    >
-                      {s.k}
-                    </div>
-                    <div
-                      style={{
-                        color: "var(--ink-4)",
-                        fontSize: 11,
-                        marginTop: 2,
-                      }}
-                    >
-                      {s.detail}
-                    </div>
+                  <span
+                    className="truncate"
+                    style={{
+                      color: isDone
+                        ? "var(--ink-2)"
+                        : isCurrent
+                          ? "var(--ink)"
+                          : "var(--ink-3)",
+                      fontSize: 12.5,
+                    }}
+                  >
+                    {s}
                   </span>
                   <span
                     style={{
