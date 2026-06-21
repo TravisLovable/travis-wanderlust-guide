@@ -90,10 +90,10 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
 
   return (
     <section
-      className="mt-12 md:mt-24 pt-7 border-t border-travis-hair"
+      className="mt-16 md:mt-24 pt-7 border-t border-travis-hair"
       style={{ borderColor: "var(--hair)" }}
     >
-      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-6 md:gap-12">
+      <div className="grid grid-cols-1 md:grid-cols-[220px_1fr] gap-8 md:gap-12">
         <div>
           <button
             type="button"
@@ -116,7 +116,7 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
             />
           </button>
           <p
-            className="font-travis mt-2.5"
+            className="font-travis mt-3"
             style={{
               fontSize: 12,
               color: "var(--ink-3)",
@@ -176,22 +176,22 @@ function Row({ row }: { row: RowVM }) {
       ].join(" ")}
       style={{
         display: "block",
-        padding: "14px 0",
-        borderBottom: "1px solid var(--hair)",
+        padding: "16px 0",
+        borderBottom: "1px solid rgba(255,255,255,0.06)",
       }}
     >
       <div className="flex items-center gap-2.5">
-        <span style={{ fontSize: 17, opacity: 0.9, lineHeight: 1 }}>{row.flag}</span>
+        <span style={{ fontSize: 18, opacity: 0.9, lineHeight: 1 }}>{row.flag}</span>
         <span
           className="font-travis flex-1 truncate"
-          style={{ fontSize: 14.5, fontWeight: 500, color: "var(--ink)" }}
+          style={{ fontSize: 15, fontWeight: 500, color: "var(--ink)" }}
         >
           {row.title}
         </span>
       </div>
       <div
         className="flex items-center justify-between gap-3 mt-1.5"
-        style={{ paddingLeft: 27 }}
+        style={{ paddingLeft: 28 }}
       >
         <span
           className="font-travis-mono shrink-0"
@@ -201,7 +201,7 @@ function Row({ row }: { row: RowVM }) {
         </span>
         <span
           className="font-travis inline-flex items-center gap-1.5 min-w-0"
-          style={{ fontSize: 11.5, color: "var(--ink-2)" }}
+          style={{ fontSize: 11, color: "var(--ink-2)" }}
         >
           <span
             aria-hidden
@@ -230,9 +230,9 @@ function EmptyState({
 }) {
   return (
     <div
-      className="font-travis flex flex-col gap-3 items-start"
+      className="font-travis flex flex-col gap-4 items-start"
       style={{
-        padding: "20px 0",
+        padding: "40px 0 0",
         color: "var(--ink-3)",
         fontSize: 13,
       }}
