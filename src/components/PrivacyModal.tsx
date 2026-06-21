@@ -53,7 +53,7 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
           <div>
             <h3 className="font-semibold mb-2">Third-Party Services</h3>
             <p className="text-muted-foreground">
-              Travis integrates with third-party services (Google Places, Mapbox, weather APIs) 
+              Travis integrates with third-party services (Google Places and weather APIs)
               to provide travel information. These services have their own privacy policies.
             </p>
           </div>
