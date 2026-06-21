@@ -3,7 +3,7 @@ import { SubcardFrame } from "./SubcardFrame";
 import { KeyValueRow } from "./KeyValueRow";
 import { ArrowIcon } from "../IconSet";
 import { useCurrencyExchange } from "@/hooks/useCurrencyExchange";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 
 type CurrencyCardProps = {
   placeDetails: SelectedPlace | null;

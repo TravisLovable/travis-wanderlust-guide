@@ -2,7 +2,7 @@ import * as React from "react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useWaterSafety } from "@/hooks/useWaterSafety";
 import { resolveIso3 } from "@/utils/countryIso3";
-import { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import { SelectedPlace } from "@/types/place";
 import { SubcardFrame } from "@/components/travis/results/SubcardFrame";
 import { KeyValueRow } from "@/components/travis/results/KeyValueRow";
 

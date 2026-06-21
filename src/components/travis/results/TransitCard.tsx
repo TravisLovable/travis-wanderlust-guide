@@ -2,7 +2,7 @@ import * as React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SubcardFrame } from "./SubcardFrame";
 import { ArrowIcon } from "../IconSet";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 
 type TransitCardProps = {
   placeDetails: SelectedPlace | null;

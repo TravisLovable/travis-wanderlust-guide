@@ -6,7 +6,7 @@ import UVIndexCard from "@/components/UVIndexCard";
 import PharmacyIntelCard from "@/components/PharmacyIntelCard";
 import PowerAdaptorWidget from "@/components/PowerAdaptorWidget";
 import EmergencyContactsCard from "@/components/EmergencyContactsCard";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 
 type DetailsSectionProps = {
   placeDetails: SelectedPlace | null;

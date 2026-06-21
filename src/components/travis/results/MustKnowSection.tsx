@@ -5,7 +5,7 @@ import { EntryCard } from "./EntryCard";
 import { HealthCard } from "./HealthCard";
 import { WeatherCard } from "./WeatherCard";
 import { TimeCard } from "./TimeCard";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 import type { TravisInsights } from "@/types/insights";
 
 type MustKnowSectionProps = {

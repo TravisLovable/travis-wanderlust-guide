@@ -3,7 +3,7 @@ import { SectionHeader } from "./SectionHeader";
 import { SectionErrorBoundary } from "./SectionErrorBoundary";
 import { TransitCard } from "./TransitCard";
 import { CurrencyCard } from "./CurrencyCard";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 import type { TravisInsights } from "@/types/insights";
 
 type LogisticsSectionProps = {
