@@ -1,7 +1,7 @@
 import * as React from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { MustKnowCard } from "./MustKnowCard";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 import type { StatusKind } from "../StatusPip";
 
 type EntryCardProps = {

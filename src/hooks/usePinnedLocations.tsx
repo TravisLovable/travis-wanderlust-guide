@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
-import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { SelectedPlace } from '@/types/place';
 
 export interface PinnedLocation {
     id: string;

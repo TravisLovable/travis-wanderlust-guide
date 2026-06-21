@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp } from 'lucide-react';
-import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { SelectedPlace } from '@/types/place';
 import { InsightsProvider } from '@/contexts/InsightsContext';
 import { useTravisInsights } from '@/hooks/useTravisInsights';
 import { useTravelContext } from '@/contexts/TravelContext';

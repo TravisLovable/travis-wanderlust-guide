@@ -1,5 +1,5 @@
 import * as React from "react";
-import { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import { SelectedPlace } from "@/types/place";
 import { SubcardFrame } from "@/components/travis/results/SubcardFrame";
 import { KeyValueRow } from "@/components/travis/results/KeyValueRow";
 

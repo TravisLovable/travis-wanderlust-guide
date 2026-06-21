@@ -1,7 +1,7 @@
 import * as React from "react";
 import { MustKnowCard } from "./MustKnowCard";
 import { useWeatherData } from "@/hooks/useWeatherData";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 import type { StatusKind } from "../StatusPip";
 
 type WeatherCardProps = {

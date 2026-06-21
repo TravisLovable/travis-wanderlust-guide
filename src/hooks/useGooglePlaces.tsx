@@ -1,20 +1,11 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import type { SelectedPlace } from '@/types/place';
 
-export interface SelectedPlace {
-  name: string;
-  formatted_address: string;
-  country_code?: string;
-  latitude: number;
-  longitude: number;
-  region?: string;
-  // Added for the onboarding Home City field: admin-area short code (e.g. "NY")
-  // and country long name (e.g. "Portugal"), so it can render "City, NY" (US) /
-  // "City, Country" (non-US). Optional — destination consumers ignore them.
-  region_code?: string;
-  country?: string;
-  place_id: string;
-}
+// Canonical SelectedPlace now lives in @/types/place. Re-exported here so the
+// hook's existing consumers (DestinationSheet, CityAutocomplete, Home, Index,
+// SearchResults) keep importing it from this module unchanged.
+export type { SelectedPlace };
 
 interface PlaceSuggestion {
   place_id: string;

@@ -4,7 +4,7 @@ import { SectionErrorBoundary } from "./SectionErrorBoundary";
 import { CulturalPostureCard } from "./CulturalPostureCard";
 import { EventsCard } from "./EventsCard";
 import { InsiderCard } from "./InsiderCard";
-import type { SelectedPlace } from "@/hooks/useMapboxGeocoding";
+import type { SelectedPlace } from "@/types/place";
 import type { TravisInsights } from "@/types/insights";
 
 type ContextSectionProps = {

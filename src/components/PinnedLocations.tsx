@@ -3,7 +3,7 @@ import { Pin, MapPin, X, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { usePinnedLocations, PinnedLocation } from '@/hooks/usePinnedLocations';
-import { SelectedPlace } from '@/hooks/useMapboxGeocoding';
+import { SelectedPlace } from '@/types/place';
 
 interface PinnedLocationsProps {
     onLocationSelect?: (place: SelectedPlace) => void;
