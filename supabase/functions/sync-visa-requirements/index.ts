@@ -101,6 +101,16 @@ Deno.serve(async (req: Request) => {
   const body = await req.json().catch(() => ({} as any))
   const mode = body?.mode ?? 'sync'
 
+  // Both validate and sync require the shared secret (prevents quota abuse of the
+  // Travel Buddy API). Default-deny if the secret is not configured.
+  const syncSecret = Deno.env.get('SYNC_SECRET')
+  if (!syncSecret) {
+    return json({ error: 'disabled: SYNC_SECRET not configured' }, 503)
+  }
+  if (req.headers.get('x-sync-secret') !== syncSecret) {
+    return json({ error: 'unauthorized' }, 401)
+  }
+
   // --- validate: single pair, raw + mapped, no writes ---
   if (mode === 'validate') {
     const dest = String(body?.destination ?? 'BR').toUpperCase()
@@ -114,15 +124,7 @@ Deno.serve(async (req: Request) => {
     }, r.ok ? 200 : 502)
   }
 
-  // --- sync: cron path, guarded by shared secret (default-deny if unset) ---
-  const syncSecret = Deno.env.get('SYNC_SECRET')
-  if (!syncSecret) {
-    return json({ error: 'sync disabled: SYNC_SECRET not configured' }, 503)
-  }
-  if (req.headers.get('x-sync-secret') !== syncSecret) {
-    return json({ error: 'unauthorized' }, 401)
-  }
-
+  // --- sync: cron path ---
   const supabase = createClient(
     Deno.env.get('SUPABASE_URL')!,
     Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!,
