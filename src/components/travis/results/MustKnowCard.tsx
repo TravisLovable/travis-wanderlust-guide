@@ -21,6 +21,8 @@ type MustKnowCardProps = {
   details: MustKnowDetailRow[];
   /** Source / verification footnote (e.g. "Source: WHO, synced today"). */
   footnote?: React.ReactNode;
+  /** Optional control rendered in the status row, left of the pip (e.g. a unit toggle). */
+  headerAction?: React.ReactNode;
   /** Whether this is the rightmost cell in the strip. Removes the right divider. */
   isLast?: boolean;
 };
@@ -52,6 +54,7 @@ export function MustKnowCard({
   sub,
   details,
   footnote,
+  headerAction,
   isLast = false,
 }: MustKnowCardProps) {
   const hasHeadline =
@@ -90,7 +93,10 @@ export function MustKnowCard({
         >
           {label}
         </span>
-        <StatusPip kind={kind} />
+        <div className="flex items-center gap-2.5">
+          {headerAction}
+          <StatusPip kind={kind} />
+        </div>
       </div>
 
       {/* Conclusion row: big headline + sub */}

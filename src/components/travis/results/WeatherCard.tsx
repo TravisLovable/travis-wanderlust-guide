@@ -9,19 +9,34 @@ type WeatherCardProps = {
   isLast?: boolean;
 };
 
+type TempUnit = "C" | "F";
+const UNIT_KEY = "travis.tempUnit";
+
+function readUnit(): TempUnit {
+  if (typeof window === "undefined") return "C";
+  return window.localStorage.getItem(UNIT_KEY) === "F" ? "F" : "C";
+}
+
 /**
  * Weather cell of the Must Know strip.
  *
- * Uses the existing `useWeatherData` hook (no new fetch, no Edge Function
- * change). Reduces the legacy widget's 14-day forecast UI to a Must Know
- * cell: temp range, condition, 4 detail rows. Missing rows render "—".
- *
- * Note: the design's "May average high/low" requires climatology data that
- * the current weather hook doesn't expose. We render forecast-based highs
- * and lows instead; the row labels reflect what we actually have.
+ * Temps arrive from useWeatherData in Celsius (WeatherAPI temp_c). A °C/°F
+ * toggle in the card header (persisted in localStorage as `travis.tempUnit`)
+ * converts at render time. Renders "—" on error/missing data; no fabrication.
  */
 export function WeatherCard({ placeDetails, isLast }: WeatherCardProps) {
   const { weatherData, isLoading, error } = useWeatherData(placeDetails ?? undefined);
+  const [unit, setUnit] = React.useState<TempUnit>(readUnit);
+
+  const setUnitPersist = (u: TempUnit) => {
+    setUnit(u);
+    try {
+      window.localStorage.setItem(UNIT_KEY, u);
+    } catch {
+      /* ignore (private mode / unavailable) */
+    }
+  };
+
   // On error the hook clears weatherData; guard defensively so no stale/fake
   // numbers ever render under a failure.
   const current = error ? null : (weatherData?.current ?? null);
@@ -34,37 +49,60 @@ export function WeatherCard({ placeDetails, isLast }: WeatherCardProps) {
     .map((d) => Number(d?.low))
     .filter((n) => Number.isFinite(n));
 
-  const maxHigh = highs.length ? Math.round(Math.max(...highs)) : null;
-  const minLow = lows.length ? Math.round(Math.min(...lows)) : null;
-  const currentTemp = currentTempFrom(current);
+  // Raw Celsius from the API; conv()/deg() convert + label for the chosen unit.
+  const maxHighC = highs.length ? Math.round(Math.max(...highs)) : null;
+  const minLowC = lows.length ? Math.round(Math.min(...lows)) : null;
+  const currentTempC = currentTempFrom(current);
   const condition = currentConditionFrom(current);
 
-  const headline = formatRangeHeadline(minLow, maxHigh, currentTemp);
+  const conv = (c: number | null): number | null =>
+    c === null ? null : unit === "F" ? Math.round((c * 9) / 5 + 32) : c;
+  const deg = (c: number | null): string | undefined =>
+    c === null ? undefined : `${conv(c)}°${unit}`;
+
+  const headline = isLoading
+    ? null
+    : formatRangeHeadline(conv(minLowC), conv(maxHighC), conv(currentTempC), unit);
   const kind = deriveKind(headline, condition);
+
+  const unitToggle = (
+    <div
+      className="inline-flex font-travis-mono uppercase"
+      style={{ fontSize: 9, letterSpacing: "0.1em" }}
+    >
+      {(["C", "F"] as TempUnit[]).map((u) => (
+        <button
+          key={u}
+          type="button"
+          onClick={() => setUnitPersist(u)}
+          aria-pressed={unit === u}
+          aria-label={`Show temperatures in degrees ${u === "C" ? "Celsius" : "Fahrenheit"}`}
+          style={{
+            padding: "1px 5px",
+            color: unit === u ? "var(--ink)" : "var(--ink-4)",
+            background: "transparent",
+            border: 0,
+            cursor: "pointer",
+          }}
+        >
+          °{u}
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <MustKnowCard
       kind={kind}
       label="Weather"
-      headline={isLoading ? null : headline}
+      headerAction={unitToggle}
+      headline={headline}
       sub={condition || undefined}
       details={[
-        {
-          label: "Forecast high",
-          value: maxHigh !== null ? `${maxHigh}°` : undefined,
-        },
-        {
-          label: "Forecast low",
-          value: minLow !== null ? `${minLow}°` : undefined,
-        },
-        {
-          label: "Current",
-          value: currentTemp !== null ? `${currentTemp}°` : undefined,
-        },
-        {
-          label: "Forecast days",
-          value: forecastDays.length || undefined,
-        },
+        { label: "Forecast high", value: deg(maxHighC) },
+        { label: "Forecast low", value: deg(minLowC) },
+        { label: "Current", value: deg(currentTempC) },
+        { label: "Forecast days", value: forecastDays.length || undefined },
       ]}
       footnote={forecastDays.length ? "WeatherAPI · daily forecast" : undefined}
       isLast={isLast}
@@ -90,18 +128,20 @@ function formatRangeHeadline(
   low: number | null,
   high: number | null,
   currentTemp: number | null,
+  unit: TempUnit,
 ): React.ReactNode {
-  if (low !== null && high !== null && low !== high) return `${low}°–${high}°`;
-  if (high !== null) return `${high}°`;
-  if (low !== null) return `${low}°`;
-  if (currentTemp !== null) return `${currentTemp}°`;
+  const u = `°${unit}`;
+  if (low !== null && high !== null && low !== high) return `${low}–${high}${u}`;
+  if (high !== null) return `${high}${u}`;
+  if (low !== null) return `${low}${u}`;
+  if (currentTemp !== null) return `${currentTemp}${u}`;
   return null;
 }
 
 function deriveKind(headline: React.ReactNode, condition: string | null): StatusKind {
   if (!headline) return "note";
   // Conservative default. Without a structured weather-quality signal we
-  // call most trips "favorable"; extreme keywords flip to note.
+  // call most trips "favorable"; extreme keywords flip to attention.
   if (condition) {
     const c = condition.toLowerCase();
     if (
