@@ -170,5 +170,14 @@ Deno.serve(async (req: Request) => {
     }
   }
 
+  // Run-summary log for the cron (checkable via the visa_job_runs table).
+  await supabase.from('visa_job_runs').insert({
+    job: 'sync',
+    total: codes.length,
+    succeeded: synced,
+    failed,
+    details: { failures: results.filter((r: any) => !r.ok) },
+  })
+
   return json({ mode: 'sync', origin: ORIGIN, total: codes.length, synced, failed, results }, 200)
 })
