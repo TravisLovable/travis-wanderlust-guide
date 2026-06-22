@@ -204,7 +204,7 @@ export function Resolve({
           <GlobePanel
             dest={destLatLng}
             destLabel={`${destCode} · ${city.toUpperCase()}`}
-            size={isDesktop ? 380 : 240}
+            size={isDesktop ? 380 : 330}
           />
 
           {/* Callout — sits directly under the globe; ledger flows beneath as the tail. */}
@@ -245,8 +245,8 @@ export function Resolve({
           </div>
         </div>
 
-        {/* Right: ledger */}
-        <div>
+        {/* Right: ledger — desktop only; mobile is globe + callout (no ledger). */}
+        <div className="hidden md:block">
           <div
             className="font-travis-mono uppercase"
             style={{
