@@ -112,6 +112,50 @@ function rank(events: TravisEvent[]): TravisEvent[] {
 }
 
 /**
+ * Spread the cap across the trip window instead of taking the first N
+ * chronologically, so a dense city doesn't fill the whole list from arrival
+ * day. Round-robin by date: take the 1st event from each day (chronologically),
+ * then the 2nd from each day, etc., until the budget is spent — coverage comes
+ * from across the range before any single day gets seconds.
+ *
+ * Holidays are added first and ALWAYS kept (never subject to the budget). The
+ * returned list is re-sorted chronologically. Input is expected pre-ranked, so
+ * each day's events come out in stable title order.
+ */
+function distributeAcrossWindow(
+  events: TravisEvent[],
+  cap: number,
+): TravisEvent[] {
+  const holidays = events.filter(isHoliday);
+  const others = events.filter((e) => !isHoliday(e));
+
+  const byDate = new Map<string, TravisEvent[]>();
+  for (const e of others) {
+    const arr = byDate.get(e.startDate);
+    if (arr) arr.push(e);
+    else byDate.set(e.startDate, [e]);
+  }
+  const dates = [...byDate.keys()].sort();
+
+  const budget = Math.max(0, cap - holidays.length);
+  const picked: TravisEvent[] = [];
+  for (let round = 0; picked.length < budget; round++) {
+    let advanced = false;
+    for (const d of dates) {
+      if (picked.length >= budget) break;
+      const arr = byDate.get(d)!;
+      if (round < arr.length) {
+        picked.push(arr[round]);
+        advanced = true;
+      }
+    }
+    if (!advanced) break; // every day exhausted
+  }
+
+  return rank([...holidays, ...picked]);
+}
+
+/**
  * Query all relevant providers and return a merged, deduped, ranked list.
  * Never throws: a provider that fails contributes [] (providers swallow their
  * own errors, and we guard again here). An all-empty result is a valid,
@@ -131,9 +175,10 @@ export async function getEvents(query: EventQuery): Promise<TravisEvent[]> {
   );
 
   // Merge-layer pipeline, applied uniformly to every source:
-  //   window filter → relevance filter (drop standing inventory) →
-  //   dedupe → chronological rank → cap.
+  //   window filter → relevance filter (drop standing inventory) → dedupe →
+  //   rank → distribute the cap across the window (holidays always kept).
   const inWindow = settled.flat().filter((e) => withinTripWindow(e, query));
   const relevant2 = dropStandingInventory(inWindow, query);
-  return rank(dedupe(relevant2)).slice(0, RESULT_CAP);
+  const ranked = rank(dedupe(relevant2));
+  return distributeAcrossWindow(ranked, RESULT_CAP);
 }

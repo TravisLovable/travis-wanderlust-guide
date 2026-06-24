@@ -17,6 +17,12 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 // spread of dates and tell a one-off concert from a daily-recurring Broadway
 // run / standing museum admission. Bounded by Ticketmaster's deep-paging cap
 // (page * size < 1000).
+//
+// A date-asc pull alone only reaches the FRONT of a dense window (the first
+// ~1000 events are all early dates), so the back of the trip would be invisible.
+// When a window is denser than the asc cap we ALSO pull date-desc (the latest
+// ~1000) and merge — together they cover both ends of the stay. Pages after the
+// first fire concurrently to keep latency to ~2 round-trips.
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -73,6 +79,35 @@ function mapEvent(e: TmEvent, fallbackCountry: string) {
   };
 }
 
+type Mapped = NonNullable<ReturnType<typeof mapEvent>>;
+
+/** Fetch one Ticketmaster page; never throws. Returns mapped events + meta. */
+async function fetchTmPage(
+  baseParams: URLSearchParams,
+  sort: string,
+  page: number,
+  cc: string,
+): Promise<{ status: number; events: Mapped[]; totalPages: number }> {
+  const params = new URLSearchParams(baseParams);
+  params.set("sort", sort);
+  params.set("page", String(page));
+  try {
+    const res = await fetch(
+      `https://app.ticketmaster.com/discovery/v2/events.json?${params.toString()}`,
+    );
+    if (!res.ok) return { status: res.status, events: [], totalPages: 0 };
+    const data = await res.json();
+    const raw = data?._embedded?.events;
+    const events = Array.isArray(raw)
+      ? raw.map((e: TmEvent) => mapEvent(e, cc)).filter((e): e is Mapped => e !== null)
+      : [];
+    return { status: 200, events, totalPages: Number(data?.page?.totalPages ?? 1) };
+  } catch (e) {
+    console.error("Ticketmaster page fetch failed:", (e as Error)?.message);
+    return { status: 0, events: [], totalPages: 0 };
+  }
+}
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -97,7 +132,6 @@ serve(async (req) => {
     const baseParams = new URLSearchParams({
       apikey: apiKey,
       countryCode: cc,
-      sort: "date,asc",
       size: String(PAGE_SIZE),
     });
     if (typeof city === "string" && city.trim()) {
@@ -112,43 +146,40 @@ serve(async (req) => {
       baseParams.set("localStartDateTime", startLocal);
     }
 
-    const all: ReturnType<typeof mapEvent>[] = [];
-    let truncated = false;
-
-    for (let page = 0; page < MAX_PAGES; page++) {
-      const params = new URLSearchParams(baseParams);
-      params.set("page", String(page));
-      const res = await fetch(
-        `https://app.ticketmaster.com/discovery/v2/events.json?${params.toString()}`,
-      );
-
-      if (res.status === 401) {
-        console.error("Ticketmaster 401 — invalid TICKETMASTER_API_KEY");
-        return json({ events: [], source: "Ticketmaster", note: "invalid_key" });
-      }
-      if (!res.ok) {
-        console.error(`Ticketmaster upstream error: ${res.status}`);
-        break; // keep whatever earlier pages produced
-      }
-
-      const data = await res.json();
-      const raw = data?._embedded?.events;
-      if (!Array.isArray(raw) || raw.length === 0) break;
-
-      for (const e of raw) {
-        const mapped = mapEvent(e as TmEvent, cc);
-        if (mapped) all.push(mapped);
-      }
-
-      const totalPages = Number(data?.page?.totalPages ?? 1);
-      if (page + 1 >= totalPages) break;
-      if (page + 1 >= MAX_PAGES && totalPages > MAX_PAGES) truncated = true;
+    // First asc page reveals totalPages and surfaces a 401 early.
+    const first = await fetchTmPage(baseParams, "date,asc", 0, cc);
+    if (first.status === 401) {
+      console.error("Ticketmaster 401 — invalid TICKETMASTER_API_KEY");
+      return json({ events: [], source: "Ticketmaster", note: "invalid_key" });
     }
+    const totalPages = first.totalPages;
 
-    // `truncated` = the city had more pages than Ticketmaster lets us read; the
-    // merge-layer relevance filter still works on what we got, but the tail of a
-    // very dense window may be unreachable. Surfaced for observability.
-    return json({ events: all, source: "Ticketmaster", truncated });
+    // Remaining asc pages (front of the window). If the window is denser than the
+    // asc cap, also pull date-desc pages (back of the window) so both ends show.
+    const dense = totalPages > MAX_PAGES;
+    const tasks: Promise<{ events: Mapped[] }>[] = [];
+    for (let p = 1; p < Math.min(MAX_PAGES, totalPages); p++) {
+      tasks.push(fetchTmPage(baseParams, "date,asc", p, cc));
+    }
+    if (dense) {
+      for (let p = 0; p < MAX_PAGES; p++) {
+        tasks.push(fetchTmPage(baseParams, "date,desc", p, cc));
+      }
+    }
+    const rest = await Promise.all(tasks);
+
+    // Merge + dedupe by Ticketmaster id (asc/desc overlap in the middle).
+    const byId = new Map<string, Mapped>();
+    for (const e of first.events) byId.set(e.id, e);
+    for (const r of rest) for (const e of r.events) byId.set(e.id, e);
+
+    // truncated = even asc+desc (2000 events) can't cover this window's middle.
+    const truncated = totalPages > 2 * MAX_PAGES;
+    return json({
+      events: [...byId.values()],
+      source: "Ticketmaster",
+      truncated,
+    });
   } catch (error) {
     console.error("ticketmaster-events error:", (error as Error)?.message);
     // Graceful empty, never a 500 — the card must not break on this provider.
