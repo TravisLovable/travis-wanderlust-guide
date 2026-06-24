@@ -16,6 +16,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ChevronDownIcon } from "./IconSet";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
+import PrivacyModal from "@/components/PrivacyModal";
+import TermsModal from "@/components/TermsModal";
 
 type UserMenuProps = {
   /** Opens a profile/settings surface. Destination wired by the parent. */
@@ -42,6 +44,7 @@ const rowClass =
 export function UserMenu({ onEditProfile, className }: UserMenuProps) {
   const { user, userProfile, isAuthenticated, signOut } = useAuth();
   const [open, setOpen] = React.useState(false);
+  const [legal, setLegal] = React.useState<null | "privacy" | "terms">(null);
 
   if (!isAuthenticated) return null;
 
@@ -58,6 +61,7 @@ export function UserMenu({ onEditProfile, className }: UserMenuProps) {
   };
 
   return (
+    <>
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
         <button
@@ -152,6 +156,28 @@ export function UserMenu({ onEditProfile, className }: UserMenuProps) {
           )}
           <button
             type="button"
+            onClick={() => {
+              setOpen(false);
+              setLegal("privacy");
+            }}
+            className={rowClass}
+            style={{ padding: "10px 10px", fontSize: 13, color: "var(--ink-2)" }}
+          >
+            Privacy Policy
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setLegal("terms");
+            }}
+            className={rowClass}
+            style={{ padding: "10px 10px", fontSize: 13, color: "var(--ink-2)" }}
+          >
+            Terms of Service
+          </button>
+          <button
+            type="button"
             onClick={handleSignOut}
             className={rowClass}
             style={{ padding: "10px 10px", fontSize: 13, color: "var(--ink-2)" }}
@@ -161,6 +187,10 @@ export function UserMenu({ onEditProfile, className }: UserMenuProps) {
         </div>
       </PopoverContent>
     </Popover>
+
+      <PrivacyModal isOpen={legal === "privacy"} onClose={() => setLegal(null)} />
+      <TermsModal isOpen={legal === "terms"} onClose={() => setLegal(null)} />
+    </>
   );
 }
 

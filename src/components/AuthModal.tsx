@@ -6,6 +6,8 @@ import { Label } from '@/components/ui/label';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
+import PrivacyModal from '@/components/PrivacyModal';
+import TermsModal from '@/components/TermsModal';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -16,6 +18,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isSent, setIsSent] = useState(false);
+  const [legal, setLegal] = useState<null | 'privacy' | 'terms'>(null);
   const { toast } = useToast();
   const { isDevBypassEnabled, signInAsDevUser } = useAuth();
 
@@ -54,6 +57,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
   };
 
   return (
+    <>
     <Dialog open={isOpen} onOpenChange={handleClose}>
       <DialogContent className="bg-travis-bg-raised border-travis-hair-strong font-travis text-travis-ink sm:max-w-sm">
         <DialogHeader>
@@ -107,8 +111,30 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
             </Button>
           </div>
         )}
+
+        <div className="pt-2 text-center text-xs text-muted-foreground">
+          <button
+            type="button"
+            onClick={() => setLegal('privacy')}
+            className="underline underline-offset-2 hover:text-foreground bg-transparent border-0 cursor-pointer p-0"
+          >
+            Privacy Policy
+          </button>
+          <span className="px-2" aria-hidden>·</span>
+          <button
+            type="button"
+            onClick={() => setLegal('terms')}
+            className="underline underline-offset-2 hover:text-foreground bg-transparent border-0 cursor-pointer p-0"
+          >
+            Terms of Service
+          </button>
+        </div>
       </DialogContent>
     </Dialog>
+
+      <PrivacyModal isOpen={legal === 'privacy'} onClose={() => setLegal(null)} />
+      <TermsModal isOpen={legal === 'terms'} onClose={() => setLegal(null)} />
+    </>
   );
 };
 
