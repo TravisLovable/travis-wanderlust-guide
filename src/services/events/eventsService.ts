@@ -13,6 +13,23 @@ const PROVIDERS: EventProvider[] = [
   ticketmasterProvider,
 ];
 
+/**
+ * Hard trip-window filter, applied uniformly to every provider's output.
+ *
+ * An event qualifies only if its LOCAL start date falls within
+ * [checkin, checkout] inclusive. TravisEvent.startDate is already a local
+ * YYYY-MM-DD (Nager's `date`, Ticketmaster's venue-local `start.localDate`),
+ * so a lexicographic compare is timezone-free by construction — it kills the
+ * UTC-boundary bleed (events dated the day before check-in) without any Date
+ * parsing. Spanning / open-ended listings whose start precedes the window are
+ * dropped even if their range overlaps it (e.g. flex-admission tickets): we
+ * key strictly on start date, never on a range.
+ */
+function withinTripWindow(e: TravisEvent, query: EventQuery): boolean {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(e.startDate)) return false;
+  return e.startDate >= query.startDate && e.startDate <= query.endDate;
+}
+
 /** Dedupe key: same day + same title is the same event, regardless of source. */
 const dedupeKey = (e: TravisEvent): string =>
   `${e.startDate}|${e.title.trim().toLowerCase()}`;
@@ -57,5 +74,8 @@ export async function getEvents(query: EventQuery): Promise<TravisEvent[]> {
     relevant.map((p) => p.fetchEvents(query).catch(() => [] as TravisEvent[])),
   );
 
-  return rank(dedupe(settled.flat()));
+  // Window filter runs in the merge layer, after providers and before
+  // dedupe/rank, so every source is held to the same start-date rule.
+  const inWindow = settled.flat().filter((e) => withinTripWindow(e, query));
+  return rank(dedupe(inWindow));
 }
