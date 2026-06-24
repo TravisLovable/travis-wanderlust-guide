@@ -2,9 +2,11 @@ import * as React from "react";
 import { SelectedPlace } from "@/types/place";
 import { SubcardFrame } from "@/components/travis/results/SubcardFrame";
 import { KeyValueRow } from "@/components/travis/results/KeyValueRow";
+import { useUVIndex } from "@/hooks/useUVIndex";
 
-// Data source unchanged — synchronous mock derived from destination string.
-// TODO: replace with WeatherAPI UV index endpoint (out of redesign scope).
+// Real UV data from Open-Meteo, keyed off the destination's existing
+// coordinates (the same lat/lng the globe and weather use). No fabrication:
+// loading shows "Resolving…", any failure shows "—".
 
 interface UVIndexCardProps {
   placeDetails: SelectedPlace | null;
@@ -70,116 +72,144 @@ function uvBand(index: number): {
   };
 }
 
-function getMockUV(destination: string): {
-  index: number;
-  level: string;
-  peakStart: string;
-  peakEnd: string;
-  recommendation: string;
-} {
-  const lower = (destination || "").toLowerCase();
-  let index: number;
-  if (["bali", "thailand", "singapore", "hawaii", "caribbean", "miami", "kenya", "ecuador"].some((k) => lower.includes(k))) {
-    index = 8 + Math.floor(Math.abs(hashDest(lower)) % 3);
-  } else if (["iceland", "norway", "sweden", "finland", "alaska", "canada", "scotland"].some((k) => lower.includes(k))) {
-    index = 1 + Math.floor(Math.abs(hashDest(lower)) % 3);
-  } else if (["spain", "italy", "greece", "portugal", "australia", "dubai", "uae"].some((k) => lower.includes(k))) {
-    index = 6 + Math.floor(Math.abs(hashDest(lower)) % 3);
-  } else {
-    index = 4 + Math.floor(Math.abs(hashDest(lower)) % 3);
-  }
-  const band = uvBand(index);
-  const recommendations: Record<string, string> = {
-    Low: "Minimal protection needed.",
-    Moderate: "Wear sunglasses on bright days.",
-    High: "Sunscreen essential. Seek shade midday.",
-    "Very high": "Avoid midday sun. SPF 30+ required.",
-    Extreme: "Stay indoors midday. Full protection needed.",
-  };
-  return {
-    index,
-    level: band.label,
-    peakStart: "12:00 PM",
-    peakEnd: "2:00 PM",
-    recommendation: recommendations[band.label] ?? "",
-  };
-}
-
-function hashDest(s: string): number {
-  let h = 0;
-  for (let i = 0; i < s.length; i++) h = (((h << 5) - h) + s.charCodeAt(i)) | 0;
-  return h;
-}
+// Guidance is keyed to the day's peak exposure — the actionable planning signal.
+const RECOMMENDATIONS: Record<string, string> = {
+  Low: "Minimal protection needed.",
+  Moderate: "Wear sunglasses on bright days.",
+  High: "Sunscreen essential. Seek shade midday.",
+  "Very high": "Avoid midday sun. SPF 30+ required.",
+  Extreme: "Stay indoors midday. Full protection needed.",
+};
 
 const UVIndexCard: React.FC<UVIndexCardProps> = ({ placeDetails }) => {
-  const uv = getMockUV(placeDetails?.formatted_address || placeDetails?.name || "");
-  const band = uvBand(uv.index);
-  const peak = `${asString(uv.peakStart) ?? "—"} – ${asString(uv.peakEnd) ?? "—"}`;
+  const { data, isLoading, error } = useUVIndex(
+    placeDetails?.latitude,
+    placeDetails?.longitude,
+  );
+
+  // Guard defensively so no stale value renders under a failure.
+  const nowVal = error ? null : data?.now ?? null;
+  const maxVal = error ? null : data?.max ?? null;
+
+  const hasNow = nowVal != null && Number.isFinite(nowVal);
+  const hasMax = maxVal != null && Number.isFinite(maxVal);
+
+  const nowIndex = hasNow ? Math.round(nowVal as number) : null;
+  const maxIndex = hasMax ? Math.round(maxVal as number) : null;
+
+  // Headline reflects the current hour; if that one hour is unavailable but the
+  // day's peak is known, fall back to the peak rather than showing nothing.
+  const displayIndex = nowIndex ?? maxIndex;
+  const band = displayIndex != null ? uvBand(displayIndex) : null;
+  const maxBand = maxIndex != null ? uvBand(maxIndex) : null;
+
+  const dailyMax =
+    maxIndex != null && maxBand ? `${maxIndex} · ${maxBand.label}` : undefined;
+  const guidance = maxBand
+    ? RECOMMENDATIONS[maxBand.label]
+    : band
+      ? RECOMMENDATIONS[band.label]
+      : undefined;
+
+  const hasData = displayIndex != null;
 
   return (
     <SubcardFrame
       label="UV index"
       meta={
-        <span
-          className="inline-flex items-center gap-1.5 font-travis-mono uppercase"
-          style={{ fontSize: 10, letterSpacing: "0.12em", color: band.pipColor }}
-        >
+        band ? (
           <span
-            aria-hidden
-            style={{ width: 6, height: 6, background: band.pipColor, display: "inline-block" }}
-          />
-          {band.label}
-        </span>
+            className="inline-flex items-center gap-1.5 font-travis-mono uppercase"
+            style={{ fontSize: 10, letterSpacing: "0.12em", color: band.pipColor }}
+          >
+            <span
+              aria-hidden
+              style={{ width: 6, height: 6, background: band.pipColor, display: "inline-block" }}
+            />
+            {band.label}
+          </span>
+        ) : undefined
       }
-      footnote="Source: WeatherAPI · current day"
+      footnote="Source: Open-Meteo"
     >
       <div style={{ padding: "16px 20px" }}>
-        <div
-          className="font-travis-mono tabular-nums"
-          style={{
-            fontSize: 32,
-            fontWeight: 500,
-            color: "var(--ink)",
-            letterSpacing: "-0.01em",
-            lineHeight: 1,
-            marginBottom: 12,
-          }}
-        >
-          {uv.index}
-          <span
-            className="font-travis-mono"
-            style={{ fontSize: 14, color: "var(--ink-4)", marginLeft: 6, letterSpacing: "0.04em" }}
+        {isLoading && !hasData ? (
+          <div
+            className="font-travis"
+            style={{ color: "var(--ink-3)", fontSize: 13, padding: "8px 0" }}
           >
-            / 11
-          </span>
-        </div>
+            Resolving…
+          </div>
+        ) : !hasData ? (
+          <div>
+            <div
+              className="font-travis-mono tabular-nums"
+              style={{
+                fontSize: 32,
+                fontWeight: 500,
+                color: "var(--ink-4)",
+                lineHeight: 1,
+                marginBottom: 6,
+              }}
+            >
+              —
+            </div>
+            <div className="font-travis" style={{ color: "var(--ink-4)", fontSize: 12 }}>
+              {placeDetails?.latitude != null && placeDetails?.longitude != null
+                ? "UV data unavailable"
+                : "Location unavailable"}
+            </div>
+          </div>
+        ) : (
+          <>
+            <div
+              className="font-travis-mono tabular-nums"
+              style={{
+                fontSize: 32,
+                fontWeight: 500,
+                color: "var(--ink)",
+                letterSpacing: "-0.01em",
+                lineHeight: 1,
+                marginBottom: 12,
+              }}
+            >
+              {displayIndex}
+              <span
+                className="font-travis-mono"
+                style={{ fontSize: 14, color: "var(--ink-4)", marginLeft: 6, letterSpacing: "0.04em" }}
+              >
+                / 11
+              </span>
+            </div>
 
-        {/* 11-segment scale bar */}
-        <div className="flex gap-[2px] mb-4">
-          {Array.from({ length: 11 }, (_, i) => {
-            const seg = i + 1;
-            return (
-              <div
-                key={i}
-                style={{
-                  height: 6,
-                  flex: 1,
-                  background: band.segColor(seg),
-                  borderRadius: i === 0 ? "2px 0 0 2px" : i === 10 ? "0 2px 2px 0" : 0,
-                  opacity: seg <= uv.index ? 1 : 0.35,
-                }}
-              />
-            );
-          })}
-        </div>
+            {/* 11-segment scale bar */}
+            <div className="flex gap-[2px] mb-4">
+              {Array.from({ length: 11 }, (_, i) => {
+                const seg = i + 1;
+                return (
+                  <div
+                    key={i}
+                    style={{
+                      height: 6,
+                      flex: 1,
+                      background: band!.segColor(seg),
+                      borderRadius: i === 0 ? "2px 0 0 2px" : i === 10 ? "0 2px 2px 0" : 0,
+                      opacity: seg <= (displayIndex as number) ? 1 : 0.35,
+                    }}
+                  />
+                );
+              })}
+            </div>
 
-        <KeyValueRow label="Peak hours" value={asString(peak)} mono={false} />
-        <KeyValueRow
-          label="Guidance"
-          value={asString(uv.recommendation)}
-          mono={false}
-          noBorder
-        />
+            <KeyValueRow label="Daily max" value={asString(dailyMax)} />
+            <KeyValueRow
+              label="Guidance"
+              value={asString(guidance)}
+              mono={false}
+              noBorder
+            />
+          </>
+        )}
       </div>
     </SubcardFrame>
   );
