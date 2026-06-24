@@ -61,7 +61,6 @@ export const ticketmasterProvider: EventProvider = {
           city: q.city,
           startDate: q.startDate,
           endDate: q.endDate,
-          size: 20,
         },
       });
 

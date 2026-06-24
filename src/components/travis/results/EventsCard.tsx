@@ -10,7 +10,10 @@ type EventsCardProps = {
   destination: string;
 };
 
-const MAX_ROWS = 8;
+// The card renders every event the service returns (already relevance-filtered
+// and capped). If they overflow, the body scrolls inside the card's fixed
+// height — the card never grows unbounded and pushes the page.
+const MAX_BODY_HEIGHT = 360;
 
 /**
  * Events cell ("During your stay").
@@ -19,9 +22,10 @@ const MAX_ROWS = 8;
  *   - Nager.Date   — public holidays/observances, direct keyless client call
  *   - Ticketmaster — ticketed events, via the ticketmaster-events Edge Function
  *
- * The service normalizes, dedupes, and ranks; this card only formats + renders.
- * No fabrication: when no provider returns anything we show an honest empty
- * state rather than inventing events.
+ * The service normalizes, applies the trip-window + relevance filters, dedupes,
+ * ranks chronologically, and caps; this card only formats + renders. No
+ * fabrication: when no provider returns anything we show an honest empty state
+ * rather than inventing events.
  */
 export function EventsCard({ placeDetails, dates, destination }: EventsCardProps) {
   const city = asString(placeDetails?.name) ?? asString(destination) ?? "";
@@ -40,11 +44,18 @@ export function EventsCard({ placeDetails, dates, destination }: EventsCardProps
       : null,
   );
 
-  const rows = events.slice(0, MAX_ROWS);
+  const rows = events;
 
   return (
     <SubcardFrame label="During your stay">
-      <div style={{ padding: 0 }}>
+      <div
+        style={{
+          padding: 0,
+          maxHeight: MAX_BODY_HEIGHT,
+          overflowY: "auto",
+          WebkitOverflowScrolling: "touch",
+        }}
+      >
         {isLoading && rows.length === 0 && (
           <div
             className="font-travis"
