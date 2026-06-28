@@ -18,6 +18,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 import PrivacyModal from "@/components/PrivacyModal";
 import TermsModal from "@/components/TermsModal";
+import { DeleteAccountDialog } from "./DeleteAccountDialog";
 
 type UserMenuProps = {
   /** Opens a profile/settings surface. Destination wired by the parent. */
@@ -45,6 +46,7 @@ export function UserMenu({ onEditProfile, className }: UserMenuProps) {
   const { user, userProfile, isAuthenticated, signOut } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [legal, setLegal] = React.useState<null | "privacy" | "terms">(null);
+  const [showDelete, setShowDelete] = React.useState(false);
 
   if (!isAuthenticated) return null;
 
@@ -184,12 +186,27 @@ export function UserMenu({ onEditProfile, className }: UserMenuProps) {
           >
             Sign out
           </button>
+
+          <div style={{ height: 1, background: "var(--hair)", margin: "6px 4px" }} />
+
+          <button
+            type="button"
+            onClick={() => {
+              setOpen(false);
+              setShowDelete(true);
+            }}
+            className={rowClass}
+            style={{ padding: "10px 10px", fontSize: 13, color: "#f87171" }}
+          >
+            Delete account
+          </button>
         </div>
       </PopoverContent>
     </Popover>
 
       <PrivacyModal isOpen={legal === "privacy"} onClose={() => setLegal(null)} />
       <TermsModal isOpen={legal === "terms"} onClose={() => setLegal(null)} />
+      <DeleteAccountDialog isOpen={showDelete} onClose={() => setShowDelete(false)} />
     </>
   );
 }
