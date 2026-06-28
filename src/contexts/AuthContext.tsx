@@ -117,10 +117,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setUserProfile(null);
   };
 
-  const signInAsDevUser = () => {
+  const signInAsDevUser = async () => {
     if (!isDevBypassEnabled) return;
-    // Clear real Supabase session so function invokes don't send an expired/wrong Bearer JWT (which causes 401 Invalid JWT)
-    supabase.auth.signOut().catch(() => {});
+    // Clear any real Supabase session first so later function invokes don't send an expired/wrong
+    // Bearer JWT (which causes 401 Invalid JWT).
+    //
+    // This MUST be awaited. signOut() fires a SIGNED_OUT event, and our onAuthStateChange handler
+    // reacts by nulling user/session/profile. signOut() only resolves after that handler has run
+    // (GoTrue awaits its SIGNED_OUT subscribers), so awaiting here guarantees the wipe happens
+    // BEFORE we install the mock below. Fire-and-forget instead let the wipe land a tick *after*
+    // the mock was set, clobbering it and leaving dev-bypass logged out.
+    await supabase.auth.signOut().catch(() => {});
     const { mockUser, mockSession, mockProfile } = getDevBypassAuth();
     setSession(mockSession);
     setUser(mockUser);
