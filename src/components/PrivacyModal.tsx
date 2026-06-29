@@ -29,8 +29,8 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
             <h3 className="font-semibold mb-2">Information We Collect</h3>
             <p className="text-muted-foreground">
               When you create an account and set up your profile, Travis collects your name,
-              email address, phone number, country of citizenship (from your passport), and
-              home city — along with your travel preferences, such as preferred airlines,
+              email address, phone number, country of citizenship, and home city — along with
+              your travel preferences, such as preferred airlines,
               frequent-flyer tier, travel style and pace, and which alerts you want. We also
               keep the destinations you search for and save. We do{' '}
               <span className="font-medium text-foreground">not</span> collect or store your
