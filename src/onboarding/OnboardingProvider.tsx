@@ -76,6 +76,8 @@ interface OnboardingContextValue {
   back: () => void;
   goTo: (i: number) => void;
   complete: () => Promise<{ ok: boolean; error?: string }>;
+  /** Abandon onboarding: discard the local draft and sign out. */
+  exit: () => Promise<void>;
 }
 
 const OnboardingContext = createContext<OnboardingContextValue | undefined>(undefined);
@@ -98,7 +100,7 @@ function readData(): OnboardingData {
 }
 
 export function OnboardingProvider({ children }: { children: React.ReactNode }) {
-  const { user, session, updateProfile, userProfile } = useAuth();
+  const { user, session, updateProfile, userProfile, signOut } = useAuth();
 
   const [stepIdx, setStepIdx] = useState<number>(readStep);
   const [data, setData] = useState<OnboardingData>(readData);
@@ -191,8 +193,20 @@ export function OnboardingProvider({ children }: { children: React.ReactNode }) 
     return { ok: true };
   }, [canPersistDb, authId, data, updateProfile, userProfile]);
 
+  // Exit: discard the in-progress draft so the next sign-in starts fresh, then
+  // sign out. The /onboarding guard sees the now-unauthenticated user and sends
+  // them to the signed-out home (a plain "go home" while logged in would just
+  // bounce back here via RequireOnboarding).
+  const exit = useCallback(async () => {
+    try {
+      localStorage.removeItem(STEP_KEY);
+      localStorage.removeItem(DATA_KEY);
+    } catch { /* ignore */ }
+    await signOut();
+  }, [signOut]);
+
   const value: OnboardingContextValue = {
-    stepIdx, data, saveState, patch, next, back, goTo, complete,
+    stepIdx, data, saveState, patch, next, back, goTo, complete, exit,
   };
   return <OnboardingContext.Provider value={value}>{children}</OnboardingContext.Provider>;
 }

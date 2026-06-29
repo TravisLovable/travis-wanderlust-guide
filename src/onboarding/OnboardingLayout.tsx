@@ -9,8 +9,34 @@
 // (the only two design vars without an exact token).
 
 import React from 'react';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Button } from '@/components/ui/button';
 import { STEPS } from './steps';
 import { useOnboarding } from './OnboardingProvider';
+
+/** Small mono "Exit" affordance — same position on every step, never near Continue. */
+function ExitButton({ onClick }: { onClick: () => void }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className="font-travis-mono"
+      style={{
+        fontSize: 10.5,
+        letterSpacing: '0.12em',
+        textTransform: 'uppercase',
+        color: 'var(--ink-3)',
+        background: 'transparent',
+        border: '1px solid var(--hair-strong)',
+        borderRadius: 6,
+        padding: '6px 12px',
+        cursor: 'pointer',
+      }}
+    >
+      Exit ✕
+    </button>
+  );
+}
 
 const saveLabel: Record<string, string> = {
   idle: 'NOT SAVED',
@@ -20,7 +46,8 @@ const saveLabel: Record<string, string> = {
 };
 
 export function OnboardingLayout({ children }: { children: React.ReactNode }) {
-  const { stepIdx, goTo, saveState } = useOnboarding();
+  const { stepIdx, goTo, saveState, exit } = useOnboarding();
+  const [confirmExit, setConfirmExit] = React.useState(false);
   const step = STEPS[stepIdx];
   const total = STEPS.length;
   const pct = (stepIdx / (total - 1)) * 100;
@@ -123,9 +150,12 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
             <span className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--ink-3)', textTransform: 'uppercase' }}>
               Step {String(stepIdx + 1).padStart(2, '0')} · {step.label}
             </span>
-            <span className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-4)' }}>
-              {saveLabel[saveState]}
-            </span>
+            <div className="flex items-center" style={{ gap: 12 }}>
+              <span className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-4)' }}>
+                {saveLabel[saveState]}
+              </span>
+              <ExitButton onClick={() => setConfirmExit(true)} />
+            </div>
           </div>
           <div style={{ height: 2, background: 'var(--hair)' }}>
             <div style={{ width: `${pct}%`, height: '100%', background: 'var(--signal-ok)', transition: 'width 0.3s' }} />
@@ -140,9 +170,12 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
           <div className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.14em', color: 'var(--ink-3)', textTransform: 'uppercase' }}>
             Step {String(stepIdx + 1).padStart(2, '0')} · {step.label}
           </div>
-          <span className="font-travis-mono" style={{ fontSize: 10.5, color: 'var(--ink-4)', letterSpacing: '0.08em' }}>
-            PROGRESS SAVED AUTOMATICALLY
-          </span>
+          <div className="flex items-center" style={{ gap: 16 }}>
+            <span className="font-travis-mono" style={{ fontSize: 10.5, color: 'var(--ink-4)', letterSpacing: '0.08em' }}>
+              PROGRESS SAVED AUTOMATICALLY
+            </span>
+            <ExitButton onClick={() => setConfirmExit(true)} />
+          </div>
         </div>
 
         <div className="flex-1 flex flex-col">
@@ -170,6 +203,33 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
           </footer>
         </div>
       </main>
+
+      <Dialog open={confirmExit} onOpenChange={setConfirmExit}>
+        <DialogContent className="bg-travis-bg-raised border-travis-hair-strong font-travis text-travis-ink sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="text-lg font-semibold">Exit setup?</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-2">
+            <p className="text-sm text-muted-foreground">
+              You'll be signed out, and the answers you've entered so far won't be saved.
+              You can start fresh next time you sign in.
+            </p>
+            <div className="flex gap-2">
+              <Button type="button" variant="outline" className="flex-1" onClick={() => setConfirmExit(false)}>
+                Keep setting up
+              </Button>
+              <Button
+                type="button"
+                variant="destructive"
+                className="flex-1"
+                onClick={() => { setConfirmExit(false); exit(); }}
+              >
+                Exit &amp; sign out
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
