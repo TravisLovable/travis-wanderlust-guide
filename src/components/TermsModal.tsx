@@ -62,8 +62,9 @@ const TermsModal: React.FC<TermsModalProps> = ({ isOpen, onClose }) => {
           <div>
             <h3 className="font-semibold mb-2">Account Termination</h3>
             <p className="text-muted-foreground">
-              We reserve the right to terminate accounts that violate these terms or 
-              engage in harmful activities.
+              You can permanently delete your account and all of your data at any time from the
+              account menu → Delete account. We also reserve the right to terminate accounts that
+              violate these terms or engage in harmful activities.
             </p>
           </div>
 
