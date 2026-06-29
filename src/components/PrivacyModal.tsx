@@ -28,33 +28,83 @@ const PrivacyModal: React.FC<PrivacyModalProps> = ({ isOpen, onClose }) => {
           <div>
             <h3 className="font-semibold mb-2">Information We Collect</h3>
             <p className="text-muted-foreground">
-              Travis collects information you provide directly, such as your travel preferences, 
-              destination searches, and profile information. We also collect usage data to improve 
-              our services.
+              When you create an account and set up your profile, Travis collects your name,
+              email address, phone number, country of citizenship, and home city — along with
+              your travel preferences, such as preferred airlines,
+              frequent-flyer tier, travel style and pace, and which alerts you want. We also
+              keep the destinations you search for and save. We do{' '}
+              <span className="font-medium text-foreground">not</span> collect or store your
+              passport number.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">Location</h3>
+            <p className="text-muted-foreground">
+              When the app starts, we estimate your country and city from your IP address so we
+              can set your home location for you. This is an approximate, IP-based estimate
+              provided by third parties (ipapi.co and ipwho.is), and you can change it anytime.
+              Travis does not access your device's GPS or precise location.
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-2">How We Use Your Information</h3>
             <p className="text-muted-foreground">
-              We use your information to provide travel insights, personalize your experience, 
-              and improve our services. We do not sell your personal information to third parties.
+              We use your information to provide travel insights, personalize your experience,
+              and keep your account working. We do not sell your personal information, and we do
+              not use it for advertising or cross-app tracking.
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-2">Data Security</h3>
+            <h3 className="font-semibold mb-2">AI-Generated Insights</h3>
             <p className="text-muted-foreground">
-              We implement appropriate security measures to protect your personal information 
-              against unauthorized access, alteration, disclosure, or destruction.
+              To generate personalized insights, we send the destination you're viewing — along
+              with your first name, home city, and country of citizenship — to third-party AI
+              providers (OpenAI and Anthropic). They use this only to produce your insights, not
+              to build a profile of you.
             </p>
           </div>
 
           <div>
             <h3 className="font-semibold mb-2">Third-Party Services</h3>
             <p className="text-muted-foreground">
-              Travis integrates with third-party services (Google Places and weather APIs)
-              to provide travel information. These services have their own privacy policies.
+              Travis relies on third-party services to work, and shares only what each one needs:
+            </p>
+            <ul className="text-muted-foreground list-disc pl-5 mt-2 space-y-1">
+              <li><span className="text-foreground">Supabase</span> — our backend; stores your account and profile data.</li>
+              <li><span className="text-foreground">Google Places</span> — destination search (receives what you type).</li>
+              <li><span className="text-foreground">OpenAI &amp; Anthropic</span> — generate travel insights (see above).</li>
+              <li><span className="text-foreground">WeatherAPI &amp; Open-Meteo</span> — weather and UV for the destination.</li>
+              <li><span className="text-foreground">Ticketmaster</span> — local events for the destination and dates.</li>
+              <li><span className="text-foreground">ipapi.co &amp; ipwho.is</span> — approximate location from your IP (see Location).</li>
+              <li>
+                <span className="text-foreground">exchangerate-api, REST Countries, WHO, Nager.Date, Time and Date, Travel Buddy</span>{' '}
+                — currency, country, health, holiday, and visa reference data, looked up by
+                country (no personal data sent).
+              </li>
+            </ul>
+            <p className="text-muted-foreground mt-2">
+              Each service has its own privacy policy governing the data it receives.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">Data Retention &amp; Deletion</h3>
+            <p className="text-muted-foreground">
+              We keep your data for as long as your account is active. You can permanently delete
+              your account and all associated data at any time from the account menu (your initials,
+              top right) → <span className="text-foreground">Delete account</span>. Deletion is
+              immediate and irreversible.
+            </p>
+          </div>
+
+          <div>
+            <h3 className="font-semibold mb-2">Data Security</h3>
+            <p className="text-muted-foreground">
+              We implement appropriate security measures to protect your personal information
+              against unauthorized access, alteration, disclosure, or destruction.
             </p>
           </div>
 
