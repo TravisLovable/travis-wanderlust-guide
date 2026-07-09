@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef, useCallback } from 'react';
+import { Capacitor } from '@capacitor/core';
 import { supabase } from '@/integrations/supabase/client';
 import type { SelectedPlace } from '@/types/place';
 
@@ -79,9 +80,15 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
   const placesServiceRef = useRef<google.maps.places.PlacesService | null>(null);
   const dummyDivRef = useRef<HTMLDivElement | null>(null);
 
-  // Prefer env key; if missing, we use Supabase Edge Functions (they have GOOGLE_PLACES_KEY in secrets)
+  // Prefer env key; if missing, we use Supabase Edge Functions (they have GOOGLE_PLACES_KEY in secrets).
+  //
+  // On native (capacitor://localhost) we ALWAYS use the Edge Function, even when a client key is
+  // present. The browser key (VITE_GOOGLE_PLACES_KEY) is HTTP-referrer-restricted; from the
+  // capacitor:// origin Google rejects the JS SDK request with REQUEST_DENIED — "API keys with
+  // referer restrictions cannot be used" — so getPlacePredictions returns nothing and suggestions
+  // never populate. The Edge Function runs server-side with GOOGLE_PLACES_KEY (no referrer check).
   const apiKey = import.meta.env.VITE_GOOGLE_PLACES_KEY;
-  const useEdgeFunction = !apiKey;
+  const useEdgeFunction = Capacitor.isNativePlatform() || !apiKey;
 
   // Initialise: either load Google SDK (when key in env) or mark ready for Edge Function path
   useEffect(() => {
