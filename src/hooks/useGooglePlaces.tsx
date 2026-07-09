@@ -250,7 +250,13 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
               address_components?: Array<{ types: string[]; short_name?: string; long_name?: string }>;
             };
             status?: string;
-          }>('google-place-details', { body: { place_id: placeId } });
+            // Pass place_id via the query string, not a POST body: the deployed
+            // google-place-details function reads req.json() for the body and that
+            // throws in the edge runtime (returns 400 "Place ID parameter is
+            // required"), but it reads url.searchParams.get('place_id') first. The
+            // sibling autocomplete fn parses the body via req.text() and works — so
+            // this only affects details. Query-param avoids that path entirely.
+          }>(`google-place-details?place_id=${encodeURIComponent(placeId)}`);
 
           console.log('[places] edge place-details RESPONSE —', {
             status: data?.status,
