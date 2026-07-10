@@ -85,9 +85,18 @@
   /* Native shell backdrop: page wrappers are dark (var(--bg)), but with
      viewport-fit=cover the html root shows through the safe-area strips
      (Island / home indicator) and during scroll rubber-banding. Paint it
-     dark so those strips never flash the default white body background. */
-  html {
+     dark so those strips never flash the default white body background.
+     overflow-x:hidden is a global guard so the page can never scroll
+     left/right — only vertical scrolling is allowed. */
+  html,
+  body {
     background: var(--bg);
+    overflow-x: hidden;
+    /* Kill the WKWebView horizontal rubber-band: a swipe could momentarily pan
+       the document (documentElement.scrollLeft) even with no overflow, which
+       reads as the page scrolling left/right. overscroll-behavior stops it
+       without affecting vertical scrolling on other routes. */
+    overscroll-behavior: none;
   }
 }
 
