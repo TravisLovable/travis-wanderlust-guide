@@ -81,6 +81,14 @@
     @apply bg-background text-foreground antialiased;
     font-feature-settings: "rlig" 1, "calt" 1;
   }
+
+  /* Native shell backdrop: page wrappers are dark (var(--bg)), but with
+     viewport-fit=cover the html root shows through the safe-area strips
+     (Island / home indicator) and during scroll rubber-banding. Paint it
+     dark so those strips never flash the default white body background. */
+  html {
+    background: var(--bg);
+  }
 }
 
 /* ============================================
@@ -96,6 +104,13 @@
 /* Fixed card height — single source of truth from Weather widget */
 :root {
   --results-card-height: 280px;
+
+  /* Native safe-area insets. Read as 0 unless index.html viewport has
+     viewport-fit=cover. Consumed by the app-shell headers (top) and the
+     bottom-most fixed elements / sheets (bottom) so content clears the
+     status bar / Dynamic Island and the home indicator. */
+  --sat: env(safe-area-inset-top, 0px);
+  --sab: env(safe-area-inset-bottom, 0px);
 }
 
 /* Search Bar - Light Mode */

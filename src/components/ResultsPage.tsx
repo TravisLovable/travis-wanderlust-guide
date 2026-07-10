@@ -146,7 +146,7 @@ const ResultsPage = ({ placeDetails, dates, onBack }: ResultsPageProps) => {
 
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className={`fixed bottom-6 right-6 z-50 h-10 w-10 rounded-full bg-foreground/80 text-background flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-foreground ${
+          className={`fixed bottom-[calc(1.5rem+var(--sab))] right-6 z-50 h-10 w-10 rounded-full bg-foreground/80 text-background flex items-center justify-center shadow-lg backdrop-blur-sm transition-all duration-300 hover:bg-foreground ${
             showScrollTop ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4 pointer-events-none'
           }`}
           aria-label="Return to top"

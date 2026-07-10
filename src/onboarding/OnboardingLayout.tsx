@@ -144,7 +144,7 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
         {/* Mobile-only step + progress strip (decision 4B) */}
         <div
           className="lg:hidden"
-          style={{ padding: '14px 20px', borderBottom: '1px solid var(--hair)', background: 'var(--bg-inset)' }}
+          style={{ padding: '14px 20px', paddingTop: 'calc(14px + var(--sat))', borderBottom: '1px solid var(--hair)', background: 'var(--bg-inset)' }}
         >
           <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
             <span className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--ink-3)', textTransform: 'uppercase' }}>
@@ -191,6 +191,7 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
             className="font-travis-mono flex justify-between"
             style={{
               padding: '14px clamp(20px, 6vw, 40px)',
+              paddingBottom: 'calc(14px + var(--sab))',
               borderTop: '1px solid var(--hair)',
               fontSize: 10.5,
               letterSpacing: '0.12em',

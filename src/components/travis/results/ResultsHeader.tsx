@@ -42,7 +42,9 @@ export function ResultsHeader({
 
   return (
     <section
-      className="px-5 md:px-8 py-7 md:py-10 border-b"
+      // Top padding = base (py-7 / md:py-10) + safe-area inset, so the top-most
+      // element on the results screen clears the status bar / Dynamic Island.
+      className="px-5 md:px-8 pb-7 md:pb-10 pt-[calc(1.75rem+var(--sat))] md:pt-[calc(2.5rem+var(--sat))] border-b"
       style={{
         background: "var(--bg)",
         borderColor: "var(--hair)",

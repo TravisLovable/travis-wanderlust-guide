@@ -36,8 +36,11 @@ export function Topbar({
         className,
       )}
       style={{
-        height: 52,
-        padding: "0 24px",
+        // Safe-area top for tablet/landscape where this bar is visible and sticky.
+        height: "calc(52px + var(--sat))",
+        paddingTop: "var(--sat)",
+        paddingLeft: 24,
+        paddingRight: 24,
         background: "color-mix(in oklch, var(--bg) 88%, transparent)",
       }}
     >
