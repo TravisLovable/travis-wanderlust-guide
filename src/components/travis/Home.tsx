@@ -1,4 +1,5 @@
 import * as React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { SelectedPlace } from "@/hooks/useGooglePlaces";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useAuth } from "@/contexts/AuthContext";
@@ -28,6 +29,20 @@ export function Home({ onSearch }: HomeProps) {
   const [destOpen, setDestOpen] = React.useState(false);
   const [datesOpen, setDatesOpen] = React.useState(false);
   const [contextOpen, setContextOpen] = React.useState(false);
+
+  // Progressive disclosure: reveal the dates field once a destination is
+  // picked, and the CTA once dates are set. "Settled" flags flip once each
+  // reveal animation finishes so the desktop popovers (absolute-positioned)
+  // aren't clipped by the wrapper's overflow:hidden. (Mobile sheets portal,
+  // so they're never clipped either way.)
+  const [datesSettled, setDatesSettled] = React.useState(false);
+  const [ctaSettled, setCtaSettled] = React.useState(false);
+  const reveal = {
+    initial: { opacity: 0, height: 0 },
+    animate: { opacity: 1, height: "auto" as const },
+    exit: { opacity: 0, height: 0 },
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const },
+  };
 
   const [passport, setPassport] = React.useState<string>(
     () => userProfile?.country_data?.name ?? "United States",
@@ -72,19 +87,27 @@ export function Home({ onSearch }: HomeProps) {
 
   return (
     <div
-      className="min-h-screen w-full font-travis"
-      style={{ background: "var(--bg)", color: "var(--ink)" }}
+      className="w-full font-travis flex flex-col overflow-hidden"
+      // Fixed viewport-height shell: the header stays pinned and the content
+      // beneath it scrolls, so nothing (e.g. MONITORING) clips at the bottom.
+      // 100dvh + viewport-fit=cover spans the full screen incl. safe areas.
+      style={{ height: "100dvh", background: "var(--bg)", color: "var(--ink)" }}
     >
-      <Topbar context={systemContext} onContextClick={() => setContextOpen(true)} />
+      {/* Fixed header — never scrolls. Safe-area top inset lives inside the header. */}
+      <div className="shrink-0">
+        <Topbar context={systemContext} onContextClick={() => setContextOpen(true)} />
 
-      {/* Mobile header — desktop uses the sticky Topbar above (hidden under md). */}
-      <MobileHeader
-        passport={passport}
-        origin={origin}
-        onContextClick={() => setContextOpen(true)}
-      />
+        {/* Mobile header — desktop uses the sticky Topbar above (hidden under md). */}
+        <MobileHeader
+          passport={passport}
+          origin={origin}
+          onContextClick={() => setContextOpen(true)}
+        />
+      </div>
 
-      <main className="px-5 md:px-8 pt-10 md:pt-16">
+      {/* Scrollable content region beneath the fixed header. min-h-0 lets the
+          flex child shrink so overflow-y-auto actually scrolls. */}
+      <main className="flex-1 min-h-0 overflow-y-auto px-5 md:px-8 pt-10 md:pt-16">
         <div className="travis-rise max-w-[1180px] mx-auto w-full">
           <div
             className="font-travis-mono uppercase"
@@ -150,52 +173,74 @@ export function Home({ onSearch }: HomeProps) {
               />
             </div>
 
-            <div ref={datesFieldRef} className="relative">
-              <FieldButton
-                label="Dates"
-                icon={<CalendarIcon style={{ color: "var(--ink-3)" }} />}
-                value={dateLabel}
-                muted={!depart || !ret}
-                onClick={() => {
-                  setDatesOpen(true);
-                  setDestOpen(false);
-                }}
-              />
-              <CalendarSheet
-                open={datesOpen}
-                onOpenChange={setDatesOpen}
-                depart={depart}
-                ret={ret}
-                onChange={(d, r) => {
-                  setDepart(d);
-                  setRet(r);
-                }}
-              />
-            </div>
-
-            <button
-              type="button"
-              onClick={submit}
-              disabled={!canSubmit}
-              className={cn(
-                "w-full md:w-auto cursor-pointer border-0 font-travis flex items-center justify-center gap-2.5",
-                "transition-all",
-                canSubmit ? "travis-cta-ambient" : "cursor-not-allowed",
+            {/* Dates field — revealed once a destination is selected. */}
+            <AnimatePresence initial={false} onExitComplete={() => setDatesSettled(false)}>
+              {place && (
+                <motion.div
+                  key="dates-field"
+                  {...reveal}
+                  onAnimationComplete={() => setDatesSettled(true)}
+                  style={{ overflow: datesSettled ? "visible" : "hidden" }}
+                >
+                  <div ref={datesFieldRef} className="relative">
+                    <FieldButton
+                      label="Dates"
+                      icon={<CalendarIcon style={{ color: "var(--ink-3)" }} />}
+                      value={dateLabel}
+                      muted={!depart || !ret}
+                      onClick={() => {
+                        setDatesOpen(true);
+                        setDestOpen(false);
+                      }}
+                    />
+                    <CalendarSheet
+                      open={datesOpen}
+                      onOpenChange={setDatesOpen}
+                      depart={depart}
+                      ret={ret}
+                      onChange={(d, r) => {
+                        setDepart(d);
+                        setRet(r);
+                      }}
+                    />
+                  </div>
+                </motion.div>
               )}
-              style={{
-                background: "var(--ink)",
-                color: "var(--bg)",
-                padding: "18px 24px",
-                fontSize: 16,
-                fontWeight: 500,
-                letterSpacing: "-0.005em",
-                borderRadius: 8,
-                margin: "6px 0 0 0",
-              }}
-            >
-              Get Intel
-              <ArrowIcon width={16} height={16} />
-            </button>
+            </AnimatePresence>
+
+            {/* Get Intel — revealed once dates are set. */}
+            <AnimatePresence initial={false} onExitComplete={() => setCtaSettled(false)}>
+              {canSubmit && (
+                <motion.div
+                  key="cta"
+                  {...reveal}
+                  onAnimationComplete={() => setCtaSettled(true)}
+                  style={{ overflow: ctaSettled ? "visible" : "hidden" }}
+                >
+                  <button
+                    type="button"
+                    onClick={submit}
+                    className={cn(
+                      "w-full md:w-auto cursor-pointer border-0 font-travis flex items-center justify-center gap-2.5",
+                      "transition-all travis-cta-ambient",
+                    )}
+                    style={{
+                      background: "var(--ink)",
+                      color: "var(--bg)",
+                      padding: "18px 24px",
+                      fontSize: 16,
+                      fontWeight: 500,
+                      letterSpacing: "-0.005em",
+                      borderRadius: 8,
+                      margin: "6px 0 0 0",
+                    }}
+                  >
+                    Get Intel
+                    <ArrowIcon width={16} height={16} />
+                  </button>
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
 
           <p
