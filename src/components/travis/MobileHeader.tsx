@@ -26,7 +26,9 @@ export function MobileHeader({ passport, origin, onContextClick }: MobileHeaderP
   return (
     <header
       className="flex md:hidden items-center justify-between gap-3 px-5 border-b border-travis-hair"
-      style={{ height: 56 }}
+      // Safe-area top so the wordmark clears the status bar / Dynamic Island.
+      // Content row stays 56px; the inset is added on top (border-box).
+      style={{ height: "calc(56px + var(--sat))", paddingTop: "var(--sat)" }}
     >
       <Logo />
       <div className="flex items-center gap-2.5">

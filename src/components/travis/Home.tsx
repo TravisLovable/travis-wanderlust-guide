@@ -234,7 +234,7 @@ export function Home({ onSearch }: HomeProps) {
           />
         </div>
 
-        <div className="pb-12 md:pb-20" />
+        <div className="pb-[calc(3rem+var(--sab))] md:pb-20" />
       </main>
 
       <ContextPicker
