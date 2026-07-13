@@ -86,7 +86,9 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
   }));
 
   const busy = authLoading || loading;
-  const count = busy ? 0 : !isAuthenticated ? MOCK_ROWS.length : realRows.length;
+  // Signed out the rows are illustrative, so the slot reads "sample" rather than a
+  // count — a number here is indistinguishable from real tracked destinations.
+  const countLabel = busy ? "0" : !isAuthenticated ? "Sample" : String(realRows.length);
 
   return (
     <section
@@ -103,7 +105,7 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
           >
             <span style={{ color: "rgba(255,255,255,0.32)" }}>Monitoring</span>
             <span style={{ color: "var(--ink-4)" }}>·</span>
-            <span style={{ color: "var(--ink-3)" }}>{count}</span>
+            <span style={{ color: "var(--ink-3)" }}>{countLabel}</span>
             <span style={{ color: "var(--ink-4)" }}>·</span>
             <span style={{ color: "var(--ink-3)" }}>{collapsed ? "Show" : "Hide"}</span>
             <ChevronDownIcon
@@ -134,7 +136,7 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
               <StateRow label="Loading…" />
             ) : !isAuthenticated ? (
               <>
-                <RowList rows={MOCK_ROWS} />
+                <RowList rows={MOCK_ROWS} sample />
                 <EmptyState
                   label="Sign in to track destinations"
                   cta={{ label: "Get started", onClick: openAuthModal }}
@@ -154,17 +156,17 @@ export function MonitoringList({ onPick }: MonitoringListProps) {
   );
 }
 
-function RowList({ rows }: { rows: RowVM[] }) {
+function RowList({ rows, sample = false }: { rows: RowVM[]; sample?: boolean }) {
   return (
     <div>
       {rows.map((row) => (
-        <Row key={row.key} row={row} />
+        <Row key={row.key} row={row} sample={sample} />
       ))}
     </div>
   );
 }
 
-function Row({ row }: { row: RowVM }) {
+function Row({ row, sample = false }: { row: RowVM; sample?: boolean }) {
   const interactive = !!row.onPick;
   const Tag = interactive ? "button" : "div";
   return (
@@ -188,6 +190,21 @@ function Row({ row }: { row: RowVM }) {
         >
           {row.title}
         </span>
+        {sample && (
+          <span
+            className="font-travis-mono uppercase shrink-0"
+            style={{
+              fontSize: 9,
+              letterSpacing: "0.12em",
+              color: "var(--ink-4)",
+              border: "1px solid var(--hair)",
+              borderRadius: 4,
+              padding: "2px 5px",
+            }}
+          >
+            Example
+          </span>
+        )}
       </div>
       <div
         className="flex items-center justify-between gap-3 mt-1.5"
