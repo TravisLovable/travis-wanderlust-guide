@@ -2,9 +2,11 @@
 //
 // Mirrors the LiveStatus idiom (the sibling in Topbar's `trailing` slot): a
 // reskinned shadcn Popover — bg-travis-bg-raised / hairline border / mono
-// micro-labels — NOT the legacy DropdownMenu. Renders nothing unless useAuth()
-// reports an authenticated user. State + sign-out come straight from useAuth;
-// this component owns no auth logic of its own.
+// micro-labels — NOT the legacy DropdownMenu. When useAuth() reports no
+// authenticated user this collapses to a "Sign in" button that opens the auth
+// modal, so the account slot is an affordance in both states. State, sign-out,
+// and the modal all come straight from useAuth; this component owns no auth
+// logic of its own.
 //
 // `onEditProfile` is the path to a profile/settings surface. It's a callback so
 // the parent decides the destination — no token-native settings screen exists
@@ -43,12 +45,36 @@ const rowClass =
   "hover:bg-white/[0.04] transition-colors";
 
 export function UserMenu({ onEditProfile, className }: UserMenuProps) {
-  const { user, userProfile, isAuthenticated, signOut } = useAuth();
+  const { user, userProfile, isAuthenticated, signOut, openAuthModal } = useAuth();
   const [open, setOpen] = React.useState(false);
   const [legal, setLegal] = React.useState<null | "privacy" | "terms">(null);
   const [showDelete, setShowDelete] = React.useState(false);
 
-  if (!isAuthenticated) return null;
+  // Signed out: the account slot becomes the way in. Without this the only
+  // sign-in entry point is MonitoringList's CTA, which sits below the fold.
+  if (!isAuthenticated) {
+    return (
+      <button
+        type="button"
+        onClick={openAuthModal}
+        className={cn(
+          "inline-flex items-center bg-transparent cursor-pointer font-travis-mono uppercase",
+          className,
+        )}
+        style={{
+          fontSize: 10,
+          letterSpacing: "0.1em",
+          color: "var(--ink-2)",
+          border: "1px solid var(--hair-strong)",
+          borderRadius: 6,
+          padding: "5px 8px",
+          background: "var(--bg-inset)",
+        }}
+      >
+        Sign in
+      </button>
+    );
+  }
 
   const name =
     userProfile?.full_name ||

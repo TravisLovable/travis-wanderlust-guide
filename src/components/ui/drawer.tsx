@@ -4,7 +4,10 @@ import { Drawer as DrawerPrimitive } from "vaul"
 import { cn } from "@/lib/utils"
 
 const Drawer = ({
-  shouldScaleBackground = true,
+  // Off by default: vaul's scale-background applies a transform to document.body
+  // (an ancestor of our internal scroll container), which left the page content
+  // shifted horizontally after a bottom sheet closed. No transform → no shift.
+  shouldScaleBackground = false,
   ...props
 }: React.ComponentProps<typeof DrawerPrimitive.Root>) => (
   <DrawerPrimitive.Root

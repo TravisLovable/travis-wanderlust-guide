@@ -1,4 +1,5 @@
 import * as React from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import type { SelectedPlace } from "@/hooks/useGooglePlaces";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
 import { useAuth } from "@/contexts/AuthContext";
@@ -29,6 +30,24 @@ export function Home({ onSearch }: HomeProps) {
   const [datesOpen, setDatesOpen] = React.useState(false);
   const [contextOpen, setContextOpen] = React.useState(false);
 
+  // Progressive disclosure via a SINGLE bar that repurposes in place:
+  //   no place            → bar prompts for a destination (Places autocomplete)
+  //   place, no dates      → same bar prompts for dates (opens the calendar)
+  //   place + dates        → the "Get Intel" CTA is revealed
+  // barFade crossfades the bar's content on each swap; reveal grows the CTA in.
+  const barFade = {
+    initial: { opacity: 0, y: 4 },
+    animate: { opacity: 1, y: 0 },
+    exit: { opacity: 0, y: -4 },
+    transition: { duration: 0.22, ease: "easeOut" as const },
+  };
+  const reveal = {
+    initial: { opacity: 0, height: 0 },
+    animate: { opacity: 1, height: "auto" as const },
+    exit: { opacity: 0, height: 0 },
+    transition: { duration: 0.28, ease: [0.22, 1, 0.36, 1] as const },
+  };
+
   const [passport, setPassport] = React.useState<string>(
     () => userProfile?.country_data?.name ?? "United States",
   );
@@ -38,20 +57,20 @@ export function Home({ onSearch }: HomeProps) {
     if (userProfile?.country_data?.name) setPassport(userProfile.country_data.name);
   }, [userProfile?.country_data?.name]);
 
-  const destFieldRef = React.useRef<HTMLDivElement | null>(null);
-  const datesFieldRef = React.useRef<HTMLDivElement | null>(null);
+  // Single bar → single anchor for the desktop popovers + outside-click close.
+  const barRef = React.useRef<HTMLDivElement | null>(null);
 
   React.useEffect(() => {
     if (!isDesktop) return;
     const onDoc = (e: MouseEvent) => {
-      const target = e.target as Node;
-      if (destOpen && destFieldRef.current && !destFieldRef.current.contains(target)) {
-        const inSheet = (e.target as HTMLElement).closest("[data-dest-popover]");
-        if (!inSheet) setDestOpen(false);
-      }
-      if (datesOpen && datesFieldRef.current && !datesFieldRef.current.contains(target)) {
-        const inSheet = (e.target as HTMLElement).closest("[data-dates-popover]");
-        if (!inSheet) setDatesOpen(false);
+      const target = e.target as HTMLElement;
+      if ((destOpen || datesOpen) && barRef.current && !barRef.current.contains(target)) {
+        const inPopover =
+          target.closest("[data-dest-popover]") || target.closest("[data-dates-popover]");
+        if (!inPopover) {
+          setDestOpen(false);
+          setDatesOpen(false);
+        }
       }
     };
     document.addEventListener("mousedown", onDoc);
@@ -70,21 +89,54 @@ export function Home({ onSearch }: HomeProps) {
 
   const systemContext = { clockLocal: localClock(), passport: passportShort, home: origin };
 
+  // A vaul bottom sheet locks body scroll while open (position:fixed) and
+  // restores it on close; in the WKWebView that restore can leave the document
+  // with a stuck horizontal scrollLeft, shifting the page sideways. Snap any
+  // horizontal document scroll back to 0 once no sheet is open (now, next
+  // frame, and after the ~300ms close animation).
+  React.useEffect(() => {
+    if (destOpen || datesOpen) return;
+    const reset = () => {
+      if (document.documentElement.scrollLeft) document.documentElement.scrollLeft = 0;
+      if (document.body.scrollLeft) document.body.scrollLeft = 0;
+    };
+    reset();
+    const raf = requestAnimationFrame(reset);
+    const t = setTimeout(reset, 350);
+    return () => {
+      cancelAnimationFrame(raf);
+      clearTimeout(t);
+    };
+  }, [destOpen, datesOpen]);
+
   return (
     <div
-      className="min-h-screen w-full font-travis"
-      style={{ background: "var(--bg)", color: "var(--ink)" }}
+      className="w-full font-travis flex flex-col overflow-hidden"
+      // Fixed viewport-height shell: the header stays pinned and the content
+      // beneath it scrolls, so nothing (e.g. MONITORING) clips at the bottom.
+      // 100dvh + viewport-fit=cover spans the full screen incl. safe areas.
+      style={{ height: "100dvh", background: "var(--bg)", color: "var(--ink)" }}
     >
-      <Topbar context={systemContext} onContextClick={() => setContextOpen(true)} />
+      {/* Fixed header — never scrolls. Safe-area top inset lives inside the header. */}
+      <div className="shrink-0">
+        <Topbar context={systemContext} onContextClick={() => setContextOpen(true)} />
 
-      {/* Mobile header — desktop uses the sticky Topbar above (hidden under md). */}
-      <MobileHeader
-        passport={passport}
-        origin={origin}
-        onContextClick={() => setContextOpen(true)}
-      />
+        {/* Mobile header — desktop uses the sticky Topbar above (hidden under md). */}
+        <MobileHeader
+          passport={passport}
+          origin={origin}
+          onContextClick={() => setContextOpen(true)}
+        />
+      </div>
 
-      <main className="px-5 md:px-8 pt-10 md:pt-16">
+      {/* Scrollable content region beneath the fixed header. min-h-0 lets the
+          flex child shrink so overflow-y-auto actually scrolls. overflow-x-hidden
+          + touch-action:pan-y + overscroll-behavior-x:none keep it strictly
+          vertical — no horizontal drag, pan, or rubber-band. */}
+      <main
+        className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden px-5 md:px-8 pt-10 md:pt-16"
+        style={{ touchAction: "pan-y", overscrollBehaviorX: "none" }}
+      >
         <div className="travis-rise max-w-[1180px] mx-auto w-full">
           <div
             className="font-travis-mono uppercase"
@@ -114,30 +166,50 @@ export function Home({ onSearch }: HomeProps) {
             awaits.
           </h1>
 
-          {/* Query bar — stacked on mobile, single row on desktop */}
+          {/* Single search bar — one bar that repurposes in place:
+              destination → dates. No second field is ever added. */}
           <div
-            className={cn(
-              "border border-travis-hair overflow-visible relative",
-              "flex flex-col md:grid md:grid-cols-[1.6fr_1fr_auto]",
-            )}
+            className="border border-travis-hair overflow-visible relative"
             style={{
               background: "var(--bg-raised)",
               borderRadius: 12,
               padding: 6,
             }}
           >
-            <div ref={destFieldRef} className="relative">
-              <FieldButton
-                label="Destination"
-                icon={<PinIcon style={{ color: "var(--ink-3)" }} />}
-                value={place?.formatted_address ?? "City or country"}
-                muted={!place}
-                onClick={() => {
-                  setDestOpen(true);
-                  setDatesOpen(false);
-                }}
-                divider
-              />
+            <div ref={barRef} className="relative">
+              {/* The bar's content crossfades between the two prompts. */}
+              <AnimatePresence mode="wait" initial={false}>
+                {!place ? (
+                  <motion.div key="bar-destination" {...barFade}>
+                    <FieldButton
+                      label="Destination"
+                      icon={<PinIcon style={{ color: "var(--ink-3)" }} />}
+                      value="City or country"
+                      muted
+                      onClick={() => {
+                        setDestOpen(true);
+                        setDatesOpen(false);
+                      }}
+                    />
+                  </motion.div>
+                ) : (
+                  <motion.div key="bar-dates" {...barFade}>
+                    <FieldButton
+                      label={place.formatted_address}
+                      icon={<CalendarIcon style={{ color: "var(--ink-3)" }} />}
+                      value={depart && ret ? dateLabel : "Add your dates"}
+                      muted={!depart || !ret}
+                      onClick={() => {
+                        setDatesOpen(true);
+                        setDestOpen(false);
+                      }}
+                    />
+                  </motion.div>
+                )}
+              </AnimatePresence>
+
+              {/* Sheets: portaled bottom sheets on mobile, anchored popovers on
+                  desktop. Always mounted; driven by the open state above. */}
               <DestinationSheet
                 open={destOpen}
                 onOpenChange={setDestOpen}
@@ -146,19 +218,6 @@ export function Home({ onSearch }: HomeProps) {
                   setPlace(p);
                   setDestOpen(false);
                   setDatesOpen(true);
-                }}
-              />
-            </div>
-
-            <div ref={datesFieldRef} className="relative">
-              <FieldButton
-                label="Dates"
-                icon={<CalendarIcon style={{ color: "var(--ink-3)" }} />}
-                value={dateLabel}
-                muted={!depart || !ret}
-                onClick={() => {
-                  setDatesOpen(true);
-                  setDestOpen(false);
                 }}
               />
               <CalendarSheet
@@ -173,29 +232,34 @@ export function Home({ onSearch }: HomeProps) {
               />
             </div>
 
-            <button
-              type="button"
-              onClick={submit}
-              disabled={!canSubmit}
-              className={cn(
-                "w-full md:w-auto cursor-pointer border-0 font-travis flex items-center justify-center gap-2.5",
-                "transition-all",
-                canSubmit ? "travis-cta-ambient" : "cursor-not-allowed",
+            {/* Get Intel — revealed only once dates are set. */}
+            <AnimatePresence initial={false}>
+              {canSubmit && (
+                <motion.div key="cta" {...reveal} style={{ overflow: "hidden" }}>
+                  <button
+                    type="button"
+                    onClick={submit}
+                    className={cn(
+                      "w-full cursor-pointer border-0 font-travis flex items-center justify-center gap-2.5",
+                      "transition-all travis-cta-ambient",
+                    )}
+                    style={{
+                      background: "var(--ink)",
+                      color: "var(--bg)",
+                      padding: "18px 24px",
+                      fontSize: 16,
+                      fontWeight: 500,
+                      letterSpacing: "-0.005em",
+                      borderRadius: 8,
+                      margin: "6px 0 0 0",
+                    }}
+                  >
+                    Get Intel
+                    <ArrowIcon width={16} height={16} />
+                  </button>
+                </motion.div>
               )}
-              style={{
-                background: "var(--ink)",
-                color: "var(--bg)",
-                padding: "18px 24px",
-                fontSize: 16,
-                fontWeight: 500,
-                letterSpacing: "-0.005em",
-                borderRadius: 8,
-                margin: "6px 0 0 0",
-              }}
-            >
-              Get Intel
-              <ArrowIcon width={16} height={16} />
-            </button>
+            </AnimatePresence>
           </div>
 
           <p

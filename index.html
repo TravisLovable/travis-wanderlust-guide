@@ -4,7 +4,12 @@
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/icon.png" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <!-- maximum-scale/user-scalable lock the zoom: iOS otherwise zooms the web view in on
+       any focused input with a font smaller than 16px and never zooms back out, which
+       leaves the page scaled and panned so the app-shell header rides up under the status
+       bar. viewport-fit=cover is what makes env(safe-area-inset-*) resolve non-zero. -->
+  <meta name="viewport"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
   <link rel="preconnect" href="https://tiles.openfreemap.org">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

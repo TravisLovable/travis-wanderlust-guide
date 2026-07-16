@@ -97,7 +97,10 @@ function Body({ initialQuery, onSelect }: BodyProps) {
           style={{
             color: "var(--ink)",
             padding: "12px 0",
-            fontSize: 15,
+            // Must stay >= 16px: iOS zooms the web view to any focused input with a
+            // smaller font (by exactly 16/fontSize), and the zoom outlives the
+            // keyboard — leaving the page scaled and panned under the status bar.
+            fontSize: 16,
           }}
         />
       </div>
