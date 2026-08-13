@@ -16,9 +16,9 @@ interface AuthModalProps {
 }
 
 const RESEND_COOLDOWN = 60; // seconds — respects Supabase's email send rate limit
-const CODE_LENGTH = 8; // matches the project's Supabase Auth "Email OTP Length" setting
+const CODE_LENGTH = 6; // matches the project's Supabase Auth "Email OTP Length" setting
 
-// Email OTP (8-digit code) sign-in.
+// Email OTP (6-digit code) sign-in.
 //
 // Replaces magic links, whose emailRedirectTo resolves to capacitor://localhost
 // inside a native webview and dies. verifyOtp returns the session in-place — no
@@ -132,7 +132,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         {step === 'email' ? (
           <div className="space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
-              Enter your email — we'll send you an 8-digit code to sign in or get started.
+              Enter your email — we'll send you a 6-digit code to sign in or get started.
             </p>
             <div>
               <Label htmlFor="auth-email" className="sr-only">Email</Label>
@@ -168,7 +168,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
         ) : (
           <div className="space-y-4 pt-2">
             <p className="text-sm text-muted-foreground">
-              We sent an 8-digit code to{' '}
+              We sent a 6-digit code to{' '}
               <span className="font-medium text-foreground">{email}</span>. Enter it below.
             </p>
             <div className="flex justify-center">
