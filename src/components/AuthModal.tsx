@@ -139,6 +139,7 @@ const AuthModal = ({ isOpen, onClose }: AuthModalProps) => {
               <Input
                 id="auth-email"
                 type="email"
+                className="text-foreground"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 onKeyDown={(e) => e.key === 'Enter' && sendCode()}
