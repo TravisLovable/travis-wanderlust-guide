@@ -2,8 +2,11 @@
 //
 // The design (design/Travis Onboarding.html) defines 8 steps. Per locked
 // decision 1A, sign-in + verify are owned by the existing AuthModal /
-// Supabase magic-link flow — they are shown in the rail as pre-completed
-// and are NOT navigable here. The wizard owns steps 03–08.
+// Supabase magic-link flow — they stay in this registry for index/resume
+// bookkeeping (FIRST_WIZARD_INDEX, stepIdx persistence) but are hidden
+// from the rail entirely and are NOT navigable here. The wizard owns
+// steps 1–6 (auth is a separate pre-onboarding phase and isn't counted
+// in the visible total).
 
 export type StepKind = 'auth' | 'form' | 'summary';
 
@@ -33,3 +36,6 @@ export const LAST_WIZARD_INDEX = STEPS.length - 1;
 
 export const clampStep = (i: number): number =>
   Math.max(FIRST_WIZARD_INDEX, Math.min(LAST_WIZARD_INDEX, i | 0));
+
+/** 1-based step number for the visible "Step N" counter — wizard steps only, auth excluded. */
+export const displayStep = (i: number): number => i - FIRST_WIZARD_INDEX + 1;

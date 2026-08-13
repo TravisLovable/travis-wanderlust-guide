@@ -11,7 +11,7 @@
 import React from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { STEPS } from './steps';
+import { STEPS, displayStep, FIRST_WIZARD_INDEX, LAST_WIZARD_INDEX } from './steps';
 import { useOnboarding } from './OnboardingProvider';
 
 /** Small mono "Exit" affordance — same position on every step, never near Continue. */
@@ -91,30 +91,27 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
 
         <nav style={{ marginTop: 10 }}>
           {STEPS.map((s, i) => {
+            if (s.kind === 'auth') return null;
             const done = i < stepIdx;
             const current = i === stepIdx;
-            const isAuth = s.kind === 'auth';
-            const clickable = !isAuth && done;
-            const status = isAuth ? '✓ DONE' : done ? '✓ SAVED' : current ? 'ACTIVE' : 'QUEUED';
-            const statusColor = isAuth || done ? 'var(--signal-ok)' : current ? 'var(--signal-warn)' : 'var(--ink-4)';
+            const clickable = done;
+            const status = done ? '✓ SAVED' : current ? 'ACTIVE' : 'QUEUED';
+            const statusColor = done ? 'var(--signal-ok)' : current ? 'var(--signal-warn)' : 'var(--ink-4)';
             return (
               <div
                 key={s.id}
                 onClick={() => clickable && goTo(i)}
                 className="grid items-center"
                 style={{
-                  gridTemplateColumns: '28px 1fr auto',
+                  gridTemplateColumns: '1fr auto',
                   gap: 12,
                   padding: '12px 0',
                   borderBottom: '1px solid var(--hair)',
                   cursor: clickable ? 'pointer' : 'default',
-                  opacity: !done && !current && !isAuth ? 0.5 : 1,
+                  opacity: !done && !current ? 0.5 : 1,
                 }}
               >
-                <span className="font-travis-mono" style={{ fontSize: 10, color: isAuth || done ? 'var(--signal-ok)' : 'var(--ink-4)' }}>
-                  {String(i + 1).padStart(2, '0')}
-                </span>
-                <span style={{ fontSize: 13, fontWeight: current ? 500 : 400, color: current ? 'var(--ink)' : isAuth || done ? 'var(--ink-2)' : 'var(--ink-3)' }}>
+                <span style={{ fontSize: 13, fontWeight: current ? 500 : 400, color: current ? 'var(--ink)' : done ? 'var(--ink-2)' : 'var(--ink-3)' }}>
                   {s.label}
                 </span>
                 <span className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.1em', color: statusColor }}>
@@ -130,7 +127,7 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
             className="font-travis-mono"
             style={{ display: 'flex', justifyContent: 'space-between', fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-3)', marginBottom: 8 }}
           >
-            <span>{stepIdx}/{total - 1} COMPLETE</span>
+            <span>{stepIdx - FIRST_WIZARD_INDEX}/{LAST_WIZARD_INDEX - FIRST_WIZARD_INDEX} COMPLETE</span>
             <span>{saveLabel[saveState]}</span>
           </div>
           <div style={{ height: 2, background: 'var(--hair)' }}>
@@ -148,7 +145,7 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
         >
           <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
             <span className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.12em', color: 'var(--ink-3)', textTransform: 'uppercase' }}>
-              Step {String(stepIdx + 1).padStart(2, '0')} · {step.label}
+              Step {String(displayStep(stepIdx)).padStart(2, '0')} · {step.label}
             </span>
             <div className="flex items-center" style={{ gap: 12 }}>
               <span className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.1em', color: 'var(--ink-4)' }}>
@@ -168,7 +165,7 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
           style={{ padding: '18px 40px', borderBottom: '1px solid var(--hair)' }}
         >
           <div className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.14em', color: 'var(--ink-3)', textTransform: 'uppercase' }}>
-            Step {String(stepIdx + 1).padStart(2, '0')} · {step.label}
+            Step {String(displayStep(stepIdx)).padStart(2, '0')} · {step.label}
           </div>
           <div className="flex items-center" style={{ gap: 16 }}>
             <span className="font-travis-mono" style={{ fontSize: 10.5, color: 'var(--ink-4)', letterSpacing: '0.08em' }}>

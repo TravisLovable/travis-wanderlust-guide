@@ -5,7 +5,7 @@
 //   - authenticated, already done  -> bounce to / (RequireOnboarding lets / through)
 //   - authenticated, needs it      -> render the wizard
 //
-// Screens 03–07 are forms; 08 (Complete) is a terminal recap that owns its own
+// Screens 1–5 are forms; 6 (Complete) is a terminal recap that owns its own
 // ENTER TRAVIS action and renders no Back/Continue footer.
 
 import type { CSSProperties, ComponentType } from 'react';
@@ -17,7 +17,7 @@ import {
   type OnboardingData,
 } from '@/onboarding/OnboardingProvider';
 import { OnboardingLayout } from '@/onboarding/OnboardingLayout';
-import { STEPS, FIRST_WIZARD_INDEX } from '@/onboarding/steps';
+import { STEPS, FIRST_WIZARD_INDEX, displayStep } from '@/onboarding/steps';
 import IdentityStep from '@/onboarding/steps/IdentityStep';
 import PassportStep from '@/onboarding/steps/PassportStep';
 import AirlineStep from '@/onboarding/steps/AirlineStep';
@@ -109,7 +109,7 @@ function Wizard() {
           className="font-travis-mono"
           style={{ fontSize: 10, letterSpacing: '0.14em', color: 'var(--ink-3)', textTransform: 'uppercase', marginBottom: 14 }}
         >
-          {String(stepIdx + 1).padStart(2, '0')} · {step.label}
+          {String(displayStep(stepIdx)).padStart(2, '0')} · {step.label}
         </div>
 
         {isComplete ? (
