@@ -195,7 +195,7 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
         return;
       }
 
-      const request = { input: query, types: ['(cities)'] as const, sessionToken: sessionTokenRef.current! };
+      const request = { input: query, types: ['(cities)'], sessionToken: sessionTokenRef.current! };
       console.log('[places] SDK getPlacePredictions REQUEST —', request);
       autocompleteRef.current.getPlacePredictions(
         request,
