@@ -196,8 +196,7 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
               textTransform: 'uppercase',
             }}
           >
-            <span>Travis · secure by default</span>
-            <span className="hidden sm:inline">No passport number stored</span>
+            <span>Travis™</span>
           </footer>
         </div>
       </main>
