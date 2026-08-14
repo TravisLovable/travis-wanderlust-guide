@@ -71,6 +71,10 @@ export function TextField({
       autoComplete={autoComplete}
       autoFocus={autoFocus}
       maxLength={maxLength}
+      // Names (and the numeric phone field) aren't dictionary words — the red
+      // squiggly spellcheck underline is a false positive here, not a real hint.
+      spellCheck={false}
+      autoCorrect="off"
       onChange={(e) => onChange(e.target.value)}
     />
   );
