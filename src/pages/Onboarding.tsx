@@ -17,7 +17,7 @@ import {
   type OnboardingData,
 } from '@/onboarding/OnboardingProvider';
 import { OnboardingLayout } from '@/onboarding/OnboardingLayout';
-import { STEPS, FIRST_WIZARD_INDEX, displayStep } from '@/onboarding/steps';
+import { STEPS, FIRST_WIZARD_INDEX } from '@/onboarding/steps';
 import IdentityStep from '@/onboarding/steps/IdentityStep';
 import PassportStep from '@/onboarding/steps/PassportStep';
 import AirlineStep from '@/onboarding/steps/AirlineStep';
@@ -41,7 +41,7 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
   identity: {
     strong: 'The basics,',
     muted: 'first.',
-    sub: 'Your name, a number we can reach you on, and where you fly out of.',
+    sub: 'Your name and primary departure city.',
   },
   passport: {
     strong: 'Which passport',
@@ -69,7 +69,7 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
 function isStepComplete(stepId: string, data: OnboardingData): boolean {
   if (stepId === 'identity') {
     return Boolean(
-      data.firstName?.trim() && data.lastName?.trim() && data.phone?.trim() && data.homeCity?.trim(),
+      data.firstName?.trim() && data.lastName?.trim() && data.homeCity?.trim(),
     );
   }
   if (stepId === 'passport') return Boolean(data.passportCountry);
@@ -105,13 +105,6 @@ function Wizard() {
   return (
     <OnboardingLayout>
       <div>
-        <div
-          className="font-travis-mono"
-          style={{ fontSize: 10, letterSpacing: '0.14em', color: 'var(--ink-3)', textTransform: 'uppercase', marginBottom: 14 }}
-        >
-          {String(displayStep(stepIdx)).padStart(2, '0')} · {step.label}
-        </div>
-
         {isComplete ? (
           // Terminal screen: owns its heading + ENTER TRAVIS CTA, no footer.
           <CompleteStep />
