@@ -54,8 +54,11 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <div
-      className="min-h-screen lg:grid lg:grid-cols-[420px_1fr]"
-      style={{ background: 'var(--bg)', color: 'var(--ink)' }}
+      className="lg:grid lg:grid-cols-[420px_1fr] overflow-hidden"
+      // Fixed viewport-height shell (matches Home.tsx): the toolbar stays
+      // pinned and only the content region beneath it scrolls, so the page
+      // itself never scrolls.
+      style={{ height: '100dvh', background: 'var(--bg)', color: 'var(--ink)' }}
     >
       {/* Left rail — desktop only */}
       <aside
@@ -137,10 +140,10 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
       </aside>
 
       {/* Right pane */}
-      <main className="flex flex-col min-h-screen">
-        {/* Mobile-only step + progress strip (decision 4B) */}
+      <main className="flex flex-col overflow-hidden" style={{ height: '100dvh' }}>
+        {/* Mobile-only step + progress strip (decision 4B) — pinned, never scrolls. */}
         <div
-          className="lg:hidden"
+          className="lg:hidden shrink-0"
           style={{ padding: '14px 20px', paddingTop: 'calc(14px + var(--sat))', borderBottom: '1px solid var(--hair)', background: 'var(--bg-inset)' }}
         >
           <div className="flex items-center justify-between" style={{ marginBottom: 8 }}>
@@ -159,9 +162,9 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        {/* Desktop toolbar */}
+        {/* Desktop toolbar — pinned, never scrolls. */}
         <div
-          className="hidden lg:flex items-center justify-between"
+          className="hidden lg:flex items-center justify-between shrink-0"
           style={{ padding: '18px 40px', borderBottom: '1px solid var(--hair)' }}
         >
           <div className="font-travis-mono" style={{ fontSize: 10, letterSpacing: '0.14em', color: 'var(--ink-3)', textTransform: 'uppercase' }}>
@@ -175,7 +178,13 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
 
-        <div className="flex-1 flex flex-col">
+        {/* Sole scrollable region — content + footer scroll together beneath
+            the pinned toolbar. min-h-0 lets this flex child actually shrink
+            so overflow-y-auto takes effect (matches Home.tsx's pattern). */}
+        <div
+          className="flex-1 min-h-0 overflow-y-auto overflow-x-hidden flex flex-col"
+          style={{ touchAction: 'pan-y', overscrollBehaviorX: 'none' }}
+        >
           <div
             key={step.id}
             className="travis-rise flex-1"
