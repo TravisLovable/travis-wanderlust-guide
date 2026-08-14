@@ -70,6 +70,7 @@ function Body({ initialQuery, onSelect }: BodyProps) {
   const { suggestions, isLoading, getPlaceDetails } = useGooglePlaces(
     query,
     true,
+    'destination',
   );
 
   const onPick = async (placeId: string) => {

@@ -69,7 +69,11 @@ function loadGooglePlacesScript(apiKey: string): Promise<void> {
   return googleScriptPromise;
 }
 
-export const useGooglePlaces = (query: string, enabled: boolean = true) => {
+export const useGooglePlaces = (
+  query: string,
+  enabled: boolean = true,
+  mode: 'city' | 'destination' = 'destination',
+) => {
   const [suggestions, setSuggestions] = useState<PlaceSuggestion[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [hasApiAccess, setHasApiAccess] = useState(true);
@@ -149,7 +153,7 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
               structured_formatting?: { main_text: string; secondary_text: string };
             }>;
             status?: string;
-          }>('google-places-autocomplete', { body: { input: query } });
+          }>('google-places-autocomplete', { body: { input: query, mode } });
           setIsLoading(false);
 
           console.log('[places] edge autocomplete RESPONSE —', {
@@ -195,45 +199,72 @@ export const useGooglePlaces = (query: string, enabled: boolean = true) => {
         return;
       }
 
-      const request = { input: query, types: ['(cities)'], sessionToken: sessionTokenRef.current! };
-      console.log('[places] SDK getPlacePredictions REQUEST —', request);
-      autocompleteRef.current.getPlacePredictions(
-        request,
-        (predictions, status) => {
-          const statusStr = typeof status === 'string' ? status : (status as unknown as string);
-          console.log('[places] SDK getPlacePredictions RESPONSE —', {
-            status: statusStr,
-            count: predictions?.length ?? 0,
-            sample: predictions?.[0] ? { place_id: predictions[0].place_id, description: predictions[0].description?.slice(0, 50) } : null,
-          });
-          if (statusStr !== 'OK' && statusStr !== 'ZERO_RESULTS') {
-            console.warn('[places] SDK autocomplete non-OK status (check API key, billing, restrictions):', statusStr);
-          }
-          setIsLoading(false);
+      const toSuggestion = (p: google.maps.places.AutocompletePrediction) => ({
+        place_id: p.place_id,
+        description: p.description,
+        structured_formatting: {
+          main_text: p.structured_formatting.main_text,
+          secondary_text: p.structured_formatting.secondary_text,
+        },
+      });
 
-          if (status === google.maps.places.PlacesServiceStatus.OK && predictions) {
-            setSuggestions(
-              predictions.map((p) => ({
-                place_id: p.place_id,
-                description: p.description,
-                structured_formatting: {
-                  main_text: p.structured_formatting.main_text,
-                  secondary_text: p.structured_formatting.secondary_text,
-                },
-              }))
-            );
-            console.log('[places] SDK autocomplete SUCCESS —', predictions.length, 'suggestions');
-          } else {
-            setSuggestions([]);
-          }
-        }
-      );
+      // Soft location bias toward the continental US (geographic center, ~2500km
+      // radius) — mirrors the edge function's bias so SDK and edge-function paths
+      // rank identically. Reorders/ranks results, doesn't exclude anything outside it.
+      const US_BIAS_CENTER = new google.maps.LatLng(39.8283, -98.5795);
+      const US_BIAS_RADIUS_METERS = 2500000;
+
+      const getPredictions = (opts: Partial<google.maps.places.AutocompletionRequest>) =>
+        new Promise<google.maps.places.AutocompletePrediction[]>((resolve) => {
+          autocompleteRef.current!.getPlacePredictions(
+            {
+              input: query,
+              sessionToken: sessionTokenRef.current!,
+              location: US_BIAS_CENTER,
+              radius: US_BIAS_RADIUS_METERS,
+              ...opts,
+            },
+            (predictions, status) => {
+              resolve(status === google.maps.places.PlacesServiceStatus.OK && predictions ? predictions : []);
+            }
+          );
+        });
+
+      if (mode === 'city') {
+        // (cities) collection already excludes businesses — one call is enough.
+        console.log('[places] SDK getPlacePredictions REQUEST — mode=city');
+        getPredictions({ types: ['(cities)'] }).then((predictions) => {
+          setIsLoading(false);
+          setSuggestions(predictions.map(toSuggestion));
+          console.log('[places] SDK autocomplete SUCCESS (city) —', predictions.length, 'suggestions');
+        });
+        return;
+      }
+
+      // Destination search: mirrors the edge function's (regions) + colloquial/
+      // natural_feature merge — see google-places-autocomplete/index.ts for why.
+      console.log('[places] SDK getPlacePredictions REQUEST — mode=destination');
+      Promise.all([
+        getPredictions({ types: ['(regions)'] }),
+        getPredictions({}),
+      ]).then(([regionsPredictions, broadPredictions]) => {
+        setIsLoading(false);
+        const seenPlaceIds = new Set(regionsPredictions.map((p) => p.place_id));
+        const extras = broadPredictions.filter(
+          (p) =>
+            !seenPlaceIds.has(p.place_id) &&
+            p.types?.some((t) => t === 'colloquial_area' || t === 'natural_feature')
+        );
+        const merged = [...regionsPredictions, ...extras];
+        setSuggestions(merged.map(toSuggestion));
+        console.log('[places] SDK autocomplete SUCCESS (destination) —', merged.length, 'suggestions');
+      });
     }, 300);
 
     return () => {
       clearTimeout(timeoutId);
     };
-  }, [query, enabled, ready, useEdgeFunction]);
+  }, [query, enabled, ready, useEdgeFunction, mode]);
 
   const getPlaceDetails = useCallback(
     async (placeId: string): Promise<SelectedPlace | null> => {

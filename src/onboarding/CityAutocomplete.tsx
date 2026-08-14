@@ -1,8 +1,9 @@
 // Step 7.5 — City autocomplete for the Identity step's Home City field.
 //
 // Reuses the generic useGooglePlaces hook (same script-load singleton, edge-
-// function fallback, `(cities)` filter and session tokens the destination field
-// uses) and renders a wizard-themed dropdown on top — chrome matches the
+// function fallback, and session tokens the destination field uses, but in
+// 'city' mode so results are restricted to Google's `(cities)` collection)
+// and renders a wizard-themed dropdown on top — chrome matches the
 // SelectField in steps/fields.tsx (.onb-input + .onb-option, --bg-raised panel).
 //
 // Graceful by design: the input is always a usable text field and free text is
@@ -41,7 +42,7 @@ export function CityAutocomplete({ id, value, onChange, placeholder, autoFocus }
   const [activeIndex, setActiveIndex] = useState(-1);
   const wrapRef = useRef<HTMLDivElement>(null);
 
-  const { suggestions, isLoading, hasApiAccess, getPlaceDetails } = useGooglePlaces(query, interacted);
+  const { suggestions, isLoading, hasApiAccess, getPlaceDetails } = useGooglePlaces(query, interacted, 'city');
 
   // Close on outside click (Escape is handled in onKeyDown).
   useEffect(() => {
@@ -135,8 +136,14 @@ export function CityAutocomplete({ id, value, onChange, placeholder, autoFocus }
             background: 'var(--bg-raised)',
             border: '1px solid var(--hair-strong)',
             borderRadius: 2,
-            maxHeight: 300,
+            // ~4 rows visible before scrolling, tuned against the real budget: the
+            // keyboard's own height (not this maxHeight) is what actually clips the
+            // dropdown on a focused field this far down the page — measured at ~171pt
+            // of clearance on an iPhone 17 Pro simulator, only ~2.5 rows at the old
+            // 10px-padding row height. See git history for the live measurement.
+            maxHeight: 180,
             overflowY: 'auto',
+            WebkitOverflowScrolling: 'touch',
             boxShadow: '0 14px 44px oklch(0 0 0 / 0.45)',
           }}
         >
@@ -162,20 +169,20 @@ export function CityAutocomplete({ id, value, onChange, placeholder, autoFocus }
                 style={{
                   display: 'flex',
                   flexDirection: 'column',
-                  gap: 2,
+                  gap: 1,
                   width: '100%',
                   background: i === activeIndex ? 'oklch(1 0 0 / 0.06)' : 'transparent',
                   border: 0,
-                  padding: '10px 14px',
+                  padding: '6px 14px',
                   textAlign: 'left',
                   cursor: 'pointer',
                 }}
               >
-                <span style={{ fontSize: 15, color: 'var(--ink)' }}>{s.structured_formatting.main_text}</span>
+                <span style={{ fontSize: 15, lineHeight: 1.15, color: 'var(--ink)' }}>{s.structured_formatting.main_text}</span>
                 {s.structured_formatting.secondary_text && (
                   <span
                     className="font-travis-mono"
-                    style={{ fontSize: 10.5, letterSpacing: '0.04em', color: 'var(--ink-4)' }}
+                    style={{ fontSize: 10.5, lineHeight: 1.1, letterSpacing: '0.04em', color: 'var(--ink-4)' }}
                   >
                     {s.structured_formatting.secondary_text}
                   </span>
