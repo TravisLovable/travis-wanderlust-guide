@@ -30,6 +30,14 @@ export interface OnboardingData {
   phone?: string;
   phoneCountryCode?: string;
   homeCity?: string;
+  /**
+   * True once homeCity was set by picking a real Places suggestion; false the
+   * moment the user types after that (invalidating the prior pick); undefined
+   * for drafts saved before this flag existed — treated as valid (grandfathered)
+   * by the identity step's Continue gate, since there's no way to know
+   * retroactively. Client-side only — not written to the users table.
+   */
+  homeCitySelected?: boolean;
   passportCountry?: string;
   airlines?: string[];
   frequentFlyerStatus?: string | null;

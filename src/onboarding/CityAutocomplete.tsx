@@ -7,12 +7,15 @@
 // SelectField in steps/fields.tsx (.onb-input + .onb-option, --bg-raised panel).
 //
 // Graceful by design: the input is always a usable text field and free text is
-// written through on every keystroke, so the user is never blocked. If the
-// Places SDK is unavailable (bad key, network, rate limit), `hasApiAccess`
+// written through on every keystroke, so the user is never blocked from typing.
+// If the Places SDK is unavailable (bad key, network, rate limit), `hasApiAccess`
 // goes false and it silently degrades to plain text — no toast, no crash.
 //
 // Stores a formatted "City, NY" (US) / "City, Country" (non-US) string in
-// data.homeCity; the column stays plain text.
+// data.homeCity; the column stays plain text. Selection validity (did this text
+// come from a real picked suggestion, or just typing?) is tracked separately via
+// onSelectedChange — see OnboardingData.homeCitySelected for how Identity's
+// Continue gate uses it.
 
 import { useEffect, useRef, useState, type KeyboardEvent } from 'react';
 import { useGooglePlaces, type SelectedPlace } from '@/hooks/useGooglePlaces';
@@ -21,6 +24,8 @@ interface CityAutocompleteProps {
   id?: string;
   value: string;
   onChange: (v: string) => void;
+  /** Fires false on every keystroke, true only when a real suggestion is picked. */
+  onSelectedChange?: (selected: boolean) => void;
   placeholder?: string;
   autoFocus?: boolean;
 }
@@ -33,7 +38,7 @@ function formatCity(place: SelectedPlace): string {
   return tail ? `${city}, ${tail}` : city;
 }
 
-export function CityAutocomplete({ id, value, onChange, placeholder, autoFocus }: CityAutocompleteProps) {
+export function CityAutocomplete({ id, value, onChange, onSelectedChange, placeholder, autoFocus }: CityAutocompleteProps) {
   const [query, setQuery] = useState(value);
   // Gates Places lookups: never fire for a pre-filled value, only once the user
   // types (so editing an existing homeCity just displays it).
@@ -59,6 +64,7 @@ export function CityAutocomplete({ id, value, onChange, placeholder, autoFocus }
   const handleType = (v: string) => {
     setQuery(v);
     onChange(v); // write-through: free text is always stored, even without a pick
+    onSelectedChange?.(false); // typing invalidates any prior selection
     setInteracted(true);
     setOpen(true);
     setActiveIndex(-1);
@@ -67,6 +73,9 @@ export function CityAutocomplete({ id, value, onChange, placeholder, autoFocus }
   const choose = async (placeId: string, fallbackText: string) => {
     setOpen(false);
     setActiveIndex(-1);
+    // A real suggestion was picked (click/Enter) regardless of whether the
+    // details lookup below succeeds — that's what makes this a valid selection.
+    onSelectedChange?.(true);
     try {
       const place = await getPlaceDetails(placeId);
       const formatted = place ? formatCity(place) : fallbackText;

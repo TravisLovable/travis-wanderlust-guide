@@ -42,12 +42,13 @@ export default function IdentityStep() {
         </Field>
       </div>
 
-      <Field label="Home city" htmlFor="onb-city">
+      <Field label="Primary departure city" htmlFor="onb-city">
         <CityAutocomplete
           id="onb-city"
           value={data.homeCity ?? ''}
           placeholder="Start typing a city…"
           onChange={(v) => patch({ homeCity: v })}
+          onSelectedChange={(selected) => patch({ homeCitySelected: selected })}
         />
       </Field>
     </div>

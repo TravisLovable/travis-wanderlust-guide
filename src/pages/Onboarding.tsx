@@ -69,7 +69,10 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
 function isStepComplete(stepId: string, data: OnboardingData): boolean {
   if (stepId === 'identity') {
     return Boolean(
-      data.firstName?.trim() && data.lastName?.trim() && data.homeCity?.trim(),
+      data.firstName?.trim() &&
+      data.lastName?.trim() &&
+      data.homeCity?.trim() &&
+      data.homeCitySelected !== false, // undefined (pre-existing draft) is fine; only explicit false blocks
     );
   }
   if (stepId === 'passport') return Boolean(data.passportCountry);
