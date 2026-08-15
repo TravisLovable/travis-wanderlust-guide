@@ -101,6 +101,7 @@ export function SelectField({
   placeholder,
   compact = false,
   searchable = false,
+  pinnedFirst = false,
 }: {
   id?: string;
   value: string;
@@ -109,6 +110,9 @@ export function SelectField({
   placeholder?: string;
   compact?: boolean;
   searchable?: boolean;
+  /** Options[0] is a pinned entry (not alphabetical) — draw a divider after it,
+   *  but only for the unfiltered list; a search result set is never "pinned". */
+  pinnedFirst?: boolean;
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
@@ -132,10 +136,11 @@ export function SelectField({
   }, [open]);
 
   const selected = options.find((o) => o.value === value);
-  const filtered =
-    searchable && query.trim()
-      ? options.filter((o) => o.label.toLowerCase().includes(query.trim().toLowerCase()))
-      : options;
+  const isFiltered = searchable && !!query.trim();
+  const filtered = isFiltered
+    ? options.filter((o) => o.label.toLowerCase().includes(query.trim().toLowerCase()))
+    : options;
+  const showPinDivider = pinnedFirst && !isFiltered && filtered.length > 1;
 
   // Reset the highlighted row whenever the visible list changes shape, so a
   // stale index from a previous search never points at the wrong option.
@@ -288,6 +293,7 @@ export function SelectField({
                         ? 'oklch(1 0 0 / 0.06)'
                         : 'transparent',
                     border: 0,
+                    borderBottom: showPinDivider && i === 0 ? '1px solid var(--hair)' : 0,
                     padding: '11px 14px',
                     fontSize: 15,
                     color: isSel ? 'var(--ink)' : 'var(--ink-2)',

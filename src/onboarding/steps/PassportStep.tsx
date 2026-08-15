@@ -23,6 +23,7 @@ export default function PassportStep() {
         <SelectField
           id="onb-passport"
           searchable
+          pinnedFirst
           value={data.passportCountry ?? ''}
           options={OPTIONS}
           placeholder="Select your passport country"
