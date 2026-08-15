@@ -31,8 +31,7 @@ export default function PassportStep() {
       </Field>
 
       <p style={{ fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.55, margin: 0, maxWidth: 440 }}>
-        Travis uses your passport country to surface visa and entry rules. We never store your
-        passport number.
+        Travis uses your passport country to surface visa and entry rules.
       </p>
     </div>
   );

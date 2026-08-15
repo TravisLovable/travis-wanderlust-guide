@@ -46,7 +46,7 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
   passport: {
     strong: 'Which passport',
     muted: 'do you carry?',
-    sub: 'It drives every visa, entry, and border-rule call Travis makes for you.',
+    sub: 'This determines every visa, entry, and border rule Travis checks for you.',
   },
   airline: {
     strong: 'Who do',

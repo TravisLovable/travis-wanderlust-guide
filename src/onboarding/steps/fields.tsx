@@ -112,6 +112,7 @@ export function SelectField({
 }) {
   const [open, setOpen] = useState(false);
   const [query, setQuery] = useState('');
+  const [activeIndex, setActiveIndex] = useState(-1);
   const wrapRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -136,10 +137,33 @@ export function SelectField({
       ? options.filter((o) => o.label.toLowerCase().includes(query.trim().toLowerCase()))
       : options;
 
+  // Reset the highlighted row whenever the visible list changes shape, so a
+  // stale index from a previous search never points at the wrong option.
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [filtered.length, open]);
+
   const choose = (v: string) => {
     onChange(v);
     setOpen(false);
     setQuery('');
+  };
+
+  // Matches CityAutocomplete's onKeyDown pattern so both searchable dropdowns
+  // in onboarding behave identically for keyboard users.
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0 && activeIndex < filtered.length) {
+        e.preventDefault();
+        choose(filtered[activeIndex].value);
+      }
+    }
   };
 
   return (
@@ -216,6 +240,7 @@ export function SelectField({
               autoFocus
               value={query}
               onChange={(e) => setQuery(e.target.value)}
+              onKeyDown={onSearchKeyDown}
               placeholder="SEARCH…"
               className="font-travis-mono"
               style={{
@@ -240,8 +265,9 @@ export function SelectField({
               NO MATCHES
             </div>
           ) : (
-            filtered.map((o) => {
+            filtered.map((o, i) => {
               const isSel = o.value === value;
+              const isActive = i === activeIndex;
               return (
                 <button
                   key={o.value}
@@ -249,13 +275,18 @@ export function SelectField({
                   role="option"
                   aria-selected={isSel}
                   onClick={() => choose(o.value)}
+                  onMouseEnter={() => setActiveIndex(i)}
                   className="font-travis onb-option"
                   style={{
                     display: 'flex',
                     alignItems: 'center',
                     gap: 10,
                     width: '100%',
-                    background: isSel ? 'oklch(1 0 0 / 0.06)' : 'transparent',
+                    background: isActive
+                      ? 'oklch(1 0 0 / 0.1)'
+                      : isSel
+                        ? 'oklch(1 0 0 / 0.06)'
+                        : 'transparent',
                     border: 0,
                     padding: '11px 14px',
                     fontSize: 15,
