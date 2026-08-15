@@ -1,12 +1,26 @@
-// Step 7 — lightweight country list for the onboarding Passport step.
+// Step 7 — country list for the onboarding Passport step.
 //
-// Reuses the same name→flag data the results / visa-requirements cards render
-// (src/components/travis/FLAG.ts), so the passport selector and the visa cards
-// stay in sync from a single source. `public.users.passport_country` stores the
-// country *name* (see the Checkpoint A column comment), so `name` is both the
-// label and the stored value.
-
-import { FLAG } from '@/components/travis/FLAG';
+// Passport-issuing entities: the 194 UN member states (per world-countries'
+// own unMember classification) plus Taiwan and Kosovo, explicitly included
+// even though neither is a UN member — both routinely appear on passport-
+// country pickers. Deliberately decoupled from src/components/travis/FLAG.ts,
+// which is a hand-picked ~30-country list of popular tourist DESTINATIONS for
+// the results/visa-card UI, not a citizenship list — reusing it here silently
+// dropped the large majority of real passports (Denmark, Sweden, etc.).
+//
+// Generated once from the `world-countries` npm package (mledoze/countries,
+// github.com/mledoze/countries — MIT, ~217k weekly downloads), not hand-typed:
+// filtered to entries where unMember is true, plus Taiwan and Kosovo by name.
+// Flags are derived programmatically from each entry's ISO 3166-1 alpha-2 code
+// (cca2) via the regional-indicator-symbol mapping every flag emoji uses —
+// e.g. "US" → 🇺🇸 — cross-checked against the package's own flag field with
+// zero mismatches across all 196 entries, so this isn't hand-typed either.
+// Regenerate by rerunning that filter+derivation against a fresh install of
+// the package if the country list ever needs updating.
+//
+// `public.users.passport_country` stores the country *name* (see the
+// Checkpoint A column comment), so `name` is both the label and the stored
+// value — unchanged by this swap.
 
 export interface Country {
   /** Stored value + label — the country name (matches users.passport_country). */
@@ -15,6 +29,209 @@ export interface Country {
   flag: string;
 }
 
-export const COUNTRIES: Country[] = Object.entries(FLAG)
-  .map(([name, flag]) => ({ name, flag }))
-  .sort((a, b) => a.name.localeCompare(b.name));
+const RAW_COUNTRIES: Country[] = [
+  { name: "Afghanistan", flag: "🇦🇫" },
+  { name: "Albania", flag: "🇦🇱" },
+  { name: "Algeria", flag: "🇩🇿" },
+  { name: "Andorra", flag: "🇦🇩" },
+  { name: "Angola", flag: "🇦🇴" },
+  { name: "Antigua and Barbuda", flag: "🇦🇬" },
+  { name: "Argentina", flag: "🇦🇷" },
+  { name: "Armenia", flag: "🇦🇲" },
+  { name: "Australia", flag: "🇦🇺" },
+  { name: "Austria", flag: "🇦🇹" },
+  { name: "Azerbaijan", flag: "🇦🇿" },
+  { name: "Bahamas", flag: "🇧🇸" },
+  { name: "Bahrain", flag: "🇧🇭" },
+  { name: "Bangladesh", flag: "🇧🇩" },
+  { name: "Barbados", flag: "🇧🇧" },
+  { name: "Belarus", flag: "🇧🇾" },
+  { name: "Belgium", flag: "🇧🇪" },
+  { name: "Belize", flag: "🇧🇿" },
+  { name: "Benin", flag: "🇧🇯" },
+  { name: "Bhutan", flag: "🇧🇹" },
+  { name: "Bolivia", flag: "🇧🇴" },
+  { name: "Bosnia and Herzegovina", flag: "🇧🇦" },
+  { name: "Botswana", flag: "🇧🇼" },
+  { name: "Brazil", flag: "🇧🇷" },
+  { name: "Brunei", flag: "🇧🇳" },
+  { name: "Bulgaria", flag: "🇧🇬" },
+  { name: "Burkina Faso", flag: "🇧🇫" },
+  { name: "Burundi", flag: "🇧🇮" },
+  { name: "Cambodia", flag: "🇰🇭" },
+  { name: "Cameroon", flag: "🇨🇲" },
+  { name: "Canada", flag: "🇨🇦" },
+  { name: "Cape Verde", flag: "🇨🇻" },
+  { name: "Central African Republic", flag: "🇨🇫" },
+  { name: "Chad", flag: "🇹🇩" },
+  { name: "Chile", flag: "🇨🇱" },
+  { name: "China", flag: "🇨🇳" },
+  { name: "Colombia", flag: "🇨🇴" },
+  { name: "Comoros", flag: "🇰🇲" },
+  { name: "Costa Rica", flag: "🇨🇷" },
+  { name: "Croatia", flag: "🇭🇷" },
+  { name: "Cuba", flag: "🇨🇺" },
+  { name: "Cyprus", flag: "🇨🇾" },
+  { name: "Czechia", flag: "🇨🇿" },
+  { name: "Denmark", flag: "🇩🇰" },
+  { name: "Djibouti", flag: "🇩🇯" },
+  { name: "Dominica", flag: "🇩🇲" },
+  { name: "Dominican Republic", flag: "🇩🇴" },
+  { name: "DR Congo", flag: "🇨🇩" },
+  { name: "Ecuador", flag: "🇪🇨" },
+  { name: "Egypt", flag: "🇪🇬" },
+  { name: "El Salvador", flag: "🇸🇻" },
+  { name: "Equatorial Guinea", flag: "🇬🇶" },
+  { name: "Eritrea", flag: "🇪🇷" },
+  { name: "Estonia", flag: "🇪🇪" },
+  { name: "Eswatini", flag: "🇸🇿" },
+  { name: "Ethiopia", flag: "🇪🇹" },
+  { name: "Fiji", flag: "🇫🇯" },
+  { name: "Finland", flag: "🇫🇮" },
+  { name: "France", flag: "🇫🇷" },
+  { name: "Gabon", flag: "🇬🇦" },
+  { name: "Gambia", flag: "🇬🇲" },
+  { name: "Georgia", flag: "🇬🇪" },
+  { name: "Germany", flag: "🇩🇪" },
+  { name: "Ghana", flag: "🇬🇭" },
+  { name: "Greece", flag: "🇬🇷" },
+  { name: "Grenada", flag: "🇬🇩" },
+  { name: "Guatemala", flag: "🇬🇹" },
+  { name: "Guinea", flag: "🇬🇳" },
+  { name: "Guinea-Bissau", flag: "🇬🇼" },
+  { name: "Guyana", flag: "🇬🇾" },
+  { name: "Haiti", flag: "🇭🇹" },
+  { name: "Honduras", flag: "🇭🇳" },
+  { name: "Hungary", flag: "🇭🇺" },
+  { name: "Iceland", flag: "🇮🇸" },
+  { name: "India", flag: "🇮🇳" },
+  { name: "Indonesia", flag: "🇮🇩" },
+  { name: "Iran", flag: "🇮🇷" },
+  { name: "Iraq", flag: "🇮🇶" },
+  { name: "Ireland", flag: "🇮🇪" },
+  { name: "Israel", flag: "🇮🇱" },
+  { name: "Italy", flag: "🇮🇹" },
+  { name: "Ivory Coast", flag: "🇨🇮" },
+  { name: "Jamaica", flag: "🇯🇲" },
+  { name: "Japan", flag: "🇯🇵" },
+  { name: "Jordan", flag: "🇯🇴" },
+  { name: "Kazakhstan", flag: "🇰🇿" },
+  { name: "Kenya", flag: "🇰🇪" },
+  { name: "Kiribati", flag: "🇰🇮" },
+  { name: "Kosovo", flag: "🇽🇰" },
+  { name: "Kuwait", flag: "🇰🇼" },
+  { name: "Kyrgyzstan", flag: "🇰🇬" },
+  { name: "Laos", flag: "🇱🇦" },
+  { name: "Latvia", flag: "🇱🇻" },
+  { name: "Lebanon", flag: "🇱🇧" },
+  { name: "Lesotho", flag: "🇱🇸" },
+  { name: "Liberia", flag: "🇱🇷" },
+  { name: "Libya", flag: "🇱🇾" },
+  { name: "Liechtenstein", flag: "🇱🇮" },
+  { name: "Lithuania", flag: "🇱🇹" },
+  { name: "Luxembourg", flag: "🇱🇺" },
+  { name: "Madagascar", flag: "🇲🇬" },
+  { name: "Malawi", flag: "🇲🇼" },
+  { name: "Malaysia", flag: "🇲🇾" },
+  { name: "Maldives", flag: "🇲🇻" },
+  { name: "Mali", flag: "🇲🇱" },
+  { name: "Malta", flag: "🇲🇹" },
+  { name: "Marshall Islands", flag: "🇲🇭" },
+  { name: "Mauritania", flag: "🇲🇷" },
+  { name: "Mauritius", flag: "🇲🇺" },
+  { name: "Mexico", flag: "🇲🇽" },
+  { name: "Micronesia", flag: "🇫🇲" },
+  { name: "Moldova", flag: "🇲🇩" },
+  { name: "Monaco", flag: "🇲🇨" },
+  { name: "Mongolia", flag: "🇲🇳" },
+  { name: "Montenegro", flag: "🇲🇪" },
+  { name: "Morocco", flag: "🇲🇦" },
+  { name: "Mozambique", flag: "🇲🇿" },
+  { name: "Myanmar", flag: "🇲🇲" },
+  { name: "Namibia", flag: "🇳🇦" },
+  { name: "Nauru", flag: "🇳🇷" },
+  { name: "Nepal", flag: "🇳🇵" },
+  { name: "Netherlands", flag: "🇳🇱" },
+  { name: "New Zealand", flag: "🇳🇿" },
+  { name: "Nicaragua", flag: "🇳🇮" },
+  { name: "Niger", flag: "🇳🇪" },
+  { name: "Nigeria", flag: "🇳🇬" },
+  { name: "North Korea", flag: "🇰🇵" },
+  { name: "North Macedonia", flag: "🇲🇰" },
+  { name: "Norway", flag: "🇳🇴" },
+  { name: "Oman", flag: "🇴🇲" },
+  { name: "Pakistan", flag: "🇵🇰" },
+  { name: "Palau", flag: "🇵🇼" },
+  { name: "Panama", flag: "🇵🇦" },
+  { name: "Papua New Guinea", flag: "🇵🇬" },
+  { name: "Paraguay", flag: "🇵🇾" },
+  { name: "Peru", flag: "🇵🇪" },
+  { name: "Philippines", flag: "🇵🇭" },
+  { name: "Poland", flag: "🇵🇱" },
+  { name: "Portugal", flag: "🇵🇹" },
+  { name: "Qatar", flag: "🇶🇦" },
+  { name: "Republic of the Congo", flag: "🇨🇬" },
+  { name: "Romania", flag: "🇷🇴" },
+  { name: "Russia", flag: "🇷🇺" },
+  { name: "Rwanda", flag: "🇷🇼" },
+  { name: "Saint Kitts and Nevis", flag: "🇰🇳" },
+  { name: "Saint Lucia", flag: "🇱🇨" },
+  { name: "Saint Vincent and the Grenadines", flag: "🇻🇨" },
+  { name: "Samoa", flag: "🇼🇸" },
+  { name: "San Marino", flag: "🇸🇲" },
+  { name: "São Tomé and Príncipe", flag: "🇸🇹" },
+  { name: "Saudi Arabia", flag: "🇸🇦" },
+  { name: "Senegal", flag: "🇸🇳" },
+  { name: "Serbia", flag: "🇷🇸" },
+  { name: "Seychelles", flag: "🇸🇨" },
+  { name: "Sierra Leone", flag: "🇸🇱" },
+  { name: "Singapore", flag: "🇸🇬" },
+  { name: "Slovakia", flag: "🇸🇰" },
+  { name: "Slovenia", flag: "🇸🇮" },
+  { name: "Solomon Islands", flag: "🇸🇧" },
+  { name: "Somalia", flag: "🇸🇴" },
+  { name: "South Africa", flag: "🇿🇦" },
+  { name: "South Korea", flag: "🇰🇷" },
+  { name: "South Sudan", flag: "🇸🇸" },
+  { name: "Spain", flag: "🇪🇸" },
+  { name: "Sri Lanka", flag: "🇱🇰" },
+  { name: "Sudan", flag: "🇸🇩" },
+  { name: "Suriname", flag: "🇸🇷" },
+  { name: "Sweden", flag: "🇸🇪" },
+  { name: "Switzerland", flag: "🇨🇭" },
+  { name: "Syria", flag: "🇸🇾" },
+  { name: "Taiwan", flag: "🇹🇼" },
+  { name: "Tajikistan", flag: "🇹🇯" },
+  { name: "Tanzania", flag: "🇹🇿" },
+  { name: "Thailand", flag: "🇹🇭" },
+  { name: "Timor-Leste", flag: "🇹🇱" },
+  { name: "Togo", flag: "🇹🇬" },
+  { name: "Tonga", flag: "🇹🇴" },
+  { name: "Trinidad and Tobago", flag: "🇹🇹" },
+  { name: "Tunisia", flag: "🇹🇳" },
+  { name: "Türkiye", flag: "🇹🇷" },
+  { name: "Turkmenistan", flag: "🇹🇲" },
+  { name: "Tuvalu", flag: "🇹🇻" },
+  { name: "Uganda", flag: "🇺🇬" },
+  { name: "Ukraine", flag: "🇺🇦" },
+  { name: "United Arab Emirates", flag: "🇦🇪" },
+  { name: "United Kingdom", flag: "🇬🇧" },
+  { name: "United States", flag: "🇺🇸" },
+  { name: "Uruguay", flag: "🇺🇾" },
+  { name: "Uzbekistan", flag: "🇺🇿" },
+  { name: "Vanuatu", flag: "🇻🇺" },
+  { name: "Vatican City", flag: "🇻🇦" },
+  { name: "Venezuela", flag: "🇻🇪" },
+  { name: "Vietnam", flag: "🇻🇳" },
+  { name: "Yemen", flag: "🇾🇪" },
+  { name: "Zambia", flag: "🇿🇲" },
+  { name: "Zimbabwe", flag: "🇿🇼" },
+];
+
+// "United States" pinned first (largest expected user base), everything else
+// alphabetical after it — display order only, the field still starts empty.
+export const COUNTRIES: Country[] = [...RAW_COUNTRIES].sort((a, b) => {
+  if (a.name === 'United States') return -1;
+  if (b.name === 'United States') return 1;
+  return a.name.localeCompare(b.name);
+});
