@@ -51,7 +51,7 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
   airline: {
     strong: 'Who do',
     muted: 'you fly?',
-    sub: 'Pick up to three carriers and Travis prioritizes their fares, alerts, and lounges.',
+    sub: 'Pick carriers and Travis prioritizes their fares, alerts, and lounges.',
   },
   style: {
     strong: 'How do',

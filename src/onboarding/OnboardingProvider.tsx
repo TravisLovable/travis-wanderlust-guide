@@ -40,7 +40,14 @@ export interface OnboardingData {
   homeCitySelected?: boolean;
   passportCountry?: string;
   airlines?: string[];
-  frequentFlyerStatus?: string | null;
+  /**
+   * Per-airline tier: IATA code -> tier key (see frequentFlyerPrograms.ts).
+   * Matches the frequent_flyer_status_by_airline jsonb column 1:1. Replaces
+   * the old single global frequentFlyerStatus, which had no way to record
+   * which airline a tier belonged to. The legacy frequent_flyer_status
+   * column/value is left alone — not read, not written, not migrated.
+   */
+  frequentFlyerStatusByAirline?: Record<string, string>;
   travelStyles?: string[];
   travelFrequency?: string;
   travelPace?: string;
@@ -66,7 +73,10 @@ function mapDataToUsersRow(d: OnboardingData): UsersUpdate {
   if (d.homeCity !== undefined) row.home_city = d.homeCity || null;
   if (d.passportCountry !== undefined) row.passport_country = d.passportCountry || null;
   if (d.airlines !== undefined) row.airlines = d.airlines.length ? d.airlines : null;
-  if (d.frequentFlyerStatus !== undefined) row.frequent_flyer_status = d.frequentFlyerStatus || null;
+  // frequent_flyer_status (legacy, global) is intentionally never written here.
+  if (d.frequentFlyerStatusByAirline !== undefined) {
+    row.frequent_flyer_status_by_airline = d.frequentFlyerStatusByAirline;
+  }
   if (d.travelStyles !== undefined) row.travel_styles = d.travelStyles.length ? d.travelStyles : null;
   if (d.travelFrequency !== undefined) row.travel_frequency = d.travelFrequency || null;
   if (d.travelPace !== undefined) row.travel_pace = d.travelPace || null;

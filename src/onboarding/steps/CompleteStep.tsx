@@ -11,7 +11,8 @@ import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
 import { useToast } from '@/hooks/use-toast';
 import { paceShort } from '@/onboarding/travelStyle';
-import { airlineName, frequentFlyerLabel } from '@/onboarding/airlines';
+import { airlineName } from '@/onboarding/airlines';
+import { tierLabel } from '@/onboarding/frequentFlyerPrograms';
 
 // Mirrors Onboarding.tsx's primary btn(true). Kept in sync by hand — it's one
 // button, and importing across the page/step boundary would be circular.
@@ -34,14 +35,23 @@ export default function CompleteStep() {
   const [busy, setBusy] = useState(false);
 
   const fullName = [data.firstName, data.lastName].map((s) => (s ?? '').trim()).filter(Boolean).join(' ');
-  const carriers = (data.airlines ?? []).map(airlineName).join(' · ');
+  const selectedAirlines = data.airlines ?? [];
+  const carriers = selectedAirlines.map(airlineName).join(' · ');
+  const statusByAirline = data.frequentFlyerStatusByAirline ?? {};
+
+  // One row per selected airline with a stored tier — not one global "Status"
+  // row, since status is per-airline now. Airlines with no program or no tier
+  // picked yet just don't get a row (nothing to show).
+  const statusRows: { label: string; value: string }[] = selectedAirlines
+    .filter((code) => statusByAirline[code])
+    .map((code) => ({ label: airlineName(code), value: tierLabel(code, statusByAirline[code]) }));
 
   const rows: { label: string; value: string }[] = [
     { label: 'Name', value: fullName || '—' },
     { label: 'From', value: data.homeCity || '—' },
     { label: 'Passport', value: data.passportCountry || '—' },
     { label: 'Carriers', value: carriers || '—' },
-    { label: 'Status', value: frequentFlyerLabel(data.frequentFlyerStatus) },
+    ...statusRows,
     { label: 'Pace', value: paceShort(data.travelPace) },
   ];
 
