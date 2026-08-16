@@ -338,6 +338,7 @@ export function MultiSelectField({
   onChange,
   max,
   placeholder,
+  hideSelectedChips = false,
 }: {
   id?: string;
   values: string[];
@@ -345,6 +346,10 @@ export function MultiSelectField({
   onChange: (next: string[]) => void;
   max: number;
   placeholder?: string;
+  /** Suppress the built-in "selected shown as Chips below" block — for
+   *  callers (e.g. AirlineStep) that render a richer representation of the
+   *  current selection themselves. Search input + dropdown are unaffected. */
+  hideSelectedChips?: boolean;
 }) {
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState(false);
@@ -502,7 +507,7 @@ export function MultiSelectField({
         )}
       </div>
 
-      {values.length > 0 && (
+      {!hideSelectedChips && values.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 14 }}>
           {values.map((v) => {
             const opt = options.find((o) => o.value === v);
