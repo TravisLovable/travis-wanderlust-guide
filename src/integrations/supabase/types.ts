@@ -25,6 +25,57 @@ export type Database = {
   }
   public: {
     Tables: {
+      country_visa_official_sources: {
+        Row: {
+          created_at: string
+          destination_country_code: string
+          http_status: number | null
+          id: number
+          is_active: boolean
+          is_primary: boolean
+          language: string | null
+          last_checked_at: string | null
+          last_verified: string | null
+          notes: string | null
+          official_url: string
+          source_authority: string
+          updated_at: string
+          url_label: string
+        }
+        Insert: {
+          created_at?: string
+          destination_country_code: string
+          http_status?: number | null
+          id?: never
+          is_active?: boolean
+          is_primary?: boolean
+          language?: string | null
+          last_checked_at?: string | null
+          last_verified?: string | null
+          notes?: string | null
+          official_url: string
+          source_authority: string
+          updated_at?: string
+          url_label: string
+        }
+        Update: {
+          created_at?: string
+          destination_country_code?: string
+          http_status?: number | null
+          id?: never
+          is_active?: boolean
+          is_primary?: boolean
+          language?: string | null
+          last_checked_at?: string | null
+          last_verified?: string | null
+          notes?: string | null
+          official_url?: string
+          source_authority?: string
+          updated_at?: string
+          url_label?: string
+        }
+        Relationships: []
+      }
       pinned_locations: {
         Row: {
           country_code: string | null
@@ -80,7 +131,6 @@ export type Database = {
       }
       users: {
         Row: {
-          // Manual override: airlines is a Postgres text[] of airline codes.
           airlines: string[] | null
           // Manual override: alert_preferences is an object map of alert key -> bool.
           alert_preferences: { [key: string]: boolean } | null
@@ -93,6 +143,7 @@ export type Database = {
           email: string | null
           frequent_flyer_number: string | null
           frequent_flyer_status: string | null
+          frequent_flyer_status_by_airline: Json
           full_name: string | null
           home_city: string | null
           id: string
@@ -117,6 +168,7 @@ export type Database = {
           email?: string | null
           frequent_flyer_number?: string | null
           frequent_flyer_status?: string | null
+          frequent_flyer_status_by_airline?: Json
           full_name?: string | null
           home_city?: string | null
           id?: string
@@ -141,6 +193,7 @@ export type Database = {
           email?: string | null
           frequent_flyer_number?: string | null
           frequent_flyer_status?: string | null
+          frequent_flyer_status_by_airline?: Json
           full_name?: string | null
           home_city?: string | null
           id?: string
@@ -158,12 +211,90 @@ export type Database = {
         }
         Relationships: []
       }
+      visa_job_runs: {
+        Row: {
+          details: Json | null
+          failed: number | null
+          id: number
+          job: string
+          ran_at: string
+          succeeded: number | null
+          total: number | null
+        }
+        Insert: {
+          details?: Json | null
+          failed?: number | null
+          id?: never
+          job: string
+          ran_at?: string
+          succeeded?: number | null
+          total?: number | null
+        }
+        Update: {
+          details?: Json | null
+          failed?: number | null
+          id?: never
+          job?: string
+          ran_at?: string
+          succeeded?: number | null
+          total?: number | null
+        }
+        Relationships: []
+      }
+      visa_requirements: {
+        Row: {
+          destination_country_code: string
+          evisa_link: string | null
+          max_stay_days: number | null
+          origin_country_code: string
+          passport_validity: string | null
+          registration_note: string | null
+          rule: string | null
+          source: string
+          status: string
+          status_label: string | null
+          synced_at: string
+        }
+        Insert: {
+          destination_country_code: string
+          evisa_link?: string | null
+          max_stay_days?: number | null
+          origin_country_code: string
+          passport_validity?: string | null
+          registration_note?: string | null
+          rule?: string | null
+          source?: string
+          status: string
+          status_label?: string | null
+          synced_at?: string
+        }
+        Update: {
+          destination_country_code?: string
+          evisa_link?: string | null
+          max_stay_days?: number | null
+          origin_country_code?: string
+          passport_validity?: string | null
+          registration_note?: string | null
+          rule?: string | null
+          source?: string
+          status?: string
+          status_label?: string | null
+          synced_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      list_owned_storage_objects: {
+        Args: { p_uid: string }
+        Returns: {
+          bucket_id: string
+          name: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
