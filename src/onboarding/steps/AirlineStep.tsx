@@ -1,44 +1,37 @@
 // Step 7 — Step 05 Airline (Checkpoint C).
 //
-// Two optional fields: up to 3 preferred carriers (multi-select; chips show the
-// carrier name but the IATA code is stored, per the users.airlines column
-// comment) and frequent-flyer status (single-select; stored as a stable key in
-// users.frequent_flyer_status). Both optional — Continue stays enabled with
-// nothing selected, unlike Identity.
+// Two optional fields: up to 3 preferred carriers (search-to-add multi-select;
+// chips show the carrier name but the IATA code is stored, per the
+// users.airlines column comment) and frequent-flyer status (single-select;
+// stored as a stable key in users.frequent_flyer_status). Both optional —
+// Continue stays enabled with nothing selected, unlike Identity.
 
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
-import { Field, Chip } from './fields';
+import { Field, Chip, MultiSelectField, type SelectOption } from './fields';
 import { AIRLINES, FREQUENT_FLYER_OPTIONS } from '@/onboarding/airlines';
 
 const MAX = 3;
 
+const AIRLINE_OPTIONS: SelectOption[] = AIRLINES.map((a) => ({
+  value: a.code,
+  label: a.name,
+  hint: a.code,
+}));
+
 export default function AirlineStep() {
   const { data, patch } = useOnboarding();
   const selected = data.airlines ?? [];
-  const atMax = selected.length >= MAX;
-
-  const toggle = (code: string) => {
-    const next = selected.includes(code)
-      ? selected.filter((c) => c !== code)
-      : atMax
-        ? selected
-        : [...selected, code];
-    patch({ airlines: next });
-  };
 
   return (
     <div className="flex flex-col" style={{ gap: 20, maxWidth: 640 }}>
       <Field label={`Airlines — pick up to ${MAX}`}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-          {AIRLINES.map((a) => {
-            const isSel = selected.includes(a.code);
-            return (
-              <Chip key={a.code} selected={isSel} disabled={!isSel && atMax} onClick={() => toggle(a.code)}>
-                {a.name}
-              </Chip>
-            );
-          })}
-        </div>
+        <MultiSelectField
+          values={selected}
+          options={AIRLINE_OPTIONS}
+          max={MAX}
+          placeholder="Search airlines…"
+          onChange={(next) => patch({ airlines: next })}
+        />
       </Field>
 
       <div className="flex items-center justify-between" style={{ maxWidth: 640 }}>

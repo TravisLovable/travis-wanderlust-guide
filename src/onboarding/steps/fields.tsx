@@ -322,6 +322,202 @@ export function SelectField({
   );
 }
 
+/**
+ * Search-to-add multi-select: a text input that filters `options` as you
+ * type (results only shown once there's a query — unlike SelectField, this
+ * is meant for large lists where browsing the unfiltered set isn't useful),
+ * plus the current selection rendered as removable Chips below. Picking a
+ * result adds it and keeps the dropdown open for adding more, up to `max`;
+ * removal happens by clicking a chip, never from the list itself. Keyboard
+ * nav (Arrow keys + Enter) mirrors SelectField/CityAutocomplete.
+ */
+export function MultiSelectField({
+  id,
+  values,
+  options,
+  onChange,
+  max,
+  placeholder,
+}: {
+  id?: string;
+  values: string[];
+  options: SelectOption[];
+  onChange: (next: string[]) => void;
+  max: number;
+  placeholder?: string;
+}) {
+  const [query, setQuery] = useState('');
+  const [open, setOpen] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(-1);
+  const wrapRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const atMax = values.length >= max;
+
+  useEffect(() => {
+    if (!open) return;
+    const onDoc = (e: MouseEvent) => {
+      if (wrapRef.current && !wrapRef.current.contains(e.target as Node)) setOpen(false);
+    };
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setOpen(false);
+    };
+    document.addEventListener('mousedown', onDoc);
+    document.addEventListener('keydown', onKey);
+    return () => {
+      document.removeEventListener('mousedown', onDoc);
+      document.removeEventListener('keydown', onKey);
+    };
+  }, [open]);
+
+  const q = query.trim().toLowerCase();
+  const filtered = q
+    ? options.filter((o) => o.label.toLowerCase().includes(q) || o.hint?.toLowerCase().includes(q))
+    : [];
+
+  useEffect(() => {
+    setActiveIndex(-1);
+  }, [filtered.length, open]);
+
+  const add = (value: string) => {
+    if (atMax || values.includes(value)) return;
+    onChange([...values, value]);
+    setQuery('');
+    setActiveIndex(-1);
+    inputRef.current?.focus();
+  };
+
+  const remove = (value: string) => {
+    onChange(values.filter((v) => v !== value));
+  };
+
+  const onKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Escape') {
+      setOpen(false);
+      return;
+    }
+    if (!open || filtered.length === 0) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.min(i + 1, filtered.length - 1));
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      setActiveIndex((i) => Math.max(i - 1, 0));
+    } else if (e.key === 'Enter') {
+      if (activeIndex >= 0 && activeIndex < filtered.length) {
+        e.preventDefault();
+        add(filtered[activeIndex].value);
+      }
+    }
+  };
+
+  return (
+    <div>
+      <div ref={wrapRef} style={{ position: 'relative' }}>
+        <input
+          id={id}
+          ref={inputRef}
+          className="font-travis onb-input"
+          type="text"
+          value={query}
+          disabled={atMax}
+          placeholder={atMax ? `${max} selected — remove one to add another` : placeholder}
+          autoComplete="off"
+          spellCheck={false}
+          autoCorrect="off"
+          onFocus={() => !atMax && setOpen(true)}
+          onChange={(e) => {
+            setQuery(e.target.value);
+            setOpen(true);
+          }}
+          onKeyDown={onKeyDown}
+        />
+
+        {open && !atMax && q && (
+          <div
+            role="listbox"
+            style={{
+              position: 'absolute',
+              top: 'calc(100% + 6px)',
+              left: 0,
+              width: '100%',
+              zIndex: 30,
+              background: 'var(--bg-raised)',
+              border: '1px solid var(--hair-strong)',
+              borderRadius: 2,
+              maxHeight: 240,
+              overflowY: 'auto',
+              boxShadow: '0 14px 44px oklch(0 0 0 / 0.45)',
+            }}
+          >
+            {filtered.length === 0 ? (
+              <div
+                className="font-travis-mono"
+                style={{ padding: 14, fontSize: 11, letterSpacing: '0.1em', color: 'var(--ink-4)' }}
+              >
+                NO MATCHES
+              </div>
+            ) : (
+              filtered.map((o, i) => {
+                const isSel = values.includes(o.value);
+                const isActive = i === activeIndex;
+                return (
+                  <button
+                    key={o.value}
+                    type="button"
+                    role="option"
+                    aria-selected={isSel}
+                    disabled={isSel}
+                    onClick={() => add(o.value)}
+                    onMouseEnter={() => setActiveIndex(i)}
+                    className="font-travis onb-option"
+                    style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: 10,
+                      width: '100%',
+                      background: isActive ? 'oklch(1 0 0 / 0.1)' : 'transparent',
+                      border: 0,
+                      padding: '11px 14px',
+                      fontSize: 15,
+                      color: isSel ? 'var(--ink-4)' : 'var(--ink-2)',
+                      cursor: isSel ? 'default' : 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <span style={{ flex: 1 }}>{o.label}</span>
+                    {o.hint && (
+                      <span
+                        className="font-travis-mono"
+                        style={{ fontSize: 10, letterSpacing: '0.08em', color: 'var(--ink-4)' }}
+                      >
+                        {o.hint}
+                      </span>
+                    )}
+                    {isSel && <span style={{ fontSize: 12, color: 'var(--signal-ok)' }}>✓</span>}
+                  </button>
+                );
+              })
+            )}
+          </div>
+        )}
+      </div>
+
+      {values.length > 0 && (
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10, marginTop: 14 }}>
+          {values.map((v) => {
+            const opt = options.find((o) => o.value === v);
+            return (
+              <Chip key={v} selected onClick={() => remove(v)}>
+                {opt?.label ?? v}
+              </Chip>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
 /** Selectable pill. Selected = --ink (primary) border, per the spec. */
 export function Chip({
   selected,
