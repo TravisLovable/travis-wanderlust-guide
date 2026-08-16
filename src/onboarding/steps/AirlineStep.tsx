@@ -187,18 +187,18 @@ function AirlineCard({
             }}
           >
             <span className="flex items-center" style={{ gap: 8 }}>
-              {currentTier ? currentTier.label : 'Not set'}
+              {currentTier ? currentTier.label : 'Select your status'}
               {currentTier && <span style={{ fontSize: 12, color: 'var(--signal-ok)' }}>✓</span>}
             </span>
             <span
               style={{
-                fontSize: 10,
+                fontSize: 18,
                 color: 'var(--ink-3)',
                 transform: isExpanded ? 'rotate(180deg)' : 'none',
                 transition: 'transform 0.15s ease',
               }}
             >
-              ▾
+              ▼
             </span>
           </button>
 
