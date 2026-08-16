@@ -192,7 +192,7 @@ function AirlineCard({
             </span>
             <span
               style={{
-                fontSize: 18,
+                fontSize: 15,
                 color: 'var(--ink-3)',
                 transform: isExpanded ? 'rotate(180deg)' : 'none',
                 transition: 'transform 0.15s ease',
