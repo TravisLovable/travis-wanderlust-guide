@@ -153,6 +153,10 @@ export type Database = {
           phone_country_code: string | null
           preferred_airline: string | null
           profile_photo_url: string | null
+          sms_opt_in: boolean
+          sms_opt_in_at: string | null
+          terms_agreed: boolean
+          terms_agreed_at: string | null
           travel_frequency: string | null
           travel_pace: string | null
           travel_styles: string[] | null
@@ -178,6 +182,10 @@ export type Database = {
           phone_country_code?: string | null
           preferred_airline?: string | null
           profile_photo_url?: string | null
+          sms_opt_in?: boolean
+          sms_opt_in_at?: string | null
+          terms_agreed?: boolean
+          terms_agreed_at?: string | null
           travel_frequency?: string | null
           travel_pace?: string | null
           travel_styles?: string[] | null
@@ -203,6 +211,10 @@ export type Database = {
           phone_country_code?: string | null
           preferred_airline?: string | null
           profile_photo_url?: string | null
+          sms_opt_in?: boolean
+          sms_opt_in_at?: string | null
+          terms_agreed?: boolean
+          terms_agreed_at?: string | null
           travel_frequency?: string | null
           travel_pace?: string | null
           travel_styles?: string[] | null
