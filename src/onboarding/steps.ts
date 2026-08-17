@@ -6,18 +6,22 @@
 // preferences for a product the user hasn't experienced yet produce a
 // meaningless signal either way, and Apple's HIG advises against requesting
 // notification permission at first launch anyway — that flow belongs at a
-// contextually obvious moment instead). Per locked decision 1A, sign-in +
-// verify are owned by the existing AuthModal / Supabase magic-link flow —
-// they stay in this registry for index/resume bookkeeping
-// (FIRST_WIZARD_INDEX, stepIdx persistence) but are hidden from the rail
-// entirely and are NOT navigable here. The wizard owns steps 1–4 (auth is a
-// separate pre-onboarding phase and isn't counted in the visible total).
+// contextually obvious moment instead). Legal was then added as a new last
+// form step: consent reads better as a deliberate closing moment than a
+// cold first-contact gate, and practically, its optional SMS opt-in needs
+// the phone number Identity captures — Legal can't come before Identity.
+// Per locked decision 1A, sign-in + verify are owned by the existing
+// AuthModal / Supabase magic-link flow — they stay in this registry for
+// index/resume bookkeeping (FIRST_WIZARD_INDEX, stepIdx persistence) but
+// are hidden from the rail entirely and are NOT navigable here. The wizard
+// owns steps 1–5 (auth is a separate pre-onboarding phase and isn't
+// counted in the visible total).
 
 export type StepKind = 'auth' | 'form' | 'summary';
 
 export interface OnboardingStep {
   /** Stable id (mirrors the design's STEPS ids). */
-  id: 'signin' | 'verify' | 'identity' | 'passport' | 'airline' | 'complete';
+  id: 'signin' | 'verify' | 'identity' | 'passport' | 'airline' | 'legal' | 'complete';
   /** Rail label. */
   label: string;
   kind: StepKind;
@@ -29,6 +33,7 @@ export const STEPS: OnboardingStep[] = [
   { id: 'identity', label: 'Identity', kind: 'form' },
   { id: 'passport', label: 'Passport', kind: 'form' },
   { id: 'airline', label: 'Airline', kind: 'form' },
+  { id: 'legal', label: 'Legal', kind: 'form' },
   { id: 'complete', label: 'Complete', kind: 'summary' },
 ];
 

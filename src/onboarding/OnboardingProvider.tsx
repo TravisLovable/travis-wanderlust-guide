@@ -49,6 +49,18 @@ export interface OnboardingData {
    */
   frequentFlyerStatusByAirline?: Record<string, string>;
   alertPreferences?: Record<string, boolean>;
+  /**
+   * Mandatory Privacy Policy + Terms of Service agreement, captured on the
+   * Legal step. agreedToTermsAt is stamped at the moment of the click (see
+   * LegalStep.tsx) — never derived here, since this row is recomputed on
+   * every autosave tick and would otherwise overwrite the real consent
+   * moment with "whenever autosave last fired".
+   */
+  agreedToTerms?: boolean;
+  agreedToTermsAt?: string;
+  /** Optional SMS opt-in, same stamped-at-click timestamp rule as above. */
+  smsOptIn?: boolean;
+  smsOptInAt?: string;
 }
 
 type UsersUpdate = Database['public']['Tables']['users']['Update'];
@@ -75,6 +87,10 @@ function mapDataToUsersRow(d: OnboardingData): UsersUpdate {
     row.frequent_flyer_status_by_airline = d.frequentFlyerStatusByAirline;
   }
   if (d.alertPreferences !== undefined) row.alert_preferences = d.alertPreferences;
+  if (d.agreedToTerms !== undefined) row.terms_agreed = d.agreedToTerms;
+  if (d.agreedToTermsAt !== undefined) row.terms_agreed_at = d.agreedToTermsAt || null;
+  if (d.smsOptIn !== undefined) row.sms_opt_in = d.smsOptIn;
+  if (d.smsOptInAt !== undefined) row.sms_opt_in_at = d.smsOptInAt || null;
   return row;
 }
 

@@ -21,6 +21,7 @@ import { STEPS, FIRST_WIZARD_INDEX } from '@/onboarding/steps';
 import IdentityStep from '@/onboarding/steps/IdentityStep';
 import PassportStep from '@/onboarding/steps/PassportStep';
 import AirlineStep from '@/onboarding/steps/AirlineStep';
+import LegalStep from '@/onboarding/steps/LegalStep';
 import CompleteStep from '@/onboarding/steps/CompleteStep';
 
 // Real content screens. Step 08 (complete) is handled separately below — it has
@@ -29,6 +30,7 @@ const STEP_BODY: Record<string, ComponentType> = {
   identity: IdentityStep,
   passport: PassportStep,
   airline: AirlineStep,
+  legal: LegalStep,
 };
 
 // Heading chrome per real step: bold clause + a muted continuation, matching
@@ -37,7 +39,7 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
   identity: {
     strong: 'The basics,',
     muted: 'first.',
-    sub: 'Your name and primary departure city.',
+    sub: 'Your name, phone, and primary departure city.',
   },
   passport: {
     strong: 'Which passport',
@@ -49,6 +51,11 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
     muted: 'you fly?',
     sub: 'Pick carriers and Travis tracks their lounge access and alerts relevant to your trip.',
   },
+  legal: {
+    strong: 'Before you',
+    muted: 'go.',
+    sub: "One quick agreement, then you're in.",
+  },
 };
 
 /** Whether the current step's required fields are filled (gates Continue). */
@@ -57,11 +64,14 @@ function isStepComplete(stepId: string, data: OnboardingData): boolean {
     return Boolean(
       data.firstName?.trim() &&
       data.lastName?.trim() &&
+      (data.phone?.trim().length ?? 0) >= 7 &&
+      data.phoneCountryCode?.trim() &&
       data.homeCity?.trim() &&
       data.homeCitySelected !== false, // undefined (pre-existing draft) is fine; only explicit false blocks
     );
   }
   if (stepId === 'passport') return Boolean(data.passportCountry);
+  if (stepId === 'legal') return Boolean(data.agreedToTerms);
   // Airline is optional; complete has its own CTA, not Continue.
   return true;
 }

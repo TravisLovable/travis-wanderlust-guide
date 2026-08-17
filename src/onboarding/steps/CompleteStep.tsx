@@ -34,6 +34,7 @@ export default function CompleteStep() {
   const [busy, setBusy] = useState(false);
 
   const fullName = [data.firstName, data.lastName].map((s) => (s ?? '').trim()).filter(Boolean).join(' ');
+  const formattedPhone = [data.phoneCountryCode, data.phone].filter(Boolean).join(' ');
   const selectedAirlines = data.airlines ?? [];
   const carriers = selectedAirlines.map(airlineName).join(' · ');
   const statusByAirline = data.frequentFlyerStatusByAirline ?? {};
@@ -47,6 +48,7 @@ export default function CompleteStep() {
 
   const rows: { label: string; value: string }[] = [
     { label: 'Name', value: fullName || '—' },
+    { label: 'Phone', value: formattedPhone || '—' },
     { label: 'From', value: data.homeCity || '—' },
     { label: 'Passport', value: data.passportCountry || '—' },
     { label: 'Carriers', value: carriers || '—' },
