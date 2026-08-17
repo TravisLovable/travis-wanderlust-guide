@@ -10,7 +10,6 @@ import { useState, type CSSProperties } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
 import { useToast } from '@/hooks/use-toast';
-import { paceShort } from '@/onboarding/travelStyle';
 import { airlineName } from '@/onboarding/airlines';
 import { tierLabel } from '@/onboarding/frequentFlyerPrograms';
 
@@ -52,7 +51,6 @@ export default function CompleteStep() {
     { label: 'Passport', value: data.passportCountry || '—' },
     { label: 'Carriers', value: carriers || '—' },
     ...statusRows,
-    { label: 'Pace', value: paceShort(data.travelPace) },
   ];
 
   const onEnter = async () => {

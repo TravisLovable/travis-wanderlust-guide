@@ -5,7 +5,7 @@
 //   - authenticated, already done  -> bounce to / (RequireOnboarding lets / through)
 //   - authenticated, needs it      -> render the wizard
 //
-// Screens 1–5 are forms; 6 (Complete) is a terminal recap that owns its own
+// Screens 1–4 are forms; 5 (Complete) is a terminal recap that owns its own
 // ENTER TRAVIS action and renders no Back/Continue footer.
 
 import type { CSSProperties, ComponentType } from 'react';
@@ -21,8 +21,6 @@ import { STEPS, FIRST_WIZARD_INDEX } from '@/onboarding/steps';
 import IdentityStep from '@/onboarding/steps/IdentityStep';
 import PassportStep from '@/onboarding/steps/PassportStep';
 import AirlineStep from '@/onboarding/steps/AirlineStep';
-import TravelStyleStep from '@/onboarding/steps/TravelStyleStep';
-import SignalStep from '@/onboarding/steps/SignalStep';
 import CompleteStep from '@/onboarding/steps/CompleteStep';
 
 // Real content screens. Step 08 (complete) is handled separately below — it has
@@ -31,8 +29,6 @@ const STEP_BODY: Record<string, ComponentType> = {
   identity: IdentityStep,
   passport: PassportStep,
   airline: AirlineStep,
-  style: TravelStyleStep,
-  signal: SignalStep,
 };
 
 // Heading chrome per real step: bold clause + a muted continuation, matching
@@ -53,16 +49,6 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
     muted: 'you fly?',
     sub: 'Pick carriers and Travis tracks their lounge access and alerts relevant to your trip.',
   },
-  style: {
-    strong: 'How do',
-    muted: 'you move?',
-    sub: 'Frequency, pace, and the kind of trips that pull you in.',
-  },
-  signal: {
-    strong: 'What should we',
-    muted: 'ping you about?',
-    sub: 'Travis only sends signals you opt into. Change these anytime.',
-  },
 };
 
 /** Whether the current step's required fields are filled (gates Continue). */
@@ -76,8 +62,7 @@ function isStepComplete(stepId: string, data: OnboardingData): boolean {
     );
   }
   if (stepId === 'passport') return Boolean(data.passportCountry);
-  if (stepId === 'style') return Boolean(data.travelFrequency && data.travelPace);
-  // Airline and signal are optional; complete has its own CTA, not Continue.
+  // Airline is optional; complete has its own CTA, not Continue.
   return true;
 }
 
