@@ -1,6 +1,7 @@
 // Step 7 — Legal/Consent step (last form step before Complete).
 //
-// Two rows: a mandatory Privacy Policy + Terms of Service agreement (gates
+// A body paragraph (what texting Travis actually gets you) sits above two
+// rows: a mandatory Privacy Policy + Terms of Service agreement (gates
 // Continue — see Onboarding.tsx's isStepComplete 'legal' branch) and an
 // optional SMS opt-in for trip-alert texts, referencing the real phone
 // number Identity now requires. No custom checkbox primitive exists in
@@ -93,20 +94,29 @@ export default function LegalStep() {
 
   return (
     <div className="flex flex-col" style={{ gap: 24, maxWidth: 560 }}>
+      <p style={{ fontSize: 15, color: 'var(--ink-3)', lineHeight: 1.5, margin: 0 }}>
+        Travis doesn't wait for you to ask. Before you'd think to check, you'll already have
+        a text — about your flight, your gate, the weather, a visa rule that changed. Text
+        back and you're talking directly to Travis: it knows who you are, where you're going,
+        when you leave, what status you hold, and what's actually happening around your trip
+        right now. No app required.
+      </p>
+
       <ConsentCheckbox checked={!!data.agreedToTerms} onToggle={toggleTerms}>
         I agree to the{' '}
         <button type="button" style={linkStyle} onClick={() => setLegal('privacy')}>
           Privacy Policy
         </button>{' '}
         and{' '}
-        <button type="button" style={linkStyle} onClick={() => setLegal('terms')}>
-          Terms of Service
-        </button>
-        .
+        <span style={{ whiteSpace: 'nowrap' }}>
+          <button type="button" style={linkStyle} onClick={() => setLegal('terms')}>
+            Terms of Service
+          </button>.
+        </span>
       </ConsentCheckbox>
 
       <ConsentCheckbox checked={!!data.smsOptIn} onToggle={toggleSms}>
-        Get texts from Travis about your trips at {formattedPhone || 'the number you provided'}. Reply STOP anytime.
+        Get texts from Travis about your trips at {formattedPhone || 'the number you provided'}. Msg &amp; data rates may apply. Reply STOP anytime.
       </ConsentCheckbox>
 
       <PrivacyModal isOpen={legal === 'privacy'} onClose={() => setLegal(null)} />

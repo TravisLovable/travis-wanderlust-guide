@@ -17,6 +17,16 @@ import { useOnboarding } from '@/onboarding/OnboardingProvider';
 import { Field, TextField, SelectField, type SelectOption } from './fields';
 import { CityAutocomplete } from '@/onboarding/CityAutocomplete';
 
+/** As-you-type grouping for display only — data.phone always stays digits-only. */
+function formatPhoneDisplay(digits: string): string {
+  const core = digits.slice(0, 10);
+  const extra = digits.slice(10);
+  let formatted = core;
+  if (core.length > 6) formatted = `(${core.slice(0, 3)}) ${core.slice(3, 6)}-${core.slice(6)}`;
+  else if (core.length > 3) formatted = `(${core.slice(0, 3)}) ${core.slice(3)}`;
+  return extra ? `${formatted} ${extra}` : formatted;
+}
+
 // Minimum required set per the spec, value = E.164 dial code.
 const DIAL_CODES: SelectOption[] = [
   { value: '+1', label: '+1', flag: '🇺🇸', hint: 'US / CA' },
@@ -78,10 +88,11 @@ export default function IdentityStep() {
               id="onb-phone"
               inputMode="numeric"
               autoComplete="tel-national"
-              maxLength={15}
-              value={data.phone ?? ''}
-              placeholder="555 123 4567"
-              // Numeric mask: keep digits only (column stores the E.164 local part).
+              maxLength={20}
+              value={formatPhoneDisplay(data.phone ?? '')}
+              placeholder="(555) 123-4567"
+              // Display is grouped as-you-type; the stored value stays digits-only
+              // (column stores the E.164 local part) — formatting is display-layer only.
               onChange={(v) => patch({ phone: v.replace(/[^\d]/g, '') })}
             />
           </div>

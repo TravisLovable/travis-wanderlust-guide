@@ -84,12 +84,12 @@ export function DeleteAccountDialog({ isOpen, onClose }: Props) {
               autoCapitalize="characters"
               autoFocus
               disabled={deleting}
-              className="mt-1.5"
+              className="mt-1.5 text-foreground"
             />
           </div>
 
           <div className="flex gap-2">
-            <Button type="button" variant="outline" className="flex-1" onClick={handleClose} disabled={deleting}>
+            <Button type="button" variant="outline" className="flex-1 text-foreground" onClick={handleClose} disabled={deleting}>
               Cancel
             </Button>
             <Button

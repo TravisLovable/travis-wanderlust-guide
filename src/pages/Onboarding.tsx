@@ -52,9 +52,9 @@ const STEP_COPY: Record<string, { strong: string; muted: string; sub: string }> 
     sub: 'Pick carriers and Travis tracks their lounge access and alerts relevant to your trip.',
   },
   legal: {
-    strong: 'Before you',
-    muted: 'go.',
-    sub: "One quick agreement, then you're in.",
+    strong: 'How Travis',
+    muted: 'actually works.',
+    sub: "Privacy Policy, Terms of Service, and how you'll hear from us.",
   },
 };
 

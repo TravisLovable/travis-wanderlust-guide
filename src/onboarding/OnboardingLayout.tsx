@@ -221,7 +221,7 @@ export function OnboardingLayout({ children }: { children: React.ReactNode }) {
               You can start fresh next time you sign in.
             </p>
             <div className="flex gap-2">
-              <Button type="button" variant="outline" className="flex-1" onClick={() => setConfirmExit(false)}>
+              <Button type="button" variant="outline" className="flex-1 text-foreground" onClick={() => setConfirmExit(false)}>
                 Keep setting up
               </Button>
               <Button
