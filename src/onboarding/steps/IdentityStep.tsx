@@ -12,8 +12,9 @@
 // reference, and Legal comes later in this same wizard, so the number has
 // to be captured here first.
 
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useOnboarding } from '@/onboarding/OnboardingProvider';
+import { useAuth } from '@/contexts/AuthContext';
 import { Field, TextField, SelectField, type SelectOption } from './fields';
 import { CityAutocomplete } from '@/onboarding/CityAutocomplete';
 
@@ -41,14 +42,46 @@ const DIAL_CODES: SelectOption[] = [
   { value: '+55', label: '+55', flag: '🇧🇷', hint: 'BR' },
 ];
 
+/**
+ * Split a verified E.164 number — as Supabase stores it on user.phone: digits
+ * only, no '+' (e.g. "19133139406") — into the onboarding shape: a dial code
+ * from DIAL_CODES plus the national remainder (digits only, matching how
+ * data.phone is stored). Longest known code wins; falls back to +1 (stripping a
+ * leading NANP "1" when present) so the result is always usable.
+ */
+function splitVerifiedPhone(e164Digits: string): { phoneCountryCode: string; phone: string } {
+  const digits = e164Digits.replace(/\D/g, '');
+  const codes = DIAL_CODES.map((c) => c.value.replace('+', '')).sort((a, b) => b.length - a.length);
+  const match = codes.find((c) => digits.startsWith(c));
+  if (match) return { phoneCountryCode: `+${match}`, phone: digits.slice(match.length) };
+  if (digits.length === 11 && digits.startsWith('1')) return { phoneCountryCode: '+1', phone: digits.slice(1) };
+  return { phoneCountryCode: '+1', phone: digits };
+}
+
 export default function IdentityStep() {
   const { data, patch } = useOnboarding();
+  const { user } = useAuth();
 
   // Dial code has a sensible default; persist it so the saved row never lacks a
   // code even if the user never opens the select.
   useEffect(() => {
     if (!data.phoneCountryCode) patch({ phoneCountryCode: '+1' });
   }, [data.phoneCountryCode, patch]);
+
+  // One-shot pre-fill from a phone sign-in. Supabase puts the verified number on
+  // user.phone (E.164 digits, no '+') ONLY for SMS sign-ins — email sign-ins and
+  // the dev-bypass mock user leave it undefined, so this no-ops for them and the
+  // field stays blank exactly as before. Guards, all required:
+  //   - ref latch: fire at most once per mount, so a later edit is never undone
+  //   - !data.phone: never clobber a typed value or one restored from the draft
+  //   - user?.phone: only phone sign-ins carry a number to pre-fill
+  // Same "don't clobber user input" principle as the dial-code default above.
+  const prefilledFromAuth = useRef(false);
+  useEffect(() => {
+    if (prefilledFromAuth.current || data.phone || !user?.phone) return;
+    prefilledFromAuth.current = true;
+    patch(splitVerifiedPhone(user.phone));
+  }, [data.phone, user?.phone, patch]);
 
   return (
     <div className="flex flex-col" style={{ gap: 30, maxWidth: 580 }}>
